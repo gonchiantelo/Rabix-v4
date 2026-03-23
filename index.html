@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="RABIX" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#0a0e1a" />
+    <meta name="description" content="RABIX V4 — Sistema de entrenamiento inteligente con múltiples objetivos" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="assets/logo-rabix.png" />
+    <title>RABIX V4 — Training OS</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="reco.css" />
+</head>
+
+<body>
+
+    <!-- ══════════ LOGIN ══════════ -->
+    <section id="view-login" class="login-view hidden">
+
+        <!-- Background grid decoration -->
+        <div class="login-bg-grid"></div>
+
+        <!-- Top accent bar -->
+        <div class="login-accent-bar"></div>
+
+        <!-- Logo + Brand -->
+        <div class="login-hero">
+            <div class="login-logo-container">
+                <img src="assets/logo-rabix.png" class="login-logo-img" alt="RABIX"
+                    onerror="this.style.display='none'" />
+                <div class="login-logo-fallback" id="login-logo-fallback"></div>
+            </div>
+            <div class="login-brand-block">
+                <h1 class="login-brand-name">RABIX</h1>
+                <span class="login-brand-version">V4</span>
+            </div>
+            <p class="login-tagline">TRAINING OS &nbsp;·&nbsp; ALTO RENDIMIENTO</p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="login-card">
+            <p class="login-card-label">ACCESO</p>
+            <form id="login-form" class="login-form" autocomplete="off">
+                <div class="login-input-wrap">
+                    <svg class="login-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <input type="text" id="login-username" class="login-input" placeholder="Usuario" required autocomplete="off" />
+                </div>
+                <div class="login-input-wrap">
+                    <svg class="login-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <input type="password" id="login-password" class="login-input" placeholder="Contraseña" required autocomplete="current-password" />
+                </div>
+                <label class="login-remember-label">
+                    <input type="checkbox" id="login-remember" class="login-remember-cb" />
+                    <span class="login-remember-custom"></span>
+                    <span>Mantener sesión iniciada</span>
+                </label>
+                <button type="submit" class="login-btn-primary">
+                    ENTRAR
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+            </form>
+            <div class="login-divider"><span>¿PRIMERA VEZ?</span></div>
+            <button type="button" class="login-btn-register" id="btn-show-register">
+                CREAR CUENTA GRATIS
+            </button>
+        </div>
+
+        <p class="login-footer-text">RABIX V4 · Sistema de gestión de entrenamiento</p>
+    </section>
+
+    <!-- ══════════ MODAL: REGISTRO ══════════ -->
+    <div class="modal-overlay hidden" id="new-user-modal-overlay">
+        <div class="register-sheet">
+            <div class="modal-handle"></div>
+
+            <!-- Header -->
+            <div class="register-header">
+                <h2 class="register-title">Nuevo Perfil</h2>
+                <p class="register-subtitle">Completá los datos básicos para comenzar</p>
+            </div>
+
+            <!-- Error banner -->
+            <div id="register-error" class="register-error hidden"></div>
+
+            <form id="new-user-form" autocomplete="off" novalidate>
+
+                <!-- Step indicator -->
+                <div class="register-steps">
+                    <div class="register-step active" id="rstep-1">
+                        <span class="rstep-num">1</span>
+                        <span class="rstep-lbl">Cuenta</span>
+                    </div>
+                    <div class="register-step-line"></div>
+                    <div class="register-step" id="rstep-2">
+                        <span class="rstep-num">2</span>
+                        <span class="rstep-lbl">Perfil</span>
+                    </div>
+                    <div class="register-step-line"></div>
+                    <div class="register-step" id="rstep-3">
+                        <span class="rstep-num">3</span>
+                        <span class="rstep-lbl">Objetivo</span>
+                    </div>
+                </div>
+
+                <!-- PASO 1: Credenciales -->
+                <div id="register-page-1" class="register-page">
+                    <div class="rform-group">
+                        <label class="rform-label">NOMBRE DE USUARIO</label>
+                        <input type="text" class="rform-input" id="new-user-name"
+                            placeholder="Ej: Gonchi" maxlength="20" autocomplete="off" />
+                        <span class="rform-hint">Así te verás dentro de la app</span>
+                    </div>
+                    <div class="rform-group">
+                        <label class="rform-label">CONTRASEÑA</label>
+                        <div class="rform-password-wrap">
+                            <input type="password" class="rform-input" id="new-user-pass"
+                                placeholder="Mínimo 4 caracteres" minlength="4" autocomplete="new-password" />
+                            <button type="button" class="rform-eye-btn" aria-label="Mostrar contraseña"
+                                onclick="const i=document.getElementById('new-user-pass');const b=this;i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'👁️':'🙈';">👁️</button>
+                        </div>
+                    </div>
+                    <div class="rform-group">
+                        <label class="rform-label">EMAIL</label>
+                        <input type="email" class="rform-input" id="new-user-email"
+                            placeholder="ejemplo@mail.com" autocomplete="off" />
+                    </div>
+                    <div class="rform-group">
+                        <label class="rform-label">TELÉFONO</label>
+                        <input type="tel" class="rform-input" id="new-user-tel"
+                            placeholder="Ej: 098123456" autocomplete="off" />
+                    </div>
+                </div>
+
+                <!-- PASO 2: Avatar -->
+                <div id="register-page-2" class="register-page hidden">
+                    <p class="rform-label" style="margin-bottom:12px;">ELEGÍ TU ÍCONO DE PERFIL</p>
+                    <div class="emoji-picker" id="emoji-picker"></div>
+                </div>
+
+                <!-- PASO 3: Objetivo -->
+                <div id="register-page-3" class="register-page hidden">
+                    <p class="rform-label" style="margin-bottom:12px;">CATEGORÍA DE ENTRENAMIENTO</p>
+                    <div class="objetivo-picker" id="objetivo-picker"></div>
+                </div>
+
+                <!-- Navigation buttons -->
+                <div class="register-nav">
+                    <button type="button" class="register-btn-back hidden" id="register-btn-back" onclick="LoginUI.regPrev()">
+                        ← ATRÁS
+                    </button>
+                    <button type="button" class="register-btn-next" id="register-btn-next" onclick="LoginUI.regNext()">
+                        SIGUIENTE →
+                    </button>
+                    <button type="submit" class="register-btn-submit hidden" id="register-btn-submit">
+                        CREAR PERFIL ✓
+                    </button>
+                </div>
+            </form>
+
+            <button class="register-btn-cancel" onclick="document.getElementById('new-user-modal-overlay').classList.add('hidden')">
+                Cancelar
+            </button>
+        </div>
+    </div>
+
+    <!-- ══════════ MODAL: AYER ══════════ -->
+    <div id="yesterday-modal-overlay" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 320px; text-align: center; padding: 24px;">
+            <div style="font-size: 48px; margin-bottom: 12px;">📅</div>
+            <h2 class="section-title">¿Entrenaste ayer?</h2>
+            <p class="section-desc" style="margin-bottom: 24px;">No encontramos registro del día anterior. ¿Querés anotarlo ahora para mantener tu racha?</p>
+            <div style="display: flex; gap: 12px;">
+                <button class="btn-secondary" onclick="App.dismissYesterday()" style="flex: 1;">NO</button>
+                <button class="btn-primary" onclick="App.confirmYesterday()" style="flex: 1.5;">SÍ, ANOTAR</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ══════════ VIEW: ONBOARDING ══════════ -->
+    <section id="view-onboarding" class="view ob-view">
+
+        <!-- Header fijo con progreso -->
+        <div class="ob-header">
+            <div class="ob-brand">RABIX <span>SETUP</span></div>
+            <div class="ob-progress-meta">
+                <span id="onboarding-progress-step">1 de 9</span>
+                <span id="onboarding-progress-pct">11%</span>
+            </div>
+            <div class="ob-progress-track">
+                <div class="ob-progress-fill" id="onboarding-progress-bar" style="width:11%"></div>
+            </div>
+        </div>
+
+        <!-- Contenido del paso actual -->
+        <div class="ob-body" id="onboarding-step-container">
+            <!-- Pasos cargados vía JS -->
+        </div>
+
+        <!-- Footer fijo con botón -->
+        <div class="ob-footer">
+            <button class="ob-next-btn" id="btn-onboarding-next">SIGUIENTE →</button>
+        </div>
+
+    </section>
+
+
+    <!-- ══════════ HEADER ══════════ -->
+    <header class="app-header" id="app-header">
+        <div class="header-brand">
+            <img src="assets/logo-rabix.png" class="header-logo" alt="RABIX" onerror="this.style.display='none'" />
+            <div>
+                <span class="brand-name">RABIX</span>
+                <span class="brand-version">V4</span>
+            </div>
+        </div>
+        <div class="header-meta">
+            <span class="objetivo-badge-display" id="objetivo-badge-static" title="Objetivo actual">
+                <span class="panel-badge" id="objetivo-badge">⚡ Alto Rendimiento</span>
+            </span>
+            <span class="phase-badge" id="phase-badge">—</span>
+            <div class="semaphore" id="semaphore" title="Semáforo de carga acumulada 3 días"></div>
+            <button class="header-user-btn" id="header-user-btn" title="Cambiar perfil">
+                <span class="header-user-emoji" id="header-user-emoji">⚡</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ══════════ VIEWS ══════════ -->
+    <main class="app-main">
+
+        <!-- ─── VIEW: DASHBOARD ─── -->
+        <section class="view" id="view-dashboard">
+
+            <!-- Today Session Card -->
+            <div class="today-card" id="today-card">
+                <div class="today-card-header">
+                    <div>
+                        <p class="today-label">HOY</p>
+                        <h2 class="today-date" id="today-date">—</h2>
+                    </div>
+                </div>
+                <div class="today-scenario" id="today-scenario">
+                    <span class="scenario-emoji" id="scenario-emoji">—</span>
+                    <span class="scenario-label" id="scenario-label">Cargando...</span>
+                </div>
+                <div class="today-exercises-preview" id="today-preview"></div>
+                <button class="btn-start-training" id="btn-start-training">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                    INICIAR SESIÓN
+                </button>
+                <button class="btn-dia-doble hidden" id="btn-dia-doble">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <polyline points="1 4 1 10 7 10" />
+                        <path d="M3.51 15a9 9 0 1 0 .49-3.51" />
+                    </svg>
+                    DÍA DOBLE
+                </button>
+            </div>
+
+            <!-- Fatigue Panel -->
+            <div class="panel" id="fatigue-panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Motor de Fatiga</h3>
+                    <span class="panel-badge" id="fatigue-badge">7 días</span>
+                </div>
+                <div class="fatigue-metrics" id="fatigue-metrics">
+                    <div class="metric">
+                        <span class="metric-value" id="metric-rpe">—</span>
+                        <span class="metric-label">RPE Prom.</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value" id="metric-vol">—</span>
+                        <span class="metric-label">Vol. kg</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value" id="metric-sessions">—</span>
+                        <span class="metric-label">Sesiones</span>
+                    </div>
+                </div>
+                <div class="fatigue-bar-wrap">
+                    <div class="fatigue-bar" id="fatigue-bar"></div>
+                </div>
+                <p class="fatigue-reco" id="fatigue-reco">Cargando análisis...</p>
+                <button class="btn-report-pain-quick" onclick="App.openPainReport()" style="margin-top:10px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;height:38px;background:rgba(244,63,94,0.06);border:1px solid rgba(244,63,94,0.2);border-radius:var(--radius-sm);color:rgba(244,63,94,0.8);font-size:12px;font-weight:700;letter-spacing:0.5px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+                    🩺 Reportar dolor / molestia
+                </button>
+            </div>
+
+            <!-- Pain Panel -->
+            <div class="panel hidden" id="pain-panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">⚠️ Alertas de Dolor</h3>
+                    <button class="panel-badge" style="cursor:pointer;background:rgba(244,63,94,0.1);color:var(--red);border-color:rgba(244,63,94,0.3);"
+                        onclick="App.openPainReport()">+ Reportar</button>
+                </div>
+                <div id="pain-summary" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;"></div>
+                <p style="font-size:12px;color:var(--text-3);margin-top:10px;line-height:1.4;">
+                    Los pesos sugeridos en tus ejercicios se ajustan automáticamente según estos niveles.
+                </p>
+            </div>
+
+            <!-- Morfociclo Chart (Team Sports) -->
+            <div class="panel hidden" id="morfociclo-panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Morfociclo Semanal</h3>
+                    <span class="panel-badge">Carga Interna</span>
+                </div>
+                <canvas id="morfociclo-chart" class="rpe-chart" style="height:140px"></canvas>
+                <div class="chart-legend">
+                    <span class="legend-dot" style="background:#ef4444"></span><span>Tensión (máx)</span>
+                    <span class="legend-dot" style="background:#f59e0b"></span><span>Velocidad</span>
+                    <span class="legend-dot" style="background:#22c55e"></span><span>Recuperación</span>
+                </div>
+            </div>
+
+            <!-- Weekly Progress -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Progreso Semanal</h3>
+                    <span class="panel-badge" id="week-badge">Sem. —</span>
+                </div>
+                <div class="week-days" id="week-days"><!-- day dots --></div>
+            </div>
+
+            <!-- Phase Timeline -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Plan de Fases</h3>
+                </div>
+                <div class="phase-timeline" id="phase-timeline"><!-- phases --></div>
+            </div>
+
+        </section>
+
+        <!-- ─── VIEW: TRAINING ─── -->
+        <section class="view" id="view-train">
+            <div class="train-header" id="train-header">
+                <button class="btn-back" id="btn-back-dashboard">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                </button>
+                <div>
+                    <p class="train-scenario-label" id="train-scenario-label">—</p>
+                    <p class="train-date-label" id="train-date-label">—</p>
+                </div>
+                <button class="btn-pain-float" onclick="App.openPainReport()" title="Reportar dolor durante la sesión">🩺</button>
+                <button class="btn-finish-session" id="btn-finish-session">FINALIZAR</button>
+            </div>
+
+            <!-- Movilidad Articular -->
+            <div class="mobility-section" id="mobility-section">
+                <div class="mobility-header">
+                    <div class="mobility-title-wrap">
+                        <span class="mobility-icon">🧘</span>
+                        <div>
+                            <p class="mobility-title">MOVILIDAD ARTICULAR</p>
+                            <p class="mobility-subtitle">Rutina diaria · 4–5 min</p>
+                        </div>
+                    </div>
+                    <div class="mobility-actions">
+                        <button class="btn-skip-mobility" id="btn-skip-mobility">SALTAR</button>
+                        <button class="btn-toggle-mobility" id="btn-toggle-mobility">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="mobility-exercises" id="mobility-exercises"></div>
+            </div>
+
+            <!-- Fatigue Alert Banner -->
+            <div class="alert-banner hidden" id="fatigue-alert-banner">
+                <span>⚠️</span>
+                <p>Fatiga acumulada alta. ¿Considerar día de descarga?</p>
+                <button class="btn-dismiss"
+                    onclick="document.getElementById('fatigue-alert-banner').classList.add('hidden')">✕</button>
+            </div>
+
+            <div class="exercise-list" id="exercise-list"></div>
+
+        </section>
+
+        <!-- ─── VIEW: HISTORY ─── -->
+        <section class="view" id="view-history">
+            <div class="history-header">
+                <h2 class="view-title">Historial</h2>
+                <div style="display:flex;gap:8px">
+                    <button class="btn-icon" id="btn-add-exercise" title="Agregar ejercicio personalizado">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                    </button>
+                    <button class="btn-icon" id="btn-clear-history" title="Limpiar historial">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6 18 20a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                            <path d="M10 11v6M14 11v6" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RPE Chart -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Tendencia de Fatiga (RPE)</h3>
+                </div>
+                <canvas id="rpe-chart" class="rpe-chart"></canvas>
+                <div class="chart-legend">
+                    <span class="legend-dot green"></span><span>≤ 7.0 Óptimo</span>
+                    <span class="legend-dot yellow"></span><span>7.1 – 8.5 Moderado</span>
+                    <span class="legend-dot red"></span><span>&gt; 8.5 Alta carga</span>
+                </div>
+            </div>
+
+            <!-- Exercise Library -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Biblioteca de Ejercicios</h3>
+                    <span class="panel-badge" id="library-count">54</span>
+                </div>
+                <input type="text" class="search-input" id="library-search" placeholder="Buscar ejercicio..." />
+                <div class="library-list" id="library-list"><!-- exercise rows --></div>
+            </div>
+
+            <!-- Session log -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Últimas Sesiones</h3>
+                </div>
+                <div class="session-log" id="session-log"><!-- sessions --></div>
+            </div>
+        </section>
+
+        <!-- ─── VIEW: PLAN (4 MESES) ─── -->
+        <section class="view" id="view-plan">
+            <div class="history-header">
+                <h2 class="view-title">Planificación 4 Meses</h2>
+                <span class="panel-badge" style="background:var(--accent-dim); color:var(--accent)">ACTIVO</span>
+            </div>
+            <div class="plan-table-wrapper">
+                <table class="plan-table">
+                    <thead>
+                        <tr>
+                            <th>Sesión</th>
+                            <th>Fecha</th>
+                            <th>Fase</th>
+                            <th>Escenario</th>
+                            <th>Ejercicios (Codes)</th>
+                            <th>Sers</th>
+                            <th>Reps</th>
+                            <th>Estado</th>
+                            <th>Desc.</th>
+                        </tr>
+                    </thead>
+                    <tbody id="planning-table-body">
+                        <!-- Rows via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ─── VIEW: FATIGUE ANALYSIS ─── -->
+        <section class="view" id="view-fatigue">
+            <div class="history-header">
+                <h2 class="view-title">Análisis de Fatiga</h2>
+            </div>
+            <div class="plan-table-wrapper">
+                <table class="plan-table">
+                    <thead>
+                        <tr>
+                            <th>Sem</th>
+                            <th>Inicio</th>
+                            <th>Vol (t)</th>
+                            <th>RPE</th>
+                            <th>Sesiones</th>
+                            <th>Alerta</th>
+                            <th>Recomendación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fatigue-analysis-body">
+                        <!-- Rows via JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="panel" style="margin-top:20px">
+                <h3 class="panel-title" style="margin-bottom:12px">Leyenda de Escenarios</h3>
+                <div id="scenarios-legend" class="library-list"></div>
+            </div>
+        </section>
+
+        <!-- ─── VIEW: WEEKLY SUMMARY ─── -->
+        <section class="view" id="view-weekly">
+            <div class="history-header">
+                <h2 class="view-title">Resumen Semanal</h2>
+            </div>
+            <div class="plan-table-wrapper">
+                <table class="plan-table">
+                    <thead>
+                        <tr>
+                            <th>Sem</th>
+                            <th>Fase</th>
+                            <th>OK</th>
+                            <th>Vol (t)</th>
+                            <th>RPE</th>
+                            <th>Dolor</th>
+                            <th>Alerta Match</th>
+                        </tr>
+                    </thead>
+                    <tbody id="weekly-summary-body">
+                        <!-- Rows via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ══════════ BOTTOM NAV ══════════ -->
+    <nav class="bottom-nav">
+        <button class="nav-btn active" data-view="dashboard">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+            </svg>
+            <span>Inicio</span>
+        </button>
+        <button class="nav-btn" data-view="train">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" />
+            </svg>
+            <span>Entrenar</span>
+        </button>
+        <button class="nav-btn" data-view="history">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+            <span>Historial</span>
+        </button>
+        <button class="nav-btn" id="nav-btn-more" onclick="UI.toggleMoreMenu()">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/>
+            </svg>
+            <span>Más</span>
+        </button>
+    </nav>
+
+    <!-- ══════════ MORE MENU ══════════ -->
+    <div class="more-menu hidden" id="more-menu">
+        <div class="more-menu-backdrop" onclick="UI.toggleMoreMenu()"></div>
+        <div class="more-menu-sheet">
+            <div class="more-menu-handle"></div>
+            <div class="more-menu-grid">
+                <button class="more-menu-item" onclick="UI.switchView('plan');UI.toggleMoreMenu()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span>Plan</span>
+                </button>
+                <button class="more-menu-item" onclick="UI.switchView('fatigue');UI.toggleMoreMenu()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    <span>Análisis Fatiga</span>
+                </button>
+                <button class="more-menu-item" onclick="UI.switchView('weekly');UI.toggleMoreMenu()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 9l-6 6-3-3-4 4"/></svg>
+                    <span>Resumen Semanal</span>
+                </button>
+                <button class="more-menu-item" onclick="UI.openCustomExModal();UI.toggleMoreMenu()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <span>Mis Ejercicios</span>
+                </button>
+                <button class="more-menu-item danger" onclick="UI.openAdvancedSettings();UI.toggleMoreMenu()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    <span>Configuración</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ MODAL: LOG EXERCISE ══════════ -->
+    <div class="modal-overlay hidden" id="log-modal-overlay">
+        <div class="modal-sheet" id="log-modal">
+            <div class="modal-handle"></div>
+            <div class="modal-header-row">
+                <div>
+                    <h3 class="modal-title" id="log-modal-title">Ejercicio</h3>
+                    <p class="modal-subtitle" id="log-modal-group">Grupo muscular</p>
+                </div>
+                <button class="btn-close-modal" id="btn-close-log-modal">✕</button>
+            </div>
+            <div class="suggestion-banner" id="suggestion-banner">
+                <span class="suggestion-icon" id="suggestion-icon">💡</span>
+                <span class="suggestion-text" id="suggestion-text">Sugerencia de carga...</span>
+            </div>
+            <form id="log-form" autocomplete="off">
+                <input type="hidden" id="log-cod" />
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">PESO (kg)</label>
+                        <input type="number" inputmode="decimal" class="form-input" id="log-peso" step="0.5" min="0"
+                            placeholder="0" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">SERIES</label>
+                        <input type="number" inputmode="numeric" class="form-input" id="log-series" min="1" max="20"
+                            placeholder="4" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">REPS</label>
+                        <input type="number" inputmode="numeric" class="form-input" id="log-reps" min="1" max="50"
+                            placeholder="10" />
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">RIR (Repeticiones en Reserva)</label>
+                        <div class="stepper-wrap" id="rir-stepper">
+                            <button type="button" class="stepper-btn" onclick="UI.stepRIR(-1)">−</button>
+                            <span class="stepper-value" id="log-rir-display">3</span>
+                            <button type="button" class="stepper-btn" onclick="UI.stepRIR(1)">+</button>
+                        </div>
+                        <input type="hidden" id="log-rir" value="3" />
+                        <div id="rir-badge" class="suggestion-banner hidden" style="margin-top:8px;">
+                            <span class="suggestion-icon">🟢</span>
+                            <span class="suggestion-text" id="rir-badge-text">RIR ≥ 2: Podés subir peso la próxima sesión</span>
+                        </div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">RPE (esfuerzo 1–10)</label>
+                        <div class="rpe-slider-wrap">
+                            <input type="range" class="rpe-slider" id="log-rpe" min="1" max="10" step="0.5" value="7" />
+                            <span class="rpe-value" id="log-rpe-display">7</span>
+                        </div>
+                        <div class="rpe-labels"><span>Fácil</span><span>Máximo</span></div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">DOLOR / MOLESTIA (0–10)</label>
+                        <div class="rpe-slider-wrap">
+                            <input type="range" class="rpe-slider dolor" id="log-dolor" min="0" max="10" step="1"
+                                value="0" />
+                            <span class="rpe-value" id="log-dolor-display">0</span>
+                        </div>
+                        <div class="rpe-labels"><span>Sin dolor</span><span>Severo</span></div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">NOTAS (opcional)</label>
+                        <textarea class="form-input" id="log-notes" rows="2"
+                            placeholder="Sensaciones, ajustes..."></textarea>
+                    </div>
+                </div>
+                <div class="pain-alert hidden" id="pain-alert">
+                    <span>⚠️ Dolor elevado detectado. Se sugerirá reducir peso un 20% en la próxima serie.</span>
+                </div>
+                <button type="submit" class="btn-primary" id="btn-log-submit">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    GUARDAR SERIE
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ══════════ MODAL: DÍA DOBLE ══════════ -->
+    <div class="modal-overlay hidden" id="dia-doble-modal-overlay">
+        <div class="modal-sheet small">
+            <div class="modal-handle"></div>
+            <div class="dia-doble-header">
+                <span style="font-size:36px">🔁</span>
+                <div>
+                    <h3 class="modal-title">Día Doble</h3>
+                    <p class="modal-subtitle">Ya registraste una sesión hoy. ¿Qué tipo de segundo entrenamiento?</p>
+                </div>
+            </div>
+            <div class="dia-doble-options" id="dia-doble-options"></div>
+            <button class="btn-secondary" onclick="UI.closeDiaDobleModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- ══════════ MODAL: SCENARIO OVERRIDE ══════════ -->
+    <div class="modal-overlay hidden" id="scenario-modal-overlay">
+        <div class="modal-sheet small">
+            <div class="modal-handle"></div>
+            <h3 class="modal-title">Cambiar Escenario</h3>
+            <p class="modal-subtitle">Seleccioná el tipo de sesión para HOY.</p>
+            <div class="scenario-options" id="scenario-options"></div>
+            <button class="btn-secondary" onclick="UI.closeScenarioModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- duplicate new-user-modal removed -->
+
+    <!-- ══════════ MODAL: CUSTOM EXERCISE ══════════ -->
+    <div class="modal-overlay hidden" id="custom-ex-modal-overlay">
+        <div class="modal-sheet" style="max-height:90vh;overflow-y:auto;">
+            <div class="modal-handle"></div>
+            <h3 class="modal-title">➕ Mis Ejercicios</h3>
+            <p class="modal-subtitle" style="margin-bottom:16px;">Creá ejercicios personalizados. La fatiga se calcula automáticamente.</p>
+
+            <!-- Lista de ejercicios existentes -->
+            <div id="custom-ex-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;"></div>
+
+            <!-- Formulario nuevo ejercicio -->
+            <div style="border-top:1px solid var(--border);padding-top:16px;">
+                <p style="font-size:11px;font-weight:800;letter-spacing:2px;color:var(--text-3);text-transform:uppercase;margin-bottom:12px;">NUEVO EJERCICIO</p>
+                <form id="custom-ex-form" autocomplete="off">
+                    <div class="form-group">
+                        <label class="form-label">NOMBRE</label>
+                        <input type="text" class="form-input" id="cex-nombre" placeholder="Ej: Sentadilla Búlgara"
+                            style="font-size:16px;text-align:left" required />
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">GRUPO MUSCULAR</label>
+                            <select class="form-input" id="cex-grupo" style="font-size:14px;">
+                                <option value="Piernas">Piernas</option>
+                                <option value="Pectoral">Pectoral</option>
+                                <option value="Espalda">Espalda</option>
+                                <option value="Hombros">Hombros</option>
+                                <option value="Brazos">Brazos</option>
+                                <option value="Core">Core</option>
+                                <option value="Aeróbico">Aeróbico</option>
+                                <option value="Full Body">Full Body</option>
+                                <option value="Campo">Campo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">PATRÓN</label>
+                            <select class="form-input" id="cex-patron" style="font-size:14px;">
+                                <option value="Dominante Rodilla">Dom. Rodilla</option>
+                                <option value="Dominante Cadera">Dom. Cadera</option>
+                                <option value="Empuje Horizontal">Empuje Horiz.</option>
+                                <option value="Empuje Vertical">Empuje Vert.</option>
+                                <option value="Tracción Horizontal">Tracción Horiz.</option>
+                                <option value="Tracción Vertical">Tracción Vert.</option>
+                                <option value="Core">Core</option>
+                                <option value="Cardio">Cardio</option>
+                                <option value="HIIT">HIIT</option>
+                                <option value="Potencia">Potencia</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">PESO HABITUAL (kg) — para sugerencia inicial</label>
+                        <input type="number" inputmode="decimal" class="form-input" id="cex-peso" step="0.5" min="0" placeholder="0 = corporal" style="font-size:16px;" />
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">SERIES</label>
+                            <input type="number" inputmode="numeric" class="form-input" id="cex-series" min="1" max="10" placeholder="4" style="font-size:16px;" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">REPS</label>
+                            <input type="number" inputmode="numeric" class="form-input" id="cex-reps" min="1" max="50" placeholder="10" style="font-size:16px;" />
+                        </div>
+                    </div>
+                    <!-- Fatiga auto-calculada -->
+                    <div id="cex-fatiga-preview" class="suggestion-banner hidden" style="margin-bottom:12px;">
+                        <span class="suggestion-icon" id="cex-fatiga-icon">🟡</span>
+                        <span class="suggestion-text" id="cex-fatiga-text">Fatiga calculada automáticamente</span>
+                    </div>
+                    <input type="hidden" id="cex-fatiga" value="2" />
+                    <button type="submit" class="btn-primary" style="min-height:48px;">GUARDAR EJERCICIO</button>
+                </form>
+            </div>
+            <button class="btn-secondary" onclick="document.getElementById('custom-ex-modal-overlay').classList.add('hidden');" style="margin-top:10px;width:100%;">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- ══════════ MODAL: CYCLE COMPLETE ══════════ -->
+    <div class="modal-overlay hidden" id="cycle-modal-overlay">
+        <div class="modal-sheet small">
+            <div class="modal-handle"></div>
+            <div style="text-align:center;padding-bottom:16px">
+                <div style="font-size:48px;margin-bottom:8px">🏆</div>
+                <h3 class="modal-title">¡Ciclo Completado!</h3>
+                <p class="modal-subtitle">Completaste el plan. Respondé la encuesta para generar el próximo ciclo.</p>
+            </div>
+            <div class="survey-form" id="survey-form">
+                <div class="form-group">
+                    <label class="form-label">¿Cómo sentís tu fuerza general? (1-10)</label>
+                    <input type="range" class="rpe-slider" id="survey-fuerza" min="1" max="10" value="7" />
+                    <span class="rpe-value" id="survey-fuerza-display">7</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">¿Cómo sentís tu resistencia? (1-10)</label>
+                    <input type="range" class="rpe-slider" id="survey-resistencia" min="1" max="10" value="7" />
+                    <span class="rpe-value" id="survey-resistencia-display">7</span>
+                </div>
+                <button class="btn-primary" onclick="App.startNewCycle()">INICIAR NUEVO CICLO</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ MODAL: END SESSION RPE (MANDATORY) ══════════ -->
+    <div class="modal-overlay hidden" id="end-session-rpe-overlay" style="z-index:9999;">
+        <div class="modal-sheet small" style="text-align:center;">
+            <div class="modal-handle"></div>
+            <div style="font-size:48px;margin-bottom:8px">📊</div>
+            <h3 class="modal-title">¿Cómo fue la sesión?</h3>
+            <p class="modal-subtitle">Seleccioná tu RPE general antes de cerrar.</p>
+            <div class="form-group" style="margin:20px 0;">
+                <div class="rpe-slider-wrap">
+                    <input type="range" class="rpe-slider" id="end-session-rpe" min="0" max="10" step="1" value="7" />
+                    <span class="rpe-value" id="end-session-rpe-display" style="font-size:36px;">7</span>
+                </div>
+                <div class="rpe-labels"><span>Muy Fácil (0)</span><span>Máximo (10)</span></div>
+            </div>
+            <div class="form-group" style="margin-bottom:16px;">
+                <label class="form-label">MINUTOS DE SESIÓN</label>
+                <div class="stepper-wrap" id="end-session-min-stepper">
+                    <button type="button" class="stepper-btn" onclick="UI.stepEndMin(-5)">−</button>
+                    <span class="stepper-value" id="end-session-min-display">60</span>
+                    <button type="button" class="stepper-btn" onclick="UI.stepEndMin(5)">+</button>
+                </div>
+                <input type="hidden" id="end-session-min" value="60" />
+            </div>
+            <button class="btn-primary" style="width:100%;min-height:52px;" onclick="App.confirmEndSession()">
+                CONFIRMAR Y CERRAR SESIÓN
+            </button>
+        </div>
+    </div>
+
+    <!-- ══════════ MODAL: ENDURANCE LOG ══════════ -->
+    <div class="modal-overlay hidden" id="log-modal-resistencia-overlay">
+        <div class="modal-sheet" id="log-modal-resistencia">
+            <div class="modal-handle"></div>
+            <div class="modal-header-row">
+                <div>
+                    <h3 class="modal-title">Registro de Resistencia</h3>
+                    <p class="modal-subtitle">Distancia, tiempo y frecuencia cardíaca</p>
+                </div>
+                <button class="btn-close-modal" onclick="document.getElementById('log-modal-resistencia-overlay').classList.add('hidden')">✕</button>
+            </div>
+            <form id="log-resistencia-form" autocomplete="off">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">DISTANCIA (km)</label>
+                        <input type="number" inputmode="decimal" class="form-input" id="log-res-dist" step="0.1" min="0" placeholder="5.0" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">TIEMPO (min)</label>
+                        <input type="number" inputmode="numeric" class="form-input" id="log-res-time" min="1" placeholder="30" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">FC PROMEDIO (bpm)</label>
+                        <input type="number" inputmode="numeric" class="form-input" id="log-res-hr" min="40" max="220" placeholder="145" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">FC MÁXIMA</label>
+                        <input type="number" inputmode="numeric" class="form-input" id="log-res-hrmax" min="120" max="220" placeholder="190" />
+                    </div>
+                </div>
+                <div id="zone-result" class="suggestion-banner hidden" style="margin:12px 0;">
+                    <span class="suggestion-icon" id="zone-icon">🌊</span>
+                    <span class="suggestion-text" id="zone-text">Zona calculada</span>
+                </div>
+                <div class="form-group full-width" style="margin-top:8px;">
+                    <label class="form-label">RPE (0-10)</label>
+                    <div class="rpe-slider-wrap">
+                        <input type="range" class="rpe-slider" id="log-res-rpe" min="0" max="10" step="1" value="6" />
+                        <span class="rpe-value" id="log-res-rpe-display">6</span>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary" style="min-height:48px;">GUARDAR SESIÓN</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ══════════ TIMER BAR ══════════ -->
+    <div class="timer-bar hidden" id="timer-bar">
+        <button class="timer-display" id="timer-display" onclick="Timer.toggle()" title="Tap para iniciar / pausar">
+            <span class="timer-status-dot" id="timer-dot"></span>
+            <span class="timer-time" id="timer-time">00:00</span>
+            <span class="timer-mode-icon" id="timer-mode-icon">⏱</span>
+        </button>
+        <div class="timer-presets">
+            <button class="timer-preset" data-secs="30" onclick="Timer.setCountdown(30,this)">30s</button>
+            <button class="timer-preset" data-secs="60" onclick="Timer.setCountdown(60,this)">1m</button>
+            <button class="timer-preset" data-secs="90" onclick="Timer.setCountdown(90,this)">90s</button>
+            <button class="timer-preset" data-secs="120" onclick="Timer.setCountdown(120,this)">2m</button>
+            <button class="timer-preset" data-secs="180" onclick="Timer.setCountdown(180,this)">3m</button>
+        </div>
+        <button class="timer-reset-btn" onclick="Timer.reset()" title="Resetear">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="1 4 1 10 7 10" />
+                <path d="M3.51 15a9 9 0 1 0 .49-3.51" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- ══════════ MODAL: OBJETIVO ══════════ -->
+    <div class="modal-overlay hidden" id="objetivo-modal-overlay">
+        <div class="modal-sheet obj-modal-sheet">
+            <div class="modal-handle"></div>
+            <div class="obj-modal-header">
+                <div>
+                    <h3 class="modal-title">Cambiar Plan</h3>
+                    <p class="modal-subtitle">Seleccioná deporte, gimnasio o ambos.</p>
+                </div>
+            </div>
+            <div id="objetivo-options" class="obj-modal-body"></div>
+            <div class="obj-modal-footer">
+                <button class="btn-secondary obj-cancel-btn"
+                    onclick="document.getElementById('objetivo-modal-overlay').classList.add('hidden')">
+                    Cancelar
+                </button>
+                <button class="btn-primary obj-confirm-btn" id="btn-confirm-objetivo">
+                    CONFIRMAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ MODAL: PARTIDO ══════════ -->
+    <div class="modal-overlay hidden" id="partido-modal-overlay">
+        <div class="modal-sheet small" style="text-align:center;">
+            <div class="modal-handle"></div>
+            <div style="font-size:48px;margin-bottom:8px" id="partido-modal-emoji">⚽</div>
+            <h3 class="modal-title" id="partido-modal-title">Día de Partido</h3>
+            <p class="modal-subtitle" style="margin-bottom:20px;">¿Cómo fue tu participación hoy?</p>
+            <div id="partido-step-1">
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <button class="btn-primary" onclick="App.partidoJugaste('completo')" style="min-height:48px;">✅ Jugué — Partido completo</button>
+                    <button class="btn-secondary" onclick="App.partidoJugaste('parcial')" style="min-height:48px;">⏱ Jugué parcialmente</button>
+                    <button class="btn-secondary" onclick="App.partidoJugaste('no')" style="min-height:48px;color:var(--text-3);">❌ No jugué / No convocado</button>
+                </div>
+            </div>
+            <div id="partido-step-2" class="hidden">
+                <div class="form-group" style="margin:16px 0 8px;">
+                    <label class="form-label">MINUTOS JUGADOS</label>
+                    <div class="stepper-wrap">
+                        <button type="button" class="stepper-btn" onclick="App.stepPartidoMin(-10)">−</button>
+                        <span class="stepper-value" id="partido-min-display">90</span>
+                        <button type="button" class="stepper-btn" onclick="App.stepPartidoMin(10)">+</button>
+                    </div>
+                    <input type="hidden" id="partido-min" value="90" />
+                </div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label class="form-label">INTENSIDAD (RPE 1–10)</label>
+                    <div class="rpe-slider-wrap">
+                        <input type="range" class="rpe-slider" id="partido-rpe" min="1" max="10" step="1" value="8" />
+                        <span class="rpe-value" id="partido-rpe-display">8</span>
+                    </div>
+                    <div class="rpe-labels"><span>Muy liviano</span><span>Máximo</span></div>
+                </div>
+                <button class="btn-primary" style="width:100%;min-height:48px;" onclick="App.confirmPartido()">GUARDAR PARTIDO</button>
+            </div>
+            <div id="partido-step-3" class="hidden">
+                <div class="suggestion-banner" style="margin-bottom:16px;text-align:left;">
+                    <span class="suggestion-icon">💡</span>
+                    <span class="suggestion-text">Sin minutos de juego, te sugerimos estos ejercicios para evitar la pérdida de forma.</span>
+                </div>
+                <div id="partido-fuga-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;"></div>
+                <div style="display:flex;gap:10px;">
+                    <button class="btn-secondary" style="flex:1;" onclick="App.dismissPartido()">Omitir</button>
+                    <button class="btn-primary" style="flex:2;" onclick="App.startFugaSession()">HACER ESTOS EJERCICIOS</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ MODAL: DESCANSO INTELIGENTE ══════════ -->
+    <div class="modal-overlay hidden" id="descanso-modal-overlay">
+        <div class="modal-sheet small" style="text-align:center;">
+            <div class="modal-handle"></div>
+            <div style="font-size:48px;margin-bottom:8px">😴</div>
+            <h3 class="modal-title">Día de Descanso</h3>
+            <p class="modal-subtitle" style="margin-bottom:16px;">Analizando tu semana...</p>
+            <div id="descanso-analysis" class="suggestion-banner" style="margin-bottom:20px;text-align:left;">
+                <span class="suggestion-icon" id="descanso-icon">📊</span>
+                <span class="suggestion-text" id="descanso-text">Calculando carga semanal...</span>
+            </div>
+            <div id="descanso-options" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+    </div>
+
+    <!-- ══════════ MODAL: CONFIGURACIÓN AVANZADA ══════════ -->
+    <div class="modal-overlay hidden" id="advanced-settings-overlay">
+        <div class="modal-sheet small">
+            <div class="modal-handle"></div>
+            <h3 class="modal-title">⚙️ Configuración</h3>
+            <p class="modal-subtitle" style="margin-bottom:16px;">Opciones avanzadas — úsalas con cuidado.</p>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <button class="btn-secondary" onclick="UI.openScenarioModal();UI.closeAdvancedSettings()" style="text-align:left;padding:14px 16px;">
+                    <span style="font-size:18px;margin-right:10px;">🔄</span>
+                    <span>Cambiar escenario de hoy</span>
+                </button>
+                <button class="btn-secondary" onclick="UI.openObjetivoModal();UI.closeAdvancedSettings()" style="text-align:left;padding:14px 16px;">
+                    <span style="font-size:18px;margin-right:10px;">🎯</span>
+                    <span>Cambiar plan de entrenamiento</span>
+                </button>
+                <button class="btn-secondary" id="btn-reonboarding" style="text-align:left;padding:14px 16px;">
+                    <span style="font-size:18px;margin-right:10px;">📝</span>
+                    <span>Rehacer cuestionario inicial</span>
+                </button>
+                <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+                <button class="btn-secondary" onclick="App.logout();UI.closeAdvancedSettings()" style="text-align:left;padding:14px 16px;color:var(--text-3);">
+                    <span style="font-size:18px;margin-right:10px;">🚪</span>
+                    <span>Cerrar sesión</span>
+                </button>
+            </div>
+            <button class="btn-secondary" style="margin-top:16px;width:100%;" onclick="UI.closeAdvancedSettings()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- ══════════ MODAL: REPORTAR DOLOR ══════════ -->
+    <div class="modal-overlay hidden" id="pain-report-overlay">
+        <div class="modal-sheet small">
+            <div class="modal-handle"></div>
+            <h3 class="modal-title">🩺 Reportar Dolor / Molestia</h3>
+            <p class="modal-subtitle" style="margin-bottom:8px;">Registrá dónde sentís dolor. RABIX ajusta el plan automáticamente.</p>
+            <div id="pain-context" class="suggestion-banner hidden" style="margin-bottom:12px;text-align:left;">
+                <span class="suggestion-icon">💪</span>
+                <span id="pain-context-text"></span>
+            </div>
+            <div class="form-group">
+                <label class="form-label">ZONA AFECTADA</label>
+                <select class="form-input" id="pain-grupo" style="font-size:15px;">
+                    <option value="Piernas">Piernas (cuádriceps, isquios, glúteos)</option>
+                    <option value="Espalda">Espalda (lumbar, dorsal)</option>
+                    <option value="Pectoral">Pectoral / Hombro anterior</option>
+                    <option value="Brazos">Brazos (bíceps, tríceps, codo)</option>
+                    <option value="Hombros">Hombros (manguito rotador)</option>
+                    <option value="Core">Core / Abdomen</option>
+                    <option value="Rodilla">Rodilla</option>
+                    <option value="Tobillo">Tobillo / Pie</option>
+                    <option value="Cuello">Cuello / Cervical</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-top:12px;">
+                <label class="form-label">INTENSIDAD DEL DOLOR (0–10)</label>
+                <div class="rpe-slider-wrap">
+                    <input type="range" class="rpe-slider dolor" id="pain-nivel" min="0" max="10" step="1" value="3" />
+                    <span class="rpe-value" id="pain-nivel-display">3</span>
+                </div>
+                <div class="rpe-labels"><span>Sin dolor</span><span>Insoportable</span></div>
+                <div id="pain-nivel-hint" class="suggestion-banner" style="margin-top:8px;">
+                    <span class="suggestion-icon" id="pain-hint-icon">🟡</span>
+                    <span class="suggestion-text" id="pain-hint-text">Dolor leve — −20% de carga sugerido</span>
+                </div>
+            </div>
+            <div class="form-group" style="margin-top:12px;">
+                <label class="form-label">NOTAS (opcional)</label>
+                <textarea class="form-input" id="pain-notas" rows="2" placeholder="¿Cuándo apareció? ¿Qué movimiento lo genera?"></textarea>
+            </div>
+            <button class="btn-primary" style="width:100%;min-height:48px;margin-top:16px;" onclick="App.confirmPainReport()">
+                GUARDAR REPORTE
+            </button>
+            <button class="btn-secondary" style="width:100%;margin-top:8px;" onclick="App.closePainReport()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registered', reg))
+                    .catch(err => console.error('Service Worker not registered', err));
+            });
+        }
+    </script>
+
+</body>
+
+</html>
