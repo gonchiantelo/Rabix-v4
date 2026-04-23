@@ -1,0 +1,181 @@
+/* ── RAVIX V5 — MUNDO DT (Elite Deep Aesthetic) ── */
+
+:root {
+    --dt-bg: #050508;
+    --dt-surface: #0E0E14;
+    --dt-surface-2: #161620;
+    --dt-accent: #079FA0;      /* Electric Teal */
+    --dt-accent-alt: #F58B01;  /* Tactical Gold */
+    --dt-border: rgba(255, 255, 255, 0.05);
+    --dt-text: #E0E0E6;
+    --dt-text-dim: #606070;
+}
+
+.dt-shell-container {
+    min-height: 100vh;
+    background: var(--dt-bg);
+    color: var(--dt-text);
+    font-family: 'Inter', sans-serif;
+}
+
+/* ── Header & Badges ── */
+.dt-badge {
+    font-size: 10px;
+    background: var(--dt-accent);
+    color: #000;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 10px;
+    vertical-align: middle;
+    font-weight: 900;
+}
+
+.dt-view-header {
+    padding: 40px 20px 20px;
+}
+
+.dt-main-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: -1px;
+}
+
+.dt-main-subtitle {
+    color: var(--dt-text-dim);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 5px;
+}
+
+/* ── Calendar Grid — Premium Deep ── */
+.macro-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 12px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.macro-day-header {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 900;
+    color: var(--dt-text-dim);
+    padding-bottom: 10px;
+}
+
+.macro-day {
+    aspect-ratio: 1/1.1;
+    background: var(--dt-surface);
+    border: 1px solid var(--dt-border);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.macro-day:hover {
+    background: var(--dt-surface-2);
+    border-color: var(--dt-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.macro-day.empty {
+    background: transparent;
+    border: none;
+    cursor: default;
+}
+
+.m-day-num {
+    font-family: 'Outfit', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    opacity: 0.3;
+}
+
+.m-day-label {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* ── Methodology Indicators ── */
+.type-partido { border-bottom: 4px solid #DC2E2F; }
+.type-tension { border-bottom: 4px solid var(--dt-accent); }
+.type-duracion { border-bottom: 4px solid #FAC005; }
+.type-velocidad { border-bottom: 4px solid var(--dt-accent-alt); }
+.type-activacion { border-bottom: 4px solid #9FD8C5; }
+.type-descanso { opacity: 0.5; }
+
+/* ── Drawer (Lateral Cajón) ── */
+.drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(12px);
+    z-index: 2000;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.drawer-content {
+    width: 100%;
+    max-width: 500px;
+    background: var(--dt-surface);
+    height: 100%;
+    border-left: 1px solid var(--dt-border);
+    padding: 40px;
+    animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+.drawer-title-group h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+}
+
+.methodology-badge {
+    display: inline-block;
+    background: var(--dt-surface-2);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 900;
+    color: var(--dt-accent);
+    margin-top: 8px;
+}
+
+.drawer-placeholder {
+    margin-top: 40px;
+    color: var(--dt-text-dim);
+    font-style: italic;
+    border: 1px dashed var(--dt-border);
+    padding: 40px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .macro-calendar-grid {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+        padding: 10px;
+    }
+    .m-day-num { font-size: 14px; }
+    .m-day-label { font-size: 7px; display: none; } /* Hide labels on small mobile */
+    .dt-main-title { font-size: 24px; }
+}
