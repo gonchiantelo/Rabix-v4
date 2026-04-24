@@ -2,14 +2,14 @@
 
 /* ============================================================
    RAVIX V5 — DT ENGINE (app-dt.js)
-   REPARACIÓN OBLIGATORIA: Phase 3.5 Final & Manual Labeling
+   RESTAURACIÓN Y VERIFICACIÓN: Lógica de Negocio Elite
    ============================================================ */
 
 window.DTEngine = {
     _currentDate: new Date(),
     _matchDays: new Set(),
-    _manualLabels: {}, // { "YYYY-MM-DD": "MD-4" }
-    _assignedTasks: {}, // { "YYYY-MM-DD": [1718001, 1718002] }
+    _manualLabels: {},   // { "YYYY-MM-DD": "MD-4" } - Etiquetado manual libre
+    _assignedTasks: {},  // { "YYYY-MM-DD": [ID_NUMERICO] } - Multi-asignación
     _exercises: [],
     _selectedDate: null,
     _showAllExercises: false,
@@ -33,11 +33,13 @@ window.DTEngine = {
                             <h1 class="dt-main-title">Planificación Estratégica</h1>
                             <p class="dt-main-subtitle">${monthName}</p>
                         </div>
-                        <div id="dt-calendar-grid" class="macro-calendar-grid"></div>
+                        <div id="dt-calendar-grid" class="macro-calendar-grid">
+                            <!-- Inyección dinámica de celdas -->
+                        </div>
                     </section>
                 </main>
 
-                <!-- Drawer Lateral -->
+                <!-- Drawer Lateral (Cajón Táctico) -->
                 <div id="dt-drawer" class="drawer-overlay hidden">
                     <div class="drawer-content">
                         <div class="drawer-header">
@@ -60,7 +62,7 @@ window.DTEngine = {
                                     <option value="PARTIDO">Partido (MD)</option>
                                     <option value="RECUPERACIÓN">Recuperación (MD+1)</option>
                                     <option value="DESCANSO">Descanso</option>
-                                    <option value="BASE">Base</option>
+                                    <option value="BASE">Base / Libre</option>
                                 </select>
                             </div>
                         </div>
@@ -70,7 +72,9 @@ window.DTEngine = {
                                 <h4>Biblioteca de Tareas</h4>
                                 <button id="btn-toggle-filter" class="btn-text" onclick="DTEngine.toggleFilter()">Ver Toda</button>
                             </div>
-                            <div id="library-list" class="exercise-list-container"></div>
+                            <div id="library-list" class="exercise-list-container">
+                                <!-- Lista de ejercicios filtrada por fase -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -83,13 +87,17 @@ window.DTEngine = {
 
     async fetchExercises() {
         if (this._exercises.length > 0) return;
-        const data = await window.Supa._req('GET', 'exercises_library');
-        if (data) {
-            this._exercises = data.map(ex => ({
-                ...ex,
-                numericId: parseInt(ex.id.replace(/\D/g, '')) || Date.now()
-            }));
-        }
+        try {
+            const data = await window.Supa._req('GET', 'exercises_library');
+            if (data) {
+                this._exercises = data.map(ex => ({
+                    ...ex,
+                    // Protocolo Fase 3: IDs Estrictamente Numéricos para mapeo interno
+                    numericId: parseInt(ex.id.replace(/\D/g, '')) || Date.now()
+                }));
+                console.log('✅ Biblioteca Cargada:', this._exercises.length, 'tareas');
+            }
+        } catch (e) { console.error("Error biblioteca:", e); }
     },
 
     generateCalendar() {
@@ -104,6 +112,7 @@ window.DTEngine = {
 
         let html = '';
         ['L', 'M', 'X', 'J', 'V', 'S', 'D'].forEach(n => html += `<div class="day-h">${n}</div>`);
+
         for (let i = 0; i < startOffset; i++) html += `<div class="macro-day empty"></div>`;
 
         for (let d = 1; d <= daysInMonth; d++) {
@@ -131,17 +140,23 @@ window.DTEngine = {
     },
 
     getMethodologyLabel(dateStr) {
+        // 1. Etiquetado manual (Prioridad Máxima)
         if (this._manualLabels[dateStr]) return this._manualLabels[dateStr];
+        
+        // 2. Etiqueta automática (Basada en MD más cercano en el futuro)
         if (this._matchDays.has(dateStr)) return 'PARTIDO';
 
         const current = new Date(dateStr + 'T00:00:00');
         for (let i = 1; i <= 4; i++) {
-            const fut = new Date(current); fut.setDate(current.getDate() + i);
+            const fut = new Date(current);
+            fut.setDate(current.getDate() + i);
             const futStr = fut.toISOString().split('T')[0];
             if (this._matchDays.has(futStr) || this._manualLabels[futStr] === 'PARTIDO') return `MD-${i}`;
         }
 
-        const yesterday = new Date(current); yesterday.setDate(current.getDate() - 1);
+        // 3. Recuperación (Día después del partido)
+        const yesterday = new Date(current);
+        yesterday.setDate(current.getDate() - 1);
         const yestStr = yesterday.toISOString().split('T')[0];
         if (this._matchDays.has(yestStr) || this._manualLabels[yestStr] === 'PARTIDO') return 'RECUPERACIÓN';
 
@@ -172,6 +187,7 @@ window.DTEngine = {
         if (!val) delete this._manualLabels[this._selectedDate];
         else this._manualLabels[this._selectedDate] = val;
         
+        // Sincronizar set de partidos si se marca manualmente
         if (val === 'PARTIDO') this._matchDays.add(this._selectedDate);
         else this._matchDays.delete(this._selectedDate);
 
@@ -187,15 +203,17 @@ window.DTEngine = {
 
     toggleFilter() {
         this._showAllExercises = !this._showAllExercises;
-        document.getElementById('btn-toggle-filter').innerText = this._showAllExercises ? 'Filtrar por Fase' : 'Ver Toda';
+        const btn = document.getElementById('btn-toggle-filter');
+        btn.innerText = this._showAllExercises ? 'Filtrar por Fase' : 'Ver Toda';
         this.renderLibrary(this.getMethodologyLabel(this._selectedDate));
     },
 
     renderLibrary(currentLabel) {
         const container = document.getElementById('library-list');
-        const phase = currentLabel.split(' ')[0]; // MD-4, PARTIDO, etc.
+        const phase = currentLabel.split(' ')[0]; // Extrae "MD-4" de "MD-4 (Tensión)"
 
         let filtered = this._exercises;
+        // Filtro Real: morfociclo_phase debe coincidir con la etiqueta del día
         if (!this._showAllExercises && (phase.startsWith('MD-') || phase === 'PARTIDO')) {
             filtered = this._exercises.filter(ex => ex.morfociclo_phase === phase);
         }
@@ -209,14 +227,19 @@ window.DTEngine = {
                 </div>
                 <div class="ex-add-btn">+</div>
             </div>
-        `).join('') || '<p class="empty-msg">No hay tareas para esta fase.</p>';
+        `).join('') || '<p class="empty-msg">No hay tareas específicas para esta fase.</p>';
     },
 
     assignExercise(id) {
-        if (!this._assignedTasks[this._selectedDate]) this._assignedTasks[this._selectedDate] = [];
+        if (!this._assignedTasks[this._selectedDate]) {
+            this._assignedTasks[this._selectedDate] = [];
+        }
+        // Guardar ID numérico estrictamente
         this._assignedTasks[this._selectedDate].push(id);
-        this.generateCalendar();
+        this.generateCalendar(); // Re-renderizar grilla para mostrar el nuevo chip
     },
 
-    closeDrawer() { document.getElementById('dt-drawer').classList.add('hidden'); }
+    closeDrawer() {
+        document.getElementById('dt-drawer').classList.add('hidden');
+    }
 };
