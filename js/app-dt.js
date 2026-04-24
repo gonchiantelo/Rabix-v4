@@ -2,14 +2,14 @@
 
 /* ============================================================
    RAVIX V5 — DT ENGINE (app-dt.js)
-   Phase 3.6: Technical Task Modal & Interaction
+   Phase 3.7: Session Structure & Quick Deletion
    ============================================================ */
 
 window.DTEngine = {
     _currentDate: new Date(),
     _matchDays: new Set(),
     _manualLabels: {},
-    _assignedTasks: {},
+    _assignedTasks: {},  // { "YYYY-MM-DD": [ { id: 1718001, block: 'main' } ] }
     _exercises: [],
     _selectedDate: null,
     _showAllExercises: false,
@@ -73,7 +73,7 @@ window.DTEngine = {
                     </div>
                 </div>
 
-                <!-- Modal de Tarea (Ficha Técnica) -->
+                <!-- Modal de Tarea -->
                 <div id="dt-modal" class="modal-overlay hidden" onclick="DTEngine.closeModal()">
                     <div class="modal-content" onclick="event.stopPropagation()">
                         <div id="modal-body-content"></div>
@@ -116,11 +116,28 @@ window.DTEngine = {
             const label = this.getMethodologyLabel(dateStr);
             const typeClass = this.getTypeClass(label);
             
-            const tasks = this._assignedTasks[dateStr] || [];
-            const tasksHtml = tasks.map(id => {
-                const ex = this._exercises.find(e => e.numericId === id);
-                return ex ? `<div class="task-chip" onclick="event.stopPropagation(); DTEngine.openTaskModal(${id})">${ex.title}</div>` : '';
-            }).join('');
+            const assignments = this._assignedTasks[dateStr] || [];
+            
+            // Lógica de Bloques de Sesión (Fase 3.7)
+            const renderBlock = (blockId, title) => {
+                const tasks = assignments.filter(a => a.block === blockId);
+                const tasksHtml = tasks.map((a, idx) => {
+                    const ex = this._exercises.find(e => e.numericId === a.id);
+                    if (!ex) return '';
+                    return `
+                        <div class="task-chip" onclick="event.stopPropagation(); DTEngine.openTaskModal(${a.id})">
+                            <span class="tc-name">${ex.title}</span>
+                            <span class="tc-delete" onclick="event.stopPropagation(); DTEngine.removeTask('${dateStr}', ${assignments.indexOf(a)})">×</span>
+                        </div>
+                    `;
+                }).join('');
+                return `
+                    <div class="session-block ${blockId}">
+                        <span class="sb-title">${title}</span>
+                        <div class="sb-tasks">${tasksHtml}</div>
+                    </div>
+                `;
+            };
 
             html += `
                 <div class="macro-day ${typeClass}" onclick="DTEngine.openDrawer('${dateStr}')">
@@ -128,7 +145,11 @@ window.DTEngine = {
                         <span class="m-day-num">${d}</span>
                         <span class="m-day-label">${label}</span>
                     </div>
-                    <div class="m-day-content">${tasksHtml}</div>
+                    <div class="m-day-content">
+                        ${renderBlock('entry', 'Entrada en Calor')}
+                        ${renderBlock('main', 'Parte Principal')}
+                        ${renderBlock('cool', 'Vuelta a la Calma')}
+                    </div>
                 </div>
             `;
         }
@@ -199,33 +220,46 @@ window.DTEngine = {
             filtered = this._exercises.filter(ex => ex.morfociclo_phase === phase);
         }
         container.innerHTML = filtered.map(ex => `
-            <div class="exercise-card" onclick="DTEngine.assignExercise(${ex.numericId})">
+            <div class="exercise-card">
                 <div class="ex-info">
                     <span class="ex-id">#${ex.numericId}</span>
                     <h5 class="ex-title">${ex.title}</h5>
                     <p class="ex-meta">${ex.morfociclo_phase} | ${ex.game_moment}</p>
                 </div>
-                <div class="ex-add-btn">+</div>
+                <div class="ex-actions">
+                    <select class="block-select" id="select-${ex.numericId}">
+                        <option value="entry">E. Calor</option>
+                        <option value="main" selected>P. Principal</option>
+                        <option value="cool">V. Calma</option>
+                    </select>
+                    <button class="ex-add-btn" onclick="DTEngine.assignExercise(${ex.numericId})">+</button>
+                </div>
             </div>
         `).join('') || '<p class="empty-msg">No hay tareas para esta fase.</p>';
     },
 
     assignExercise(id) {
+        const block = document.getElementById(`select-${id}`).value;
         if (!this._assignedTasks[this._selectedDate]) this._assignedTasks[this._selectedDate] = [];
-        this._assignedTasks[this._selectedDate].push(id);
+        this._assignedTasks[this._selectedDate].push({ id, block });
         this.generateCalendar();
+    },
+
+    removeTask(date, index) {
+        if (this._assignedTasks[date]) {
+            this._assignedTasks[date].splice(index, 1);
+            this.generateCalendar();
+        }
     },
 
     openTaskModal(numericId) {
         const task = this._exercises.find(e => e.numericId === numericId);
-        if (!task) return;
-        this.renderTaskModal(task);
+        if (task) this.renderTaskModal(task);
     },
 
     renderTaskModal(task) {
         const modal = document.getElementById('dt-modal');
         const body = document.getElementById('modal-body-content');
-        
         body.innerHTML = `
             <div class="modal-header">
                 <div class="m-title-group">
@@ -236,41 +270,20 @@ window.DTEngine = {
             </div>
             <div class="modal-grid">
                 <div class="m-col">
-                    <div class="m-info-block">
-                        <label>Momento del Juego</label>
-                        <p>${task.game_moment.replace('_', ' ').toUpperCase()}</p>
-                    </div>
-                    <div class="m-info-block">
-                        <label>Tipo de SSP</label>
-                        <p>${task.ssp_type}</p>
-                    </div>
-                    <div class="m-info-block">
-                        <label>Jugadores</label>
-                        <p>${task.min_players} - ${task.max_players}</p>
-                    </div>
-                    <div class="m-info-block">
-                        <label>Dimensiones</label>
-                        <p>${task.dimensions}</p>
-                    </div>
+                    <div class="m-info-block"><label>Momento</label><p>${task.game_moment.replace('_',' ').toUpperCase()}</p></div>
+                    <div class="m-info-block"><label>SSP</label><p>${task.ssp_type}</p></div>
+                    <div class="m-info-block"><label>Jugadores</label><p>${task.min_players}-${task.max_players}</p></div>
+                    <div class="m-info-block"><label>Dimensiones</label><p>${task.dimensions}</p></div>
                 </div>
                 <div class="m-col">
-                    <div class="m-info-block">
-                        <label>Descripción / Reglas</label>
-                        <p class="m-desc">${task.description || 'Sin descripción disponible.'}</p>
-                    </div>
-                    <div class="m-info-block">
-                        <label>Materiales</label>
-                        <p>${task.materials || 'Balones, Conos'}</p>
-                    </div>
+                    <div class="m-info-block"><label>Descripción</label><p class="m-desc">${task.description || '...'}</p></div>
+                    <div class="m-info-block"><label>Materiales</label><p>${task.materials || 'Balones'}</p></div>
                 </div>
             </div>
         `;
         modal.classList.remove('hidden');
     },
 
-    closeModal() {
-        document.getElementById('dt-modal').classList.add('hidden');
-    },
-
+    closeModal() { document.getElementById('dt-modal').classList.add('hidden'); },
     closeDrawer() { document.getElementById('dt-drawer').classList.add('hidden'); }
 };
