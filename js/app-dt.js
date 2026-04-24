@@ -16,11 +16,15 @@ window.DTEngine = {
 
     async fetchMonthLogs() {
         const year = this._currentDate.getFullYear();
-        const month = String(this._currentDate.getMonth() + 1).padStart(2, '0');
+        const monthNum = this._currentDate.getMonth() + 1;
+        const monthStr = String(monthNum).padStart(2, '0');
+        const lastDay = new Date(year, monthNum, 0).getDate();
+        const lastDayStr = String(lastDay).padStart(2, '0');
+
         const teamId = window.CurrentTeam?.id;
         if (!teamId) return;
 
-        const data = await window.Supa._req('GET', `training_logs?team_id=eq.${teamId}&fecha=gte.${year}-${month}-01&fecha=lte.${year}-${month}-31`);
+        const data = await window.Supa._req('GET', `training_logs?team_id=eq.${teamId}&fecha=gte.${year}-${monthStr}-01&fecha=lte.${year}-${monthStr}-${lastDayStr}`);
         this._assignedTasks = {}; // Reset local state
         if (data && Array.isArray(data)) {
             data.forEach(log => {
