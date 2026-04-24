@@ -2,14 +2,14 @@
 
 /* ============================================================
    RAVIX V5 — DT ENGINE (app-dt.js)
-   RESTAURACIÓN Y VERIFICACIÓN: Lógica de Negocio Elite
+   Phase 3.6: Technical Task Modal & Interaction
    ============================================================ */
 
 window.DTEngine = {
     _currentDate: new Date(),
     _matchDays: new Set(),
-    _manualLabels: {},   // { "YYYY-MM-DD": "MD-4" } - Etiquetado manual libre
-    _assignedTasks: {},  // { "YYYY-MM-DD": [ID_NUMERICO] } - Multi-asignación
+    _manualLabels: {},
+    _assignedTasks: {},
     _exercises: [],
     _selectedDate: null,
     _showAllExercises: false,
@@ -33,13 +33,11 @@ window.DTEngine = {
                             <h1 class="dt-main-title">Planificación Estratégica</h1>
                             <p class="dt-main-subtitle">${monthName}</p>
                         </div>
-                        <div id="dt-calendar-grid" class="macro-calendar-grid">
-                            <!-- Inyección dinámica de celdas -->
-                        </div>
+                        <div id="dt-calendar-grid" class="macro-calendar-grid"></div>
                     </section>
                 </main>
 
-                <!-- Drawer Lateral (Cajón Táctico) -->
+                <!-- Drawer Lateral -->
                 <div id="dt-drawer" class="drawer-overlay hidden">
                     <div class="drawer-content">
                         <div class="drawer-header">
@@ -49,7 +47,6 @@ window.DTEngine = {
                             </div>
                             <button class="btn-close" onclick="DTEngine.closeDrawer()">✕</button>
                         </div>
-
                         <div class="drawer-controls">
                             <div class="control-row">
                                 <label>Forzar Etiqueta:</label>
@@ -66,16 +63,20 @@ window.DTEngine = {
                                 </select>
                             </div>
                         </div>
-
                         <div class="drawer-body">
                             <div class="library-header">
                                 <h4>Biblioteca de Tareas</h4>
                                 <button id="btn-toggle-filter" class="btn-text" onclick="DTEngine.toggleFilter()">Ver Toda</button>
                             </div>
-                            <div id="library-list" class="exercise-list-container">
-                                <!-- Lista de ejercicios filtrada por fase -->
-                            </div>
+                            <div id="library-list" class="exercise-list-container"></div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Modal de Tarea (Ficha Técnica) -->
+                <div id="dt-modal" class="modal-overlay hidden" onclick="DTEngine.closeModal()">
+                    <div class="modal-content" onclick="event.stopPropagation()">
+                        <div id="modal-body-content"></div>
                     </div>
                 </div>
             </div>
@@ -87,17 +88,13 @@ window.DTEngine = {
 
     async fetchExercises() {
         if (this._exercises.length > 0) return;
-        try {
-            const data = await window.Supa._req('GET', 'exercises_library');
-            if (data) {
-                this._exercises = data.map(ex => ({
-                    ...ex,
-                    // Protocolo Fase 3: IDs Estrictamente Numéricos para mapeo interno
-                    numericId: parseInt(ex.id.replace(/\D/g, '')) || Date.now()
-                }));
-                console.log('✅ Biblioteca Cargada:', this._exercises.length, 'tareas');
-            }
-        } catch (e) { console.error("Error biblioteca:", e); }
+        const data = await window.Supa._req('GET', 'exercises_library');
+        if (data) {
+            this._exercises = data.map(ex => ({
+                ...ex,
+                numericId: parseInt(ex.id.replace(/\D/g, '')) || Date.now()
+            }));
+        }
     },
 
     generateCalendar() {
@@ -112,7 +109,6 @@ window.DTEngine = {
 
         let html = '';
         ['L', 'M', 'X', 'J', 'V', 'S', 'D'].forEach(n => html += `<div class="day-h">${n}</div>`);
-
         for (let i = 0; i < startOffset; i++) html += `<div class="macro-day empty"></div>`;
 
         for (let d = 1; d <= daysInMonth; d++) {
@@ -123,7 +119,7 @@ window.DTEngine = {
             const tasks = this._assignedTasks[dateStr] || [];
             const tasksHtml = tasks.map(id => {
                 const ex = this._exercises.find(e => e.numericId === id);
-                return ex ? `<div class="task-chip">${ex.title}</div>` : '';
+                return ex ? `<div class="task-chip" onclick="event.stopPropagation(); DTEngine.openTaskModal(${id})">${ex.title}</div>` : '';
             }).join('');
 
             html += `
@@ -140,26 +136,17 @@ window.DTEngine = {
     },
 
     getMethodologyLabel(dateStr) {
-        // 1. Etiquetado manual (Prioridad Máxima)
         if (this._manualLabels[dateStr]) return this._manualLabels[dateStr];
-        
-        // 2. Etiqueta automática (Basada en MD más cercano en el futuro)
         if (this._matchDays.has(dateStr)) return 'PARTIDO';
-
         const current = new Date(dateStr + 'T00:00:00');
         for (let i = 1; i <= 4; i++) {
-            const fut = new Date(current);
-            fut.setDate(current.getDate() + i);
+            const fut = new Date(current); fut.setDate(current.getDate() + i);
             const futStr = fut.toISOString().split('T')[0];
             if (this._matchDays.has(futStr) || this._manualLabels[futStr] === 'PARTIDO') return `MD-${i}`;
         }
-
-        // 3. Recuperación (Día después del partido)
-        const yesterday = new Date(current);
-        yesterday.setDate(current.getDate() - 1);
+        const yesterday = new Date(current); yesterday.setDate(current.getDate() - 1);
         const yestStr = yesterday.toISOString().split('T')[0];
         if (this._matchDays.has(yestStr) || this._manualLabels[yestStr] === 'PARTIDO') return 'RECUPERACIÓN';
-
         return 'BASE';
     },
 
@@ -186,11 +173,8 @@ window.DTEngine = {
     forceLabel(val) {
         if (!val) delete this._manualLabels[this._selectedDate];
         else this._manualLabels[this._selectedDate] = val;
-        
-        // Sincronizar set de partidos si se marca manualmente
         if (val === 'PARTIDO') this._matchDays.add(this._selectedDate);
         else this._matchDays.delete(this._selectedDate);
-
         this.generateCalendar();
         this.updateDrawerUI();
     },
@@ -203,21 +187,17 @@ window.DTEngine = {
 
     toggleFilter() {
         this._showAllExercises = !this._showAllExercises;
-        const btn = document.getElementById('btn-toggle-filter');
-        btn.innerText = this._showAllExercises ? 'Filtrar por Fase' : 'Ver Toda';
+        document.getElementById('btn-toggle-filter').innerText = this._showAllExercises ? 'Filtrar por Fase' : 'Ver Toda';
         this.renderLibrary(this.getMethodologyLabel(this._selectedDate));
     },
 
     renderLibrary(currentLabel) {
         const container = document.getElementById('library-list');
-        const phase = currentLabel.split(' ')[0]; // Extrae "MD-4" de "MD-4 (Tensión)"
-
+        const phase = currentLabel.split(' ')[0];
         let filtered = this._exercises;
-        // Filtro Real: morfociclo_phase debe coincidir con la etiqueta del día
         if (!this._showAllExercises && (phase.startsWith('MD-') || phase === 'PARTIDO')) {
             filtered = this._exercises.filter(ex => ex.morfociclo_phase === phase);
         }
-
         container.innerHTML = filtered.map(ex => `
             <div class="exercise-card" onclick="DTEngine.assignExercise(${ex.numericId})">
                 <div class="ex-info">
@@ -227,19 +207,70 @@ window.DTEngine = {
                 </div>
                 <div class="ex-add-btn">+</div>
             </div>
-        `).join('') || '<p class="empty-msg">No hay tareas específicas para esta fase.</p>';
+        `).join('') || '<p class="empty-msg">No hay tareas para esta fase.</p>';
     },
 
     assignExercise(id) {
-        if (!this._assignedTasks[this._selectedDate]) {
-            this._assignedTasks[this._selectedDate] = [];
-        }
-        // Guardar ID numérico estrictamente
+        if (!this._assignedTasks[this._selectedDate]) this._assignedTasks[this._selectedDate] = [];
         this._assignedTasks[this._selectedDate].push(id);
-        this.generateCalendar(); // Re-renderizar grilla para mostrar el nuevo chip
+        this.generateCalendar();
     },
 
-    closeDrawer() {
-        document.getElementById('dt-drawer').classList.add('hidden');
-    }
+    openTaskModal(numericId) {
+        const task = this._exercises.find(e => e.numericId === numericId);
+        if (!task) return;
+        this.renderTaskModal(task);
+    },
+
+    renderTaskModal(task) {
+        const modal = document.getElementById('dt-modal');
+        const body = document.getElementById('modal-body-content');
+        
+        body.innerHTML = `
+            <div class="modal-header">
+                <div class="m-title-group">
+                    <span class="m-task-id">#${task.numericId}</span>
+                    <h2 class="m-task-title">${task.title}</h2>
+                </div>
+                <button class="btn-close-modal" onclick="DTEngine.closeModal()">✕</button>
+            </div>
+            <div class="modal-grid">
+                <div class="m-col">
+                    <div class="m-info-block">
+                        <label>Momento del Juego</label>
+                        <p>${task.game_moment.replace('_', ' ').toUpperCase()}</p>
+                    </div>
+                    <div class="m-info-block">
+                        <label>Tipo de SSP</label>
+                        <p>${task.ssp_type}</p>
+                    </div>
+                    <div class="m-info-block">
+                        <label>Jugadores</label>
+                        <p>${task.min_players} - ${task.max_players}</p>
+                    </div>
+                    <div class="m-info-block">
+                        <label>Dimensiones</label>
+                        <p>${task.dimensions}</p>
+                    </div>
+                </div>
+                <div class="m-col">
+                    <div class="m-info-block">
+                        <label>Descripción / Reglas</label>
+                        <p class="m-desc">${task.description || 'Sin descripción disponible.'}</p>
+                    </div>
+                    <div class="m-info-block">
+                        <label>Materiales</label>
+                        <p>${task.materials || 'Balones, Conos'}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        modal.classList.remove('hidden');
+    },
+
+    closeModal() {
+        document.getElementById('dt-modal').classList.add('hidden');
+    },
+
+    closeDrawer() { document.getElementById('dt-drawer').classList.add('hidden'); }
 };
