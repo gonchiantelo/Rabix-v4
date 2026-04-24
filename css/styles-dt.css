@@ -486,3 +486,15 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ── Phase 3.8: Navegación & Bloques Dinámicos ── */
+.month-nav {
+    display: flex; align-items: center; gap: 20px;
+    background: var(--dt-surface-2); padding: 8px 20px;
+    border-radius: 100px; border: 1px solid var(--dt-border);
+}
+.btn-nav { background: none; border: none; color: var(--dt-accent); font-size: 16px; cursor: pointer; transition: 0.2s; }
+.btn-nav:hover { transform: scale(1.2); color: #FFF; }
+.current-month-display { font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; min-width: 150px; text-align: center; }
+
+.session-block:empty { display: none; }

@@ -2,17 +2,22 @@
 
 /* ============================================================
    RAVIX V5 — DT ENGINE (app-dt.js)
-   Phase 3.8: Annual Navigation & Optional Session Blocks
+   Phase 3.8: Navegación Anual & Bloques Ocultos (Completo)
    ============================================================ */
 
 window.DTEngine = {
     _currentDate: new Date(),
     _matchDays: new Set(),
-    _manualLabels: {},
+    _manualLabels: {},   // { "YYYY-MM-DD": "MD-4" }
     _assignedTasks: {},  // { "YYYY-MM-DD": [ { id, block } ] }
     _exercises: [],
     _selectedDate: null,
     _showAllExercises: false,
+
+    changeMonth(offset) {
+        this._currentDate.setMonth(this._currentDate.getMonth() + offset);
+        this.renderDashboard();
+    },
 
     async renderDashboard() {
         const shell = document.getElementById('app-shell');
@@ -25,14 +30,15 @@ window.DTEngine = {
                 <header class="app-header">
                     <div class="brand-name">RAVIX <span class="dt-badge">DT ELITE</span></div>
                     
-                    <!-- Navegación de Mes (Phase 3.8) -->
                     <div class="month-nav">
                         <button class="btn-nav" onclick="DTEngine.changeMonth(-1)">◀</button>
                         <span class="current-month-display">${monthName}</span>
                         <button class="btn-nav" onclick="DTEngine.changeMonth(1)">▶</button>
                     </div>
 
-                    <button onclick="App.logout()" class="btn-logout">SALIR</button>
+                    <div class="header-actions">
+                        <button onclick="App.logout()" class="btn-logout">SALIR</button>
+                    </div>
                 </header>
 
                 <main class="dt-main-content">
@@ -43,7 +49,7 @@ window.DTEngine = {
                     </section>
                 </main>
 
-                <!-- Drawer Lateral -->
+                <!-- Drawer Lateral (Cajón Táctico) -->
                 <div id="dt-drawer" class="drawer-overlay hidden">
                     <div class="drawer-content">
                         <div class="drawer-header">
@@ -79,7 +85,7 @@ window.DTEngine = {
                     </div>
                 </div>
 
-                <!-- Modal de Tarea -->
+                <!-- Modal de Tarea (Ficha Técnica) -->
                 <div id="dt-modal" class="modal-overlay hidden" onclick="DTEngine.closeModal()">
                     <div class="modal-content" onclick="event.stopPropagation()">
                         <div id="modal-body-content"></div>
@@ -92,20 +98,17 @@ window.DTEngine = {
         this.generateCalendar();
     },
 
-    changeMonth(offset) {
-        this._currentDate.setMonth(this._currentDate.getMonth() + offset);
-        this.renderDashboard();
-    },
-
     async fetchExercises() {
         if (this._exercises.length > 0) return;
-        const data = await window.Supa._req('GET', 'exercises_library');
-        if (data) {
-            this._exercises = data.map(ex => ({
-                ...ex,
-                numericId: parseInt(ex.id.replace(/\D/g, '')) || Date.now()
-            }));
-        }
+        try {
+            const data = await window.Supa._req('GET', 'exercises_library');
+            if (data) {
+                this._exercises = data.map(ex => ({
+                    ...ex,
+                    numericId: parseInt(ex.id.replace(/\D/g, '')) || Date.now()
+                }));
+            }
+        } catch (e) { console.error("Error biblioteca:", e); }
     },
 
     generateCalendar() {
@@ -120,6 +123,7 @@ window.DTEngine = {
 
         let html = '';
         ['L', 'M', 'X', 'J', 'V', 'S', 'D'].forEach(n => html += `<div class="day-h">${n}</div>`);
+
         for (let i = 0; i < startOffset; i++) html += `<div class="macro-day empty"></div>`;
 
         for (let d = 1; d <= daysInMonth; d++) {
@@ -131,8 +135,6 @@ window.DTEngine = {
             
             const renderBlock = (blockId, title) => {
                 const tasks = assignments.filter(a => a.block === blockId);
-                if (tasks.length === 0) return `<div class="session-block ${blockId}"></div>`; // Estará oculto por CSS :empty
-
                 const tasksHtml = tasks.map((a) => {
                     const ex = this._exercises.find(e => e.numericId === a.id);
                     if (!ex) return '';
@@ -143,9 +145,10 @@ window.DTEngine = {
                         </div>
                     `;
                 }).join('');
+
                 return `
                     <div class="session-block ${blockId}">
-                        <span class="sb-title">${title}</span>
+                        ${tasks.length > 0 ? `<span class="sb-title">${title}</span>` : ''}
                         <div class="sb-tasks">${tasksHtml}</div>
                     </div>
                 `;
@@ -173,15 +176,20 @@ window.DTEngine = {
     getMethodologyLabel(dateStr) {
         if (this._manualLabels[dateStr]) return this._manualLabels[dateStr];
         if (this._matchDays.has(dateStr)) return 'PARTIDO';
+
         const current = new Date(dateStr + 'T00:00:00');
         for (let i = 1; i <= 4; i++) {
-            const fut = new Date(current); fut.setDate(current.getDate() + i);
+            const fut = new Date(current);
+            fut.setDate(current.getDate() + i);
             const futStr = fut.toISOString().split('T')[0];
             if (this._matchDays.has(futStr) || this._manualLabels[futStr] === 'PARTIDO') return `MD-${i}`;
         }
-        const yesterday = new Date(current); yesterday.setDate(current.getDate() - 1);
+
+        const yesterday = new Date(current);
+        yesterday.setDate(current.getDate() - 1);
         const yestStr = yesterday.toISOString().split('T')[0];
         if (this._matchDays.has(yestStr) || this._manualLabels[yestStr] === 'PARTIDO') return 'RECUPERACIÓN';
+
         return 'BASE';
     },
 
@@ -208,8 +216,10 @@ window.DTEngine = {
     forceLabel(val) {
         if (!val) delete this._manualLabels[this._selectedDate];
         else this._manualLabels[this._selectedDate] = val;
+        
         if (val === 'PARTIDO') this._matchDays.add(this._selectedDate);
         else this._matchDays.delete(this._selectedDate);
+
         this.generateCalendar();
         this.updateDrawerUI();
     },
@@ -222,17 +232,20 @@ window.DTEngine = {
 
     toggleFilter() {
         this._showAllExercises = !this._showAllExercises;
-        document.getElementById('btn-toggle-filter').innerText = this._showAllExercises ? 'Filtrar por Fase' : 'Ver Toda';
+        const btn = document.getElementById('btn-toggle-filter');
+        btn.innerText = this._showAllExercises ? 'Filtrar por Fase' : 'Ver Toda';
         this.renderLibrary(this.getMethodologyLabel(this._selectedDate));
     },
 
     renderLibrary(currentLabel) {
         const container = document.getElementById('library-list');
         const phase = currentLabel.split(' ')[0];
+
         let filtered = this._exercises;
         if (!this._showAllExercises && (phase.startsWith('MD-') || phase === 'PARTIDO')) {
             filtered = this._exercises.filter(ex => ex.morfociclo_phase === phase);
         }
+
         container.innerHTML = filtered.map(ex => `
             <div class="exercise-card">
                 <div class="ex-info">
