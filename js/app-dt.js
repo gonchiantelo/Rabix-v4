@@ -2,15 +2,17 @@
 
 /* ============================================================
    RAVIX V5 — DT ENGINE (app-dt.js)
-   Phase 3 FIX: Individual Match Day & Real Periodization
+   Phase 3.5: Contextual Filtering & Grid Rendering
    ============================================================ */
 
 window.DTEngine = {
     _currentDate: new Date(),
-    _matchDays: new Set(), // Conjunto de fechas YYYY-MM-DD designadas como Partido
+    _matchDays: new Set(),
     _restDays: new Set(),
+    _assignedTasks: {}, // { "YYYY-MM-DD": [id1, id2] }
     _exercises: [],
     _selectedDate: null,
+    _showAllExercises: false,
 
     async renderDashboard() {
         const shell = document.getElementById('app-shell');
@@ -55,13 +57,16 @@ window.DTEngine = {
                             <button class="btn-close" onclick="DTEngine.closeDrawer()">✕</button>
                         </div>
                         <div class="drawer-controls">
-                            <button id="btn-toggle-md" class="btn-primary-dt" onclick="DTEngine.toggleMatchDayCurrent()">Fijar como Partido (MD)</button>
+                            <button id="btn-toggle-md" class="btn-primary-dt" onclick="DTEngine.toggleMatchDayCurrent()">Fijar Partido (MD)</button>
                             <button class="btn-secondary" onclick="DTEngine.toggleRestCurrent()">Descanso</button>
                         </div>
                         <div class="drawer-body">
-                            <h4>Biblioteca de Tareas</h4>
+                            <div class="library-header">
+                                <h4>Biblioteca de Tareas</h4>
+                                <button id="btn-filter-toggle" class="btn-text" onclick="DTEngine.toggleFilter()">Ver Toda</button>
+                            </div>
                             <div id="library-list" class="exercise-list-container">
-                                <p class="loading-text">Cargando biblioteca...</p>
+                                <!-- Exercises filtered by phase -->
                             </div>
                         </div>
                     </div>
@@ -80,10 +85,9 @@ window.DTEngine = {
             if (data) {
                 this._exercises = data.map(ex => ({
                     ...ex,
-                    // Protocolo Fase 3: IDs Estrictamente Numéricos
                     numericId: parseInt(ex.id.replace(/\D/g, '')) || Date.now()
                 }));
-                console.log('✅ Biblioteca Cargada:', this._exercises.length, 'ítems');
+                console.log('✅ Biblioteca Sincronizada');
             }
         } catch (e) { console.error("Error fetching library:", e); }
     },
@@ -94,7 +98,7 @@ window.DTEngine = {
             this._matchDays.delete(this._selectedDate);
         } else {
             this._matchDays.add(this._selectedDate);
-            this._restDays.delete(this._selectedDate); // No puede ser descanso y partido
+            this._restDays.delete(this._selectedDate);
         }
         this.generateCalendar();
         this.updateDrawerUI();
@@ -106,7 +110,7 @@ window.DTEngine = {
             this._restDays.delete(this._selectedDate);
         } else {
             this._restDays.add(this._selectedDate);
-            this._matchDays.delete(this._selectedDate); // No puede ser descanso y partido
+            this._matchDays.delete(this._selectedDate);
         }
         this.generateCalendar();
         this.updateDrawerUI();
@@ -121,9 +125,10 @@ window.DTEngine = {
             btnMD.innerText = 'Quitar Partido';
             btnMD.classList.add('active');
         } else {
-            btnMD.innerText = 'Fijar como Partido (MD)';
+            btnMD.innerText = 'Fijar Partido (MD)';
             btnMD.classList.remove('active');
         }
+        this.renderLibrary();
     },
 
     generateCalendar() {
@@ -145,14 +150,22 @@ window.DTEngine = {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const label = this.getMethodologyLabel(dateStr);
             const typeClass = this.getTypeClass(label);
+            
+            // Renderizar micro-tareas asignadas
+            const tasks = this._assignedTasks[dateStr] || [];
+            const tasksHtml = tasks.map(id => {
+                const ex = this._exercises.find(e => e.numericId === id);
+                return ex ? `<div class="mini-task-pill">${ex.title}</div>` : '';
+            }).join('');
 
             html += `
                 <div class="macro-day ${typeClass}" onclick="DTEngine.openDrawer('${dateStr}')">
                     <div class="m-day-top">
                         <span class="m-day-num">${d}</span>
-                    </div>
-                    <div class="m-day-bottom">
                         <span class="m-day-label">${label}</span>
+                    </div>
+                    <div class="m-day-content">
+                        <div class="assigned-tasks-list">${tasksHtml}</div>
                     </div>
                 </div>
             `;
@@ -164,12 +177,10 @@ window.DTEngine = {
         if (this._restDays.has(dateStr)) return 'DESCANSO';
         if (this._matchDays.has(dateStr)) return 'PARTIDO (MD)';
 
-        // Buscar el próximo partido para calcular el microciclo
         const current = new Date(dateStr + 'T00:00:00');
         let nextMD = null;
         let diffDays = 0;
 
-        // Buscamos hasta 7 días en el futuro
         for (let i = 1; i <= 7; i++) {
             const future = new Date(current);
             future.setDate(current.getDate() + i);
@@ -188,7 +199,6 @@ window.DTEngine = {
             if (diffDays === 4) return 'MD-4 (TENSIÓN)';
         }
 
-        // Si no hay partido cerca en el futuro, ver si es el día después de un partido
         const yesterday = new Date(current);
         yesterday.setDate(current.getDate() - 1);
         const yesterdayStr = yesterday.toISOString().split('T')[0];
@@ -210,25 +220,50 @@ window.DTEngine = {
 
     openDrawer(date) {
         this._selectedDate = date;
+        this._showAllExercises = false;
         document.getElementById('drawer-date-title').innerText = date;
         this.updateDrawerUI();
         document.getElementById('dt-drawer').classList.remove('hidden');
-        this.renderLibrary();
     },
 
     closeDrawer() {
         document.getElementById('dt-drawer').classList.add('hidden');
     },
 
+    toggleFilter() {
+        this._showAllExercises = !this._showAllExercises;
+        const btn = document.getElementById('btn-filter-toggle');
+        btn.innerText = this._showAllExercises ? 'Ver Sugeridos' : 'Ver Toda';
+        this.renderLibrary();
+    },
+
     renderLibrary() {
         const container = document.getElementById('library-list');
         if (!this._exercises.length) {
-            container.innerHTML = '<p class="loading-text">Conectando a biblioteca...</p>';
-            this.fetchExercises().then(() => this.renderLibrary());
+            container.innerHTML = '<p class="loading-text">Conectando...</p>';
             return;
         }
 
-        container.innerHTML = this._exercises.map(ex => `
+        const label = this.getMethodologyLabel(this._selectedDate);
+        const phaseMatch = label.match(/MD[-+]\d/);
+        const currentPhase = phaseMatch ? phaseMatch[0] : null;
+
+        let filtered = this._exercises;
+        if (!this._showAllExercises && currentPhase) {
+            filtered = this._exercises.filter(ex => ex.morfociclo_phase === currentPhase);
+        }
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>No hay tareas específicas para ${currentPhase || 'esta fase'}.</p>
+                    <button class="btn-secondary" onclick="DTEngine.toggleFilter()">Ver toda la biblioteca</button>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = filtered.map(ex => `
             <div class="exercise-card" onclick="DTEngine.assignExercise(${ex.numericId})">
                 <div class="ex-info">
                     <span class="ex-id">#${ex.numericId}</span>
@@ -241,6 +276,13 @@ window.DTEngine = {
     },
 
     assignExercise(numericId) {
-        alert(`Ejercicio ${numericId} asignado al ${this._selectedDate}`);
+        if (!this._assignedTasks[this._selectedDate]) {
+            this._assignedTasks[this._selectedDate] = [];
+        }
+        // Multi-asignación (Regla Fase 3.5)
+        this._assignedTasks[this._selectedDate].push(numericId);
+        
+        console.log(`Asignado: ${numericId} en ${this._selectedDate}`);
+        this.generateCalendar(); // Refrescar celdas
     }
 };
