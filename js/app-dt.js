@@ -9,10 +9,30 @@ window.DTEngine = {
     _currentDate: new Date(),
     _matchDays: new Set(),
     _manualLabels: {},   // { "YYYY-MM-DD": "MD-4" }
-    _assignedTasks: {},  // { "YYYY-MM-DD": [ { id, block } ] }
+    _assignedTasks: {},  // { "YYYY-MM-DD": [ { logId, id, block } ] }
     _exercises: [],
     _selectedDate: null,
     _showAllExercises: false,
+
+    async fetchMonthLogs() {
+        const year = this._currentDate.getFullYear();
+        const month = String(this._currentDate.getMonth() + 1).padStart(2, '0');
+        const teamId = window.CurrentTeam?.id;
+        if (!teamId) return;
+
+        const data = await window.Supa._req('GET', `training_logs?team_id=eq.${teamId}&fecha=gte.${year}-${month}-01&fecha=lte.${year}-${month}-31`);
+        this._assignedTasks = {}; // Reset local state
+        if (data && Array.isArray(data)) {
+            data.forEach(log => {
+                if (!this._assignedTasks[log.fecha]) this._assignedTasks[log.fecha] = [];
+                this._assignedTasks[log.fecha].push({
+                    logId: log.id,
+                    id: log.ej_id,
+                    block: log.session_block
+                });
+            });
+        }
+    },
 
     changeMonth(offset) {
         this._currentDate.setMonth(this._currentDate.getMonth() + offset);
@@ -97,6 +117,7 @@ window.DTEngine = {
         `;
 
         await this.fetchExercises();
+        await this.fetchMonthLogs(); // Phase 5
         this.generateCalendar();
     },
 
@@ -269,17 +290,33 @@ window.DTEngine = {
         `).join('') || '<p class="empty-msg">No hay tareas para esta fase.</p>';
     },
 
-    assignExercise(id) {
+    async assignExercise(id) {
         const block = document.getElementById(`select-${id}`).value;
-        if (!this._assignedTasks[this._selectedDate]) this._assignedTasks[this._selectedDate] = [];
-        this._assignedTasks[this._selectedDate].push({ id, block });
-        this.generateCalendar();
+        const teamId = window.CurrentTeam?.id;
+        if (!teamId) { alert("Error: Team no identificado"); return; }
+
+        const logEntry = {
+            team_id: teamId,
+            fecha: this._selectedDate,
+            ej_id: id,
+            session_block: block
+        };
+
+        const res = await window.Supa._req('POST', 'training_logs', logEntry);
+        if (res) {
+            await this.fetchMonthLogs();
+            this.generateCalendar();
+        }
     },
 
-    removeTask(date, index) {
-        if (this._assignedTasks[date]) {
-            this._assignedTasks[date].splice(index, 1);
-            this.generateCalendar();
+    async removeTask(date, index) {
+        const task = this._assignedTasks[date][index];
+        if (task && task.logId) {
+            const res = await window.Supa._req('DELETE', `training_logs?id=eq.${task.logId}`);
+            if (res) {
+                this._assignedTasks[date].splice(index, 1);
+                this.generateCalendar();
+            }
         }
     },
 
