@@ -24,8 +24,10 @@ window.DTEngine = {
         const teamId = window.CurrentTeam?.id;
         if (!teamId) return;
 
-        const data = await window.Supa._req('GET', `training_logs?team_id=eq.${teamId}&fecha=gte.${year}-${monthStr}-01&fecha=lte.${year}-${monthStr}-${lastDayStr}`);
-        this._assignedTasks = {}; // Reset local state
+        const path = `training_logs?team_id=eq.${teamId}&fecha=gte.${year}-${monthStr}-01&fecha=lte.${year}-${monthStr}-${lastDayStr}`;
+        const data = await window.Supa._req('GET', path);
+        
+        this._assignedTasks = {}; 
         if (data && Array.isArray(data)) {
             data.forEach(log => {
                 if (!this._assignedTasks[log.fecha]) this._assignedTasks[log.fecha] = [];

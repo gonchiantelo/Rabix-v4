@@ -1,25 +1,27 @@
 'use strict';
 
-const SUPA_URL = 'https://rscdpwarzltozigfbmev.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzY2Rwd2Fyemx0b3ppZ2ZibWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjYyNjUsImV4cCI6MjA5MTg0MjI2NX0.WaKWoCxbaQ3VVDXLtfBvNyB9zywxZRHCwjzT-5gS-b0';
+window.SUPA_URL = 'https://rscdpwarzltozigfbmev.supabase.co';
+window.SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzY2Rwd2Fyemx0b3ppZ2ZibWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjYyNjUsImV4cCI6MjA5MTg0MjI2NX0.WaKWoCxbaQ3VVDXLtfBvNyB9zywxZRHCwjzT-5gS-b0';
 
 // Exponer Supa globalmente para los mundos DT/Player
 window.Supa = {
     async _req(method, path, body) {
         try {
             const token = localStorage.getItem('ravix_token');
-            const authHeader = token ? 'Bearer ' + token : 'Bearer ' + SUPA_KEY;
+            const apiKey = window.SUPA_KEY;
+            const authHeader = token ? `Bearer ${token}` : `Bearer ${apiKey}`;
+            
             const opts = {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'apikey': SUPA_KEY,
+                    'apikey': apiKey,
                     'Authorization': authHeader,
                     'Prefer': 'return=minimal'
                 }
             };
             if (body) opts.body = JSON.stringify(body);
-            const r = await fetch(`${SUPA_URL}/rest/v1/${path}`, opts);
+            const r = await fetch(`${window.SUPA_URL}/rest/v1/${path}`, opts);
             if (!r.ok) return null;
             const text = await r.text();
             return text ? JSON.parse(text) : true;
