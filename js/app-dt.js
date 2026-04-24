@@ -25,10 +25,12 @@ window.DTEngine = {
 
         const monthName = this._currentDate.toLocaleString('es', { month: 'long', year: 'numeric' }).toUpperCase();
 
+        const teamName = window.CurrentTeam ? window.CurrentTeam.name : 'Equipo no asignado';
+
         shell.innerHTML = `
             <div class="dt-shell-container">
                 <header class="app-header">
-                    <div class="brand-name">RAVIX <span class="dt-badge">DT ELITE</span></div>
+                    <div class="brand-name">RAVIX <span class="team-name-badge">${teamName}</span> <span class="dt-badge">DT ELITE</span></div>
                     
                     <div class="month-nav">
                         <button class="btn-nav" onclick="DTEngine.changeMonth(-1)">◀</button>

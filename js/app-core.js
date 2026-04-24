@@ -39,7 +39,16 @@ window.App = {
                 headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${localStorage.getItem('ravix_token')}` }
             });
             const users = await r.json();
-            if (users && users[0]) this.injectRoleAssets(users[0].role);
+            if (users && users[0]) {
+                const user = users[0];
+                let teamData = null;
+                if (user.team_id) {
+                    teamData = await window.Supa._req('GET', `teams?id=eq.${user.team_id}`);
+                    if (teamData) teamData = teamData[0];
+                }
+                window.CurrentTeam = teamData;
+                this.injectRoleAssets(user.role);
+            }
         } catch (e) { this.logout(); }
     },
 
