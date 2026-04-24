@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+    <title>RAVIX V5 — Elite Tactical OS</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    
+    <!-- Diseño Base -->
+    <link rel="stylesheet" href="./css/styles-core.css" />
+
+    <!-- Tipografía -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Outfit:wght@700;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+    <!-- SECCIÓN LOGIN -->
+    <section id="view-login" class="login-view">
+        <div class="login-card card">
+            <div class="brand-name">RAVIX V5</div>
+            <p class="login-subtitle">ALTO RENDIMIENTO</p>
+            
+            <form id="login-form">
+                <input type="email" id="login-username" class="rform-input mb-10" placeholder="Email" required autocomplete="username">
+                <input type="password" id="login-password" class="rform-input mb-20" placeholder="Contraseña" required autocomplete="current-password">
+                <button type="submit" class="btn-primary btn-full">ENTRAR AL SISTEMA</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Contenedor para inyección dinámica -->
+    <div id="app-shell"></div>
+
+    <script src="./js/app-core.js"></script>
+</body>
+</html>
