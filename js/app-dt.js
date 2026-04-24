@@ -25,10 +25,11 @@ window.DTEngine = {
         if (data && Array.isArray(data)) {
             data.forEach(log => {
                 if (!this._assignedTasks[log.fecha]) this._assignedTasks[log.fecha] = [];
+                const taskId = Array.isArray(log.ejs_cods) ? log.ejs_cods[0] : log.ejs_cods;
                 this._assignedTasks[log.fecha].push({
                     logId: log.id,
-                    id: log.ej_id,
-                    block: log.session_block
+                    id: taskId,
+                    block: log.scenario
                 });
             });
         }
@@ -293,13 +294,15 @@ window.DTEngine = {
     async assignExercise(id) {
         const block = document.getElementById(`select-${id}`).value;
         const teamId = window.CurrentTeam?.id;
-        if (!teamId) { alert("Error: Team no identificado"); return; }
+        const userId = localStorage.getItem('ravix_v5_uid');
+        if (!teamId || !userId) { alert("Error: Sesión no válida"); return; }
 
         const logEntry = {
             team_id: teamId,
+            user_id: userId,
             fecha: this._selectedDate,
-            ej_id: id,
-            session_block: block
+            ejs_cods: [id],
+            scenario: block
         };
 
         const res = await window.Supa._req('POST', 'training_logs', logEntry);
