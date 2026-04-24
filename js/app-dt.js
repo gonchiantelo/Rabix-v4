@@ -2,14 +2,14 @@
 
 /* ============================================================
    RAVIX V5 — DT ENGINE (app-dt.js)
-   Phase 3.7: Session Structure & Quick Deletion
+   Phase 3.8: Annual Navigation & Optional Session Blocks
    ============================================================ */
 
 window.DTEngine = {
     _currentDate: new Date(),
     _matchDays: new Set(),
     _manualLabels: {},
-    _assignedTasks: {},  // { "YYYY-MM-DD": [ { id: 1718001, block: 'main' } ] }
+    _assignedTasks: {},  // { "YYYY-MM-DD": [ { id, block } ] }
     _exercises: [],
     _selectedDate: null,
     _showAllExercises: false,
@@ -24,16 +24,22 @@ window.DTEngine = {
             <div class="dt-shell-container">
                 <header class="app-header">
                     <div class="brand-name">RAVIX <span class="dt-badge">DT ELITE</span></div>
+                    
+                    <!-- Navegación de Mes (Phase 3.8) -->
+                    <div class="month-nav">
+                        <button class="btn-nav" onclick="DTEngine.changeMonth(-1)">◀</button>
+                        <span class="current-month-display">${monthName}</span>
+                        <button class="btn-nav" onclick="DTEngine.changeMonth(1)">▶</button>
+                    </div>
+
                     <button onclick="App.logout()" class="btn-logout">SALIR</button>
                 </header>
 
                 <main class="dt-main-content">
                     <section class="dt-dashboard-view">
-                        <div class="dt-view-header">
-                            <h1 class="dt-main-title">Planificación Estratégica</h1>
-                            <p class="dt-main-subtitle">${monthName}</p>
+                        <div id="dt-calendar-grid" class="macro-calendar-grid">
+                            <!-- Inyección dinámica -->
                         </div>
-                        <div id="dt-calendar-grid" class="macro-calendar-grid"></div>
                     </section>
                 </main>
 
@@ -86,6 +92,11 @@ window.DTEngine = {
         this.generateCalendar();
     },
 
+    changeMonth(offset) {
+        this._currentDate.setMonth(this._currentDate.getMonth() + offset);
+        this.renderDashboard();
+    },
+
     async fetchExercises() {
         if (this._exercises.length > 0) return;
         const data = await window.Supa._req('GET', 'exercises_library');
@@ -118,10 +129,11 @@ window.DTEngine = {
             
             const assignments = this._assignedTasks[dateStr] || [];
             
-            // Lógica de Bloques de Sesión (Fase 3.7)
             const renderBlock = (blockId, title) => {
                 const tasks = assignments.filter(a => a.block === blockId);
-                const tasksHtml = tasks.map((a, idx) => {
+                if (tasks.length === 0) return `<div class="session-block ${blockId}"></div>`; // Estará oculto por CSS :empty
+
+                const tasksHtml = tasks.map((a) => {
                     const ex = this._exercises.find(e => e.numericId === a.id);
                     if (!ex) return '';
                     return `
@@ -146,8 +158,10 @@ window.DTEngine = {
                         <span class="m-day-label">${label}</span>
                     </div>
                     <div class="m-day-content">
+                        ${renderBlock('gym', 'Gimnasio')}
                         ${renderBlock('entry', 'Entrada en Calor')}
                         ${renderBlock('main', 'Parte Principal')}
+                        ${renderBlock('double', '2º Turno / Táctica')}
                         ${renderBlock('cool', 'Vuelta a la Calma')}
                     </div>
                 </div>
@@ -228,8 +242,10 @@ window.DTEngine = {
                 </div>
                 <div class="ex-actions">
                     <select class="block-select" id="select-${ex.numericId}">
+                        <option value="gym">Gimnasio</option>
                         <option value="entry">E. Calor</option>
                         <option value="main" selected>P. Principal</option>
+                        <option value="double">2º Turno</option>
                         <option value="cool">V. Calma</option>
                     </select>
                     <button class="ex-add-btn" onclick="DTEngine.assignExercise(${ex.numericId})">+</button>
