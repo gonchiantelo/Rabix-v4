@@ -3,6 +3,30 @@
 const SUPA_URL = 'https://rscdpwarzltozigfbmev.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzY2Rwd2Fyemx0b3ppZ2ZibWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjYyNjUsImV4cCI6MjA5MTg0MjI2NX0.WaKWoCxbaQ3VVDXLtfBvNyB9zywxZRHCwjzT-5gS-b0';
 
+// Exponer Supa globalmente para los mundos DT/Player
+window.Supa = {
+    async _req(method, path, body) {
+        try {
+            const token = localStorage.getItem('ravix_token');
+            const authHeader = token ? 'Bearer ' + token : 'Bearer ' + SUPA_KEY;
+            const opts = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SUPA_KEY,
+                    'Authorization': authHeader,
+                    'Prefer': 'return=minimal'
+                }
+            };
+            if (body) opts.body = JSON.stringify(body);
+            const r = await fetch(`${SUPA_URL}/rest/v1/${path}`, opts);
+            if (!r.ok) return null;
+            const text = await r.text();
+            return text ? JSON.parse(text) : true;
+        } catch (e) { return null; }
+    }
+};
+
 window.App = {
     async init() {
         const uid = localStorage.getItem('ravix_v5_uid');
@@ -37,13 +61,10 @@ window.App = {
 
     injectRoleAssets(role) {
         if (role === 'dt' || role === 'admin') {
-            // Inyectar CSS
             const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = 'css/styles-dt.css';
+            link.rel = 'stylesheet'; link.href = 'css/styles-dt.css';
             document.head.appendChild(link);
 
-            // Inyectar JS
             const script = document.createElement('script');
             script.src = 'js/app-dt.js';
             script.onload = () => {

@@ -2,12 +2,12 @@
 
 /* ============================================================
    RAVIX V5 — DT ENGINE (app-dt.js)
-   Phase 3: Tactical Brain & Dynamic Periodization
+   Phase 3 FIX: Individual Match Day & Real Periodization
    ============================================================ */
 
 window.DTEngine = {
     _currentDate: new Date(),
-    _matchDayOfWeek: 6, // Default: Sábado (6 en escala 0=L, 6=D) -> Usaremos 0=Lunes, 6=Domingo para facilitar
+    _matchDays: new Set(), // Conjunto de fechas YYYY-MM-DD designadas como Partido
     _restDays: new Set(),
     _exercises: [],
     _selectedDate: null,
@@ -23,18 +23,6 @@ window.DTEngine = {
                 <header class="app-header">
                     <div class="brand-name">RAVIX <span class="dt-badge">DT ELITE</span></div>
                     <div class="header-actions">
-                        <div class="md-selector-group">
-                            <label>Día de Partido:</label>
-                            <select id="md-select" onchange="DTEngine.setMatchDay(this.value)">
-                                <option value="0">Lunes</option>
-                                <option value="1">Martes</option>
-                                <option value="2">Miércoles</option>
-                                <option value="3">Jueves</option>
-                                <option value="4">Viernes</option>
-                                <option value="5">Sábado</option>
-                                <option value="6" selected>Domingo</option>
-                            </select>
-                        </div>
                         <button onclick="App.logout()" class="btn-logout">SALIR</button>
                     </div>
                 </header>
@@ -67,7 +55,8 @@ window.DTEngine = {
                             <button class="btn-close" onclick="DTEngine.closeDrawer()">✕</button>
                         </div>
                         <div class="drawer-controls">
-                            <button class="btn-secondary" onclick="DTEngine.toggleRestCurrent()">Marcar como Descanso</button>
+                            <button id="btn-toggle-md" class="btn-primary-dt" onclick="DTEngine.toggleMatchDayCurrent()">Fijar como Partido (MD)</button>
+                            <button class="btn-secondary" onclick="DTEngine.toggleRestCurrent()">Descanso</button>
                         </div>
                         <div class="drawer-body">
                             <h4>Biblioteca de Tareas</h4>
@@ -87,20 +76,28 @@ window.DTEngine = {
     async fetchExercises() {
         if (this._exercises.length > 0) return;
         try {
-            const data = await Supa._req('GET', 'exercises_library');
+            const data = await window.Supa._req('GET', 'exercises_library');
             if (data) {
                 this._exercises = data.map(ex => ({
                     ...ex,
-                    // Regla Fase 3: IDs Estrictamente Numéricos
+                    // Protocolo Fase 3: IDs Estrictamente Numéricos
                     numericId: parseInt(ex.id.replace(/\D/g, '')) || Date.now()
                 }));
+                console.log('✅ Biblioteca Cargada:', this._exercises.length, 'ítems');
             }
         } catch (e) { console.error("Error fetching library:", e); }
     },
 
-    setMatchDay(val) {
-        this._matchDayOfWeek = parseInt(val);
+    toggleMatchDayCurrent() {
+        if (!this._selectedDate) return;
+        if (this._matchDays.has(this._selectedDate)) {
+            this._matchDays.delete(this._selectedDate);
+        } else {
+            this._matchDays.add(this._selectedDate);
+            this._restDays.delete(this._selectedDate); // No puede ser descanso y partido
+        }
         this.generateCalendar();
+        this.updateDrawerUI();
     },
 
     toggleRestCurrent() {
@@ -109,14 +106,24 @@ window.DTEngine = {
             this._restDays.delete(this._selectedDate);
         } else {
             this._restDays.add(this._selectedDate);
+            this._matchDays.delete(this._selectedDate); // No puede ser descanso y partido
         }
         this.generateCalendar();
-        this.updateDrawerLabel();
+        this.updateDrawerUI();
     },
 
-    updateDrawerLabel() {
+    updateDrawerUI() {
         const label = this.getMethodologyLabel(this._selectedDate);
         document.getElementById('drawer-methodology-label').innerText = label;
+        
+        const btnMD = document.getElementById('btn-toggle-md');
+        if (this._matchDays.has(this._selectedDate)) {
+            btnMD.innerText = 'Quitar Partido';
+            btnMD.classList.add('active');
+        } else {
+            btnMD.innerText = 'Fijar como Partido (MD)';
+            btnMD.classList.remove('active');
+        }
     },
 
     generateCalendar() {
@@ -127,8 +134,6 @@ window.DTEngine = {
         const month = this._currentDate.getMonth();
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-        
-        // Offset (Lunes=0)
         const startOffset = firstDay === 0 ? 6 : firstDay - 1;
 
         let html = '';
@@ -157,30 +162,39 @@ window.DTEngine = {
 
     getMethodologyLabel(dateStr) {
         if (this._restDays.has(dateStr)) return 'DESCANSO';
+        if (this._matchDays.has(dateStr)) return 'PARTIDO (MD)';
 
-        const date = new Date(dateStr + 'T00:00:00');
-        const dayOfWeek = date.getDay() === 0 ? 6 : date.getDay() - 1; // 0=L, 6=D
+        // Buscar el próximo partido para calcular el microciclo
+        const current = new Date(dateStr + 'T00:00:00');
+        let nextMD = null;
+        let diffDays = 0;
 
-        // Calcular distancia al Día de Partido
-        let diff = dayOfWeek - this._matchDayOfWeek;
-        
-        if (diff === 0) return 'PARTIDO (MD)';
-        if (diff === 1 || diff === -6) return 'RECUPERACIÓN (MD+1)';
-        
-        // Mapeo dinámico de microciclo
-        const cycle = {
-            '-1': 'MD-1 (ACTIVACIÓN)',
-            '-2': 'MD-2 (VELOCIDAD)',
-            '-3': 'MD-3 (DURACIÓN)',
-            '-4': 'MD-4 (TENSIÓN)',
-            '6': 'MD-1 (ACTIVACIÓN)',
-            '5': 'MD-2 (VELOCIDAD)',
-            '4': 'MD-3 (DURACIÓN)',
-            '3': 'MD-4 (TENSIÓN)'
-        };
+        // Buscamos hasta 7 días en el futuro
+        for (let i = 1; i <= 7; i++) {
+            const future = new Date(current);
+            future.setDate(current.getDate() + i);
+            const futureStr = future.toISOString().split('T')[0];
+            if (this._matchDays.has(futureStr)) {
+                nextMD = future;
+                diffDays = i;
+                break;
+            }
+        }
 
-        const key = diff.toString();
-        return cycle[key] || 'PREPARACIÓN';
+        if (nextMD) {
+            if (diffDays === 1) return 'MD-1 (ACTIVACIÓN)';
+            if (diffDays === 2) return 'MD-2 (VELOCIDAD)';
+            if (diffDays === 3) return 'MD-3 (DURACIÓN)';
+            if (diffDays === 4) return 'MD-4 (TENSIÓN)';
+        }
+
+        // Si no hay partido cerca en el futuro, ver si es el día después de un partido
+        const yesterday = new Date(current);
+        yesterday.setDate(current.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        if (this._matchDays.has(yesterdayStr)) return 'RECUPERACIÓN (MD+1)';
+
+        return 'ENTRENAMIENTO BASE';
     },
 
     getTypeClass(label) {
@@ -189,6 +203,7 @@ window.DTEngine = {
         if (label.includes('DURACIÓN')) return 'type-duracion';
         if (label.includes('VELOCIDAD')) return 'type-velocidad';
         if (label.includes('ACTIVACIÓN')) return 'type-activacion';
+        if (label.includes('RECUPERACIÓN')) return 'type-recuperacion';
         if (label.includes('DESCANSO')) return 'type-descanso';
         return '';
     },
@@ -196,7 +211,7 @@ window.DTEngine = {
     openDrawer(date) {
         this._selectedDate = date;
         document.getElementById('drawer-date-title').innerText = date;
-        this.updateDrawerLabel();
+        this.updateDrawerUI();
         document.getElementById('dt-drawer').classList.remove('hidden');
         this.renderLibrary();
     },
@@ -208,7 +223,8 @@ window.DTEngine = {
     renderLibrary() {
         const container = document.getElementById('library-list');
         if (!this._exercises.length) {
-            container.innerHTML = '<p class="error-text">No se encontraron ejercicios.</p>';
+            container.innerHTML = '<p class="loading-text">Conectando a biblioteca...</p>';
+            this.fetchExercises().then(() => this.renderLibrary());
             return;
         }
 
@@ -225,8 +241,6 @@ window.DTEngine = {
     },
 
     assignExercise(numericId) {
-        console.log(`Asignando ejercicio ID numérico: ${numericId} para el día ${this._selectedDate}`);
-        // Lógica de guardado en Supabase (Próxima Fase o según necesidad)
         alert(`Ejercicio ${numericId} asignado al ${this._selectedDate}`);
     }
 };
