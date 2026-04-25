@@ -95,14 +95,26 @@ window.App = {
     }
 };
 
-const loginForm = document.getElementById('login-form');
-if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('login-username').value;
-        const password = document.getElementById('login-password').value;
-        App.login(email, password);
-    });
-}
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) {
+            loginForm.onsubmit = async function(e) {
+                e.preventDefault();
+                console.log("🟢 EVENTO CAPTURADO: Iniciando secuencia de Login...");
+                const email = document.getElementById('login-username').value;
+                const pass = document.getElementById('login-password').value;
+                
+                if (window.App && window.App.login) {
+                    window.App.login(email, pass);
+                } else {
+                    console.error("🔴 APP ERROR: window.App.login no definida.");
+                }
+            };
+        } else {
+            console.error("🔴 DOM ERROR: No se encontró el formulario #login-form");
+        }
+    }, 500); // Retraso para asegurar que el DOM esté listo
+});
 
 window.onload = () => App.init();
