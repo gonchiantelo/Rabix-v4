@@ -39,8 +39,8 @@ window.App = {
 
     async checkSession(uid) {
         try {
-            const r = await fetch(`${SUPA_URL}/rest/v1/users?id=eq.${uid}`, {
-                headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${localStorage.getItem('ravix_token')}` }
+            const r = await fetch(`${window.SUPA_URL}/rest/v1/users?id=eq.${uid}`, {
+                headers: { 'apikey': window.SUPA_KEY, 'Authorization': `Bearer ${localStorage.getItem('ravix_token')}` }
             });
             const users = await r.json();
             if (users && users[0]) {
@@ -58,9 +58,9 @@ window.App = {
 
     async login(email, password) {
         try {
-            const r = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=password`, {
+            const r = await fetch(`${window.SUPA_URL}/auth/v1/token?grant_type=password`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY },
+                headers: { 'Content-Type': 'application/json', 'apikey': window.SUPA_KEY },
                 body: JSON.stringify({ email, password })
             });
             const data = await r.json();
@@ -95,9 +95,14 @@ window.App = {
     }
 };
 
-document.getElementById('login-form').onsubmit = (e) => {
-    e.preventDefault();
-    App.login(document.getElementById('login-username').value, document.getElementById('login-password').value);
-};
+const loginForm = document.getElementById('login-form');
+if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+        App.login(email, password);
+    });
+}
 
 window.onload = () => App.init();
