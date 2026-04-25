@@ -191,11 +191,11 @@ window.DTEngine = {
                         <span class="m-day-label">${label}</span>
                     </div>
                     <div class="m-day-content">
-                        ${renderBlock('gym', 'Gimnasio')}
-                        ${renderBlock('entry', 'Entrada en Calor')}
-                        ${renderBlock('main', 'Parte Principal')}
-                        ${renderBlock('double', '2º Turno / Táctica')}
-                        ${renderBlock('cool', 'Vuelta a la Calma')}
+                        ${renderBlock('gimnasio', 'Gimnasio')}
+                        ${renderBlock('entrada_calor', 'Entrada en Calor')}
+                        ${renderBlock('parte_principal', 'Parte Principal')}
+                        ${renderBlock('doble_turno', '2º Turno / Táctica')}
+                        ${renderBlock('vuelta_calma', 'Vuelta a la Calma')}
                     </div>
                 </div>
             `;
@@ -285,11 +285,11 @@ window.DTEngine = {
                 </div>
                 <div class="ex-actions">
                     <select class="block-select" id="select-${ex.numericId}">
-                        <option value="gym">Gimnasio</option>
-                        <option value="entry">E. Calor</option>
-                        <option value="main" selected>P. Principal</option>
-                        <option value="double">2º Turno</option>
-                        <option value="cool">V. Calma</option>
+                        <option value="gimnasio">Gimnasio</option>
+                        <option value="entrada_calor">E. Calor</option>
+                        <option value="parte_principal" selected>P. Principal</option>
+                        <option value="doble_turno">2º Turno</option>
+                        <option value="vuelta_calma">V. Calma</option>
                     </select>
                     <button class="ex-add-btn" onclick="DTEngine.assignExercise(${ex.numericId})">+</button>
                 </div>

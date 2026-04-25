@@ -2,6 +2,8 @@
 
 window.SUPA_URL = 'https://rscdpwarzltozigfbmev.supabase.co';
 window.SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzY2Rwd2Fyemx0b3ppZ2ZibWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjYyNjUsImV4cCI6MjA5MTg0MjI2NX0.WaKWoCxbaQ3VVDXLtfBvNyB9zywxZRHCwjzT-5gS-b0';
+window.SUPABASE_URL = window.SUPA_URL;
+window.SUPABASE_KEY = window.SUPA_KEY;
 
 // Exponer Supa globalmente para los mundos DT/Player
 window.Supa = {
