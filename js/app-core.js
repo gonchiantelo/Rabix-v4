@@ -105,16 +105,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 const email = document.getElementById('login-username').value;
                 const pass = document.getElementById('login-password').value;
                 
-                if (window.App && window.App.login) {
-                    window.App.login(email, pass);
-                } else {
-                    console.error("🔴 APP ERROR: window.App.login no definida.");
+                try {
+                    // 1. Golpear la puerta de Supabase para validar usuario
+                    const authRes = await fetch(`${window.SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey': window.SUPABASE_KEY
+                        },
+                        body: JSON.stringify({ email: email, password: pass })
+                    });
+                    
+                    const authData = await authRes.json();
+                    
+                    if (!authRes.ok) {
+                        throw new Error(authData.error_description || 'Error de credenciales');
+                    }
+                    
+                    console.log("🟢 Token recibido. ¡Bienvenido DT!");
+                    
+                    // 2. Guardar el token de acceso
+                    localStorage.setItem('ravix_token', authData.access_token);
+                    localStorage.setItem('ravix_v5_uid', authData.user.id);
+                    
+                    // 3. Magia visual: Apagar login, prender sistema
+                    document.getElementById('view-login').style.display = 'none';
+                    const appShell = document.getElementById('app-shell');
+                    if (appShell) appShell.style.display = 'block';
+                    
+                    // 4. Encender el motor del calendario
+                    if (window.App && typeof window.App.checkSession === 'function') {
+                        window.App.checkSession(authData.user.id);
+                    } else if (window.DTEngine && typeof window.DTEngine.renderDashboard === 'function') {
+                        window.DTEngine.renderDashboard();
+                    } else {
+                        console.warn("🟡 Sistema visible, pero necesitas recargar el renderizado del DT.");
+                    }
+                    
+                } catch (error) {
+                    console.error("🔴 Error en login:", error);
+                    alert("Error al iniciar: " + error.message);
                 }
             };
-        } else {
-            console.error("🔴 DOM ERROR: No se encontró el formulario #login-form");
         }
-    }, 500); // Retraso para asegurar que el DOM esté listo
+    }, 500);
 });
 
 window.onload = () => App.init();
