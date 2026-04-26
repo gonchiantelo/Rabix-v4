@@ -52,6 +52,10 @@ window.App = {
                 }
                 window.CurrentTeam = teamData;
                 this.injectRoleAssets(user.role);
+            } else {
+                console.error("🔴 Usuario no encontrado en la base de datos.");
+                alert("Tu cuenta no tiene un perfil vinculado en Ravix.");
+                this.logout();
             }
         } catch (e) { this.logout(); }
     },
@@ -124,22 +128,38 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     console.log("🟢 Token recibido. ¡Bienvenido DT!");
                     
-                    // 2. Guardar el token de acceso
-                    localStorage.setItem('ravix_token', authData.access_token);
-                    localStorage.setItem('ravix_v5_uid', authData.user.id);
-                    
-                    // 3. Magia visual: Apagar login, prender sistema
-                    document.getElementById('view-login').style.display = 'none';
-                    const appShell = document.getElementById('app-shell');
-                    if (appShell) appShell.style.display = 'block';
-                    
-                    // 4. Encender el motor del calendario
-                    if (window.App && typeof window.App.checkSession === 'function') {
-                        window.App.checkSession(authData.user.id);
-                    } else if (window.DTEngine && typeof window.DTEngine.renderDashboard === 'function') {
-                        window.DTEngine.renderDashboard();
+                    if (authData.access_token && authData.user) {
+                        // 2. Guardar el token de acceso
+                        localStorage.setItem('ravix_token', authData.access_token);
+                        localStorage.setItem('ravix_v5_uid', authData.user.id);
+                        
+                        // --- FASE 4: INYECCIÓN DE IDENTIDAD POST-LOGIN ---
+                        // a. Obtener perfil de usuario (rol y equipo)
+                        const userRes = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${authData.user.id}`, {
+                            headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${authData.access_token}` }
+                        });
+                        const users = await userRes.json();
+                        
+                        if (users && users[0]) {
+                            const user = users[0];
+                            // b. Obtener datos del equipo
+                            if (user.team_id) {
+                                const teamData = await window.Supa._req('GET', `teams?id=eq.${user.team_id}`);
+                                if (teamData && teamData[0]) window.CurrentTeam = teamData[0];
+                            }
+                            
+                            // 3. Transición de UI
+                            document.getElementById('view-login').style.display = 'none';
+                            const appShell = document.getElementById('app-shell');
+                            if (appShell) appShell.style.display = 'block';
+                            
+                            // 4. Carga de Assets y Renderizado
+                            window.App.injectRoleAssets(user.role);
+                        } else {
+                            throw new Error("No se encontró perfil de usuario vinculado.");
+                        }
                     } else {
-                        console.warn("🟡 Sistema visible, pero necesitas recargar el renderizado del DT.");
+                        throw new Error("Respuesta de autenticación incompleta.");
                     }
                     
                 } catch (error) {
