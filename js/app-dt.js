@@ -298,23 +298,52 @@ window.DTEngine = {
     },
 
     async assignExercise(id) {
-        const block = document.getElementById(`select-${id}`).value;
-        const teamId = window.CurrentTeam?.id;
-        const userId = localStorage.getItem('ravix_v5_uid');
-        if (!teamId || !userId) { alert("Error: Sesión no válida"); return; }
+        try {
+            const block = document.getElementById(`select-${id}`).value;
+            const teamId = window.CurrentTeam?.id;
+            const userId = localStorage.getItem('ravix_v5_uid');
+            const token = localStorage.getItem('ravix_token');
 
-        const logEntry = {
-            team_id: teamId,
-            user_id: userId,
-            fecha: this._selectedDate,
-            ejs_cods: [id],
-            scenario: block
-        };
+            if (!teamId || !userId || !token) {
+                alert("Error: Sesión no identificada. Reingresa al sistema.");
+                return;
+            }
 
-        const res = await window.Supa._req('POST', 'training_logs', logEntry);
-        if (res) {
+            const payload = {
+                user_id: userId,
+                team_id: teamId,
+                fecha: this._selectedDate,
+                scenario: block,
+                ejs_cods: [id]
+            };
+
+            console.log("🟡 Intentando guardar en Supabase (training_logs):", payload);
+
+            const response = await fetch(`${window.SUPABASE_URL}/rest/v1/training_logs`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': window.SUPABASE_KEY,
+                    'Authorization': `Bearer ${token}`,
+                    'Prefer': 'return=representation'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(JSON.stringify(errorData));
+            }
+
+            console.log("🟢 Tarea guardada con éxito en training_logs");
+            
+            // Refrescar persistencia local y UI
             await this.fetchMonthLogs();
             this.generateCalendar();
+
+        } catch (error) {
+            console.error("🔴 Error crítico al guardar en Supabase:", error.message);
+            alert("Error al guardar: " + error.message);
         }
     },
 
