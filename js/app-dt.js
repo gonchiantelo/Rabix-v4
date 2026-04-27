@@ -310,22 +310,21 @@ window.DTEngine = {
             }
 
             const payload = {
-                user_id: userId,
-                team_id: teamId,
-                fecha: this._selectedDate,
-                scenario: block,
-                ejs_cods: [id]
+                p_user_id: userId,
+                p_team_id: teamId,
+                p_fecha: this._selectedDate,
+                p_scenario: block,
+                p_task_id: id.toString()
             };
 
-            console.log("🟡 Intentando guardar en Supabase (training_logs):", payload);
+            console.log("🟡 Ejecutando RPC guardar_tarea_calendario:", payload);
 
-            const response = await fetch(`${window.SUPABASE_URL}/rest/v1/training_logs`, {
+            const response = await fetch(`${window.SUPABASE_URL}/rest/v1/rpc/guardar_tarea_calendario`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'apikey': window.SUPABASE_KEY,
-                    'Authorization': `Bearer ${token}`,
-                    'Prefer': 'return=representation'
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(payload)
             });
@@ -335,14 +334,14 @@ window.DTEngine = {
                 throw new Error(JSON.stringify(errorData));
             }
 
-            console.log("🟢 Tarea guardada con éxito en training_logs");
+            console.log("🟢 Tarea guardada con éxito vía RPC");
             
             // Refrescar persistencia local y UI
             await this.fetchMonthLogs();
             this.generateCalendar();
 
         } catch (error) {
-            console.error("🔴 Error crítico al guardar en Supabase:", error.message);
+            console.error("🔴 Error crítico en RPC Supabase:", error.message);
             alert("Error al guardar: " + error.message);
         }
     },
