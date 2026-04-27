@@ -22,23 +22,35 @@ window.DTEngine = {
         const lastDayStr = String(lastDay).padStart(2, '0');
 
         const teamId = window.CurrentTeam?.id;
-        if (!teamId) return;
+        const token = localStorage.getItem('ravix_token');
+        if (!teamId || !token) return;
 
-        const path = `training_logs?team_id=eq.${teamId}&fecha=gte.${year}-${monthStr}-01&fecha=lte.${year}-${monthStr}-${lastDayStr}`;
-        const data = await window.Supa._req('GET', path);
-        
-        this._assignedTasks = {}; 
-        if (data && Array.isArray(data)) {
-            data.forEach(log => {
-                if (!this._assignedTasks[log.fecha]) this._assignedTasks[log.fecha] = [];
-                const taskId = Array.isArray(log.ejs_cods) ? log.ejs_cods[0] : log.ejs_cods;
-                this._assignedTasks[log.fecha].push({
-                    logId: log.id,
-                    id: taskId,
-                    block: log.scenario
-                });
+        try {
+            const path = `training_logs?team_id=eq.${teamId}&fecha=gte.${year}-${monthStr}-01&fecha=lte.${year}-${monthStr}-${lastDayStr}`;
+            const res = await fetch(`${window.SUPABASE_URL}/rest/v1/${path}`, {
+                headers: {
+                    'apikey': window.SUPABASE_KEY,
+                    'Authorization': `Bearer ${token}`
+                }
             });
-        }
+            const data = await res.json();
+            
+            this._assignedTasks = {}; 
+            if (data && Array.isArray(data)) {
+                data.forEach(log => {
+                    if (!this._assignedTasks[log.fecha]) this._assignedTasks[log.fecha] = [];
+                    // Asegurar que el ID sea numérico para el match con la biblioteca
+                    const rawId = Array.isArray(log.ejs_cods) ? log.ejs_cods[0] : log.ejs_cods;
+                    const taskId = parseInt(rawId);
+                    
+                    this._assignedTasks[log.fecha].push({
+                        logId: log.id,
+                        id: taskId,
+                        block: log.scenario
+                    });
+                });
+            }
+        } catch (e) { console.error("Error al cargar planificación:", e); }
     },
 
     changeMonth(offset) {
@@ -305,9 +317,18 @@ window.DTEngine = {
             const token = localStorage.getItem('ravix_token');
 
             if (!teamId || !userId || !token) {
-                alert("Error: Sesión no identificada. Reingresa al sistema.");
+                alert("Error: Sesión no identificada.");
                 return;
             }
+
+            // --- OPTIMISTIC UI: Inyectar visualmente antes de la confirmación ---
+            if (!this._assignedTasks[this._selectedDate]) this._assignedTasks[this._selectedDate] = [];
+            this._assignedTasks[this._selectedDate].push({
+                logId: 'temp-' + Date.now(),
+                id: id,
+                block: block
+            });
+            this.generateCalendar();
 
             const payload = {
                 p_user_id: userId,
@@ -316,8 +337,6 @@ window.DTEngine = {
                 p_scenario: block,
                 p_task_id: id.toString()
             };
-
-            console.log("🟡 Ejecutando RPC guardar_tarea_calendario:", payload);
 
             const response = await fetch(`${window.SUPABASE_URL}/rest/v1/rpc/guardar_tarea_calendario`, {
                 method: 'POST',
@@ -329,19 +348,19 @@ window.DTEngine = {
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(JSON.stringify(errorData));
-            }
+            if (!response.ok) throw new Error("Fallo en persistencia RPC");
 
             console.log("🟢 Tarea guardada con éxito vía RPC");
             
-            // Refrescar persistencia local y UI
+            // Sincronizar con el ID real de la base de datos
             await this.fetchMonthLogs();
             this.generateCalendar();
 
         } catch (error) {
-            console.error("🔴 Error crítico en RPC Supabase:", error.message);
+            console.error("🔴 Error crítico en RPC:", error.message);
+            // Revertir en caso de error
+            await this.fetchMonthLogs();
+            this.generateCalendar();
             alert("Error al guardar: " + error.message);
         }
     },
