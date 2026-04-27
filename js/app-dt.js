@@ -25,6 +25,9 @@ window.DTEngine = {
         const token = localStorage.getItem('ravix_token');
         if (!teamId || !token) return;
 
+        // Recuperar Configuración del Morfociclo (Match Days)
+        await this.fetchTeamConfig();
+
         try {
             const path = `training_logs?team_id=eq.${teamId}&fecha=gte.${year}-${monthStr}-01&fecha=lte.${year}-${monthStr}-${lastDayStr}`;
             const res = await fetch(`${window.SUPABASE_URL}/rest/v1/${path}`, {
@@ -39,7 +42,6 @@ window.DTEngine = {
             if (data && Array.isArray(data)) {
                 data.forEach(log => {
                     if (!this._assignedTasks[log.fecha]) this._assignedTasks[log.fecha] = [];
-                    // Asegurar que el ID sea numérico para el match con la biblioteca
                     const rawId = Array.isArray(log.ejs_cods) ? log.ejs_cods[0] : log.ejs_cods;
                     const taskId = parseInt(rawId);
                     
@@ -51,6 +53,17 @@ window.DTEngine = {
                 });
             }
         } catch (e) { console.error("Error al cargar planificación:", e); }
+    },
+
+    async fetchTeamConfig() {
+        const teamId = window.CurrentTeam?.id;
+        if (!teamId) return;
+        try {
+            const data = await window.Supa._req('GET', `team_configs?team_id=eq.${teamId}`);
+            if (data && data[0] && data[0].match_dates) {
+                this._matchDays = new Set(data[0].match_dates);
+            }
+        } catch (e) { console.error("Error al cargar configuración de equipo:", e); }
     },
 
     changeMonth(offset) {
@@ -255,15 +268,52 @@ window.DTEngine = {
         document.getElementById('dt-drawer').classList.remove('hidden');
     },
 
-    forceLabel(val) {
+    async forceLabel(val) {
+        const oldLabel = this._manualLabels[this._selectedDate];
+        
         if (!val) delete this._manualLabels[this._selectedDate];
         else this._manualLabels[this._selectedDate] = val;
         
-        if (val === 'PARTIDO') this._matchDays.add(this._selectedDate);
-        else this._matchDays.delete(this._selectedDate);
+        const isMatch = (val === 'PARTIDO');
+        const wasMatch = (oldLabel === 'PARTIDO');
+
+        if (isMatch) this._matchDays.add(this._selectedDate);
+        else if (wasMatch) this._matchDays.delete(this._selectedDate);
+
+        // Si hubo cambios en los días de partido, persistir en team_configs
+        if (isMatch || wasMatch) {
+            await this.saveMatchDays();
+        }
 
         this.generateCalendar();
         this.updateDrawerUI();
+    },
+
+    async saveMatchDays() {
+        const teamId = window.CurrentTeam?.id;
+        const userId = localStorage.getItem('ravix_v5_uid');
+        const token = localStorage.getItem('ravix_token');
+        if (!teamId || !userId || !token) return;
+
+        const payload = {
+            team_id: teamId,
+            owner_id: userId,
+            match_dates: Array.from(this._matchDays)
+        };
+
+        try {
+            await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': window.SUPABASE_KEY,
+                    'Authorization': `Bearer ${token}`,
+                    'Prefer': 'resolution=merge-duplicates'
+                },
+                body: JSON.stringify(payload)
+            });
+            console.log("🟢 Configuración de Morfociclo persistida.");
+        } catch (e) { console.error("Error al guardar morfociclo:", e); }
     },
 
     updateDrawerUI() {
