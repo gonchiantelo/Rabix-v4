@@ -76,6 +76,18 @@ window.App = {
         } catch (err) { alert('Error: ' + err.message); }
     },
 
+    toggleAuth(mode) {
+        const login = document.getElementById('login-form');
+        const register = document.getElementById('register-form');
+        if (mode === 'register') {
+            login.style.display = 'none';
+            register.style.display = 'block';
+        } else {
+            login.style.display = 'block';
+            register.style.display = 'none';
+        }
+    },
+
     injectRoleAssets(role) {
         if (role === 'dt' || role === 'admin') {
             const link = document.createElement('link');
@@ -234,6 +246,48 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
     }, 500);
+
+    const regForm = document.getElementById('register-form');
+    if (regForm) {
+        regForm.onsubmit = async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('register-email').value;
+            const pass = document.getElementById('register-password').value;
+            const conf = document.getElementById('register-confirm-password').value;
+
+            if (pass !== conf) return alert("Las contraseñas no coinciden");
+            if (pass.length < 6) return alert("La contraseña debe tener al menos 6 caracteres");
+
+            try {
+                console.log("🚀 Iniciando registro en Supabase...");
+                const res = await fetch(`${window.SUPABASE_URL}/auth/v1/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY },
+                    body: JSON.stringify({ email, password: pass })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.msg || data.message || "Error al crear cuenta");
+
+                console.log("🟢 Registro exitoso. Iniciando sesión automática...");
+                
+                if (data.access_token) {
+                    localStorage.setItem('ravix_token', data.access_token);
+                    localStorage.setItem('ravix_v5_uid', data.user.id);
+                    
+                    document.getElementById('view-login').style.display = 'none';
+                    document.getElementById('view-onboarding').style.display = 'flex';
+                } else {
+                    alert("Cuenta creada. Por favor, verifica tu email para activar tu cuenta e inicia sesión.");
+                    window.App.toggleAuth('login');
+                }
+
+            } catch (err) {
+                console.error("🔴 Error en Registro:", err);
+                alert("Error: " + err.message);
+            }
+        };
+    }
 });
 
 window.onload = () => App.init();

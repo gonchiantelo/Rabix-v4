@@ -29,6 +29,15 @@
                 <input type="email" id="login-username" class="rform-input mb-10" placeholder="Email" required autocomplete="username">
                 <input type="password" id="login-password" class="rform-input mb-20" placeholder="Contraseña" required autocomplete="current-password">
                 <button type="submit" class="btn-primary btn-full">ENTRAR AL SISTEMA</button>
+                <p class="auth-toggle">¿No tienes cuenta? <a href="#" onclick="window.App.toggleAuth('register')">Regístrate aquí</a></p>
+            </form>
+
+            <form id="register-form" style="display: none;">
+                <input type="email" id="register-email" class="rform-input mb-10" placeholder="Email" required>
+                <input type="password" id="register-password" class="rform-input mb-10" placeholder="Contraseña" required>
+                <input type="password" id="register-confirm-password" class="rform-input mb-20" placeholder="Confirmar Contraseña" required>
+                <button type="submit" class="btn-primary btn-full">CREAR CUENTA ELITE</button>
+                <p class="auth-toggle">¿Ya tienes cuenta? <a href="#" onclick="window.App.toggleAuth('login')">Inicia sesión aquí</a></p>
             </form>
         </div>
     </section>
