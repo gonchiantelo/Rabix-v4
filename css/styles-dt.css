@@ -816,3 +816,95 @@ body { background: #121212 !important; }
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
 }
+
+/* --- Phase 6: Onboarding Enhancements --- */
+.onboarding-tabs {
+    display: flex;
+    gap: 10px;
+    background: rgba(255,255,255,0.05);
+    padding: 5px;
+    border-radius: 12px;
+}
+
+.tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 10px;
+    color: #888;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+.tab-btn.active {
+    background: rgba(255,255,255,0.1);
+    color: #FFF;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.field-help {
+    font-size: 10px;
+    color: var(--dt-accent);
+    margin-top: 8px;
+}
+
+.systems-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.check-container {
+    display: block;
+    position: relative;
+    padding-left: 30px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #E0E0E0;
+    user-select: none;
+}
+
+.check-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0; left: 0;
+    height: 18px; width: 18px;
+    background-color: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+}
+
+.check-container:hover input ~ .checkmark {
+    background-color: rgba(255,255,255,0.1);
+}
+
+.check-container input:checked ~ .checkmark {
+    background-color: var(--dt-accent);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.check-container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.check-container .checkmark:after {
+    left: 6px; top: 2px;
+    width: 4px; height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}

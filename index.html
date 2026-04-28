@@ -61,41 +61,65 @@
                     <div class="form-group">
                         <label>Licencia Actual</label>
                         <select id="ob-license" class="rform-input">
-                            <option value="UEFA PRO">UEFA PRO</option>
-                            <option value="CONMEBOL PRO">CONMEBOL PRO</option>
-                            <option value="ATFA">ATFA</option>
-                            <option value="AFA">AFA</option>
-                            <option value="AMATEUR">Amateur</option>
-                            <option value="OTRA">Otra</option>
+                            <optgroup label="UEFA">
+                                <option value="UEFA PRO">UEFA PRO</option>
+                                <option value="UEFA A">UEFA A</option>
+                            </optgroup>
+                            <optgroup label="CONMEBOL / AFA">
+                                <option value="CONMEBOL PRO">CONMEBOL PRO</option>
+                                <option value="ATFA">ATFA</option>
+                                <option value="AFA">AFA</option>
+                            </optgroup>
+                            <optgroup label="OTRAS">
+                                <option value="AMATEUR">Amateur</option>
+                                <option value="OTRA">Otra</option>
+                            </optgroup>
                         </select>
                     </div>
-                    <button class="btn-primary btn-full" onclick="Wizard.nextStep()">CONTINUAR A LA INSTITUCIÓN</button>
+                    <button class="btn-primary btn-full" onclick="window.Wizard.nextStep()">CONTINUAR A LA INSTITUCIÓN</button>
                 </div>
 
-                <!-- Paso 2: La Institución -->
+                <!-- Paso 2: La Institución (Multi-tenant) -->
                 <div id="step-2" class="onboarding-step" style="display: none;">
                     <span class="step-indicator">PASO 2/3</span>
                     <h2>Tu Institución</h2>
-                    <p class="step-desc">Configura el club que diriges en Ravix V5.</p>
-                    <div class="form-group">
-                        <label>Nombre del Equipo / Club</label>
-                        <input type="text" id="ob-team" class="rform-input" placeholder="Ej: Manchester City">
+                    <p class="step-desc">Elige entre fundar tu club o unirte a uno existente.</p>
+                    
+                    <div class="onboarding-tabs mb-20">
+                        <button id="tab-create" class="tab-btn active" onclick="window.Wizard.setMode('create')">CREAR CLUB</button>
+                        <button id="tab-join" class="tab-btn" onclick="window.Wizard.setMode('join')">UNIRSE AL STAFF</button>
                     </div>
-                    <div class="form-group">
-                        <label>Categoría</label>
-                        <select id="ob-category" class="rform-input">
-                            <option value="Primera División">Primera División</option>
-                            <option value="Reserva">Reserva</option>
-                            <option value="Sub-20">Sub-20</option>
-                            <option value="Sub-18">Sub-18</option>
-                            <option value="Amateur">Amateur</option>
-                        </select>
+
+                    <div id="ob-create-fields">
+                        <div class="form-group">
+                            <label>Nombre del Equipo / Club</label>
+                            <input type="text" id="ob-team" class="rform-input" placeholder="Ej: Manchester City">
+                        </div>
+                        <div class="form-group">
+                            <label>Categoría</label>
+                            <select id="ob-category" class="rform-input">
+                                <option value="Primera División">Primera División</option>
+                                <option value="Reserva">Reserva</option>
+                                <option value="Sub-20">Sub-20</option>
+                                <option value="Sub-18">Sub-18</option>
+                                <option value="Amateur">Amateur</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Color Principal</label>
+                            <input type="color" id="ob-color" class="rform-input-color" value="#00F2FE">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Color Principal del Equipo</label>
-                        <input type="color" id="ob-color" class="rform-input-color" value="#00F2FE">
+
+                    <div id="ob-join-fields" style="display: none;">
+                        <div class="form-group">
+                            <label>Código de Equipo</label>
+                            <input type="text" id="ob-team-code" class="rform-input" placeholder="Ej: CU-1234">
+                            <p class="field-help">Pide el código al administrador del club.</p>
+                        </div>
                     </div>
-                    <button class="btn-primary btn-full" onclick="Wizard.nextStep()">CONFIGURAR ADN TÁCTICO</button>
+
+                    <button class="btn-primary btn-full" onclick="window.Wizard.nextStep()">CONFIGURAR ADN TÁCTICO</button>
                 </div>
 
                 <!-- Paso 3: ADN Táctico -->
@@ -113,7 +137,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Día de Partido Habitual</label>
+                        <label>Día de Partido Habitual <small>(Base para el MD-)</small></label>
                         <select id="ob-matchday" class="rform-input">
                             <option value="Sábado">Sábado</option>
                             <option value="Domingo" selected>Domingo</option>
@@ -122,16 +146,16 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Sistema Base</label>
-                        <select id="ob-system" class="rform-input">
-                            <option value="4-3-3">4-3-3</option>
-                            <option value="4-4-2">4-4-2</option>
-                            <option value="3-5-2">3-5-2</option>
-                            <option value="4-2-3-1">4-2-3-1</option>
-                            <option value="5-3-2">5-3-2</option>
-                        </select>
+                        <label>Sistemas Base (Selección Múltiple)</label>
+                        <div class="systems-grid">
+                            <label class="check-container">4-3-3 <input type="checkbox" name="ob-system" value="4-3-3"><span class="checkmark"></span></label>
+                            <label class="check-container">4-4-2 <input type="checkbox" name="ob-system" value="4-4-2"><span class="checkmark"></span></label>
+                            <label class="check-container">3-5-2 <input type="checkbox" name="ob-system" value="3-5-2"><span class="checkmark"></span></label>
+                            <label class="check-container">4-2-3-1 <input type="checkbox" name="ob-system" value="4-2-3-1"><span class="checkmark"></span></label>
+                            <label class="check-container">5-3-2 <input type="checkbox" name="ob-system" value="5-3-2"><span class="checkmark"></span></label>
+                        </div>
                     </div>
-                    <button class="btn-primary btn-full" onclick="Wizard.finish()">FINALIZAR Y ENTRAR AL LOBBY</button>
+                    <button class="btn-primary btn-full" onclick="window.Wizard.finish()">FINALIZAR Y ENTRAR AL LOBBY</button>
                 </div>
             </div>
         </div>

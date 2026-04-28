@@ -113,6 +113,17 @@ window.App = {
 
 window.Wizard = {
     step: 1,
+    mode: 'create',
+    setMode(m) {
+        this.mode = m;
+        const cFields = document.getElementById('ob-create-fields');
+        const jFields = document.getElementById('ob-join-fields');
+        if (cFields) cFields.style.display = m === 'create' ? 'block' : 'none';
+        if (jFields) jFields.style.display = m === 'join' ? 'block' : 'none';
+        
+        document.getElementById('tab-create')?.classList.toggle('active', m === 'create');
+        document.getElementById('tab-join')?.classList.toggle('active', m === 'join');
+    },
     nextStep() {
         if (this.step < 3) {
             document.getElementById(`step-${this.step}`).style.display = 'none';
@@ -123,53 +134,83 @@ window.Wizard = {
     async finish() {
         const uid = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
-        const teamId = window.CurrentTeam?.id;
-
-        const data = {
-            name: document.getElementById('ob-name').value,
-            license: document.getElementById('ob-license').value,
-            club: document.getElementById('ob-team').value,
-            category: document.getElementById('ob-category').value,
-            color: document.getElementById('ob-color').value,
-            methodology: document.getElementById('ob-methodology').value,
-            matchday: document.getElementById('ob-matchday').value,
-            system: document.getElementById('ob-system').value
-        };
-
-        if (!data.name) return alert("Nombre obligatorio");
+        
+        const name = document.getElementById('ob-name').value;
+        const license = document.getElementById('ob-license').value;
+        
+        if (!name) return alert("El nombre es obligatorio.");
 
         try {
-            console.log("🚀 Finalizando Onboarding...");
-            
-            // 1. Update User
+            let teamId = null;
+            let teamName = "Sin Club";
+
+            if (this.mode === 'create') {
+                const clubName = document.getElementById('ob-team').value || "Nuevo Club";
+                const category = document.getElementById('ob-category').value;
+                const color = document.getElementById('ob-color').value;
+                const teamCode = 'CU-' + Math.floor(1000 + Math.random() * 9000);
+
+                // 1. Crear Equipo
+                const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 
+                        'Authorization': `Bearer ${token}`, 'Prefer': 'return=representation' 
+                    },
+                    body: JSON.stringify({ name: clubName, category, primary_color: color, team_code: teamCode })
+                });
+                const team = await tRes.json();
+                teamId = team[0].id;
+                teamName = clubName;
+
+                // 2. Crear Config Táctica
+                const systems = Array.from(document.querySelectorAll('input[name="ob-system"]:checked')).map(cb => cb.value);
+                await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ 
+                        team_id: teamId, owner_id: uid, 
+                        methodology: document.getElementById('ob-methodology').value,
+                        base_system: systems.join(', '),
+                        preferred_matchday: document.getElementById('ob-matchday').value
+                    })
+                });
+            } else {
+                // MODO JOIN
+                const code = document.getElementById('ob-team-code').value;
+                const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams?team_code=eq.${code}`, {
+                    headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
+                });
+                const teams = await tRes.json();
+                if (!teams || !teams[0]) throw new Error("Código de equipo no encontrado.");
+                teamId = teams[0].id;
+                teamName = teams[0].name;
+            }
+
+            // 3. Actualizar Usuario Final
             await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ full_name: data.name, license: data.license })
+                body: JSON.stringify({ full_name: name, license: license, team_id: teamId })
             });
 
-            // 2. Update Team
-            if (teamId) {
-                await fetch(`${window.SUPABASE_URL}/rest/v1/teams?id=eq.${teamId}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ name: data.club, category: data.category, primary_color: data.color })
-                });
-
-                // 3. Update Team Configs (Upsert)
-                await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}`, 'Prefer': 'resolution=merge-duplicates' },
-                    body: JSON.stringify({ team_id: teamId, owner_id: uid, methodology: data.methodology, base_system: data.system, preferred_matchday: data.matchday })
-                });
+            console.log("🟢 Onboarding Completo. Sincronizando UI...");
+            
+            // Actualizar Globals
+            if (window.CurrentTeam) {
+                window.CurrentTeam.id = teamId;
+                window.CurrentTeam.name = teamName;
             }
 
-            // Transición Final
+            // Transición
             document.getElementById('view-onboarding').style.display = 'none';
             document.getElementById('app-shell').style.display = 'block';
             window.App.injectRoleAssets('dt');
 
-        } catch (e) { console.error(e); alert("Error al guardar perfil."); }
+        } catch (e) {
+            console.error(e);
+            alert("Error: " + e.message);
+        }
     }
 };
 
