@@ -45,141 +45,165 @@
     <!-- Contenedor para inyección dinámica -->
     <div id="app-shell"></div>
 
-    <!-- SECCIÓN ONBOARDING (Wizard Premium V2) -->
-    <section id="view-onboarding" class="onboarding-view" style="display: none;">
-        <div class="onboarding-card platinum-card-v2">
+    <!-- SECCIÓN ONBOARDING (Wizard Premium V2 - ELITE DEEP) -->
+    <section id="view-onboarding" class="onboarding-view" style="display: none; background: #0A0B1E;">
+        <style>
+            .platinum-card-v2 {
+                width: 100%; max-width: 650px;
+                background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+                backdrop-filter: blur(30px);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 24px; padding: 50px;
+                box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+                text-align: center; color: #FFF; font-family: 'Inter', sans-serif;
+            }
+            .ob-stepper { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 40px; }
+            .step-ball { 
+                width: 35px; height: 35px; border-radius: 50%; background: rgba(255,255,255,0.1); 
+                display: flex; align-items: center; justify-content: center; font-weight: 900; 
+                border: 1px solid rgba(255,255,255,0.1); transition: 0.4s; color: #666;
+            }
+            .step-ball.active { background: #00F2FE; color: #000; box-shadow: 0 0 25px rgba(0, 242, 254, 0.4); border-color: #00F2FE; }
+            .step-line { width: 40px; height: 2px; background: rgba(255,255,255,0.1); }
             
-            <!-- Stepper Superior -->
+            .path-selection-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 40px 0; }
+            .path-card {
+                background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 20px; padding: 40px 20px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .path-card:hover { transform: translateY(-5px); border-color: #00F2FE; box-shadow: 0 10px 30px rgba(0, 242, 254, 0.1); }
+            .path-card.active { border-color: #00F2FE; background: rgba(0, 242, 254, 0.05); transform: scale(1.05); }
+            .path-icon { font-size: 50px; margin-bottom: 20px; }
+            .path-card h3 { font-size: 18px; margin-bottom: 10px; font-family: 'Outfit', sans-serif; }
+            .path-card p { font-size: 13px; color: #888; line-height: 1.5; }
+
+            .pill-box { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; justify-content: center; }
+            .pill { 
+                padding: 10px 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 50px; font-size: 13px; font-weight: 700; color: #888; cursor: pointer; transition: 0.3s;
+            }
+            .pill.active { background: #00F2FE; color: #000; border-color: #00F2FE; }
+            
+            .ob-input { 
+                width: 100%; padding: 18px 25px; background: rgba(255,255,255,0.02); 
+                border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #FFF; margin-top: 10px;
+                transition: 0.3s; font-size: 16px;
+            }
+            .ob-input:focus { border-color: #00F2FE; outline: none; background: rgba(255,255,255,0.05); }
+            
+            .ob-footer { display: flex; gap: 20px; justify-content: center; margin-top: 40px; }
+            .btn-ob-prev { background: none; border: 1px solid #444; color: #888; padding: 15px 30px; border-radius: 12px; cursor: pointer; font-weight: 700; }
+            .btn-ob-next { background: #00F2FE; border: none; color: #000; padding: 15px 40px; border-radius: 12px; cursor: pointer; font-weight: 900; }
+        </style>
+
+        <div class="platinum-card-v2">
+            <!-- Stepper -->
             <div class="ob-stepper">
-                <div class="step-ball active" id="ball-1">1</div>
+                <div class="step-ball active" id="ob-ball-1">1</div>
                 <div class="step-line"></div>
-                <div class="step-ball" id="ball-2">2</div>
+                <div class="step-ball" id="ob-ball-2">2</div>
                 <div class="step-line"></div>
-                <div class="step-ball" id="ball-3">3</div>
+                <div class="step-ball" id="ob-ball-3">3</div>
             </div>
 
-            <div id="onboarding-steps">
-                <!-- Paso 1: Perfil Elite -->
-                <div id="step-1" class="onboarding-step">
-                    <h2>Identidad Profesional</h2>
-                    <p class="step-desc">Configura tu perfil de Staff en la plataforma.</p>
+            <!-- Paso 1: Perfil -->
+            <div id="ob-step-1" class="ob-content-step">
+                <h2 style="font-family:'Outfit'; font-size: 32px; margin-bottom: 10px;">Perfil de Staff</h2>
+                <p style="color:#888; margin-bottom: 30px;">Identifícate para comenzar tu gestión táctica.</p>
+                <div style="text-align: left;">
+                    <label style="font-size: 11px; font-weight: 900; color: #00F2FE; letter-spacing: 1px;">NOMBRE COMPLETO</label>
+                    <input type="text" id="ob-name" class="ob-input" placeholder="Ej: Pep Guardiola">
                     
-                    <div class="form-group">
-                        <label>Nombre Completo</label>
-                        <input type="text" id="ob-name" class="rform-input-v2" placeholder="Ej: Pep Guardiola" required>
-                    </div>
-
-                    <div class="ob-row">
-                        <div class="form-group flex-1">
-                            <label>Rol en el Staff</label>
-                            <select id="ob-role" class="rform-input-v2">
-                                <option value="DT Principal">Director Técnico Principal</option>
+                    <div style="display: flex; gap: 20px; margin-top: 20px;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">ROL</label>
+                            <select id="ob-role" class="ob-input">
+                                <option value="DT Principal">DT Principal</option>
                                 <option value="Ayudante">Ayudante de Campo</option>
-                                <option value="PF">Preparador Físico</option>
-                                <option value="Analista">Analista Táctico</option>
+                                <option value="PF">Prep. Físico</option>
+                                <option value="Analista">Analista</option>
                             </select>
                         </div>
-                        <div class="form-group flex-1">
-                            <label>Licencia</label>
-                            <select id="ob-license" class="rform-input-v2">
-                                <optgroup label="PRO">
-                                    <option value="UEFA PRO">UEFA PRO</option>
-                                    <option value="CONMEBOL PRO">CONMEBOL PRO</option>
-                                </optgroup>
-                                <optgroup label="NACIONAL">
-                                    <option value="ATFA">ATFA</option>
-                                    <option value="AFA">AFA</option>
-                                    <option value="OTRA">Otra</option>
-                                </optgroup>
+                        <div style="flex: 1;">
+                            <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">LICENCIA</label>
+                            <select id="ob-license" class="ob-input">
+                                <option value="UEFA PRO">UEFA PRO</option>
+                                <option value="CONMEBOL PRO">CONMEBOL PRO</option>
+                                <option value="AFA / ATFA">AFA / ATFA</option>
+                                <option value="AMATEUR">AMATEUR</option>
                             </select>
                         </div>
                     </div>
-
-                    <button class="btn-primary-v2 btn-full mt-20" onclick="window.Wizard.nextStep()">CONTINUAR A LA INSTITUCIÓN</button>
                 </div>
+                <button class="btn-ob-next" style="width: 100%; margin-top: 30px;" onclick="window.Wizard.nextStep()">CONTINUAR</button>
+            </div>
 
-                <!-- Paso 2: La Encrucijada (Selección de Ruta) -->
-                <div id="step-2" class="onboarding-step" style="display: none;">
-                    <h2>¿Cómo iniciarás hoy?</h2>
-                    <p class="step-desc">Fundar un club requiere configuración; unirse al staff requiere un código.</p>
-                    
-                    <div class="path-selection-grid">
-                        <div id="path-create" class="path-card active" onclick="window.Wizard.selectPath('create')">
-                            <div class="path-icon">🏗️</div>
-                            <h3>Fundar Institución</h3>
-                            <p>Crear un nuevo equipo desde cero y definir su ADN.</p>
-                        </div>
-                        <div id="path-join" class="path-card" onclick="window.Wizard.selectPath('join')">
-                            <div class="path-icon">🤝</div>
-                            <h3>Unirme a un Staff</h3>
-                            <p>Ingresar a un club existente mediante código de invitación.</p>
-                        </div>
+            <!-- Paso 2: Elección de Ruta -->
+            <div id="ob-step-2" class="ob-content-step" style="display: none;">
+                <h2 style="font-family:'Outfit'; font-size: 32px; margin-bottom: 10px;">Tu Destino Táctico</h2>
+                <p style="color:#888;">¿Vas a liderar un nuevo proyecto o a sumarte a un Staff?</p>
+                
+                <div class="path-selection-grid">
+                    <div id="path-card-create" class="path-card active" onclick="window.Wizard.setPath('create')">
+                        <div class="path-icon">🏗️</div>
+                        <h3>Fundar Institución</h3>
+                        <p>Inicia un club desde cero, define su ADN y colores.</p>
                     </div>
-
-                    <div class="ob-footer-actions">
-                        <button class="btn-secondary" onclick="window.Wizard.prevStep()">← ATRÁS</button>
-                        <button class="btn-primary-v2" onclick="window.Wizard.nextStep()">SIGUIENTE PASO</button>
+                    <div id="path-card-join" class="path-card" onclick="window.Wizard.setPath('join')">
+                        <div class="path-icon">🤝</div>
+                        <h3>Unirme a un Staff</h3>
+                        <p>Únete a un equipo existente mediante código de invitación.</p>
                     </div>
                 </div>
 
-                <!-- Paso 3: Configuración Dinámica -->
-                <div id="step-3" class="onboarding-step" style="display: none;">
-                    
-                    <!-- Contenedor dinámico para CREAR -->
-                    <div id="ob-final-create" style="display: block;">
-                        <h2>ADN del Nuevo Club</h2>
-                        <div class="ob-row">
-                            <div class="form-group flex-2">
-                                <label>Nombre del Club</label>
-                                <input type="text" id="ob-team" class="rform-input-v2" placeholder="Ej: Manchester City">
+                <div class="ob-footer">
+                    <button class="btn-ob-prev" onclick="window.Wizard.prevStep()">VOLVER</button>
+                    <button class="btn-ob-next" onclick="window.Wizard.nextStep()">SIGUIENTE</button>
+                </div>
+            </div>
+
+            <!-- Paso 3: Configuración Final -->
+            <div id="ob-step-3" class="ob-content-step" style="display: none;">
+                
+                <!-- Sub-paso: CREAR -->
+                <div id="ob-ui-create">
+                    <h2 style="font-family:'Outfit'; font-size: 28px; margin-bottom: 20px;">Configura tu Club</h2>
+                    <div style="text-align: left; display: grid; gap: 15px;">
+                        <div style="display: flex; gap: 15px;">
+                            <div style="flex: 2;">
+                                <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">NOMBRE DEL CLUB</label>
+                                <input type="text" id="ob-team-name" class="ob-input" placeholder="Ej: Manchester City">
                             </div>
-                            <div class="form-group flex-1">
-                                <label>Color</label>
-                                <input type="color" id="ob-color" class="ob-color-v2" value="#00F2FE">
+                            <div style="flex: 1;">
+                                <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">COLOR</label>
+                                <input type="color" id="ob-team-color" class="ob-input" style="padding: 5px; height: 58px;" value="#00F2FE">
                             </div>
                         </div>
-
-                        <div class="form-group">
-                            <label>Metodología y Sistema</label>
-                            <div class="ob-row">
-                                <select id="ob-methodology" class="rform-input-v2 flex-1">
-                                    <option value="Periodización Táctica">Periodización Táctica</option>
-                                    <option value="Microciclo Estructurado">Microciclo Estructurado</option>
-                                    <option value="Personalizado">Personalizado</option>
-                                </select>
-                                <select id="ob-matchday" class="rform-input-v2 flex-1">
-                                    <option value="Sábado">Sábado</option>
-                                    <option value="Domingo" selected>Domingo</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Sistemas Base (Selección Múltiple)</label>
-                            <div class="pills-container" id="pills-systems">
-                                <div class="pill" data-val="4-3-3" onclick="this.classList.toggle('active')">4-3-3</div>
+                        <div>
+                            <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">SISTEMAS PREFERIDOS</label>
+                            <div class="pill-box" id="ob-pills-systems">
+                                <div class="pill active" data-val="4-3-3" onclick="this.classList.toggle('active')">4-3-3</div>
                                 <div class="pill" data-val="4-4-2" onclick="this.classList.toggle('active')">4-4-2</div>
-                                <div class="pill active" data-val="4-2-3-1" onclick="this.classList.toggle('active')">4-2-3-1</div>
                                 <div class="pill" data-val="3-5-2" onclick="this.classList.toggle('active')">3-5-2</div>
-                                <div class="pill" data-val="5-3-2" onclick="this.classList.toggle('active')">5-3-2</div>
+                                <div class="pill active" data-val="4-2-3-1" onclick="this.classList.toggle('active')">4-2-3-1</div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Contenedor dinámico para UNIRSE -->
-                    <div id="ob-final-join" style="display: none;">
-                        <h2>Acceso al Staff</h2>
-                        <p class="step-desc">Ingresa el código alfanumérico proporcionado por tu club.</p>
-                        <div class="form-group">
-                            <label>Código de Invitación</label>
-                            <input type="text" id="ob-team-code" class="rform-input-v2 code-input" placeholder="CU-XXXX">
-                        </div>
+                <!-- Sub-paso: UNIRSE -->
+                <div id="ob-ui-join" style="display: none;">
+                    <h2 style="font-family:'Outfit'; font-size: 28px; margin-bottom: 10px;">Acceso al Staff</h2>
+                    <p style="color:#888; margin-bottom: 30px;">Ingresa el código de invitación del club.</p>
+                    <div style="text-align: left;">
+                        <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">CÓDIGO DE INVITACIÓN</label>
+                        <input type="text" id="ob-invite-code" class="ob-input" style="text-align: center; font-size: 24px; letter-spacing: 5px;" placeholder="CU-XXXX">
                     </div>
+                </div>
 
-                    <div class="ob-footer-actions mt-20">
-                        <button class="btn-secondary" onclick="window.Wizard.prevStep()">← ATRÁS</button>
-                        <button class="btn-primary-v2" onclick="window.Wizard.finish()">FINALIZAR Y ENTRAR</button>
-                    </div>
+                <div class="ob-footer">
+                    <button class="btn-ob-prev" onclick="window.Wizard.prevStep()">VOLVER</button>
+                    <button class="btn-ob-next" onclick="window.Wizard.finish()">FINALIZAR Y ENTRAR</button>
                 </div>
             </div>
         </div>
