@@ -557,3 +557,93 @@
     max-height: 300px;
     height: 300px;
 }
+
+/* --- Phase 6: Lobby / Command Center --- */
+.dt-home-view {
+    padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.lobby-header {
+    margin-bottom: 40px;
+    border-left: 4px solid var(--dt-accent);
+    padding-left: 20px;
+}
+
+.lobby-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+}
+
+.lobby-card {
+    background: var(--dt-surface);
+    border: 1px solid var(--dt-border);
+    border-radius: 24px;
+    padding: 35px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 250px;
+    position: relative;
+    overflow: hidden;
+}
+
+.lobby-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, var(--dt-accent) 0%, transparent 100%);
+    opacity: 0;
+    transition: 0.3s;
+    z-index: 0;
+}
+
+.lobby-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--dt-accent);
+    box-shadow: 0 20px 40px rgba(7, 159, 160, 0.1);
+}
+
+.lobby-card:hover::before {
+    opacity: 0.05;
+}
+
+.lobby-card * {
+    position: relative;
+    z-index: 1;
+}
+
+.card-icon {
+    font-size: 40px;
+    margin-bottom: 20px;
+}
+
+.lobby-card h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #FFF;
+}
+
+.lobby-card p {
+    color: var(--dt-text-dim);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.card-action {
+    margin-top: 25px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--dt-accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 900px) {
+    .lobby-grid { grid-template-columns: 1fr; }
+}

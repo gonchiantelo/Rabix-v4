@@ -92,6 +92,7 @@ window.DTEngine = {
                     </div>
 
                     <div class="header-actions">
+                        <button onclick="DTEngine.toggleView('home')" class="btn-logout">🏠 HOME</button>
                         <button id="btn-nav-calendar" onclick="DTEngine.toggleView('calendar')" class="btn-logout">📅 CALENDARIO</button>
                         <button id="btn-nav-analytics" onclick="DTEngine.toggleView('analytics')" class="btn-logout">📊 ANALÍTICA</button>
                         <button onclick="App.logout()" class="btn-logout">SALIR</button>
@@ -99,7 +100,34 @@ window.DTEngine = {
                 </header>
 
                 <main class="dt-main-content">
-                    <section id="dt-calendar-view" class="dt-dashboard-view">
+                    <section id="dt-home-view" class="dt-home-view">
+                        <div class="lobby-header">
+                            <h2 class="dt-main-title">Centro de Mando</h2>
+                            <p class="dt-main-subtitle">${teamName} | Categoría: ${window.CurrentTeam?.category || 'Elite'}</p>
+                        </div>
+                        <div class="lobby-grid">
+                            <div class="lobby-card" onclick="DTEngine.toggleView('calendar')">
+                                <div class="card-icon">📅</div>
+                                <h3>Planificación Semanal</h3>
+                                <p id="lobby-next-task">Buscando próxima sesión...</p>
+                                <span class="card-action">Entrar al Calendario →</span>
+                            </div>
+                            <div class="lobby-card" onclick="DTEngine.toggleView('analytics')">
+                                <div class="card-icon">📊</div>
+                                <h3>Monitor de Rendimiento</h3>
+                                <p>Control de sRPE y Densidad de Espacio</p>
+                                <span class="card-action">Ver Estadísticas →</span>
+                            </div>
+                            <div class="lobby-card">
+                                <div class="card-icon">⚽</div>
+                                <h3>Gestión de Plantilla</h3>
+                                <p>24 Jugadores Activos</p>
+                                <span class="card-action">Próximamente...</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="dt-calendar-view" class="dt-dashboard-view" style="display: none;">
                         <div id="dt-calendar-grid" class="macro-calendar-grid">
                             <!-- Inyección dinámica -->
                         </div>
@@ -108,15 +136,27 @@ window.DTEngine = {
                     <section id="dt-analytics-view" class="dt-analytics-view" style="display: none;">
                         <div class="analytics-grid">
                             <div class="chart-card">
-                                <h3>Curva de Carga Semanal</h3>
+                                <h3>Curva de Carga Semanal (Minutos)</h3>
                                 <div class="chart-container">
                                     <canvas id="canvas-carga-semanal"></canvas>
                                 </div>
                             </div>
                             <div class="chart-card">
-                                <h3>Momentos del Juego</h3>
+                                <h3>Monitor de Carga sRPE</h3>
+                                <div class="chart-container">
+                                    <canvas id="canvas-srpe"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <h3>Distribución por Momentos</h3>
                                 <div class="chart-container">
                                     <canvas id="canvas-momentos-juego"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <h3>Densidad de Espacio (m²/jug)</h3>
+                                <div class="chart-container">
+                                    <canvas id="canvas-espacio"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -171,6 +211,7 @@ window.DTEngine = {
         await this.fetchExercises();
         await this.fetchMonthLogs(); // Phase 5
         this.generateCalendar();
+        this.updateHomeUI(); // Phase 6
     },
 
     async fetchExercises() {
@@ -520,47 +561,77 @@ window.DTEngine = {
     async refreshState() {
         await this.fetchMonthLogs();
         this.generateCalendar();
+        this.updateHomeUI();
         const anView = document.getElementById('dt-analytics-view');
         if (anView && anView.style.display === 'block') {
             this.renderAnalytics();
         }
     },
 
+    updateHomeUI() {
+        const nextTaskEl = document.getElementById('lobby-next-task');
+        if (!nextTaskEl) return;
+        
+        const today = new Date().toISOString().split('T')[0];
+        const upcoming = Object.keys(this._assignedTasks)
+            .filter(date => date >= today)
+            .sort()[0];
+            
+        if (upcoming) {
+            const count = this._assignedTasks[upcoming].length;
+            nextTaskEl.innerText = `Próxima sesión: ${upcoming} (${count} tareas)`;
+        } else {
+            nextTaskEl.innerText = 'No hay sesiones programadas.';
+        }
+    },
+
     toggleView(view) {
+        const home = document.getElementById('dt-home-view');
         const cal = document.getElementById('dt-calendar-view');
         const an = document.getElementById('dt-analytics-view');
-        if (view === 'analytics') {
-            cal.style.display = 'block'; 
+        
+        [home, cal, an].forEach(v => { if(v) v.style.display = 'none'; });
+
+        if (view === 'home') {
+            home.style.display = 'block';
+            this.updateHomeUI();
+        } else if (view === 'analytics') {
             an.style.display = 'block';
-            cal.style.display = 'none';
-            this.renderAnalytics(); // Recalcular siempre al entrar
+            this.renderAnalytics();
         } else {
             cal.style.display = 'block';
-            an.style.display = 'none';
         }
     },
 
     renderAnalytics() {
-        // 0. Limpiar instancias previas para evitar conflictos
         if (this._charts.carga) this._charts.carga.destroy();
         if (this._charts.momentos) this._charts.momentos.destroy();
+        if (this._charts.srpe) this._charts.srpe.destroy();
+        if (this._charts.espacio) this._charts.espacio.destroy();
 
-        // 1. Procesar Carga Semanal (Minutos por día de la semana)
-        const weeklyMinutes = [0, 0, 0, 0, 0, 0, 0]; // L, M, X, J, V, S, D
+        const weeklyMinutes = [0, 0, 0, 0, 0, 0, 0];
+        const weeklySRPE = [0, 0, 0, 0, 0, 0, 0];
         const moments = { 'ATAQUE': 0, 'DEFENSA': 0, 'TRANSICIONES': 0, 'OTROS': 0 };
+        const spaceData = [0, 0, 0, 0, 0, 0, 0]; 
 
         Object.keys(this._assignedTasks).forEach(date => {
             const d = new Date(date + 'T00:00:00');
-            const dayIdx = (d.getDay() + 6) % 7; // Ajuste a Lunes inicio
+            const dayIdx = (d.getDay() + 6) % 7;
 
             this._assignedTasks[date].forEach(task => {
                 const ex = this._exercises.find(e => e.numericId === task.id);
                 if (ex) {
-                    // Carga: Sumamos duración (asumimos 15 min si no está definido)
                     const duration = parseInt(ex.duration) || 15;
                     weeklyMinutes[dayIdx] += duration;
+                    
+                    // sRPE: Duración * Intensidad (asumimos 7 si no existe)
+                    const rpe = 7; 
+                    weeklySRPE[dayIdx] += (duration * rpe);
 
-                    // Momentos
+                    // Espacio: individual_m2 (asumimos 30 si no existe)
+                    const m2 = parseFloat(ex.individual_m2) || 30;
+                    spaceData[dayIdx] = m2; // Simplificado: último del día o promedio
+
                     const m = (ex.game_moment || 'otros').toUpperCase();
                     if (m.includes('ATAQUE')) moments['ATAQUE']++;
                     else if (m.includes('DEFENSA')) moments['DEFENSA']++;
@@ -571,53 +642,52 @@ window.DTEngine = {
         });
 
         const chartOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { labels: { color: '#E0E0E6', font: { family: 'Inter' } } }
-            },
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#E0E0E6' } } },
             scales: {
                 y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#606070' } },
                 x: { grid: { display: false }, ticks: { color: '#606070' } }
             }
         };
 
-        // Gráfico 1: Barras (Carga Semanal en Minutos)
+        // 1. Volumen
         this._charts.carga = new Chart(document.getElementById('canvas-carga-semanal'), {
             type: 'bar',
             data: {
-                labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
-                datasets: [{
-                    label: 'Volumen (Minutos)',
-                    data: weeklyMinutes,
-                    backgroundColor: '#079FA0',
-                    hoverBackgroundColor: '#0AC4C5',
-                    borderRadius: 8
-                }]
+                labels: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
+                datasets: [{ label: 'Minutos', data: weeklyMinutes, backgroundColor: '#079FA0', borderRadius: 5 }]
             },
             options: chartOptions
         });
 
-        // Gráfico 2: Doughnut (Distribución de Momentos)
+        // 2. sRPE (Línea)
+        this._charts.srpe = new Chart(document.getElementById('canvas-srpe'), {
+            type: 'line',
+            data: {
+                labels: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
+                datasets: [{ label: 'sRPE (Intensidad x Duración)', data: weeklySRPE, borderColor: '#F58B01', tension: 0.4 }]
+            },
+            options: chartOptions
+        });
+
+        // 3. Momentos
         this._charts.momentos = new Chart(document.getElementById('canvas-momentos-juego'), {
             type: 'doughnut',
             data: {
                 labels: Object.keys(moments),
-                datasets: [{
-                    data: Object.values(moments),
-                    backgroundColor: ['#079FA0', '#F58B01', '#DC2E2F', '#161620'],
-                    borderWidth: 2,
-                    borderColor: '#0E0E14'
-                }]
+                datasets: [{ data: Object.values(moments), backgroundColor: ['#079FA0', '#F58B01', '#DC2E2F', '#161620'], borderWidth: 0 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '70%',
-                plugins: {
-                    legend: { position: 'bottom', labels: { color: '#E0E0E6', padding: 20 } }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+        });
+
+        // 4. Espacio (Radar o Barras)
+        this._charts.espacio = new Chart(document.getElementById('canvas-espacio'), {
+            type: 'bar',
+            data: {
+                labels: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
+                datasets: [{ label: 'm² por Jugador', data: spaceData, backgroundColor: 'rgba(7, 159, 160, 0.2)', borderColor: '#079FA0', borderWidth: 2 }]
+            },
+            options: chartOptions
         });
     }
 };
