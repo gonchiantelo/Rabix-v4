@@ -135,7 +135,7 @@ window.App = {
             if (users && users[0]) {
                 const userData = users[0];
 
-                // --- STRICT ROUTER GUARD --- Column names sync: name, team_id
+                // --- STRICT ROUTER GUARD ---
                 if (!userData.name || !userData.team_id) {
                     document.getElementById('view-login').style.display = 'none';
                     document.getElementById('app-shell').style.display = 'none';
@@ -143,6 +143,12 @@ window.App = {
                     return;
                 }
 
+                // --- RE-BRANDING DINÁMICO & MEMORIA TÁCTICA ---
+                const cRes = await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs?team_id=eq.${userData.team_id}`, {
+                    headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
+                });
+                const configs = await cRes.json();
+                
                 // Cargar Equipo y Entorno
                 const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams?id=eq.${userData.team_id}`, {
                     headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
@@ -150,21 +156,24 @@ window.App = {
                 const teams = await tRes.json();
                 window.CurrentTeam = teams ? teams[0] : null;
 
-                // --- RE-BRANDING DINÁMICO ---
-                const cRes = await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs?team_id=eq.${userData.team_id}`, {
-                    headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
-                });
-                const configs = await cRes.json();
-                if (configs && configs[0] && configs[0].primary_color) {
-                    document.documentElement.style.setProperty('--primary', configs[0].primary_color);
-                    console.log("🎨 Re-branding aplicado:", configs[0].primary_color);
+                if (configs && configs[0]) {
+                    const configData = configs[0];
+                    if (configData.primary_color) {
+                        document.documentElement.style.setProperty('--primary', configData.primary_color);
+                        console.log("🎨 Branding inyectado:", configData.primary_color);
+                    }
+                    if (window.CurrentTeam) {
+                        window.CurrentTeam.match_dates = configData.match_dates || [];
+                        window.CurrentTeam.methodology = configData.methodology || "No definida";
+                        console.log("🧠 Memoria táctica recuperada:", window.CurrentTeam.match_dates);
+                    }
                 }
                 
                 document.getElementById('view-login').style.display = 'none';
                 document.getElementById('app-shell').style.display = 'block';
                 this.injectRoleAssets(userData.role);
             } else { this.logout(); }
-        } catch (e) { this.logout(); }
+        } catch (e) { console.error("Error checkSession:", e); this.logout(); }
     },
 
     injectRoleAssets(role) {

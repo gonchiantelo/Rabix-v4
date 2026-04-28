@@ -57,6 +57,13 @@ window.DTEngine = {
     },
 
     async fetchTeamConfig() {
+        // Priorizar memoria de App Core (window.CurrentTeam)
+        if (window.CurrentTeam && window.CurrentTeam.match_dates) {
+            this._matchDays = new Set(window.CurrentTeam.match_dates);
+            console.log("📍 Morfociclo cargado desde Memoria Core");
+            return;
+        }
+
         const teamId = window.CurrentTeam?.id;
         if (!teamId) return;
         try {
