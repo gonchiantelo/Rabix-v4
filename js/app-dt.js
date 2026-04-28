@@ -91,14 +91,29 @@ window.DTEngine = {
                     </div>
 
                     <div class="header-actions">
+                        <button id="btn-nav-calendar" onclick="DTEngine.toggleView('calendar')" class="btn-logout">📅 CALENDARIO</button>
+                        <button id="btn-nav-analytics" onclick="DTEngine.toggleView('analytics')" class="btn-logout">📊 ANALÍTICA</button>
                         <button onclick="App.logout()" class="btn-logout">SALIR</button>
                     </div>
                 </header>
 
                 <main class="dt-main-content">
-                    <section class="dt-dashboard-view">
+                    <section id="dt-calendar-view" class="dt-dashboard-view">
                         <div id="dt-calendar-grid" class="macro-calendar-grid">
                             <!-- Inyección dinámica -->
+                        </div>
+                    </section>
+
+                    <section id="dt-analytics-view" class="dt-analytics-view" style="display: none;">
+                        <div class="analytics-grid">
+                            <div class="chart-card">
+                                <h3>Curva de Carga Semanal</h3>
+                                <canvas id="canvas-carga-semanal"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h3>Momentos del Juego</h3>
+                                <canvas id="canvas-momentos-juego"></canvas>
+                            </div>
                         </div>
                     </section>
                 </main>
@@ -497,5 +512,71 @@ window.DTEngine = {
     },
 
     closeModal() { document.getElementById('dt-modal').classList.add('hidden'); },
-    closeDrawer() { document.getElementById('dt-drawer').classList.add('hidden'); }
+    closeDrawer() { document.getElementById('dt-drawer').classList.add('hidden'); },
+
+    // --- MÓDULO DE ANALÍTICA (Phase 6) ---
+    toggleView(view) {
+        const cal = document.getElementById('dt-calendar-view');
+        const an = document.getElementById('dt-analytics-view');
+        if (view === 'analytics') {
+            cal.style.display = 'none';
+            an.style.display = 'block';
+            this.renderAnalytics();
+        } else {
+            cal.style.display = 'block';
+            an.style.display = 'none';
+        }
+    },
+
+    renderAnalytics() {
+        // 1. Procesar Carga Semanal (Tareas por día de la semana)
+        const dayCounts = [0, 0, 0, 0, 0, 0, 0]; // L, M, X, J, V, S, D
+        Object.keys(this._assignedTasks).forEach(date => {
+            const d = new Date(date + 'T00:00:00');
+            const dayIdx = (d.getDay() + 6) % 7; // Ajuste a Lunes inicio
+            dayCounts[dayIdx] += this._assignedTasks[date].length;
+        });
+
+        // 2. Procesar Momentos del Juego
+        const moments = { 'ATAQUE': 0, 'DEFENSA': 0, 'TRANSICIONES': 0, 'OTROS': 0 };
+        Object.values(this._assignedTasks).flat().forEach(task => {
+            const ex = this._exercises.find(e => e.numericId === task.id);
+            if (ex) {
+                const m = ex.game_moment.toUpperCase();
+                if (m.includes('ATAQUE')) moments['ATAQUE']++;
+                else if (m.includes('DEFENSA')) moments['DEFENSA']++;
+                else if (m.includes('TRANSICION')) moments['TRANSICIONES']++;
+                else moments['OTROS']++;
+            }
+        });
+
+        // Gráfico 1: Barras (Carga Semanal)
+        new Chart(document.getElementById('canvas-carga-semanal'), {
+            type: 'bar',
+            data: {
+                labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+                datasets: [{
+                    label: 'Tareas Planificadas',
+                    data: dayCounts,
+                    backgroundColor: '#079FA0',
+                    borderRadius: 5
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+
+        // Gráfico 2: Doughnut (Momentos)
+        new Chart(document.getElementById('canvas-momentos-juego'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(moments),
+                datasets: [{
+                    data: Object.values(moments),
+                    backgroundColor: ['#079FA0', '#F58B01', '#DC2E2F', '#161620'],
+                    borderWidth: 0
+                }]
+            },
+            options: { responsive: true, cutout: '70%' }
+        });
+    }
 };
