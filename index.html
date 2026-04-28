@@ -36,6 +36,98 @@
     <!-- Contenedor para inyección dinámica -->
     <div id="app-shell"></div>
 
+    <!-- SECCIÓN ONBOARDING (Wizard 3 Pasos) -->
+    <section id="view-onboarding" class="onboarding-view" style="display: none;">
+        <div class="onboarding-card platinum-card">
+            <div id="onboarding-steps">
+                <!-- Paso 1: El Prestigio -->
+                <div id="step-1" class="onboarding-step">
+                    <span class="step-indicator">PASO 1/3</span>
+                    <h2>El Prestigio Profesional</h2>
+                    <p class="step-desc">Identifica tu perfil como Director Técnico Elite.</p>
+                    <div class="form-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" id="ob-name" class="rform-input" placeholder="Ej: Pep Guardiola" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Licencia Actual</label>
+                        <select id="ob-license" class="rform-input">
+                            <option value="UEFA PRO">UEFA PRO</option>
+                            <option value="CONMEBOL PRO">CONMEBOL PRO</option>
+                            <option value="ATFA">ATFA</option>
+                            <option value="AFA">AFA</option>
+                            <option value="AMATEUR">Amateur</option>
+                            <option value="OTRA">Otra</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary btn-full" onclick="Wizard.nextStep()">CONTINUAR A LA INSTITUCIÓN</button>
+                </div>
+
+                <!-- Paso 2: La Institución -->
+                <div id="step-2" class="onboarding-step" style="display: none;">
+                    <span class="step-indicator">PASO 2/3</span>
+                    <h2>Tu Institución</h2>
+                    <p class="step-desc">Configura el club que diriges en Ravix V5.</p>
+                    <div class="form-group">
+                        <label>Nombre del Equipo / Club</label>
+                        <input type="text" id="ob-team" class="rform-input" placeholder="Ej: Manchester City">
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select id="ob-category" class="rform-input">
+                            <option value="Primera División">Primera División</option>
+                            <option value="Reserva">Reserva</option>
+                            <option value="Sub-20">Sub-20</option>
+                            <option value="Sub-18">Sub-18</option>
+                            <option value="Amateur">Amateur</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Color Principal del Equipo</label>
+                        <input type="color" id="ob-color" class="rform-input-color" value="#00F2FE">
+                    </div>
+                    <button class="btn-primary btn-full" onclick="Wizard.nextStep()">CONFIGURAR ADN TÁCTICO</button>
+                </div>
+
+                <!-- Paso 3: ADN Táctico -->
+                <div id="step-3" class="onboarding-step" style="display: none;">
+                    <span class="step-indicator">PASO 3/3</span>
+                    <h2>ADN Táctico</h2>
+                    <p class="step-desc">Calibra la brújula metodológica de tu equipo.</p>
+                    <div class="form-group">
+                        <label>Metodología Principal</label>
+                        <select id="ob-methodology" class="rform-input">
+                            <option value="Periodización Táctica">Periodización Táctica</option>
+                            <option value="Microciclo Estructurado">Microciclo Estructurado</option>
+                            <option value="Entrenamiento Integrado">Entrenamiento Integrado</option>
+                            <option value="Personalizado">Personalizado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Día de Partido Habitual</label>
+                        <select id="ob-matchday" class="rform-input">
+                            <option value="Sábado">Sábado</option>
+                            <option value="Domingo" selected>Domingo</option>
+                            <option value="Viernes">Viernes</option>
+                            <option value="Lunes">Lunes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Sistema Base</label>
+                        <select id="ob-system" class="rform-input">
+                            <option value="4-3-3">4-3-3</option>
+                            <option value="4-4-2">4-4-2</option>
+                            <option value="3-5-2">3-5-2</option>
+                            <option value="4-2-3-1">4-2-3-1</option>
+                            <option value="5-3-2">5-3-2</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary btn-full" onclick="Wizard.finish()">FINALIZAR Y ENTRAR AL LOBBY</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <script src="./js/app-core.js"></script>
 </body>
 </html>

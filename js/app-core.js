@@ -99,6 +99,68 @@ window.App = {
     }
 };
 
+window.Wizard = {
+    step: 1,
+    nextStep() {
+        if (this.step < 3) {
+            document.getElementById(`step-${this.step}`).style.display = 'none';
+            this.step++;
+            document.getElementById(`step-${this.step}`).style.display = 'block';
+        }
+    },
+    async finish() {
+        const uid = localStorage.getItem('ravix_v5_uid');
+        const token = localStorage.getItem('ravix_token');
+        const teamId = window.CurrentTeam?.id;
+
+        const data = {
+            name: document.getElementById('ob-name').value,
+            license: document.getElementById('ob-license').value,
+            club: document.getElementById('ob-team').value,
+            category: document.getElementById('ob-category').value,
+            color: document.getElementById('ob-color').value,
+            methodology: document.getElementById('ob-methodology').value,
+            matchday: document.getElementById('ob-matchday').value,
+            system: document.getElementById('ob-system').value
+        };
+
+        if (!data.name) return alert("Nombre obligatorio");
+
+        try {
+            console.log("🚀 Finalizando Onboarding...");
+            
+            // 1. Update User
+            await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ full_name: data.name, license: data.license })
+            });
+
+            // 2. Update Team
+            if (teamId) {
+                await fetch(`${window.SUPABASE_URL}/rest/v1/teams?id=eq.${teamId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ name: data.club, category: data.category, primary_color: data.color })
+                });
+
+                // 3. Update Team Configs (Upsert)
+                await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}`, 'Prefer': 'resolution=merge-duplicates' },
+                    body: JSON.stringify({ team_id: teamId, owner_id: uid, methodology: data.methodology, base_system: data.system, preferred_matchday: data.matchday })
+                });
+            }
+
+            // Transición Final
+            document.getElementById('view-onboarding').style.display = 'none';
+            document.getElementById('app-shell').style.display = 'block';
+            window.App.injectRoleAssets('dt');
+
+        } catch (e) { console.error(e); alert("Error al guardar perfil."); }
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         const loginForm = document.getElementById('login-form');
@@ -148,13 +210,16 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (teamData && teamData[0]) window.CurrentTeam = teamData[0];
                             }
                             
-                            // 3. Transición de UI
-                            document.getElementById('view-login').style.display = 'none';
-                            const appShell = document.getElementById('app-shell');
-                            if (appShell) appShell.style.display = 'block';
-                            
-                            // 4. Carga de Assets y Renderizado
-                            window.App.injectRoleAssets(user.role);
+                            // 3. Transición de UI o Onboarding
+                            if (!user.full_name) {
+                                document.getElementById('view-login').style.display = 'none';
+                                document.getElementById('view-onboarding').style.display = 'flex';
+                            } else {
+                                document.getElementById('view-login').style.display = 'none';
+                                const appShell = document.getElementById('app-shell');
+                                if (appShell) appShell.style.display = 'block';
+                                window.App.injectRoleAssets(user.role);
+                            }
                         } else {
                             throw new Error("No se encontró perfil de usuario vinculado.");
                         }

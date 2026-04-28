@@ -741,3 +741,78 @@ body { background: #121212 !important; }
 /* Stats Widget */
 .pw-charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; height: 120px; }
 .pw-mini-chart { position: relative; width: 100%; height: 100%; }
+
+/* --- Phase 6: Onboarding Wizard (Platinum Edition) --- */
+.onboarding-view {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #121212;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.onboarding-card {
+    width: 100%;
+    max-width: 500px;
+    background: linear-gradient(135deg, rgba(224, 224, 224, 0.08) 0%, rgba(176, 176, 176, 0.03) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 32px;
+    padding: 40px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+    animation: scaleIn 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.step-indicator {
+    font-size: 10px;
+    font-weight: 900;
+    color: var(--dt-accent);
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.onboarding-step h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 28px;
+    color: #FFF;
+    margin-bottom: 10px;
+}
+
+.step-desc {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #AAA;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.rform-input-color {
+    width: 100%;
+    height: 45px;
+    padding: 5px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
