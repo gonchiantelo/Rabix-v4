@@ -418,15 +418,13 @@ window.DTEngine = {
 
             console.log("🟢 Tarea guardada con éxito vía RPC");
             
-            // Sincronizar con el ID real de la base de datos
-            await this.fetchMonthLogs();
-            this.generateCalendar();
+            // Sincronizar con el ID real de la base de datos y refrescar UI
+            await this.refreshState();
 
         } catch (error) {
             console.error("🔴 Error crítico en RPC:", error.message);
             // Revertir en caso de error
-            await this.fetchMonthLogs();
-            this.generateCalendar();
+            await this.refreshState();
             alert("Error al guardar: " + error.message);
         }
     },
@@ -470,9 +468,8 @@ window.DTEngine = {
 
             console.log("🟢 Tarea eliminada con éxito vía RPC");
             
-            // Solo después de confirmar, eliminamos del estado local y refrescamos
-            this._assignedTasks[date].splice(index, 1);
-            this.generateCalendar();
+            // Solo después de confirmar, refrescamos el estado global
+            await this.refreshState();
 
         } catch (error) {
             console.error("🔴 Error crítico al borrar en RPC:", error.message);
@@ -515,15 +512,24 @@ window.DTEngine = {
     closeModal() { document.getElementById('dt-modal').classList.add('hidden'); },
     closeDrawer() { document.getElementById('dt-drawer').classList.add('hidden'); },
 
-    // --- MÓDULO DE ANALÍTICA (Phase 6) ---
+    // --- MÓDULO DE REACTIVIDAD (Phase 6) ---
+    async refreshState() {
+        await this.fetchMonthLogs();
+        this.generateCalendar();
+        const anView = document.getElementById('dt-analytics-view');
+        if (anView && anView.style.display === 'block') {
+            this.renderAnalytics();
+        }
+    },
+
     toggleView(view) {
         const cal = document.getElementById('dt-calendar-view');
         const an = document.getElementById('dt-analytics-view');
         if (view === 'analytics') {
-            cal.style.display = 'block'; // Asegurar visibilidad ANTES de renderizar charts
+            cal.style.display = 'block'; 
             an.style.display = 'block';
             cal.style.display = 'none';
-            this.renderAnalytics();
+            this.renderAnalytics(); // Recalcular siempre al entrar
         } else {
             cal.style.display = 'block';
             an.style.display = 'none';
