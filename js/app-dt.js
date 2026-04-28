@@ -13,6 +13,7 @@ window.DTEngine = {
     _exercises: [],
     _selectedDate: null,
     _showAllExercises: false,
+    _charts: {}, // Almacén para instancias de Chart.js
 
     async fetchMonthLogs() {
         const year = this._currentDate.getFullYear();
@@ -519,8 +520,9 @@ window.DTEngine = {
         const cal = document.getElementById('dt-calendar-view');
         const an = document.getElementById('dt-analytics-view');
         if (view === 'analytics') {
-            cal.style.display = 'none';
+            cal.style.display = 'block'; // Asegurar visibilidad ANTES de renderizar charts
             an.style.display = 'block';
+            cal.style.display = 'none';
             this.renderAnalytics();
         } else {
             cal.style.display = 'block';
@@ -529,54 +531,83 @@ window.DTEngine = {
     },
 
     renderAnalytics() {
-        // 1. Procesar Carga Semanal (Tareas por día de la semana)
-        const dayCounts = [0, 0, 0, 0, 0, 0, 0]; // L, M, X, J, V, S, D
+        // 0. Limpiar instancias previas para evitar conflictos
+        if (this._charts.carga) this._charts.carga.destroy();
+        if (this._charts.momentos) this._charts.momentos.destroy();
+
+        // 1. Procesar Carga Semanal (Minutos por día de la semana)
+        const weeklyMinutes = [0, 0, 0, 0, 0, 0, 0]; // L, M, X, J, V, S, D
+        const moments = { 'ATAQUE': 0, 'DEFENSA': 0, 'TRANSICIONES': 0, 'OTROS': 0 };
+
         Object.keys(this._assignedTasks).forEach(date => {
             const d = new Date(date + 'T00:00:00');
             const dayIdx = (d.getDay() + 6) % 7; // Ajuste a Lunes inicio
-            dayCounts[dayIdx] += this._assignedTasks[date].length;
+
+            this._assignedTasks[date].forEach(task => {
+                const ex = this._exercises.find(e => e.numericId === task.id);
+                if (ex) {
+                    // Carga: Sumamos duración (asumimos 15 min si no está definido)
+                    const duration = parseInt(ex.duration) || 15;
+                    weeklyMinutes[dayIdx] += duration;
+
+                    // Momentos
+                    const m = (ex.game_moment || 'otros').toUpperCase();
+                    if (m.includes('ATAQUE')) moments['ATAQUE']++;
+                    else if (m.includes('DEFENSA')) moments['DEFENSA']++;
+                    else if (m.includes('TRANSICION')) moments['TRANSICIONES']++;
+                    else moments['OTROS']++;
+                }
+            });
         });
 
-        // 2. Procesar Momentos del Juego
-        const moments = { 'ATAQUE': 0, 'DEFENSA': 0, 'TRANSICIONES': 0, 'OTROS': 0 };
-        Object.values(this._assignedTasks).flat().forEach(task => {
-            const ex = this._exercises.find(e => e.numericId === task.id);
-            if (ex) {
-                const m = ex.game_moment.toUpperCase();
-                if (m.includes('ATAQUE')) moments['ATAQUE']++;
-                else if (m.includes('DEFENSA')) moments['DEFENSA']++;
-                else if (m.includes('TRANSICION')) moments['TRANSICIONES']++;
-                else moments['OTROS']++;
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: '#E0E0E6', font: { family: 'Inter' } } }
+            },
+            scales: {
+                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#606070' } },
+                x: { grid: { display: false }, ticks: { color: '#606070' } }
             }
-        });
+        };
 
-        // Gráfico 1: Barras (Carga Semanal)
-        new Chart(document.getElementById('canvas-carga-semanal'), {
+        // Gráfico 1: Barras (Carga Semanal en Minutos)
+        this._charts.carga = new Chart(document.getElementById('canvas-carga-semanal'), {
             type: 'bar',
             data: {
                 labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
                 datasets: [{
-                    label: 'Tareas Planificadas',
-                    data: dayCounts,
+                    label: 'Volumen (Minutos)',
+                    data: weeklyMinutes,
                     backgroundColor: '#079FA0',
-                    borderRadius: 5
+                    hoverBackgroundColor: '#0AC4C5',
+                    borderRadius: 8
                 }]
             },
-            options: { responsive: true, plugins: { legend: { display: false } } }
+            options: chartOptions
         });
 
-        // Gráfico 2: Doughnut (Momentos)
-        new Chart(document.getElementById('canvas-momentos-juego'), {
+        // Gráfico 2: Doughnut (Distribución de Momentos)
+        this._charts.momentos = new Chart(document.getElementById('canvas-momentos-juego'), {
             type: 'doughnut',
             data: {
                 labels: Object.keys(moments),
                 datasets: [{
                     data: Object.values(moments),
                     backgroundColor: ['#079FA0', '#F58B01', '#DC2E2F', '#161620'],
-                    borderWidth: 0
+                    borderWidth: 2,
+                    borderColor: '#0E0E14'
                 }]
             },
-            options: { responsive: true, cutout: '70%' }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#E0E0E6', padding: 20 } }
+                }
+            }
         });
     }
 };
