@@ -113,103 +113,121 @@ window.App = {
 
 window.Wizard = {
     step: 1,
-    mode: 'create',
-    setMode(m) {
-        this.mode = m;
-        const cFields = document.getElementById('ob-create-fields');
-        const jFields = document.getElementById('ob-join-fields');
-        if (cFields) cFields.style.display = m === 'create' ? 'block' : 'none';
-        if (jFields) jFields.style.display = m === 'join' ? 'block' : 'none';
+    path: 'create',
+    
+    selectPath(p) {
+        this.path = p;
+        document.getElementById('path-create')?.classList.toggle('active', p === 'create');
+        document.getElementById('path-join')?.classList.toggle('active', p === 'join');
         
-        document.getElementById('tab-create')?.classList.toggle('active', m === 'create');
-        document.getElementById('tab-join')?.classList.toggle('active', m === 'join');
+        // Sincronizar visibilidad del Paso 3 preventivamente
+        const createEl = document.getElementById('ob-final-create');
+        const joinEl = document.getElementById('ob-final-join');
+        if (createEl) createEl.style.display = p === 'create' ? 'block' : 'none';
+        if (joinEl) joinEl.style.display = p === 'join' ? 'block' : 'none';
     },
+
     nextStep() {
         if (this.step < 3) {
             document.getElementById(`step-${this.step}`).style.display = 'none';
             this.step++;
             document.getElementById(`step-${this.step}`).style.display = 'block';
+            this.updateStepper();
         }
     },
+
+    prevStep() {
+        if (this.step > 1) {
+            document.getElementById(`step-${this.step}`).style.display = 'none';
+            this.step--;
+            document.getElementById(`step-${this.step}`).style.display = 'block';
+            this.updateStepper();
+        }
+    },
+
+    updateStepper() {
+        for (let i = 1; i <= 3; i++) {
+            const ball = document.getElementById(`ball-${i}`);
+            if (ball) ball.classList.toggle('active', i <= this.step);
+        }
+    },
+
     async finish() {
         const uid = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
         
         const name = document.getElementById('ob-name').value;
+        const role = document.getElementById('ob-role').value;
         const license = document.getElementById('ob-license').value;
         
-        if (!name) return alert("El nombre es obligatorio.");
+        if (!name) return alert("Por favor, ingresa tu nombre.");
 
         try {
+            console.log(`🚀 Iniciando flujo Onboarding V2 (${this.path})...`);
             let teamId = null;
-            let teamName = "Sin Club";
 
-            if (this.mode === 'create') {
-                const clubName = document.getElementById('ob-team').value || "Nuevo Club";
-                const category = document.getElementById('ob-category').value;
-                const color = document.getElementById('ob-color').value;
+            if (this.path === 'create') {
+                const teamName = document.getElementById('ob-team').value || "Mi Equipo";
+                const teamColor = document.getElementById('ob-color').value;
                 const teamCode = 'CU-' + Math.floor(1000 + Math.random() * 9000);
 
-                // 1. Crear Equipo
+                // 1. Crear Equipo (Insert + Select)
                 const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 
                         'Authorization': `Bearer ${token}`, 'Prefer': 'return=representation' 
                     },
-                    body: JSON.stringify({ name: clubName, category, primary_color: color, team_code: teamCode })
+                    body: JSON.stringify({ name: teamName, primary_color: teamColor, team_code: teamCode })
                 });
-                const team = await tRes.json();
-                teamId = team[0].id;
-                teamName = clubName;
+                
+                const teams = await tRes.json();
+                if (!tRes.ok || !teams[0]) throw new Error("Error al crear el equipo.");
+                teamId = teams[0].id;
 
                 // 2. Crear Config Táctica
-                const systems = Array.from(document.querySelectorAll('input[name="ob-system"]:checked')).map(cb => cb.value);
+                const activePills = Array.from(document.querySelectorAll('#pills-systems .pill.active')).map(p => p.getAttribute('data-val'));
                 await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ 
-                        team_id: teamId, owner_id: uid, 
+                        team_id: teamId, 
+                        owner_id: uid, 
                         methodology: document.getElementById('ob-methodology').value,
-                        base_system: systems.join(', '),
+                        base_system: activePills.join(', '),
                         preferred_matchday: document.getElementById('ob-matchday').value
                     })
                 });
             } else {
-                // MODO JOIN
+                // RUTA JOIN
                 const code = document.getElementById('ob-team-code').value;
                 const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams?team_code=eq.${code}`, {
                     headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
                 });
                 const teams = await tRes.json();
-                if (!teams || !teams[0]) throw new Error("Código de equipo no encontrado.");
+                if (!teams || !teams[0]) throw new Error("Código de invitación inválido.");
                 teamId = teams[0].id;
-                teamName = teams[0].name;
             }
 
-            // 3. Actualizar Usuario Final
-            await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
+            // 3. Actualizar Perfil de Usuario
+            const uRes = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ full_name: name, license: license, team_id: teamId })
+                body: JSON.stringify({ full_name: name, role: role, license: license, team_id: teamId })
             });
 
-            console.log("🟢 Onboarding Completo. Sincronizando UI...");
-            
-            // Actualizar Globals
-            if (window.CurrentTeam) {
-                window.CurrentTeam.id = teamId;
-                window.CurrentTeam.name = teamName;
-            }
+            if (!uRes.ok) throw new Error("Error al vincular el perfil.");
 
-            // Transición
+            console.log("✅ Ciclo de acceso completado. Redirigiendo...");
+            
+            // Forzar recarga de estado y assets
             document.getElementById('view-onboarding').style.display = 'none';
             document.getElementById('app-shell').style.display = 'block';
             window.App.injectRoleAssets('dt');
 
-        } catch (e) {
-            console.error(e);
-            alert("Error: " + e.message);
+        } catch (err) {
+            console.error("🔴 Error Onboarding:", err);
+            alert("Error: " + err.message);
         }
     }
 };

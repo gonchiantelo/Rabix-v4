@@ -45,117 +45,141 @@
     <!-- Contenedor para inyección dinámica -->
     <div id="app-shell"></div>
 
-    <!-- SECCIÓN ONBOARDING (Wizard 3 Pasos) -->
+    <!-- SECCIÓN ONBOARDING (Wizard Premium V2) -->
     <section id="view-onboarding" class="onboarding-view" style="display: none;">
-        <div class="onboarding-card platinum-card">
+        <div class="onboarding-card platinum-card-v2">
+            
+            <!-- Stepper Superior -->
+            <div class="ob-stepper">
+                <div class="step-ball active" id="ball-1">1</div>
+                <div class="step-line"></div>
+                <div class="step-ball" id="ball-2">2</div>
+                <div class="step-line"></div>
+                <div class="step-ball" id="ball-3">3</div>
+            </div>
+
             <div id="onboarding-steps">
-                <!-- Paso 1: El Prestigio -->
+                <!-- Paso 1: Perfil Elite -->
                 <div id="step-1" class="onboarding-step">
-                    <span class="step-indicator">PASO 1/3</span>
-                    <h2>El Prestigio Profesional</h2>
-                    <p class="step-desc">Identifica tu perfil como Director Técnico Elite.</p>
+                    <h2>Identidad Profesional</h2>
+                    <p class="step-desc">Configura tu perfil de Staff en la plataforma.</p>
+                    
                     <div class="form-group">
                         <label>Nombre Completo</label>
-                        <input type="text" id="ob-name" class="rform-input" placeholder="Ej: Pep Guardiola" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Licencia Actual</label>
-                        <select id="ob-license" class="rform-input">
-                            <optgroup label="UEFA">
-                                <option value="UEFA PRO">UEFA PRO</option>
-                                <option value="UEFA A">UEFA A</option>
-                            </optgroup>
-                            <optgroup label="CONMEBOL / AFA">
-                                <option value="CONMEBOL PRO">CONMEBOL PRO</option>
-                                <option value="ATFA">ATFA</option>
-                                <option value="AFA">AFA</option>
-                            </optgroup>
-                            <optgroup label="OTRAS">
-                                <option value="AMATEUR">Amateur</option>
-                                <option value="OTRA">Otra</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                    <button class="btn-primary btn-full" onclick="window.Wizard.nextStep()">CONTINUAR A LA INSTITUCIÓN</button>
-                </div>
-
-                <!-- Paso 2: La Institución (Multi-tenant) -->
-                <div id="step-2" class="onboarding-step" style="display: none;">
-                    <span class="step-indicator">PASO 2/3</span>
-                    <h2>Tu Institución</h2>
-                    <p class="step-desc">Elige entre fundar tu club o unirte a uno existente.</p>
-                    
-                    <div class="onboarding-tabs mb-20">
-                        <button id="tab-create" class="tab-btn active" onclick="window.Wizard.setMode('create')">CREAR CLUB</button>
-                        <button id="tab-join" class="tab-btn" onclick="window.Wizard.setMode('join')">UNIRSE AL STAFF</button>
+                        <input type="text" id="ob-name" class="rform-input-v2" placeholder="Ej: Pep Guardiola" required>
                     </div>
 
-                    <div id="ob-create-fields">
-                        <div class="form-group">
-                            <label>Nombre del Equipo / Club</label>
-                            <input type="text" id="ob-team" class="rform-input" placeholder="Ej: Manchester City">
-                        </div>
-                        <div class="form-group">
-                            <label>Categoría</label>
-                            <select id="ob-category" class="rform-input">
-                                <option value="Primera División">Primera División</option>
-                                <option value="Reserva">Reserva</option>
-                                <option value="Sub-20">Sub-20</option>
-                                <option value="Sub-18">Sub-18</option>
-                                <option value="Amateur">Amateur</option>
+                    <div class="ob-row">
+                        <div class="form-group flex-1">
+                            <label>Rol en el Staff</label>
+                            <select id="ob-role" class="rform-input-v2">
+                                <option value="DT Principal">Director Técnico Principal</option>
+                                <option value="Ayudante">Ayudante de Campo</option>
+                                <option value="PF">Preparador Físico</option>
+                                <option value="Analista">Analista Táctico</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>Color Principal</label>
-                            <input type="color" id="ob-color" class="rform-input-color" value="#00F2FE">
+                        <div class="form-group flex-1">
+                            <label>Licencia</label>
+                            <select id="ob-license" class="rform-input-v2">
+                                <optgroup label="PRO">
+                                    <option value="UEFA PRO">UEFA PRO</option>
+                                    <option value="CONMEBOL PRO">CONMEBOL PRO</option>
+                                </optgroup>
+                                <optgroup label="NACIONAL">
+                                    <option value="ATFA">ATFA</option>
+                                    <option value="AFA">AFA</option>
+                                    <option value="OTRA">Otra</option>
+                                </optgroup>
+                            </select>
                         </div>
                     </div>
 
-                    <div id="ob-join-fields" style="display: none;">
-                        <div class="form-group">
-                            <label>Código de Equipo</label>
-                            <input type="text" id="ob-team-code" class="rform-input" placeholder="Ej: CU-1234">
-                            <p class="field-help">Pide el código al administrador del club.</p>
-                        </div>
-                    </div>
-
-                    <button class="btn-primary btn-full" onclick="window.Wizard.nextStep()">CONFIGURAR ADN TÁCTICO</button>
+                    <button class="btn-primary-v2 btn-full mt-20" onclick="window.Wizard.nextStep()">CONTINUAR A LA INSTITUCIÓN</button>
                 </div>
 
-                <!-- Paso 3: ADN Táctico -->
-                <div id="step-3" class="onboarding-step" style="display: none;">
-                    <span class="step-indicator">PASO 3/3</span>
-                    <h2>ADN Táctico</h2>
-                    <p class="step-desc">Calibra la brújula metodológica de tu equipo.</p>
-                    <div class="form-group">
-                        <label>Metodología Principal</label>
-                        <select id="ob-methodology" class="rform-input">
-                            <option value="Periodización Táctica">Periodización Táctica</option>
-                            <option value="Microciclo Estructurado">Microciclo Estructurado</option>
-                            <option value="Entrenamiento Integrado">Entrenamiento Integrado</option>
-                            <option value="Personalizado">Personalizado</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Día de Partido Habitual <small>(Base para el MD-)</small></label>
-                        <select id="ob-matchday" class="rform-input">
-                            <option value="Sábado">Sábado</option>
-                            <option value="Domingo" selected>Domingo</option>
-                            <option value="Viernes">Viernes</option>
-                            <option value="Lunes">Lunes</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Sistemas Base (Selección Múltiple)</label>
-                        <div class="systems-grid">
-                            <label class="check-container">4-3-3 <input type="checkbox" name="ob-system" value="4-3-3"><span class="checkmark"></span></label>
-                            <label class="check-container">4-4-2 <input type="checkbox" name="ob-system" value="4-4-2"><span class="checkmark"></span></label>
-                            <label class="check-container">3-5-2 <input type="checkbox" name="ob-system" value="3-5-2"><span class="checkmark"></span></label>
-                            <label class="check-container">4-2-3-1 <input type="checkbox" name="ob-system" value="4-2-3-1"><span class="checkmark"></span></label>
-                            <label class="check-container">5-3-2 <input type="checkbox" name="ob-system" value="5-3-2"><span class="checkmark"></span></label>
+                <!-- Paso 2: La Encrucijada (Selección de Ruta) -->
+                <div id="step-2" class="onboarding-step" style="display: none;">
+                    <h2>¿Cómo iniciarás hoy?</h2>
+                    <p class="step-desc">Fundar un club requiere configuración; unirse al staff requiere un código.</p>
+                    
+                    <div class="path-selection-grid">
+                        <div id="path-create" class="path-card active" onclick="window.Wizard.selectPath('create')">
+                            <div class="path-icon">🏗️</div>
+                            <h3>Fundar Institución</h3>
+                            <p>Crear un nuevo equipo desde cero y definir su ADN.</p>
+                        </div>
+                        <div id="path-join" class="path-card" onclick="window.Wizard.selectPath('join')">
+                            <div class="path-icon">🤝</div>
+                            <h3>Unirme a un Staff</h3>
+                            <p>Ingresar a un club existente mediante código de invitación.</p>
                         </div>
                     </div>
-                    <button class="btn-primary btn-full" onclick="window.Wizard.finish()">FINALIZAR Y ENTRAR AL LOBBY</button>
+
+                    <div class="ob-footer-actions">
+                        <button class="btn-secondary" onclick="window.Wizard.prevStep()">← ATRÁS</button>
+                        <button class="btn-primary-v2" onclick="window.Wizard.nextStep()">SIGUIENTE PASO</button>
+                    </div>
+                </div>
+
+                <!-- Paso 3: Configuración Dinámica -->
+                <div id="step-3" class="onboarding-step" style="display: none;">
+                    
+                    <!-- Contenedor dinámico para CREAR -->
+                    <div id="ob-final-create" style="display: block;">
+                        <h2>ADN del Nuevo Club</h2>
+                        <div class="ob-row">
+                            <div class="form-group flex-2">
+                                <label>Nombre del Club</label>
+                                <input type="text" id="ob-team" class="rform-input-v2" placeholder="Ej: Manchester City">
+                            </div>
+                            <div class="form-group flex-1">
+                                <label>Color</label>
+                                <input type="color" id="ob-color" class="ob-color-v2" value="#00F2FE">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Metodología y Sistema</label>
+                            <div class="ob-row">
+                                <select id="ob-methodology" class="rform-input-v2 flex-1">
+                                    <option value="Periodización Táctica">Periodización Táctica</option>
+                                    <option value="Microciclo Estructurado">Microciclo Estructurado</option>
+                                    <option value="Personalizado">Personalizado</option>
+                                </select>
+                                <select id="ob-matchday" class="rform-input-v2 flex-1">
+                                    <option value="Sábado">Sábado</option>
+                                    <option value="Domingo" selected>Domingo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Sistemas Base (Selección Múltiple)</label>
+                            <div class="pills-container" id="pills-systems">
+                                <div class="pill" data-val="4-3-3" onclick="this.classList.toggle('active')">4-3-3</div>
+                                <div class="pill" data-val="4-4-2" onclick="this.classList.toggle('active')">4-4-2</div>
+                                <div class="pill active" data-val="4-2-3-1" onclick="this.classList.toggle('active')">4-2-3-1</div>
+                                <div class="pill" data-val="3-5-2" onclick="this.classList.toggle('active')">3-5-2</div>
+                                <div class="pill" data-val="5-3-2" onclick="this.classList.toggle('active')">5-3-2</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor dinámico para UNIRSE -->
+                    <div id="ob-final-join" style="display: none;">
+                        <h2>Acceso al Staff</h2>
+                        <p class="step-desc">Ingresa el código alfanumérico proporcionado por tu club.</p>
+                        <div class="form-group">
+                            <label>Código de Invitación</label>
+                            <input type="text" id="ob-team-code" class="rform-input-v2 code-input" placeholder="CU-XXXX">
+                        </div>
+                    </div>
+
+                    <div class="ob-footer-actions mt-20">
+                        <button class="btn-secondary" onclick="window.Wizard.prevStep()">← ATRÁS</button>
+                        <button class="btn-primary-v2" onclick="window.Wizard.finish()">FINALIZAR Y ENTRAR</button>
+                    </div>
                 </div>
             </div>
         </div>
