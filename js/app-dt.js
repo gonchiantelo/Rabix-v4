@@ -101,28 +101,45 @@ window.DTEngine = {
 
                 <main class="dt-main-content">
                     <section id="dt-home-view" class="dt-home-view">
-                        <div class="lobby-header">
-                            <h2 class="dt-main-title">Centro de Mando</h2>
-                            <p class="dt-main-subtitle">${teamName} | Categoría: ${window.CurrentTeam?.category || 'Elite'}</p>
+                        <!-- Widget 1: Perfil & Identidad -->
+                        <div class="platinum-widget profile-widget">
+                            <div class="pw-content">
+                                <div class="dt-avatar-ring">
+                                    <div class="dt-avatar-inner"></div>
+                                </div>
+                                <div class="dt-info">
+                                    <span class="dt-tag">DIRECTOR TÉCNICO</span>
+                                    <h2 class="dt-name">${localStorage.getItem('ravix_v5_uid')?.substring(0,8) || 'STAFF'}</h2>
+                                    <p class="dt-team-info">${teamName} | Categoría Elite</p>
+                                </div>
+                                <div class="dt-badge-chrome">LICENSE UEFA PRO</div>
+                            </div>
                         </div>
-                        <div class="lobby-grid">
-                            <div class="lobby-card" onclick="DTEngine.toggleView('calendar')">
-                                <div class="card-icon">📅</div>
-                                <h3>Planificación Semanal</h3>
-                                <p id="lobby-next-task">Buscando próxima sesión...</p>
-                                <span class="card-action">Entrar al Calendario →</span>
+
+                        <!-- Widget 2: Línea de Tiempo Táctica (Calendario) -->
+                        <div class="platinum-widget timeline-widget" onclick="DTEngine.toggleView('calendar')">
+                            <div class="pw-header">
+                                <h3>Línea de Tiempo Semanal</h3>
+                                <span class="pw-action">Planificación Completa →</span>
                             </div>
-                            <div class="lobby-card" onclick="DTEngine.toggleView('analytics')">
-                                <div class="card-icon">📊</div>
-                                <h3>Monitor de Rendimiento</h3>
-                                <p>Control de sRPE y Densidad de Espacio</p>
-                                <span class="card-action">Ver Estadísticas →</span>
+                            <div id="home-timeline-row" class="pw-timeline">
+                                <!-- Inyección dinámica -->
                             </div>
-                            <div class="lobby-card">
-                                <div class="card-icon">⚽</div>
-                                <h3>Gestión de Plantilla</h3>
-                                <p>24 Jugadores Activos</p>
-                                <span class="card-action">Próximamente...</span>
+                        </div>
+
+                        <!-- Widget 3: Dashboard Analítico -->
+                        <div class="platinum-widget stats-widget" onclick="DTEngine.toggleView('analytics')">
+                            <div class="pw-header">
+                                <h3>Monitor de Rendimiento Platinado</h3>
+                                <span class="pw-action">Detalle Estadístico →</span>
+                            </div>
+                            <div class="pw-charts-row">
+                                <div class="pw-mini-chart">
+                                    <canvas id="home-chart-load"></canvas>
+                                </div>
+                                <div class="pw-mini-chart">
+                                    <canvas id="home-chart-moments"></canvas>
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -569,20 +586,81 @@ window.DTEngine = {
     },
 
     updateHomeUI() {
-        const nextTaskEl = document.getElementById('lobby-next-task');
-        if (!nextTaskEl) return;
+        const timelineEl = document.getElementById('home-timeline-row');
+        if (!timelineEl) return;
         
-        const today = new Date().toISOString().split('T')[0];
-        const upcoming = Object.keys(this._assignedTasks)
-            .filter(date => date >= today)
-            .sort()[0];
+        // 1. Generar 7 días desde hoy
+        let html = '';
+        const today = new Date();
+        for (let i = 0; i < 7; i++) {
+            const current = new Date(today);
+            current.setDate(today.getDate() + i);
+            const dateStr = current.toISOString().split('T')[0];
+            const tasks = this._assignedTasks[dateStr] || [];
+            const isMatch = this._matchDays.has(dateStr);
+            const dayName = current.toLocaleDateString('es', { weekday: 'short' }).toUpperCase();
             
-        if (upcoming) {
-            const count = this._assignedTasks[upcoming].length;
-            nextTaskEl.innerText = `Próxima sesión: ${upcoming} (${count} tareas)`;
-        } else {
-            nextTaskEl.innerText = 'No hay sesiones programadas.';
+            html += `
+                <div class="timeline-day ${isMatch ? 'match-day' : ''}">
+                    <span class="t-name">${dayName}</span>
+                    <span class="t-num">${current.getDate()}</span>
+                    <div class="t-dots">
+                        ${tasks.slice(0, 3).map(() => '<span class="t-dot"></span>').join('')}
+                        ${tasks.length > 3 ? '<span class="t-dot plus">+</span>' : ''}
+                    </div>
+                </div>
+            `;
         }
+        timelineEl.innerHTML = html;
+
+        // 2. Mini Charts
+        this.renderHomeCharts();
+    },
+
+    renderHomeCharts() {
+        if (this._charts.homeLoad) this._charts.homeLoad.destroy();
+        if (this._charts.homeMoments) this._charts.homeMoments.destroy();
+
+        // Procesar datos rápidos
+        const loadData = [0, 0, 0, 0, 0, 0, 0];
+        const moments = { A: 0, D: 0, T: 0 };
+        
+        Object.keys(this._assignedTasks).forEach(date => {
+            const d = new Date(date + 'T00:00:00');
+            const dayIdx = (d.getDay() + 6) % 7;
+            this._assignedTasks[date].forEach(t => {
+                loadData[dayIdx] += 15;
+                const ex = this._exercises.find(e => e.numericId === t.id);
+                if (ex) {
+                    if (ex.game_moment.includes('ATAQUE')) moments.A++;
+                    else if (ex.game_moment.includes('DEFENSA')) moments.D++;
+                    else moments.T++;
+                }
+            });
+        });
+
+        const commonOptions = {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { display: false }, y: { display: false } }
+        };
+
+        this._charts.homeLoad = new Chart(document.getElementById('home-chart-load'), {
+            type: 'line',
+            data: {
+                labels: ['L','M','X','J','V','S','D'],
+                datasets: [{ data: loadData, borderColor: '#00F2FE', tension: 0.4, borderWidth: 2, pointRadius: 0 }]
+            },
+            options: commonOptions
+        });
+
+        this._charts.homeMoments = new Chart(document.getElementById('home-chart-moments'), {
+            type: 'doughnut',
+            data: {
+                datasets: [{ data: Object.values(moments), backgroundColor: ['#00F2FE', '#E0E0E0', '#606070'], borderWidth: 0 }]
+            },
+            options: { cutout: '80%', maintainAspectRatio: false }
+        });
     },
 
     toggleView(view) {

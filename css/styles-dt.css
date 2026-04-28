@@ -647,3 +647,97 @@
 @media (max-width: 900px) {
     .lobby-grid { grid-template-columns: 1fr; }
 }
+
+/* --- Platinum Chrome Theme (Phase 6 Redesign) --- */
+body { background: #121212 !important; }
+
+.dt-home-view {
+    padding: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.platinum-widget {
+    background: linear-gradient(135deg, rgba(224, 224, 224, 0.05) 0%, rgba(176, 176, 176, 0.02) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 25px;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.platinum-widget::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: linear-gradient(45deg, transparent 45%, rgba(255,255,255,0.1) 50%, transparent 55%);
+    transform: rotate(30deg);
+    transition: 0.6s;
+    pointer-events: none;
+}
+
+.platinum-widget:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+}
+
+.platinum-widget:hover::after {
+    left: 100%;
+}
+
+/* Profile Widget */
+.pw-content { display: flex; align-items: center; gap: 25px; }
+.dt-avatar-ring {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    padding: 3px;
+    background: linear-gradient(180deg, #FFFFFF 0%, #666 100%);
+}
+.dt-avatar-inner {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background: #222;
+}
+.dt-tag { font-size: 10px; color: var(--dt-accent); font-weight: 900; letter-spacing: 2px; }
+.dt-name { font-family: 'Outfit', sans-serif; font-size: 28px; color: #E0E0E0; margin: 5px 0; }
+.dt-badge-chrome {
+    margin-left: auto;
+    padding: 8px 15px;
+    border: 1px solid #FFF;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #FFF;
+}
+
+/* Timeline Widget */
+.pw-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.pw-header h3 { font-size: 14px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
+.pw-action { font-size: 11px; color: var(--dt-accent); font-weight: 700; }
+
+.pw-timeline { display: flex; justify-content: space-between; gap: 10px; }
+.timeline-day {
+    flex: 1;
+    background: rgba(255,255,255,0.02);
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid transparent;
+}
+.timeline-day.match-day { border-color: var(--dt-accent); background: rgba(0, 242, 254, 0.05); }
+.t-name { display: block; font-size: 10px; color: #666; margin-bottom: 5px; }
+.t-num { display: block; font-size: 18px; font-weight: 800; color: #E0E0E0; }
+.t-dots { display: flex; justify-content: center; gap: 3px; margin-top: 8px; }
+.t-dot { width: 4px; height: 4px; background: var(--dt-accent); border-radius: 50%; }
+.t-dot.plus { background: none; color: var(--dt-accent); font-size: 8px; line-height: 4px; }
+
+/* Stats Widget */
+.pw-charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; height: 120px; }
+.pw-mini-chart { position: relative; width: 100%; height: 100%; }
