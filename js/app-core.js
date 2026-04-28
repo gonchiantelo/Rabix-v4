@@ -3,6 +3,12 @@
     Auth, Router Guard & Onboarding Logic
 */
 
+// --- SUPABASE CONFIGURATION ---
+window.SUPA_URL = 'https://rscdpwarzltozigfbmev.supabase.co';
+window.SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzY2Rwd2Fyemx0b3ppZ2ZibWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjYyNjUsImV4cCI6MjA5MTg0MjI2NX0.WaKWoCxbaQ3VVDXLtfBvNyB9zywxZRHCwjzT-5gS-b0';
+window.SUPABASE_URL = window.SUPA_URL;
+window.SUPABASE_KEY = window.SUPA_KEY;
+
 window.Wizard = {
     step: 1,
     path: 'create',
@@ -169,17 +175,33 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = document.getElementById('login-username').value;
             const pass = document.getElementById('login-password').value;
             try {
+                if (!window.SUPABASE_URL || window.SUPABASE_URL.includes('undefined')) {
+                    throw new Error("Error de configuración: URL de Supabase no definida.");
+                }
+
                 const r = await fetch(`${window.SUPABASE_URL}/auth/v1/token?grant_type=password`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY },
                     body: JSON.stringify({ email, password: pass })
                 });
+
+                const contentType = r.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    const errorText = await r.text();
+                    console.error("🔴 Error de servidor (No JSON):", errorText);
+                    throw new Error("El servidor de autenticación no respondió correctamente.");
+                }
+
                 const data = await r.json();
-                if (!r.ok) throw new Error(data.error_description || 'Error');
+                if (!r.ok) throw new Error(data.error_description || 'Credenciales inválidas');
+                
                 localStorage.setItem('ravix_token', data.access_token);
                 localStorage.setItem('ravix_v5_uid', data.user.id);
                 window.App.checkSession(data.user.id, data.access_token);
-            } catch (err) { alert(err.message); }
+            } catch (err) { 
+                console.error("🔴 Login Fail:", err);
+                alert(err.message); 
+            }
         };
     }
 
@@ -191,22 +213,41 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = document.getElementById('register-email').value;
             const pass = document.getElementById('register-password').value;
             const conf = document.getElementById('register-confirm-password').value;
-            if (pass !== conf) return alert("No coinciden");
+            if (pass !== conf) return alert("Las contraseñas no coinciden");
 
             try {
+                if (!window.SUPABASE_URL || window.SUPABASE_URL.includes('undefined')) {
+                    throw new Error("Error de configuración: URL de Supabase no definida.");
+                }
+
                 const r = await fetch(`${window.SUPABASE_URL}/auth/v1/signup`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY },
                     body: JSON.stringify({ email, password: pass })
                 });
+
+                const contentType = r.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    const errorText = await r.text();
+                    console.error("🔴 Error de servidor (No JSON):", errorText);
+                    throw new Error("Error en el registro. Contacta al administrador.");
+                }
+
                 const data = await r.json();
-                if (!r.ok) throw new Error(data.msg || data.message || "Error");
+                if (!r.ok) throw new Error(data.msg || data.message || "Error al crear cuenta");
+                
                 if (data.access_token) {
                     localStorage.setItem('ravix_token', data.access_token);
                     localStorage.setItem('ravix_v5_uid', data.user.id);
                     window.App.checkSession(data.user.id, data.access_token);
-                } else { alert("Verifica tu email."); window.App.toggleAuth('login'); }
-            } catch (err) { alert(err.message); }
+                } else { 
+                    alert("Verifica tu email para activar la cuenta."); 
+                    window.App.toggleAuth('login'); 
+                }
+            } catch (err) { 
+                console.error("🔴 Signup Fail:", err);
+                alert(err.message); 
+            }
         };
     }
 });
