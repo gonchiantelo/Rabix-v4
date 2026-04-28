@@ -63,26 +63,35 @@ window.Wizard = {
             if (this.path === 'create') {
                 const tName = document.getElementById('ob-team-name').value || "Mi Club";
                 const tColor = document.getElementById('ob-team-color').value;
+                const tMethodology = document.getElementById('ob-methodology').value;
+                const tSystems = document.getElementById('ob-systems-input').value;
                 const tCode = 'CU-' + Math.floor(1000 + Math.random() * 9000);
 
+                // 1. Crear Equipo (Insert + Select) -> Columnas: name, code, owner_id
                 const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}`, 'Prefer': 'return=representation' },
-                    body: JSON.stringify({ name: tName, primary_color: tColor, team_code: tCode })
+                    body: JSON.stringify({ name: tName, code: tCode, owner_id: uid })
                 });
                 const teams = await tRes.json();
                 if (!tRes.ok || !teams[0]) throw new Error("Error al fundar equipo.");
                 teamId = teams[0].id;
 
-                const systems = Array.from(document.querySelectorAll('#ob-pills-systems .pill.active')).map(p => p.getAttribute('data-val'));
+                // 2. Crear Config Táctica -> Columnas: team_id, owner_id, primary_color, methodology, base_systems
                 await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ team_id: teamId, owner_id: uid, base_system: systems.join(', ') })
+                    body: JSON.stringify({ 
+                        team_id: teamId, 
+                        owner_id: uid, 
+                        primary_color: tColor,
+                        methodology: tMethodology,
+                        base_systems: tSystems 
+                    })
                 });
             } else {
                 const code = document.getElementById('ob-invite-code').value;
-                const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams?team_code=eq.${code}`, {
+                const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams?code=eq.${code}`, {
                     headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
                 });
                 const teams = await tRes.json();
@@ -90,16 +99,17 @@ window.Wizard = {
                 teamId = teams[0].id;
             }
 
+            // 3. Actualizar Usuario -> Columnas: name, role, license, team_id
             const uRes = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ full_name: name, role: role, license: license, team_id: teamId })
+                body: JSON.stringify({ name: name, role: role, license: license, team_id: teamId })
             });
 
             if (!uRes.ok) throw new Error("Error al actualizar perfil.");
 
             console.log("✅ Onboarding completado.");
-            location.reload(); // Recargar para entrar al flujo normal
+            location.reload(); 
 
         } catch (err) { alert(err.message); }
     }
@@ -125,8 +135,8 @@ window.App = {
             if (users && users[0]) {
                 const userData = users[0];
 
-                // --- STRICT ROUTER GUARD ---
-                if (!userData.full_name || !userData.team_id) {
+                // --- STRICT ROUTER GUARD --- Column names sync: name, team_id
+                if (!userData.name || !userData.team_id) {
                     document.getElementById('view-login').style.display = 'none';
                     document.getElementById('app-shell').style.display = 'none';
                     document.getElementById('view-onboarding').style.display = 'flex';
@@ -139,6 +149,16 @@ window.App = {
                 });
                 const teams = await tRes.json();
                 window.CurrentTeam = teams ? teams[0] : null;
+
+                // --- RE-BRANDING DINÁMICO ---
+                const cRes = await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs?team_id=eq.${userData.team_id}`, {
+                    headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
+                });
+                const configs = await cRes.json();
+                if (configs && configs[0] && configs[0].primary_color) {
+                    document.documentElement.style.setProperty('--primary', configs[0].primary_color);
+                    console.log("🎨 Re-branding aplicado:", configs[0].primary_color);
+                }
                 
                 document.getElementById('view-login').style.display = 'none';
                 document.getElementById('app-shell').style.display = 'block';

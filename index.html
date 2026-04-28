@@ -179,14 +179,21 @@
                                 <input type="color" id="ob-team-color" class="ob-input" style="padding: 5px; height: 58px;" value="#00F2FE">
                             </div>
                         </div>
+
                         <div>
-                            <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">SISTEMAS PREFERIDOS</label>
-                            <div class="pill-box" id="ob-pills-systems">
-                                <div class="pill active" data-val="4-3-3" onclick="this.classList.toggle('active')">4-3-3</div>
-                                <div class="pill" data-val="4-4-2" onclick="this.classList.toggle('active')">4-4-2</div>
-                                <div class="pill" data-val="3-5-2" onclick="this.classList.toggle('active')">3-5-2</div>
-                                <div class="pill active" data-val="4-2-3-1" onclick="this.classList.toggle('active')">4-2-3-1</div>
-                            </div>
+                            <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">METODOLOGÍA PRINCIPAL</label>
+                            <select id="ob-methodology" class="ob-input">
+                                <option value="Periodización Táctica">Periodización Táctica</option>
+                                <option value="Microciclo Estructurado">Microciclo Estructurado</option>
+                                <option value="Entrenamiento Integrado">Entrenamiento Integrado</option>
+                                <option value="Personalizada">Personalizada</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">SISTEMAS BASE</label>
+                            <input type="text" id="ob-systems-input" class="ob-input" placeholder="Ej: 4-3-3, 4-2-3-1, 3-5-2">
+                            <p style="color: #666; font-size: 10px; margin-top: 5px;">(Separados por coma)</p>
                         </div>
                     </div>
                 </div>
