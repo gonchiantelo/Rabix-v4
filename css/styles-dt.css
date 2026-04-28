@@ -548,3 +548,12 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* --- Chart Layout Fix --- */
+.chart-container {
+    position: relative;
+    width: 100%;
+    min-height: 250px;
+    max-height: 300px;
+    height: 300px;
+}

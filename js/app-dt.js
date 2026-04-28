@@ -109,11 +109,15 @@ window.DTEngine = {
                         <div class="analytics-grid">
                             <div class="chart-card">
                                 <h3>Curva de Carga Semanal</h3>
-                                <canvas id="canvas-carga-semanal"></canvas>
+                                <div class="chart-container">
+                                    <canvas id="canvas-carga-semanal"></canvas>
+                                </div>
                             </div>
                             <div class="chart-card">
                                 <h3>Momentos del Juego</h3>
-                                <canvas id="canvas-momentos-juego"></canvas>
+                                <div class="chart-container">
+                                    <canvas id="canvas-momentos-juego"></canvas>
+                                </div>
                             </div>
                         </div>
                     </section>
