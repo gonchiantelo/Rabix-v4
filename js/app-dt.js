@@ -416,13 +416,51 @@ window.DTEngine = {
     },
 
     async removeTask(date, index) {
-        const task = this._assignedTasks[date][index];
-        if (task && task.logId) {
-            const res = await window.Supa._req('DELETE', `training_logs?id=eq.${task.logId}`);
-            if (res) {
-                this._assignedTasks[date].splice(index, 1);
-                this.generateCalendar();
+        try {
+            const task = this._assignedTasks[date][index];
+            if (!task) return;
+
+            const teamId = window.CurrentTeam?.id;
+            const userId = localStorage.getItem('ravix_v5_uid');
+            const token = localStorage.getItem('ravix_token');
+
+            if (!teamId || !userId || !token) {
+                alert("Error: Sesión no identificada.");
+                return;
             }
+
+            console.log("🟡 Intentando borrar vía RPC:", task);
+
+            const response = await fetch(`${window.SUPABASE_URL}/rest/v1/rpc/borrar_tarea_calendario`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': window.SUPABASE_KEY,
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    p_user_id: userId,
+                    p_team_id: teamId,
+                    p_fecha: date,
+                    p_scenario: task.block,
+                    p_task_id: task.id.toString()
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(JSON.stringify(errorData));
+            }
+
+            console.log("🟢 Tarea eliminada con éxito vía RPC");
+            
+            // Solo después de confirmar, eliminamos del estado local y refrescamos
+            this._assignedTasks[date].splice(index, 1);
+            this.generateCalendar();
+
+        } catch (error) {
+            console.error("🔴 Error crítico al borrar en RPC:", error.message);
+            alert("Error al borrar: " + error.message);
         }
     },
 
