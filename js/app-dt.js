@@ -74,7 +74,11 @@ window.DTEngine = {
         } catch (e) { console.error("Error al cargar configuración de equipo:", e); }
     },
 
-    changeMonth(offset) {
+    changeMonth(e, offset) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         this._currentDate.setMonth(this._currentDate.getMonth() + offset);
         this.renderDashboard();
     },
@@ -93,9 +97,9 @@ window.DTEngine = {
                     <div class="brand-name">RAVIX <span class="team-name-badge">${teamName}</span> <span class="dt-badge">DT ELITE</span></div>
                     
                     <div class="month-nav">
-                        <button class="btn-nav" onclick="DTEngine.changeMonth(-1)">◀</button>
+                        <button class="btn-nav" onclick="DTEngine.changeMonth(event, -1)">◀</button>
                         <span class="current-month-display">${monthName}</span>
-                        <button class="btn-nav" onclick="DTEngine.changeMonth(1)">▶</button>
+                        <button class="btn-nav" onclick="DTEngine.changeMonth(event, 1)">▶</button>
                     </div>
 
                     <div class="header-actions">
@@ -220,6 +224,9 @@ window.DTEngine = {
                             </div>
                             <div id="library-list" class="exercise-list-container"></div>
                         </div>
+                        <div class="drawer-footer-actions">
+                            <button class="btn-save-staged" onclick="DTEngine.saveStagedTasks()">GUARDAR CAMBIOS</button>
+                        </div>
                     </div>
                 </div>
 
@@ -307,17 +314,34 @@ window.DTEngine = {
         if (this._matchDays.has(dateStr)) return 'PARTIDO';
 
         const current = new Date(dateStr + 'T00:00:00');
+        const methodology = window.CurrentTeam?.methodology || 'Periodización Táctica';
+
+        // 1. Días Pre-Partido (Morfociclo / Microciclo)
         for (let i = 1; i <= 4; i++) {
             const fut = new Date(current);
             fut.setDate(current.getDate() + i);
             const futStr = fut.toISOString().split('T')[0];
-            if (this._matchDays.has(futStr) || this._manualLabels[futStr] === 'PARTIDO') return `MD-${i}`;
+            if (this._matchDays.has(futStr)) {
+                // Bifurcación por Metodología
+                if (methodology === 'Microciclo Estructurado') {
+                    const structLabels = {
+                        1: 'MD-1 (Activación)',
+                        2: 'MD-2 (Velocidad)',
+                        3: 'MD-3 (Resistencia)',
+                        4: 'MD-4 (Fuerza)'
+                    };
+                    return structLabels[i];
+                }
+                // Default: Periodización Táctica
+                return `MD-${i}`;
+            }
         }
 
+        // 2. Días Post-Partido
         const yesterday = new Date(current);
         yesterday.setDate(current.getDate() - 1);
         const yestStr = yesterday.toISOString().split('T')[0];
-        if (this._matchDays.has(yestStr) || this._manualLabels[yestStr] === 'PARTIDO') return 'RECUPERACIÓN';
+        if (this._matchDays.has(yestStr)) return 'RECUPERACIÓN (MD+1)';
 
         return 'BASE';
     },
@@ -434,65 +458,70 @@ window.DTEngine = {
                         <option value="doble_turno">2º Turno</option>
                         <option value="vuelta_calma">V. Calma</option>
                     </select>
-                    <button class="ex-add-btn" onclick="DTEngine.assignExercise(${ex.numericId})">+</button>
+                    <button id="btn-add-${ex.numericId}" class="ex-add-btn" onclick="DTEngine.stageExercise(${ex.numericId})">+</button>
                 </div>
             </div>
         `).join('') || '<p class="empty-msg">No hay tareas para esta fase.</p>';
     },
 
-    async assignExercise(id) {
+    _stagedTasks: [],
+
+    stageExercise(id) {
+        const block = document.getElementById(`select-${id}`).value;
+        const btn = document.getElementById(`btn-add-${id}`);
+        
+        // Toggle selection
+        const existingIdx = this._stagedTasks.findIndex(t => t.id === id && t.block === block);
+        if (existingIdx > -1) {
+            this._stagedTasks.splice(existingIdx, 1);
+            btn.classList.remove('staged');
+        } else {
+            this._stagedTasks.push({ id, block });
+            btn.classList.add('staged');
+        }
+    },
+
+    async saveStagedTasks() {
+        if (this._stagedTasks.length === 0) return this.closeDrawer();
+        
         try {
-            const block = document.getElementById(`select-${id}`).value;
             const teamId = window.CurrentTeam?.id;
             const userId = localStorage.getItem('ravix_v5_uid');
             const token = localStorage.getItem('ravix_token');
+            const date = this._selectedDate;
 
-            if (!teamId || !userId || !token) {
-                alert("Error: Sesión no identificada.");
-                return;
+            if (!teamId || !token) throw new Error("Sesión inválida");
+
+            console.log(`💾 Guardando ${this._stagedTasks.length} tareas para ${date}...`);
+
+            for (const task of this._stagedTasks) {
+                await fetch(`${window.SUPABASE_URL}/rest/v1/training_logs`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': window.SUPABASE_KEY,
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        team_id: teamId,
+                        user_id: userId,
+                        fecha: date,
+                        ejs_cods: [task.id],
+                        scenario: task.block
+                    })
+                });
             }
 
-            // --- OPTIMISTIC UI: Inyectar visualmente antes de la confirmación ---
-            if (!this._assignedTasks[this._selectedDate]) this._assignedTasks[this._selectedDate] = [];
-            this._assignedTasks[this._selectedDate].push({
-                logId: 'temp-' + Date.now(),
-                id: id,
-                block: block
-            });
-            this.generateCalendar();
+            this._stagedTasks = [];
+            this.refreshState();
+            this.closeDrawer();
 
-            const payload = {
-                p_user_id: userId,
-                p_team_id: teamId,
-                p_fecha: this._selectedDate,
-                p_scenario: block,
-                p_task_id: id.toString()
-            };
-
-            const response = await fetch(`${window.SUPABASE_URL}/rest/v1/rpc/guardar_tarea_calendario`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': window.SUPABASE_KEY,
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) throw new Error("Fallo en persistencia RPC");
-
-            console.log("🟢 Tarea guardada con éxito vía RPC");
-            
-            // Sincronizar con el ID real de la base de datos y refrescar UI
-            await this.refreshState();
-
-        } catch (error) {
-            console.error("🔴 Error crítico en RPC:", error.message);
-            // Revertir en caso de error
-            await this.refreshState();
-            alert("Error al guardar: " + error.message);
+        } catch (e) {
+            alert("Error al guardar cambios: " + e.message);
         }
     },
+
+    // assignExercise antigua eliminada en favor de staging
 
     async removeTask(date, index) {
         try {
