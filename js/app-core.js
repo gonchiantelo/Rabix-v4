@@ -169,11 +169,31 @@ window.App = {
                     }
                 }
                 
+                // --- CARGA GLOBAL DE BIBLIOTECA ---
+                await this.fetchExercisesLibrary();
+
                 document.getElementById('view-login').style.display = 'none';
                 document.getElementById('app-shell').style.display = 'block';
                 this.injectRoleAssets(userData.role);
             } else { this.logout(); }
         } catch (e) { console.error("Error checkSession:", e); this.logout(); }
+    },
+
+    async fetchExercisesLibrary() {
+        try {
+            const token = localStorage.getItem('ravix_token');
+            const r = await fetch(`${window.SUPABASE_URL}/rest/v1/exercises_library`, {
+                headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
+            });
+            const data = await r.json();
+            if (data) {
+                window.ExercisesLibrary = data.map(ex => ({
+                    ...ex,
+                    numericId: parseInt(ex.id.replace(/\D/g, '')) || Date.now()
+                }));
+                console.log("📚 Biblioteca Táctica cargada globalmente:", window.ExercisesLibrary.length);
+            }
+        } catch (e) { console.error("🔴 Error cargando biblioteca:", e); }
     },
 
     injectRoleAssets(role) {

@@ -232,24 +232,13 @@ window.DTEngine = {
             </div>
         `;
 
-        await this.fetchExercises();
+        // await this.fetchExercises(); // Eliminado: Ahora es global
         await this.fetchMonthLogs(); // Phase 5
         this.generateCalendar();
         this.updateHomeUI(); // Phase 6
     },
 
-    async fetchExercises() {
-        if (this._exercises.length > 0) return;
-        try {
-            const data = await window.Supa._req('GET', 'exercises_library');
-            if (data) {
-                this._exercises = data.map(ex => ({
-                    ...ex,
-                    numericId: parseInt(ex.id.replace(/\D/g, '')) || Date.now()
-                }));
-            }
-        } catch (e) { console.error("Error biblioteca:", e); }
-    },
+    // fetchExercises eliminada, integrada en App.fetchExercisesLibrary
 
     generateCalendar() {
         const grid = document.getElementById('dt-calendar-grid');
@@ -276,7 +265,7 @@ window.DTEngine = {
             const renderBlock = (blockId, title) => {
                 const tasks = assignments.filter(a => a.block === blockId);
                 const tasksHtml = tasks.map((a) => {
-                    const ex = this._exercises.find(e => e.numericId === a.id);
+                    const ex = (window.ExercisesLibrary || []).find(e => e.numericId === a.id);
                     if (!ex) return '';
                     return `
                         <div class="task-chip" onclick="event.stopPropagation(); DTEngine.openTaskModal(${a.id})">
@@ -416,11 +405,18 @@ window.DTEngine = {
 
     renderLibrary(currentLabel) {
         const container = document.getElementById('library-list');
-        const phase = currentLabel.split(' ')[0];
+        if (!container) return;
+        
+        // Fase actual limpia
+        const currentPhase = currentLabel.split(' ')[0].trim().toUpperCase();
 
-        let filtered = this._exercises;
-        if (!this._showAllExercises && (phase.startsWith('MD-') || phase === 'PARTIDO')) {
-            filtered = this._exercises.filter(ex => ex.morfociclo_phase === phase);
+        let filtered = window.ExercisesLibrary || [];
+        
+        // Si no estamos en 'Ver Toda', filtramos por fase exacta
+        if (!this._showAllExercises && (currentPhase.startsWith('MD-') || currentPhase === 'PARTIDO')) {
+            filtered = filtered.filter(ex => 
+                ex.morfociclo_phase?.trim().toUpperCase() === currentPhase
+            );
         }
 
         container.innerHTML = filtered.map(ex => `
@@ -547,7 +543,7 @@ window.DTEngine = {
     },
 
     openTaskModal(numericId) {
-        const task = this._exercises.find(e => e.numericId === numericId);
+        const task = (window.ExercisesLibrary || []).find(ex => ex.numericId === numericId);
         if (task) this.renderTaskModal(task);
     },
 
@@ -637,7 +633,7 @@ window.DTEngine = {
             const dayIdx = (d.getDay() + 6) % 7;
             this._assignedTasks[date].forEach(t => {
                 loadData[dayIdx] += 15;
-                const ex = this._exercises.find(e => e.numericId === t.id);
+                const ex = (window.ExercisesLibrary || []).find(e => e.numericId === t.id);
                 if (ex) {
                     if (ex.game_moment.includes('ATAQUE')) moments.A++;
                     else if (ex.game_moment.includes('DEFENSA')) moments.D++;
