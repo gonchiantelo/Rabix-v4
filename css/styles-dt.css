@@ -28,11 +28,11 @@
     align-items: center;
     padding: 15px 30px;
     border-bottom: 1px solid var(--dt-border);
-    background: rgba(14, 14, 20, 0.8);
-    backdrop-filter: blur(10px);
-    position: sticky;
-    top: 0;
+    background: rgba(14, 14, 20, 0.95);
+    backdrop-filter: blur(15px);
+    position: relative; /* Cambiado de sticky para evitar overlaps en móvil */
     z-index: 1000;
+    gap: 20px;
 }
 
 .dt-badge {

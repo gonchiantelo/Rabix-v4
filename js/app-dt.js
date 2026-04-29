@@ -316,32 +316,32 @@ window.DTEngine = {
         const current = new Date(dateStr + 'T00:00:00');
         const methodology = window.CurrentTeam?.methodology || 'Periodización Táctica';
 
-        // 1. Días Pre-Partido (Morfociclo / Microciclo)
+        // 1. Días Pre-Partido
         for (let i = 1; i <= 4; i++) {
             const fut = new Date(current);
             fut.setDate(current.getDate() + i);
             const futStr = fut.toISOString().split('T')[0];
+            
             if (this._matchDays.has(futStr)) {
-                // Bifurcación por Metodología
                 if (methodology === 'Microciclo Estructurado') {
                     const structLabels = {
-                        1: 'MD-1 (Activación)',
-                        2: 'MD-2 (Velocidad)',
-                        3: 'MD-3 (Resistencia)',
-                        4: 'MD-4 (Fuerza)'
+                        1: 'Activación (MD-1)',
+                        2: 'Velocidad (MD-2)',
+                        3: 'Duración (MD-3)',
+                        4: 'Tensión (MD-4)'
                     };
-                    return structLabels[i];
+                    return structLabels[i] || `MD-${i}`;
                 }
-                // Default: Periodización Táctica
+                // Periodización Táctica
                 return `MD-${i}`;
             }
         }
 
-        // 2. Días Post-Partido
+        // 2. Días Post-Partido (MD+1)
         const yesterday = new Date(current);
         yesterday.setDate(current.getDate() - 1);
         const yestStr = yesterday.toISOString().split('T')[0];
-        if (this._matchDays.has(yestStr)) return 'RECUPERACIÓN (MD+1)';
+        if (this._matchDays.has(yestStr)) return 'RECUPERACIÓN';
 
         return 'BASE';
     },
@@ -443,25 +443,30 @@ window.DTEngine = {
             );
         }
 
-        container.innerHTML = filtered.map(ex => `
-            <div class="exercise-card">
-                <div class="ex-info">
-                    <span class="ex-id">#${ex.numericId}</span>
-                    <h5 class="ex-title">${ex.title}</h5>
-                    <p class="ex-meta">${ex.morfociclo_phase} | ${ex.game_moment}</p>
+        container.innerHTML = filtered.map(ex => {
+            const isStaged = this._stagedTasks.some(t => t.id === ex.numericId);
+            return `
+                <div class="exercise-card ${isStaged ? 'staged-card' : ''}">
+                    <div class="ex-info">
+                        <span class="ex-id">#${ex.numericId}</span>
+                        <h5 class="ex-title">${ex.title}</h5>
+                        <p class="ex-meta">${ex.morfociclo_phase} | ${ex.game_moment}</p>
+                    </div>
+                    <div class="ex-actions">
+                        <select class="block-select" id="select-${ex.numericId}">
+                            <option value="gimnasio">Gimnasio</option>
+                            <option value="entrada_calor">E. Calor</option>
+                            <option value="parte_principal" selected>P. Principal</option>
+                            <option value="doble_turno">2º Turno</option>
+                            <option value="vuelta_calma">V. Calma</option>
+                        </select>
+                        <button id="btn-add-${ex.numericId}" class="ex-add-btn ${isStaged ? 'staged' : ''}" onclick="DTEngine.stageExercise(${ex.numericId})">
+                            ${isStaged ? '✓' : '+'}
+                        </button>
+                    </div>
                 </div>
-                <div class="ex-actions">
-                    <select class="block-select" id="select-${ex.numericId}">
-                        <option value="gimnasio">Gimnasio</option>
-                        <option value="entrada_calor">E. Calor</option>
-                        <option value="parte_principal" selected>P. Principal</option>
-                        <option value="doble_turno">2º Turno</option>
-                        <option value="vuelta_calma">V. Calma</option>
-                    </select>
-                    <button id="btn-add-${ex.numericId}" class="ex-add-btn" onclick="DTEngine.stageExercise(${ex.numericId})">+</button>
-                </div>
-            </div>
-        `).join('') || '<p class="empty-msg">No hay tareas para esta fase.</p>';
+            `;
+        }).join('') || '<p class="empty-msg">No hay tareas para esta fase.</p>';
     },
 
     _stagedTasks: [],
@@ -471,13 +476,15 @@ window.DTEngine = {
         const btn = document.getElementById(`btn-add-${id}`);
         
         // Toggle selection
-        const existingIdx = this._stagedTasks.findIndex(t => t.id === id && t.block === block);
+        const existingIdx = this._stagedTasks.findIndex(t => t.id === id);
         if (existingIdx > -1) {
             this._stagedTasks.splice(existingIdx, 1);
             btn.classList.remove('staged');
+            btn.innerText = '+';
         } else {
             this._stagedTasks.push({ id, block });
             btn.classList.add('staged');
+            btn.innerText = '✓';
         }
     },
 
@@ -492,28 +499,31 @@ window.DTEngine = {
 
             if (!teamId || !token) throw new Error("Sesión inválida");
 
-            console.log(`💾 Guardando ${this._stagedTasks.length} tareas para ${date}...`);
+            console.log(`💾 Guardando masivamente ${this._stagedTasks.length} tareas para ${date}...`);
 
+            // Usar RPC para mayor consistencia y performance
             for (const task of this._stagedTasks) {
-                await fetch(`${window.SUPABASE_URL}/rest/v1/training_logs`, {
+                const payload = {
+                    p_user_id: userId,
+                    p_team_id: teamId,
+                    p_fecha: date,
+                    p_scenario: task.block,
+                    p_task_id: task.id.toString()
+                };
+
+                await fetch(`${window.SUPABASE_URL}/rest/v1/rpc/guardar_tarea_calendario`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'apikey': window.SUPABASE_KEY,
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({
-                        team_id: teamId,
-                        user_id: userId,
-                        fecha: date,
-                        ejs_cods: [task.id],
-                        scenario: task.block
-                    })
+                    body: JSON.stringify(payload)
                 });
             }
 
             this._stagedTasks = [];
-            this.refreshState();
+            await this.refreshState();
             this.closeDrawer();
 
         } catch (e) {
