@@ -100,6 +100,7 @@ window.Wizard = {
             }
 
             // 3. Actualizar Usuario -> Columnas: name, role, license, team_id
+            console.log("📝 Actualizando perfil usuario:", { name, role, license, teamId });
             const uRes = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
