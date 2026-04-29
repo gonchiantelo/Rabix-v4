@@ -96,7 +96,10 @@
             .btn-ob-next { background: #00F2FE; border: none; color: #000; padding: 15px 40px; border-radius: 12px; cursor: pointer; font-weight: 900; }
         </style>
 
-        <div class="platinum-card-v2">
+        <div class="platinum-card-v2" style="position: relative;">
+            <!-- Botón de Escape (UX) -->
+            <button onclick="window.App.logout()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: #666; font-size: 11px; cursor: pointer; text-decoration: underline;">Cerrar Sesión / Cancelar</button>
+
             <!-- Stepper -->
             <div class="ob-stepper">
                 <div class="step-ball active" id="ob-ball-1">1</div>

@@ -99,12 +99,12 @@ window.Wizard = {
                 teamId = teams[0].id;
             }
 
-            // 3. Actualizar Usuario -> Columnas: name, role, license, team_id
-            console.log("📝 Actualizando perfil usuario:", { name, role, license, teamId });
+            // 3. Actualizar Usuario -> Columnas: name, staff_role, license, team_id
+            console.log("📝 Actualizando perfil usuario:", { name, staff_role: role, license, teamId });
             const uRes = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ name: name, role: role, license: license, team_id: teamId })
+                body: JSON.stringify({ name: name, staff_role: role, license: license, team_id: teamId })
             });
 
             if (!uRes.ok) throw new Error("Error al actualizar perfil.");
