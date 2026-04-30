@@ -1131,3 +1131,14 @@ body { background: #121212 !important; }
     letter-spacing: 2px;
     color: var(--dt-accent);
 }
+/* ── Días Pasados (Read-Only) ── */
+.past-day {
+    opacity: 0.35;
+    pointer-events: none;   /* Desactiva clicks, hover y drag */
+    cursor: default !important;
+}
+
+/* Excepción: las tasks-chip en días pasados siguen siendo legibles */
+.past-day .task-chip {
+    opacity: 0.85;
+}

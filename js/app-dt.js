@@ -155,9 +155,9 @@ window.DTEngine = {
                     <section id="dt-calendar-view" class="dt-dashboard-view" style="display: none;">
                         <!-- Navegador de Meses Reubicado -->
                         <div class="month-nav calendar-nav-ux">
-                            <button class="btn-nav" onclick="DTEngine.changeMonth(event, -1)">◀</button>
+                            <button type="button" class="btn-nav" onclick="event.preventDefault(); event.stopPropagation(); DTEngine.changeMonth(event, -1)">◀</button>
                             <span class="current-month-display">${monthName}</span>
-                            <button class="btn-nav" onclick="DTEngine.changeMonth(event, 1)">▶</button>
+                            <button type="button" class="btn-nav" onclick="event.preventDefault(); event.stopPropagation(); DTEngine.changeMonth(event, 1)">▶</button>
                         </div>
                         
                         <div id="dt-calendar-grid" class="macro-calendar-grid">
@@ -276,10 +276,17 @@ window.DTEngine = {
 
         for (let i = 0; i < startOffset; i++) html += `<div class="macro-day empty"></div>`;
 
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
         for (let d = 1; d <= daysInMonth; d++) {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const label = this.getMethodologyLabel(dateStr);
             const typeClass = this.getTypeClass(label);
+            
+            const cellDate = new Date(dateStr + 'T00:00:00');
+            const isPast = cellDate < today;
+            const pastClass = isPast ? 'past-day' : '';
             
             const assignments = this._assignedTasks[dateStr] || [];
             
@@ -291,7 +298,7 @@ window.DTEngine = {
                     return `
                         <div class="task-chip" onclick="event.stopPropagation(); DTEngine.openTaskModal(${a.id})">
                             <span class="tc-name">${ex.title}</span>
-                            <span class="tc-delete" onclick="event.stopPropagation(); DTEngine.removeTask('${dateStr}', ${assignments.indexOf(a)})">×</span>
+                            ${!isPast ? `<span class="tc-delete" onclick="event.stopPropagation(); DTEngine.removeTask('${dateStr}', ${assignments.indexOf(a)})">\u00d7</span>` : ''}
                         </div>
                     `;
                 }).join('');
@@ -305,7 +312,7 @@ window.DTEngine = {
             };
 
             html += `
-                <div class="macro-day ${typeClass}" onclick="DTEngine.openDrawer('${dateStr}')">
+                <div class="macro-day ${typeClass} ${pastClass}" onclick="${isPast ? 'void(0)' : `DTEngine.openDrawer('${dateStr}')`}">
                     <div class="m-day-top">
                         <span class="m-day-num">${d}</span>
                         <span class="m-day-label">${label}</span>
