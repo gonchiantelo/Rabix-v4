@@ -364,41 +364,47 @@ window.DTEngine = {
     },
 
     applyMethodologyLabels() {
-        const matchDays = window.CurrentTeam?.match_dates || Array.from(this._matchDays);
+        // Fuente de verdad: priorizar array de Core, fallback al Set local
+        const matchDates = (window.CurrentTeam?.match_dates && window.CurrentTeam.match_dates.length > 0)
+            ? window.CurrentTeam.match_dates
+            : Array.from(this._matchDays);
+
         const methodology = window.CurrentTeam?.methodology || 'Periodización Táctica';
-        const manualLabels = this._manualLabels;
+        const manualLabels = this._manualLabels || {};
 
-        const ptLabels = { 1: 'MD-1', 2: 'MD-2', 3: 'MD-3', 4: 'MD-4' };
-        const meLabels = {
-            1: 'Activación (MD-1)',
-            2: 'Velocidad (MD-2)',
-            3: 'Duración (MD-3)',
-            4: 'Tensión (MD-4)'
-        };
+        console.log(`🗓️ applyMethodologyLabels: ${matchDates.length} partidos encontrados. Metodología: ${methodology}`);
 
-        const labelMap = new Map(); // dateStr -> label
+        if (matchDates.length === 0) {
+            console.warn('⚠️ applyMethodologyLabels: No hay fechas de partido configuradas. Las etiquetas quedarán en BASE.');
+            return;
+        }
 
-        // 1. Marcar partidos
-        matchDays.forEach(dateStr => {
-            labelMap.set(dateStr, 'PARTIDO');
-        });
+        // Mapa de etiquetas por metodología (D-1 = más cercano al partido)
+        const isPT = methodology !== 'Microciclo Estructurado';
+        const preLabels = isPT
+            ? { 1: 'MD-1', 2: 'MD-2', 3: 'MD-3', 4: 'MD-4' }
+            : { 1: 'Activación', 2: 'Velocidad', 3: 'Duración', 4: 'Tensión' };
 
-        // 2. Calcular pre/post partido
-        matchDays.forEach(matchStr => {
+        // Construir el mapa de etiquetas definitivo
+        const labelMap = new Map();
+
+        matchDates.forEach(matchStr => {
+            // Partido
+            labelMap.set(matchStr, 'PARTIDO');
+
             const matchDate = new Date(matchStr + 'T00:00:00');
 
-            // Dias previos (MD-4 a MD-1)
+            // D-1 a D-4 (días PRE-partido)
             for (let i = 1; i <= 4; i++) {
-                const prevDate = new Date(matchDate);
-                prevDate.setDate(matchDate.getDate() - i);
-                const prevStr = prevDate.toISOString().split('T')[0];
-                if (!labelMap.has(prevStr)) { // No sobreescribir partido
-                    const labels = methodology === 'Microciclo Estructurado' ? meLabels : ptLabels;
-                    labelMap.set(prevStr, labels[i] || `MD-${i}`);
+                const d = new Date(matchDate);
+                d.setDate(matchDate.getDate() - i);
+                const dStr = d.toISOString().split('T')[0];
+                if (!labelMap.has(dStr)) {
+                    labelMap.set(dStr, preLabels[i] || `MD-${i}`);
                 }
             }
 
-            // Dia post partido (Recuperación)
+            // D+1 (Recuperación)
             const postDate = new Date(matchDate);
             postDate.setDate(matchDate.getDate() + 1);
             const postStr = postDate.toISOString().split('T')[0];
@@ -407,33 +413,38 @@ window.DTEngine = {
             }
         });
 
-        // 3. Aplicar etiquetas manuales (overwrite)
+        // Etiquetas manuales siempre ganan (overwrite final)
         Object.entries(manualLabels).forEach(([dateStr, lbl]) => {
-            labelMap.set(dateStr, lbl);
+            if (lbl) labelMap.set(dateStr, lbl);
         });
 
-        // 4. Patch DOM: sobreescribir solo label y typeClass por celda
-        const grid = document.getElementById('dt-calendar-grid');
-        if (!grid) return;
+        // Patch DOM: buscar cada celda por data-date e inyectar solo la etiqueta
+        let patched = 0;
+        labelMap.forEach((label, dateStr) => {
+            try {
+                const cell = document.querySelector(`.macro-day[data-date="${dateStr}"]`);
+                if (!cell) return; // Fuera del mes visible — OK, ignorar silenciosamente
 
-        grid.querySelectorAll('.macro-day[data-date]').forEach(cell => {
-            const dateStr = cell.getAttribute('data-date');
-            if (!dateStr) return;
+                // Actualizar texto de la etiqueta de fase
+                const labelEl = cell.querySelector('.m-day-label');
+                if (labelEl) {
+                    labelEl.textContent = label;
+                    patched++;
+                }
 
-            const newLabel = labelMap.get(dateStr) || (manualLabels[dateStr] || 'BASE');
-            const labelEl = cell.querySelector('.m-day-label');
-            if (labelEl) labelEl.textContent = newLabel;
-
-            // Actualizar clase de color del tipo (con guardia contra string vacío)
-            const typeClasses = ['type-partido', 'type-md', 'type-recovery', 'type-base', 'type-tension', 'type-duracion', 'type-velocidad', 'type-activacion', 'type-recuperacion', 'type-descanso'];
-            typeClasses.forEach(c => cell.classList.remove(c));
-            const newClass = this.getTypeClass(newLabel);
-            if (newClass && newClass.trim() !== '') {
-                cell.classList.add(newClass.trim());
+                // Actualizar clase de color del tipo
+                const typeClasses = ['type-partido', 'type-base', 'type-tension', 'type-duracion', 'type-velocidad', 'type-activacion', 'type-recuperacion', 'type-descanso'];
+                typeClasses.forEach(c => cell.classList.remove(c));
+                const newClass = this.getTypeClass(label);
+                if (newClass && newClass.trim() !== '') {
+                    cell.classList.add(newClass.trim());
+                }
+            } catch (err) {
+                console.error(`🔴 applyMethodologyLabels: error procesando ${dateStr}:`, err);
             }
         });
 
-        console.log(`✅ applyMethodologyLabels: ${labelMap.size} etiquetas aplicadas.`);
+        console.log(`✅ applyMethodologyLabels: ${patched} celdas actualizadas de ${labelMap.size} etiquetas calculadas.`);
     },
 
     getMethodologyLabel(dateStr) {
