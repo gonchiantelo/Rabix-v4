@@ -6,7 +6,7 @@
    ============================================================ */
 
 window.DTEngine = {
-    _currentDate: new Date(),
+    _currentDate: new Date(), // Inicialización dinámica
     _matchDays: new Set(),
     _manualLabels: {},   // { "YYYY-MM-DD": "MD-4" }
     _assignedTasks: {},  // { "YYYY-MM-DD": [ { logId, id, block } ] }
@@ -79,7 +79,10 @@ window.DTEngine = {
             e.preventDefault();
             e.stopPropagation();
         }
-        this._currentDate.setMonth(this._currentDate.getMonth() + offset);
+        // Navegación pura sin intervención del router
+        const nextDate = new Date(this._currentDate);
+        nextDate.setMonth(nextDate.getMonth() + offset);
+        this._currentDate = nextDate;
         this.renderDashboard();
     },
 
@@ -240,9 +243,19 @@ window.DTEngine = {
         `;
 
         // await this.fetchExercises(); // Eliminado: Ahora es global
-        await this.fetchMonthLogs(); // Phase 5
-        this.generateCalendar();
-        this.updateHomeUI(); // Phase 6
+        await this.fetchMonthLogs(); 
+        
+        // --- FLUJO ESTRICTO DE RENDERIZADO ---
+        this.generateCalendar();   // 1. Grilla y Tareas
+        this.updateHomeUI();       // 2. Timeline
+        
+        // 3. Sincronizar Analítica solo si hay biblioteca
+        if (window.ExercisesLibrary) {
+            const anView = document.getElementById('dt-analytics-view');
+            if (anView && anView.style.display === 'block') {
+                this.renderAnalytics();
+            }
+        }
     },
 
     // fetchExercises eliminada, integrada en App.fetchExercisesLibrary
@@ -739,7 +752,7 @@ window.DTEngine = {
             const dayIdx = (d.getDay() + 6) % 7;
 
             this._assignedTasks[date].forEach(task => {
-                const ex = this._exercises.find(e => e.numericId === task.id);
+                const ex = (window.ExercisesLibrary || []).find(e => e.numericId === task.id);
                 if (ex) {
                     const duration = parseInt(ex.duration) || 15;
                     weeklyMinutes[dayIdx] += duration;
