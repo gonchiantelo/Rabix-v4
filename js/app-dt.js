@@ -139,6 +139,23 @@ window.DTEngine = {
                             </div>
                         </div>
 
+                        <!-- Widget 3: Centro de Comando -->
+                        <div class="platinum-widget command-widget">
+                            <div class="pw-header">
+                                <h3>Centro de Comando</h3>
+                            </div>
+                            <div id="home-command-center" class="command-center-grid">
+                                <div class="cc-block">
+                                    <span class="cc-label">PRÓXIMO PARTIDO</span>
+                                    <span id="cc-next-match" class="cc-value">—</span>
+                                </div>
+                                <div class="cc-block">
+                                    <span class="cc-label">FOCO DE HOY</span>
+                                    <span id="cc-today-focus" class="cc-value">—</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Widget 2: Línea de Tiempo Táctica (Calendario) -->
                         <div class="platinum-widget timeline-widget" onclick="DTEngine.toggleView('calendar')">
                             <div class="pw-header">
@@ -844,6 +861,49 @@ window.DTEngine = {
 
         // 2. Mini Charts
         this.renderHomeCharts();
+
+        // 3. Centro de Comando
+        this.updateCommandCenter();
+    },
+
+    updateCommandCenter() {
+        const nextMatchEl = document.getElementById('cc-next-match');
+        const todayFocusEl = document.getElementById('cc-today-focus');
+        if (!nextMatchEl || !todayFocusEl) return;
+
+        const matchDates = window.CurrentTeam?.match_dates || Array.from(this._matchDays);
+        const todayStr = new Date().toISOString().split('T')[0];
+        const todayMidnight = new Date(todayStr + 'T00:00:00');
+
+        // --- PRÓXIMO PARTIDO ---
+        const futureDates = matchDates
+            .filter(d => d >= todayStr)  // inclye hoy (match day)
+            .sort();
+
+        if (futureDates.length === 0) {
+            nextMatchEl.textContent = 'Sin partidos programados';
+            nextMatchEl.className = 'cc-value cc-neutral';
+        } else {
+            const nextStr = futureDates[0];
+            const nextDate = new Date(nextStr + 'T00:00:00');
+            const msPerDay = 24 * 60 * 60 * 1000;
+            const daysUntil = Math.round((nextDate - todayMidnight) / msPerDay);
+
+            if (daysUntil === 0) {
+                nextMatchEl.textContent = '¡DÍA DE PARTIDO!';
+                nextMatchEl.className = 'cc-value cc-match';
+            } else {
+                const formatted = nextDate.toLocaleDateString('es', { day: '2-digit', month: 'long' }).toUpperCase();
+                nextMatchEl.textContent = `${formatted} — Faltan ${daysUntil} días`;
+                nextMatchEl.className = 'cc-value cc-future';
+            }
+        }
+
+        // --- FOCO DE HOY ---
+        const todayLabel = this.getMethodologyLabel(todayStr);
+        todayFocusEl.textContent = todayLabel;
+        const focusClass = this.getTypeClass(todayLabel);
+        todayFocusEl.className = `cc-value ${focusClass ? 'cc-' + focusClass.replace('type-', '') : 'cc-base'}`;
     },
 
     renderHomeCharts() {

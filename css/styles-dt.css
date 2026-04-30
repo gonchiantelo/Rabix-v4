@@ -4,10 +4,10 @@
     --dt-bg: #050508;
     --dt-surface: #0E0E14;
     --dt-surface-2: #161620;
-    --dt-accent: #079FA0;
-    /* Electric Teal */
+    /* Theming dinámico: --primary-color se inyecta desde JS al iniciar sesión */
+    --primary-color: #079FA0;     /* Color del club (fallback turquesa elite) */
+    --dt-accent: var(--primary-color); /* El acento del tema sigue al color del club */
     --dt-accent-alt: #F58B01;
-    /* Tactical Gold */
     --dt-border: rgba(255, 255, 255, 0.05);
     --dt-text: #E0E0E6;
     --dt-text-dim: #606070;
@@ -1139,6 +1139,65 @@ body { background: #121212 !important; }
 }
 
 /* Excepción: las tasks-chip en días pasados siguen siendo legibles */
+
+/* Excepción: las tasks-chip en días pasados siguen siendo legibles */
 .past-day .task-chip {
     opacity: 0.85;
+}
+
+/* ── Centro de Comando ── */
+.command-center-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 16px 0 8px;
+}
+
+.cc-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--dt-border);
+    border-radius: 10px;
+}
+
+.cc-label {
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--dt-text-dim);
+    text-transform: uppercase;
+}
+
+.cc-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dt-text);
+    line-height: 1.3;
+}
+
+.cc-value.cc-match {
+    color: #FFD700;
+    text-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+    animation: pulse-match 1.5s ease-in-out infinite;
+}
+.cc-value.cc-future     { color: var(--dt-accent); }
+.cc-value.cc-neutral    { color: var(--dt-text-dim); }
+.cc-value.cc-partido    { color: #FFD700; }
+.cc-value.cc-tension    { color: #FF4D4D; }
+.cc-value.cc-duracion   { color: #FF8C00; }
+.cc-value.cc-velocidad  { color: #A0E4FF; }
+.cc-value.cc-activacion { color: #7FFF7F; }
+.cc-value.cc-recuperacion { color: #C0A0FF; }
+.cc-value.cc-base       { color: var(--dt-text-dim); }
+
+@keyframes pulse-match {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.6; }
+}
+
+@media (max-width: 480px) {
+    .command-center-grid { grid-template-columns: 1fr; }
 }

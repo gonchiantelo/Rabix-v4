@@ -160,12 +160,15 @@ window.App = {
                 if (configs && configs[0]) {
                     const configData = configs[0];
                     if (configData.primary_color) {
+                        // Inyectar en ambas variables para compatibilidad total
                         document.documentElement.style.setProperty('--primary', configData.primary_color);
-                        console.log("🎨 Branding inyectado:", configData.primary_color);
+                        document.documentElement.style.setProperty('--primary-color', configData.primary_color);
+                        console.log("🎨 Branding del Club inyectado:", configData.primary_color);
                     }
                     if (window.CurrentTeam) {
                         window.CurrentTeam.match_dates = configData.match_dates || [];
                         window.CurrentTeam.methodology = configData.methodology || "No definida";
+                        window.CurrentTeam.primary_color = configData.primary_color || null;
                         console.log("🧠 Memoria táctica recuperada:", window.CurrentTeam.match_dates);
                     }
                 }
