@@ -155,9 +155,9 @@ window.DTEngine = {
                     <section id="dt-calendar-view" class="dt-dashboard-view" style="display: none;">
                         <!-- Navegador de Meses Reubicado -->
                         <div class="month-nav calendar-nav-ux">
-                            <button type="button" class="btn-nav" onclick="event.preventDefault(); event.stopPropagation(); DTEngine.changeMonth(event, -1)">◀</button>
+                            <button type="button" id="btn-prev-month" class="btn-nav">◀</button>
                             <span class="current-month-display">${monthName}</span>
-                            <button type="button" class="btn-nav" onclick="event.preventDefault(); event.stopPropagation(); DTEngine.changeMonth(event, 1)">▶</button>
+                            <button type="button" id="btn-next-month" class="btn-nav">▶</button>
                         </div>
                         
                         <div id="dt-calendar-grid" class="macro-calendar-grid">
@@ -242,6 +242,26 @@ window.DTEngine = {
                 </div>
             </div>
         `;
+
+        // --- AISLAMIENTO TOTAL DE NAVEGACIÓN (Bloqueo de Bubbling) ---
+        setTimeout(() => {
+            const bp = document.getElementById('btn-prev-month');
+            const bn = document.getElementById('btn-next-month');
+            if (bp) {
+                bp.onclick = (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    this.changeMonth(e, -1);
+                    return false;
+                };
+            }
+            if (bn) {
+                bn.onclick = (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    this.changeMonth(e, 1);
+                    return false;
+                };
+            }
+        }, 0);
 
         // await this.fetchExercises(); // Eliminado: Ahora es global
         await this.fetchMonthLogs(); 
