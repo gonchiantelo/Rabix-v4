@@ -348,6 +348,81 @@ window.DTEngine = {
             `;
         }
         grid.innerHTML = html;
+
+        // Último paso obligatorio: re-pintar etiquetas sobre el DOM ya renderizado
+        this.applyMethodologyLabels();
+    },
+
+    applyMethodologyLabels() {
+        const matchDays = window.CurrentTeam?.match_dates || Array.from(this._matchDays);
+        const methodology = window.CurrentTeam?.methodology || 'Periodización Táctica';
+        const manualLabels = this._manualLabels;
+
+        const ptLabels = { 1: 'MD-1', 2: 'MD-2', 3: 'MD-3', 4: 'MD-4' };
+        const meLabels = {
+            1: 'Activación (MD-1)',
+            2: 'Velocidad (MD-2)',
+            3: 'Duración (MD-3)',
+            4: 'Tensión (MD-4)'
+        };
+
+        const labelMap = new Map(); // dateStr -> label
+
+        // 1. Marcar partidos
+        matchDays.forEach(dateStr => {
+            labelMap.set(dateStr, 'PARTIDO');
+        });
+
+        // 2. Calcular pre/post partido
+        matchDays.forEach(matchStr => {
+            const matchDate = new Date(matchStr + 'T00:00:00');
+
+            // Dias previos (MD-4 a MD-1)
+            for (let i = 1; i <= 4; i++) {
+                const prevDate = new Date(matchDate);
+                prevDate.setDate(matchDate.getDate() - i);
+                const prevStr = prevDate.toISOString().split('T')[0];
+                if (!labelMap.has(prevStr)) { // No sobreescribir partido
+                    const labels = methodology === 'Microciclo Estructurado' ? meLabels : ptLabels;
+                    labelMap.set(prevStr, labels[i] || `MD-${i}`);
+                }
+            }
+
+            // Dia post partido (Recuperación)
+            const postDate = new Date(matchDate);
+            postDate.setDate(matchDate.getDate() + 1);
+            const postStr = postDate.toISOString().split('T')[0];
+            if (!labelMap.has(postStr)) {
+                labelMap.set(postStr, 'RECUPERACIÓN');
+            }
+        });
+
+        // 3. Aplicar etiquetas manuales (overwrite)
+        Object.entries(manualLabels).forEach(([dateStr, lbl]) => {
+            labelMap.set(dateStr, lbl);
+        });
+
+        // 4. Patch DOM: sobreescribir solo label y typeClass por celda
+        const grid = document.getElementById('dt-calendar-grid');
+        if (!grid) return;
+
+        grid.querySelectorAll('.macro-day:not(.empty)').forEach(cell => {
+            const onclick = cell.getAttribute('onclick') || '';
+            const dateMatch = onclick.match(/openDrawer\('(\d{4}-\d{2}-\d{2})'\)/);
+            if (!dateMatch) return;
+            const dateStr = dateMatch[1];
+
+            const newLabel = labelMap.get(dateStr) || (manualLabels[dateStr] || 'BASE');
+            const labelEl = cell.querySelector('.m-day-label');
+            if (labelEl) labelEl.textContent = newLabel;
+
+            // Actualizar clase de color del tipo
+            const typeClasses = ['type-partido', 'type-md', 'type-recovery', 'type-base'];
+            typeClasses.forEach(c => cell.classList.remove(c));
+            cell.classList.add(this.getTypeClass(newLabel));
+        });
+
+        console.log(`✅ applyMethodologyLabels: ${labelMap.size} etiquetas aplicadas.`);
     },
 
     getMethodologyLabel(dateStr) {
@@ -564,7 +639,9 @@ window.DTEngine = {
             }
 
             this._stagedTasks = [];
-            await this.refreshState();
+            // Cadena completa de re-render para preservar etiquetas
+            await this.fetchMonthLogs();
+            this.generateCalendar();   // generateCalendar ya llama applyMethodologyLabels() internamente
             this.closeDrawer();
 
         } catch (e) {
