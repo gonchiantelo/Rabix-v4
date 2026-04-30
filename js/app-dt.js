@@ -13,6 +13,7 @@ window.DTEngine = {
     _exercises: [],
     _selectedDate: null,
     _showAllExercises: false,
+    _stagedLabel: null,  // Etiqueta pendiente de confirmar (Lazy Execution)
     _charts: {}, // Almacén para instancias de Chart.js
 
     async fetchMonthLogs() {
@@ -222,7 +223,7 @@ window.DTEngine = {
                         <div class="drawer-controls">
                             <div class="control-row">
                                 <label>Forzar Etiqueta:</label>
-                                <select id="label-selector" onchange="DTEngine.forceLabel(this.value)">
+                                <select id="label-selector" onchange="DTEngine.stageLabel(this.value)">
                                     <option value="">(Automático)</option>
                                     <option value="MD-4">MD-4 (Tensión)</option>
                                     <option value="MD-3">MD-3 (Duración)</option>
@@ -619,6 +620,16 @@ window.DTEngine = {
 
     _stagedTasks: [],
 
+    // Almacena la etiqueta temporalmente sin persistir (Lazy Execution)
+    stageLabel(val) {
+        this._stagedLabel = val || null;
+        // Preview visual inmediato en el drawer sin tocar Supabase
+        const labelDisplay = document.getElementById('drawer-methodology-label');
+        if (labelDisplay) {
+            labelDisplay.textContent = val ? `Etiqueta: ${val} (pendiente de guardar)` : this.getMethodologyLabel(this._selectedDate);
+        }
+    },
+
     stageExercise(id) {
         const block = document.getElementById(`select-${id}`).value;
         const btn = document.getElementById(`btn-add-${id}`);
@@ -637,48 +648,63 @@ window.DTEngine = {
     },
 
     async saveStagedTasks() {
-        if (this._stagedTasks.length === 0) return this.closeDrawer();
-        
+        const hasLabel = this._stagedLabel !== null;
+        const hasTasks = this._stagedTasks.length > 0;
+
+        // Si no hay nada que guardar, simplemente cerrar
+        if (!hasLabel && !hasTasks) return this.closeDrawer();
+
         try {
-            const teamId = window.CurrentTeam?.id;
-            const userId = localStorage.getItem('ravix_v5_uid');
-            const token = localStorage.getItem('ravix_token');
-            const date = this._selectedDate;
-
-            if (!teamId || !token) throw new Error("Sesión inválida");
-
-            console.log(`💾 Guardando masivamente ${this._stagedTasks.length} tareas para ${date}...`);
-
-            // Usar RPC para mayor consistencia y performance
-            for (const task of this._stagedTasks) {
-                const payload = {
-                    p_user_id: userId,
-                    p_team_id: teamId,
-                    p_fecha: date,
-                    p_scenario: task.block,
-                    p_task_id: task.id.toString()
-                };
-
-                await fetch(`${window.SUPABASE_URL}/rest/v1/rpc/guardar_tarea_calendario`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': window.SUPABASE_KEY,
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(payload)
-                });
+            // --- PASO 1: Ejecutar etiqueta diferida (si la hay) ---
+            if (hasLabel) {
+                console.log(`🏷️ Aplicando etiqueta diferida '${this._stagedLabel}' para ${this._selectedDate}`);
+                await this.forceLabel(this._stagedLabel);
+                this._stagedLabel = null;
             }
 
-            this._stagedTasks = [];
-            // Cadena estricta: fetch → render → labels (sin reconstruir shell)
-            try {
-                await this.fetchMonthLogs();
-                this.generateCalendar();  // incluye applyMethodologyLabels()
-                console.log('✅ Post-guardado: calendario actualizado correctamente.');
-            } catch (renderErr) {
-                console.error('🔴 Error en cadena post-guardado:', renderErr);
+            // --- PASO 2: Guardar tareas seleccionadas (si las hay) ---
+            if (hasTasks) {
+                const teamId = window.CurrentTeam?.id;
+                const userId = localStorage.getItem('ravix_v5_uid');
+                const token = localStorage.getItem('ravix_token');
+                const date = this._selectedDate;
+
+                if (!teamId || !token) throw new Error("Sesión inválida");
+
+                console.log(`💾 Guardando masivamente ${this._stagedTasks.length} tareas para ${date}...`);
+
+                // Usar RPC para mayor consistencia y performance
+                for (const task of this._stagedTasks) {
+                    const payload = {
+                        p_user_id: userId,
+                        p_team_id: teamId,
+                        p_fecha: date,
+                        p_scenario: task.block,
+                        p_task_id: task.id.toString()
+                    };
+
+                    await fetch(`${window.SUPABASE_URL}/rest/v1/rpc/guardar_tarea_calendario`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey': window.SUPABASE_KEY,
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                this._stagedTasks = [];
+                // Cadena estricta: fetch → render → labels (sin reconstruir shell)
+                try {
+                    await this.fetchMonthLogs();
+                    this.generateCalendar();  // incluye applyMethodologyLabels()
+                    console.log('✅ Post-guardado: calendario actualizado correctamente.');
+                } catch (renderErr) {
+                    console.error('🔴 Error en cadena post-guardado:', renderErr);
+                }
             }
+
             this.closeDrawer();
 
         } catch (e) {
@@ -771,8 +797,9 @@ window.DTEngine = {
 
     closeModal() { document.getElementById('dt-modal').classList.add('hidden'); },
     closeDrawer() {
-        // Limpiar staging para evitar guardados fantasma
+        // Limpiar todo el staging al cancelar con ✕
         this._stagedTasks = [];
+        this._stagedLabel = null;
         document.getElementById('dt-drawer').classList.add('hidden');
     },
 
