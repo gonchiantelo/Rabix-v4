@@ -79,11 +79,21 @@ window.DTEngine = {
             e.preventDefault();
             e.stopPropagation();
         }
-        // Navegación pura sin intervención del router
+        // Navegación pura: solo actualizar grilla, NO reconstruir el shell
         const nextDate = new Date(this._currentDate);
         nextDate.setMonth(nextDate.getMonth() + offset);
         this._currentDate = nextDate;
-        this.renderDashboard();
+
+        // Actualizar solo el texto del mes visible
+        const monthDisplay = document.querySelector('.current-month-display');
+        if (monthDisplay) {
+            monthDisplay.textContent = this._currentDate.toLocaleString('es', { month: 'long', year: 'numeric' }).toUpperCase();
+        }
+
+        // Re-fetch y re-pintar solo la grilla del calendario
+        this.fetchMonthLogs().then(() => {
+            this.generateCalendar();
+        });
     },
 
     async renderDashboard() {
@@ -332,7 +342,7 @@ window.DTEngine = {
             };
 
             html += `
-                <div class="macro-day ${typeClass} ${pastClass}" onclick="${isPast ? 'void(0)' : `DTEngine.openDrawer('${dateStr}')`}">
+                <div class="macro-day ${typeClass ? typeClass : ''} ${pastClass}" data-date="${dateStr}" onclick="${isPast ? 'void(0)' : `DTEngine.openDrawer('${dateStr}')`}">
                     <div class="m-day-top">
                         <span class="m-day-num">${d}</span>
                         <span class="m-day-label">${label}</span>
@@ -406,20 +416,21 @@ window.DTEngine = {
         const grid = document.getElementById('dt-calendar-grid');
         if (!grid) return;
 
-        grid.querySelectorAll('.macro-day:not(.empty)').forEach(cell => {
-            const onclick = cell.getAttribute('onclick') || '';
-            const dateMatch = onclick.match(/openDrawer\('(\d{4}-\d{2}-\d{2})'\)/);
-            if (!dateMatch) return;
-            const dateStr = dateMatch[1];
+        grid.querySelectorAll('.macro-day[data-date]').forEach(cell => {
+            const dateStr = cell.getAttribute('data-date');
+            if (!dateStr) return;
 
             const newLabel = labelMap.get(dateStr) || (manualLabels[dateStr] || 'BASE');
             const labelEl = cell.querySelector('.m-day-label');
             if (labelEl) labelEl.textContent = newLabel;
 
-            // Actualizar clase de color del tipo
-            const typeClasses = ['type-partido', 'type-md', 'type-recovery', 'type-base'];
+            // Actualizar clase de color del tipo (con guardia contra string vacío)
+            const typeClasses = ['type-partido', 'type-md', 'type-recovery', 'type-base', 'type-tension', 'type-duracion', 'type-velocidad', 'type-activacion', 'type-recuperacion', 'type-descanso'];
             typeClasses.forEach(c => cell.classList.remove(c));
-            cell.classList.add(this.getTypeClass(newLabel));
+            const newClass = this.getTypeClass(newLabel);
+            if (newClass && newClass.trim() !== '') {
+                cell.classList.add(newClass.trim());
+            }
         });
 
         console.log(`✅ applyMethodologyLabels: ${labelMap.size} etiquetas aplicadas.`);
@@ -463,14 +474,15 @@ window.DTEngine = {
     },
 
     getTypeClass(label) {
+        if (!label) return 'type-base';
         if (label.includes('PARTIDO')) return 'type-partido';
-        if (label.includes('MD-4')) return 'type-tension';
-        if (label.includes('MD-3')) return 'type-duracion';
-        if (label.includes('MD-2')) return 'type-velocidad';
-        if (label.includes('MD-1')) return 'type-activacion';
+        if (label.includes('MD-4') || label.includes('Tensión')) return 'type-tension';
+        if (label.includes('MD-3') || label.includes('Duración')) return 'type-duracion';
+        if (label.includes('MD-2') || label.includes('Velocidad')) return 'type-velocidad';
+        if (label.includes('MD-1') || label.includes('Activación')) return 'type-activacion';
         if (label.includes('RECUPERACIÓN')) return 'type-recuperacion';
         if (label.includes('DESCANSO')) return 'type-descanso';
-        return '';
+        return 'type-base';
     },
 
     openDrawer(date) {
@@ -639,12 +651,18 @@ window.DTEngine = {
             }
 
             this._stagedTasks = [];
-            // Cadena completa de re-render para preservar etiquetas
-            await this.fetchMonthLogs();
-            this.generateCalendar();   // generateCalendar ya llama applyMethodologyLabels() internamente
+            // Cadena estricta: fetch → render → labels (sin reconstruir shell)
+            try {
+                await this.fetchMonthLogs();
+                this.generateCalendar();  // incluye applyMethodologyLabels()
+                console.log('✅ Post-guardado: calendario actualizado correctamente.');
+            } catch (renderErr) {
+                console.error('🔴 Error en cadena post-guardado:', renderErr);
+            }
             this.closeDrawer();
 
         } catch (e) {
+            console.error('🔴 Error al guardar tareas:', e);
             alert("Error al guardar cambios: " + e.message);
         }
     },
