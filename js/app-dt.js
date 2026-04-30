@@ -71,6 +71,10 @@ window.DTEngine = {
             if (data && data[0] && data[0].match_dates) {
                 this._matchDays = new Set(data[0].match_dates);
             }
+            // Sincronizar estado global para que applyMethodologyLabels() lea la verdad fresca
+            if (window.CurrentTeam) {
+                window.CurrentTeam.match_dates = Array.from(this._matchDays);
+            }
         } catch (e) { console.error("Error al cargar configuración de equipo:", e); }
     },
 
@@ -517,6 +521,11 @@ window.DTEngine = {
         if (isMatch) this._matchDays.add(this._selectedDate);
         else if (wasMatch) this._matchDays.delete(this._selectedDate);
 
+        // Sincronizar inmediatamente el estado global
+        if (window.CurrentTeam) {
+            window.CurrentTeam.match_dates = Array.from(this._matchDays);
+        }
+
         // Si hubo cambios en los días de partido, persistir en team_configs
         if (isMatch || wasMatch) {
             await this.saveMatchDays();
@@ -761,7 +770,11 @@ window.DTEngine = {
     },
 
     closeModal() { document.getElementById('dt-modal').classList.add('hidden'); },
-    closeDrawer() { document.getElementById('dt-drawer').classList.add('hidden'); },
+    closeDrawer() {
+        // Limpiar staging para evitar guardados fantasma
+        this._stagedTasks = [];
+        document.getElementById('dt-drawer').classList.add('hidden');
+    },
 
     // --- MÓDULO DE REACTIVIDAD (Phase 6) ---
     async refreshState() {
