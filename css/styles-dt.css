@@ -1113,3 +1113,21 @@ body { background: #121212 !important; }
     transform: translateY(-3px);
     box-shadow: 0 15px 40px rgba(7, 159, 160, 0.5);
 }
+/* ── Reubicación de Navegador de Meses ── */
+.calendar-nav-ux {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid var(--dt-border);
+    gap: 30px;
+}
+
+.calendar-nav-ux .current-month-display {
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--dt-accent);
+}

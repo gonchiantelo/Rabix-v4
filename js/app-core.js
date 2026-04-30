@@ -173,6 +173,9 @@ window.App = {
                 // --- CARGA GLOBAL DE BIBLIOTECA ---
                 await this.fetchExercisesLibrary();
 
+                // --- PERSISTENCIA DE USUARIO PARA UI ---
+                window.CurrentUser = userData;
+
                 document.getElementById('view-login').style.display = 'none';
                 document.getElementById('app-shell').style.display = 'block';
                 this.injectRoleAssets(userData.role);

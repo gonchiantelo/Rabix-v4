@@ -98,12 +98,6 @@ window.DTEngine = {
             <div class="dt-shell-container">
                 <header class="app-header">
                     <div class="brand-name">RAVIX <span class="team-name-badge">${teamName}</span> <span class="dt-badge">DT ELITE</span></div>
-                    
-                    <div class="month-nav">
-                        <button class="btn-nav" onclick="DTEngine.changeMonth(event, -1)">◀</button>
-                        <span class="current-month-display">${monthName}</span>
-                        <button class="btn-nav" onclick="DTEngine.changeMonth(event, 1)">▶</button>
-                    </div>
 
                     <div class="header-actions">
                         <button onclick="DTEngine.toggleView('home')" class="btn-logout">🏠 HOME</button>
@@ -123,10 +117,10 @@ window.DTEngine = {
                                 </div>
                                 <div class="dt-info">
                                     <span class="dt-tag">DIRECTOR TÉCNICO</span>
-                                    <h2 class="dt-name">${localStorage.getItem('ravix_v5_uid')?.substring(0,8) || 'STAFF'}</h2>
+                                    <h2 class="dt-name">${window.CurrentUser?.name || 'STAFF'}</h2>
                                     <p class="dt-team-info">${teamName} | Categoría Elite</p>
                                 </div>
-                                <div class="dt-badge-chrome">LICENSE UEFA PRO</div>
+                                <div class="dt-badge-chrome">LICENSE ${window.CurrentUser?.license || 'UEFA PRO'}</div>
                             </div>
                         </div>
 
@@ -159,6 +153,13 @@ window.DTEngine = {
                     </section>
 
                     <section id="dt-calendar-view" class="dt-dashboard-view" style="display: none;">
+                        <!-- Navegador de Meses Reubicado -->
+                        <div class="month-nav calendar-nav-ux">
+                            <button class="btn-nav" onclick="DTEngine.changeMonth(event, -1)">◀</button>
+                            <span class="current-month-display">${monthName}</span>
+                            <button class="btn-nav" onclick="DTEngine.changeMonth(event, 1)">▶</button>
+                        </div>
+                        
                         <div id="dt-calendar-grid" class="macro-calendar-grid">
                             <!-- Inyección dinámica -->
                         </div>
