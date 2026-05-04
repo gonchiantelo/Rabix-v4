@@ -39,14 +39,14 @@ window.DTEngine = {
                 }
             });
             const data = await res.json();
-            
-            this._assignedTasks = {}; 
+
+            this._assignedTasks = {};
             if (data && Array.isArray(data)) {
                 data.forEach(log => {
                     if (!this._assignedTasks[log.fecha]) this._assignedTasks[log.fecha] = [];
                     const rawId = Array.isArray(log.ejs_cods) ? log.ejs_cods[0] : log.ejs_cods;
                     const taskId = parseInt(rawId);
-                    
+
                     this._assignedTasks[log.fecha].push({
                         logId: log.id,
                         id: taskId,
@@ -346,10 +346,55 @@ window.DTEngine = {
                                     </div>
                                 </div>
 
-                                <div class="dna-section-label">CONSTREÑIMIENTOS DEL DT</div>
-                                <div class="profile-input-group" style="margin-top: 10px;">
-                                    <label>REGLAS DE PROVOCACIÓN Y ATRACTORES</label>
-                                    <textarea id="dna-constraints" class="profile-input profile-textarea profile-textarea-lg" placeholder="Ej: Jugar siempre hacia adelante tras recuperación, máx. 3 toques en zona defensiva, pivote siempre como referencia..."></textarea>
+                                <div class="dna-section-label">REGLAS DE ACCIÓN Y PROVOCACIÓN</div>
+                                <div class="profile-input-group" style="grid-column: span 2; margin-top: 10px;">
+                                    <label>ATRACTORES Y CONSTREÑIMIENTOS DEL DT</label>
+                                    <div class="tag-input-wrapper" id="rules-tag-input-wrapper">
+                                        <div class="tag-chips" id="rules-tag-chips"></div>
+                                        <div class="tag-input-row">
+                                            <input
+                                                type="text"
+                                                id="rules-tag-input"
+                                                class="tag-input-field"
+                                                list="rules-tag-suggestions"
+                                                placeholder="Buscar o escribir una regla..."
+                                                autocomplete="off"
+                                                onkeydown="DTEngine.RulesTagInput.onKeyDown(event)"
+                                            >
+                                            <datalist id="rules-tag-suggestions"></datalist>
+                                            <button type="button" class="tag-add-btn" onclick="DTEngine.RulesTagInput.addFromInput()">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- BLOQUE 3: 11 IDEAL -->
+                            <div class="profile-card" style="margin-top: 20px;">
+                                <h3 class="profile-section-title">⚽ ESTRUCTURA Y PERFILES DEL 11 IDEAL</h3>
+
+                                <div class="profile-input-group">
+                                    <label>ESQUEMA BASE</label>
+                                    <select id="dna-esquema" class="profile-input" onchange="DTEngine.PitchEngine.renderPitch(this.value)">
+                                        <option value="1-4-3-3">1-4-3-3</option>
+                                        <option value="1-4-4-2">1-4-4-2</option>
+                                        <option value="1-3-5-2">1-3-5-2</option>
+                                        <option value="1-4-2-3-1">1-4-2-3-1</option>
+                                    </select>
+                                </div>
+
+                                <div id="tactical-pitch" class="pitch-container"></div>
+
+                                <!-- Modal inline de Perfil de Posición -->
+                                <div id="position-modal" class="position-modal hidden">
+                                    <div class="position-modal-inner">
+                                        <div class="position-modal-header">
+                                            <span id="position-modal-title" class="position-modal-title">GK</span>
+                                            <button type="button" class="tag-chip-remove" onclick="DTEngine.PitchEngine.closePositionModal()" style="width:22px;height:22px;font-size:16px;">×</button>
+                                        </div>
+                                        <label style="font-size:10px;color:var(--dt-text-dim,#606070);font-weight:900;letter-spacing:1px;display:block;margin-bottom:8px;">PERFIL ESPERADO</label>
+                                        <textarea id="position-profile-input" class="profile-input profile-textarea" placeholder="Ej: Portero dominante en el juego aéreo, buen pateador..."></textarea>
+                                        <button type="button" class="btn-save-profile" onclick="DTEngine.PitchEngine.savePositionProfile()" style="margin-top:12px;padding:10px 20px;font-size:11px;">GUARDAR PERFIL</button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -466,12 +511,12 @@ window.DTEngine = {
         }, 0);
 
         // await this.fetchExercises(); // Eliminado: Ahora es global
-        await this.fetchMonthLogs(); 
-        
+        await this.fetchMonthLogs();
+
         // --- FLUJO ESTRICTO DE RENDERIZADO ---
         this.generateCalendar();   // 1. Grilla y Tareas
         this.updateHomeUI();       // 2. Timeline
-        
+
         // 3. Sincronizar Analítica solo si hay biblioteca
         if (window.ExercisesLibrary) {
             const anView = document.getElementById('dt-analytics-view');
@@ -505,13 +550,13 @@ window.DTEngine = {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const label = this.getMethodologyLabel(dateStr);
             const typeClass = this.getTypeClass(label);
-            
+
             const cellDate = new Date(dateStr + 'T00:00:00');
             const isPast = cellDate < today;
             const pastClass = isPast ? 'past-day' : '';
-            
+
             const assignments = this._assignedTasks[dateStr] || [];
-            
+
             const renderBlock = (blockId, title) => {
                 const tasks = assignments.filter(a => a.block === blockId);
                 const tasksHtml = tasks.map((a) => {
@@ -651,7 +696,7 @@ window.DTEngine = {
             const fut = new Date(current);
             fut.setDate(current.getDate() + i);
             const futStr = fut.toISOString().split('T')[0];
-            
+
             if (this._matchDays.has(futStr)) {
                 if (methodology === 'Microciclo Estructurado') {
                     const structLabels = {
@@ -699,10 +744,10 @@ window.DTEngine = {
 
     async forceLabel(val) {
         const oldLabel = this._manualLabels[this._selectedDate];
-        
+
         if (!val) delete this._manualLabels[this._selectedDate];
         else this._manualLabels[this._selectedDate] = val;
-        
+
         const isMatch = (val === 'PARTIDO');
         const wasMatch = (oldLabel === 'PARTIDO');
 
@@ -766,14 +811,14 @@ window.DTEngine = {
     renderLibrary(currentLabel) {
         const container = document.getElementById('library-list');
         if (!container) return;
-        
+
         // Fase actual limpia
         const currentPhase = currentLabel.split(' ')[0].trim().toUpperCase();
 
         // --- FUENTES DE DATOS ---
         const customTasks = window.CustomExercises || [];
         let globalTasks = window.ExercisesLibrary || [];
-        
+
         // Filtrar tareas globales por fase si aplica
         if (!this._showAllExercises && (currentPhase.startsWith('MD-') || currentPhase === 'PARTIDO')) {
             globalTasks = globalTasks.filter(ex =>
@@ -857,7 +902,7 @@ window.DTEngine = {
         const selectEl = document.getElementById(isCustom ? `select-c${id}` : `select-${id}`);
         const block = selectEl ? selectEl.value : 'parte_principal';
         const btnEl = document.getElementById(isCustom ? `btn-add-c${id}` : `btn-add-${id}`);
-        
+
         // Toggle selection
         const existingIdx = this._stagedTasks.findIndex(t => t.id === id && t.isCustom === isCustom);
         if (existingIdx > -1) {
@@ -975,7 +1020,7 @@ window.DTEngine = {
             }
 
             console.log("🟢 Tarea eliminada con éxito vía RPC");
-            
+
             // Solo después de confirmar, refrescamos el estado global
             await this.refreshState();
 
@@ -1003,7 +1048,7 @@ window.DTEngine = {
             </div>
             <div class="modal-grid">
                 <div class="m-col">
-                    <div class="m-info-block"><label>Momento</label><p>${task.game_moment.replace('_',' ').toUpperCase()}</p></div>
+                    <div class="m-info-block"><label>Momento</label><p>${task.game_moment.replace('_', ' ').toUpperCase()}</p></div>
                     <div class="m-info-block"><label>SSP</label><p>${task.ssp_type}</p></div>
                     <div class="m-info-block"><label>Jugadores</label><p>${task.min_players}-${task.max_players}</p></div>
                     <div class="m-info-block"><label>Dimensiones</label><p>${task.dimensions}</p></div>
@@ -1039,7 +1084,7 @@ window.DTEngine = {
     updateHomeUI() {
         const timelineEl = document.getElementById('home-timeline-row');
         if (!timelineEl) return;
-        
+
         // 1. Generar 7 días desde hoy
         let html = '';
         const today = new Date();
@@ -1050,7 +1095,7 @@ window.DTEngine = {
             const tasks = this._assignedTasks[dateStr] || [];
             const isMatch = this._matchDays.has(dateStr);
             const dayName = current.toLocaleDateString('es', { weekday: 'short' }).toUpperCase();
-            
+
             html += `
                 <div class="timeline-day ${isMatch ? 'match-day' : ''}">
                     <span class="t-name">${dayName}</span>
@@ -1118,7 +1163,7 @@ window.DTEngine = {
         // Procesar datos rápidos
         const loadData = [0, 0, 0, 0, 0, 0, 0];
         const moments = { A: 0, D: 0, T: 0 };
-        
+
         Object.keys(this._assignedTasks).forEach(date => {
             const d = new Date(date + 'T00:00:00');
             const dayIdx = (d.getDay() + 6) % 7;
@@ -1142,7 +1187,7 @@ window.DTEngine = {
         this._charts.homeLoad = new Chart(document.getElementById('home-chart-load'), {
             type: 'line',
             data: {
-                labels: ['L','M','X','J','V','S','D'],
+                labels: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
                 datasets: [{ data: loadData, borderColor: '#00F2FE', tension: 0.4, borderWidth: 2, pointRadius: 0 }]
             },
             options: commonOptions
@@ -1162,8 +1207,8 @@ window.DTEngine = {
         const cal = document.getElementById('dt-calendar-view');
         const an = document.getElementById('dt-analytics-view');
         const prof = document.getElementById('view-profile');
-        
-        [home, cal, an, prof].forEach(v => { if(v) v.style.display = 'none'; });
+
+        [home, cal, an, prof].forEach(v => { if (v) v.style.display = 'none'; });
 
         if (view === 'home') {
             home.style.display = 'block';
@@ -1188,7 +1233,7 @@ window.DTEngine = {
         const weeklyMinutes = [0, 0, 0, 0, 0, 0, 0];
         const weeklySRPE = [0, 0, 0, 0, 0, 0, 0];
         const moments = { 'ATAQUE': 0, 'DEFENSA': 0, 'TRANSICIONES': 0, 'OTROS': 0 };
-        const spaceData = [0, 0, 0, 0, 0, 0, 0]; 
+        const spaceData = [0, 0, 0, 0, 0, 0, 0];
 
         Object.keys(this._assignedTasks).forEach(date => {
             const d = new Date(date + 'T00:00:00');
@@ -1199,9 +1244,9 @@ window.DTEngine = {
                 if (ex) {
                     const duration = parseInt(ex.duration) || 15;
                     weeklyMinutes[dayIdx] += duration;
-                    
+
                     // sRPE: Duración * Intensidad (asumimos 7 si no existe)
-                    const rpe = 7; 
+                    const rpe = 7;
                     weeklySRPE[dayIdx] += (duration * rpe);
 
                     // Espacio: individual_m2 (asumimos 30 si no existe)
@@ -1270,17 +1315,17 @@ window.DTEngine = {
     loadProfile() {
         const userData = window.CurrentUser;
         const teamData = window.CurrentTeam;
-        
+
         // Inicializar el componente Tag Input (datalist + render)
         this.TagInput.init();
-        
+
         if (userData) {
             const nameEl = document.getElementById('prof-name');
             const licenseEl = document.getElementById('prof-license');
             if (nameEl) nameEl.value = userData.name || '';
             if (licenseEl) licenseEl.value = userData.license || 'UEFA PRO';
         }
-        
+
         if (teamData) {
             const teamNameEl = document.getElementById('prof-team-name');
             const teamColorEl = document.getElementById('prof-team-color');
@@ -1292,49 +1337,51 @@ window.DTEngine = {
             // Cargar ADN Táctico desde tactical_dna
             const dna = teamData.tactical_dna || {};
             const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-            setVal('dna-ataque',            dna.ataque);
+            setVal('dna-ataque', dna.ataque);
             DTEngine.TagInput.load(dna.principios || []);
-            setVal('dna-defensa',           dna.defensa);
-            setVal('dna-bloque',            dna.bloque);
-            setVal('dna-trans-of',          dna.trans_of);
-            setVal('dna-trans-def',         dna.trans_def);
-            setVal('dna-constraints',       dna.constraints);
+            setVal('dna-defensa', dna.defensa);
+            setVal('dna-bloque', dna.bloque);
+            setVal('dna-trans-of', dna.trans_of);
+            setVal('dna-trans-def', dna.trans_def);
+            DTEngine.RulesTagInput.load(dna.reglas_provocacion || []);
+            DTEngine.PitchEngine.load(dna.ideal_11 || {});
         }
     },
 
     async saveProfile() {
         const uid = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
-        
-        const name     = document.getElementById('prof-name').value;
-        const license  = document.getElementById('prof-license').value;
+
+        const name = document.getElementById('prof-name').value;
+        const license = document.getElementById('prof-license').value;
         const teamName = document.getElementById('prof-team-name').value;
-        const color    = document.getElementById('prof-team-color').value;
+        const color = document.getElementById('prof-team-color').value;
         const methodology = document.getElementById('prof-methodology').value;
 
         // Construir objeto ADN Táctico
         const tactical_dna = {
-            ataque:             document.getElementById('dna-ataque')?.value,
-            principios:         DTEngine.TagInput.getTags(),
-            defensa:            document.getElementById('dna-defensa')?.value,
-            bloque:             document.getElementById('dna-bloque')?.value,
-            trans_of:           document.getElementById('dna-trans-of')?.value,
-            trans_def:          document.getElementById('dna-trans-def')?.value,
-            constraints:        document.getElementById('dna-constraints')?.value,
+            ataque: document.getElementById('dna-ataque')?.value,
+            principios: DTEngine.TagInput.getTags(),
+            defensa: document.getElementById('dna-defensa')?.value,
+            bloque: document.getElementById('dna-bloque')?.value,
+            trans_of: document.getElementById('dna-trans-of')?.value,
+            trans_def: document.getElementById('dna-trans-def')?.value,
+            reglas_provocacion: DTEngine.RulesTagInput.getTags(),
+            ideal_11: DTEngine.PitchEngine.getData(),
         };
-        
+
         if (!name || !teamName) return alert('Nombre y Equipo son obligatorios.');
 
         try {
             console.log('💾 Guardando cambios en perfil, equipo y ADN táctico...');
-            
+
             // 1. Actualizar Usuario
             const uRes = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ name, license })
             });
-            
+
             // 2. Actualizar Equipo
             const teamId = window.CurrentTeam?.id;
             const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams?id=eq.${teamId}`, {
@@ -1342,7 +1389,7 @@ window.DTEngine = {
                 headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ name: teamName })
             });
-            
+
             // 3. Actualizar Config Táctica (incluyendo tactical_dna)
             const cRes = await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs?team_id=eq.${teamId}`, {
                 method: 'PATCH',
@@ -1359,11 +1406,11 @@ window.DTEngine = {
                     window.CurrentTeam.methodology = methodology;
                     window.CurrentTeam.tactical_dna = tactical_dna;
                 }
-                
+
                 // Actualizar CSS
                 document.documentElement.style.setProperty('--primary-color', color);
                 document.documentElement.style.setProperty('--primary', color);
-                
+
                 alert('✅ Perfil, Club y ADN Táctico actualizados.');
                 this.renderDashboard();
                 this.toggleView('home');
@@ -1387,9 +1434,9 @@ window.DTEngine = {
     },
 
     async saveCustomTask() {
-        const uid   = localStorage.getItem('ravix_v5_uid');
+        const uid = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
-        const name  = document.getElementById('custom-task-name').value.trim();
+        const name = document.getElementById('custom-task-name').value.trim();
         const phase = document.getElementById('custom-task-phase').value;
         const rules = document.getElementById('custom-task-rules').value.trim();
 
@@ -1432,6 +1479,178 @@ window.DTEngine = {
             console.log('✅ Tarea personalizada guardada y priorizada en biblioteca.');
         } catch (err) {
             alert('🔴 Error: ' + err.message);
+        }
+    },
+
+
+    // ══════════════════════════════════════════════════════
+    // MÓDULO RULES TAG INPUT — Reglas de Acción y Provocación
+    // ══════════════════════════════════════════════════════
+    RulesTagInput: {
+        _tags: [],
+        _dictionary: [
+            'Espacio reducido a 2 toques',
+            'Orientar presión a banda',
+            'Pase vertical tras recuperación',
+            'Laterales en amplitud máxima',
+            'Pivote fijo como referencia',
+            'Pressing al saque de banda rival',
+            'Repliegue antes de línea propia',
+            'Cambio de orientación en zona media',
+            'Salida en 3 desde portero',
+            'Cierre de líneas centrales'
+        ],
+        init() {
+            const dl = document.getElementById('rules-tag-suggestions');
+            if (!dl) return;
+            dl.innerHTML = this._dictionary.map(p => `<option value="${p}">`).join('');
+        },
+        load(tagsArray) {
+            this._tags = Array.isArray(tagsArray) ? [...tagsArray] : [];
+            this.init();
+            this._render();
+        },
+        getTags() { return [...this._tags]; },
+        addTag(val) {
+            const trimmed = val.trim();
+            if (!trimmed || this._tags.includes(trimmed)) return;
+            this._tags.push(trimmed);
+            this._render();
+        },
+        removeTag(idx) { this._tags.splice(idx, 1); this._render(); },
+        addFromInput() {
+            const input = document.getElementById('rules-tag-input');
+            if (!input || !input.value.trim()) return;
+            this.addTag(input.value);
+            input.value = '';
+            input.focus();
+        },
+        onKeyDown(e) { if (e.key === 'Enter') { e.preventDefault(); this.addFromInput(); } },
+        _render() {
+            const container = document.getElementById('rules-tag-chips');
+            if (!container) return;
+            container.innerHTML = this._tags.map((tag, i) => `
+                <span class="tag-chip rules-chip">
+                    <span class="tag-chip-text">${tag}</span>
+                    <button type="button" class="tag-chip-remove" onclick="DTEngine.RulesTagInput.removeTag(${i})">×</button>
+                </span>
+            `).join('');
+        }
+    },
+
+    // ══════════════════════════════════════════════════════
+    // MÓDULO PITCH ENGINE — Pizarra del 11 Ideal
+    // ══════════════════════════════════════════════════════
+    PitchEngine: {
+        _esquema: '1-4-3-3',
+        _profiles: {},      // { 'GK': 'texto...', 'LI': '...' }
+        _activePosition: null,
+
+        _formations: {
+            '1-4-3-3': [
+                { row: 1, positions: [{ id: 'GK', label: 'GK' }] },
+                { row: 2, positions: [{ id: 'LI', label: 'LI' }, { id: 'DFI', label: 'DFC-IZQ' }, { id: 'DFD', label: 'DFC-DER' }, { id: 'LD', label: 'LD' }] },
+                { row: 3, positions: [{ id: 'MCI', label: 'MCI' }, { id: 'MC', label: 'MC' }, { id: 'MCD', label: 'MCD' }] },
+                { row: 4, positions: [{ id: 'EI', label: 'EXT-IZQ' }, { id: 'DC', label: 'DEL' }, { id: 'ED', label: 'EXT-DER' }] }
+            ],
+            '1-4-4-2': [
+                { row: 1, positions: [{ id: 'GK', label: 'GK' }] },
+                { row: 2, positions: [{ id: 'LI', label: 'LI' }, { id: 'DFI', label: 'DFC-IZQ' }, { id: 'DFD', label: 'DFC-DER' }, { id: 'LD', label: 'LD' }] },
+                { row: 3, positions: [{ id: 'MCI', label: 'MCI' }, { id: 'MCO1', label: 'MCO-IZQ' }, { id: 'MCO2', label: 'MCO-DER' }, { id: 'MCD', label: 'MCD' }] },
+                { row: 4, positions: [{ id: 'DI', label: 'DEL-IZQ' }, { id: 'DD', label: 'DEL-DER' }] }
+            ],
+            '1-3-5-2': [
+                { row: 1, positions: [{ id: 'GK', label: 'GK' }] },
+                { row: 2, positions: [{ id: 'DFI', label: 'DFC-IZQ' }, { id: 'DFC', label: 'DFC-CEN' }, { id: 'DFD', label: 'DFC-DER' }] },
+                { row: 3, positions: [{ id: 'CRL1', label: 'CRL-IZQ' }, { id: 'MCI', label: 'MCI' }, { id: 'MCO', label: 'MCO' }, { id: 'MCD', label: 'MCD' }, { id: 'CRL2', label: 'CRL-DER' }] },
+                { row: 4, positions: [{ id: 'DI', label: 'DEL-IZQ' }, { id: 'DD', label: 'DEL-DER' }] }
+            ],
+            '1-4-2-3-1': [
+                { row: 1, positions: [{ id: 'GK', label: 'GK' }] },
+                { row: 2, positions: [{ id: 'LI', label: 'LI' }, { id: 'DFI', label: 'DFC-IZQ' }, { id: 'DFD', label: 'DFC-DER' }, { id: 'LD', label: 'LD' }] },
+                { row: 3, positions: [{ id: 'MCD1', label: 'MCD-IZQ' }, { id: 'MCD2', label: 'MCD-DER' }] },
+                { row: 4, positions: [{ id: 'EI', label: 'EXT-IZQ' }, { id: 'MCO', label: 'MCO' }, { id: 'ED', label: 'EXT-DER' }] },
+                { row: 5, positions: [{ id: 'DC', label: 'DELANTERO' }] }
+            ]
+        },
+
+        load(ideal11) {
+            if (!ideal11 || typeof ideal11 !== 'object') { this.renderPitch(this._esquema); return; }
+            this._esquema = ideal11.esquema || '1-4-3-3';
+            this._profiles = ideal11.perfiles || {};
+            const sel = document.getElementById('dna-esquema');
+            if (sel) sel.value = this._esquema;
+            this.renderPitch(this._esquema);
+        },
+
+        getData() {
+            return { esquema: this._esquema, perfiles: { ...this._profiles } };
+        },
+
+        renderPitch(esquema) {
+            this._esquema = esquema;
+            const container = document.getElementById('tactical-pitch');
+            if (!container) return;
+
+            const formation = this._formations[esquema];
+            if (!formation) return;
+
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#079FA0';
+
+            const rowsHTML = formation.map(rowDef => {
+                const positionsHTML = rowDef.positions.map(pos => {
+                    const hasProfile = !!this._profiles[pos.id];
+                    return `
+                        <div class="pitch-position ${hasProfile ? 'has-profile' : ''}"
+                             onclick="DTEngine.PitchEngine.openPositionModal('${pos.id}', '${pos.label}')"
+                             title="${hasProfile ? 'Perfil definido ✓' : 'Click para definir perfil'}">
+                            <div class="pitch-pos-circle">${pos.label}</div>
+                            ${hasProfile ? '<div class="pitch-pos-dot"></div>' : ''}
+                        </div>
+                    `;
+                }).join('');
+                return `<div class="pitch-row">${positionsHTML}</div>`;
+            }).join('');
+
+            // Field markings HTML
+            container.innerHTML = `
+                <div class="pitch-field">
+                    <div class="pitch-center-circle"></div>
+                    <div class="pitch-halfway-line"></div>
+                    <div class="pitch-penalty-box top"></div>
+                    <div class="pitch-penalty-box bottom"></div>
+                    <div class="pitch-formation-rows">${rowsHTML}</div>
+                </div>
+            `;
+        },
+
+        openPositionModal(posId, label) {
+            this._activePosition = posId;
+            const modal = document.getElementById('position-modal');
+            const title = document.getElementById('position-modal-title');
+            const textarea = document.getElementById('position-profile-input');
+            if (!modal || !title || !textarea) return;
+            title.textContent = label;
+            textarea.value = this._profiles[posId] || '';
+            modal.classList.remove('hidden');
+            setTimeout(() => textarea.focus(), 50);
+        },
+
+        closePositionModal() {
+            const modal = document.getElementById('position-modal');
+            if (modal) modal.classList.add('hidden');
+            this._activePosition = null;
+        },
+
+        savePositionProfile() {
+            if (!this._activePosition) return;
+            const textarea = document.getElementById('position-profile-input');
+            if (textarea) {
+                this._profiles[this._activePosition] = textarea.value.trim();
+            }
+            // Re-render to show the dot indicator
+            this.renderPitch(this._esquema);
+            this.closePositionModal();
         }
     },
 
