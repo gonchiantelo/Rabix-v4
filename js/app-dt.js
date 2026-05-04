@@ -229,6 +229,8 @@ window.DTEngine = {
                     <!-- SECCIÓN PERFIL DEL DT (#view-profile) -->
                     <section id="view-profile" class="dt-profile-view" style="display: none;">
                         <div class="profile-view-container">
+
+                            <!-- BLOQUE 1: IDENTIDAD -->
                             <div class="profile-card">
                                 <h3 class="profile-section-title">IDENTIDAD STAFF</h3>
                                 <div class="profile-form-grid">
@@ -266,9 +268,78 @@ window.DTEngine = {
                                         </select>
                                     </div>
                                 </div>
-
-                                <button class="btn-save-profile" onclick="App.saveProfile()">GUARDAR CONFIGURACIÓN</button>
                             </div>
+
+                            <!-- BLOQUE 2: ADN TÁCTICO -->
+                            <div class="profile-card" style="margin-top: 20px;">
+                                <h3 class="profile-section-title">⚙️ ADN TÁCTICO — MODELO DE JUEGO</h3>
+
+                                <div class="dna-section-label">ORGANIZACIÓN OFENSIVA</div>
+                                <div class="profile-form-grid">
+                                    <div class="profile-input-group">
+                                        <label>MÉTODO OFENSIVO</label>
+                                        <select id="dna-ataque" class="profile-input">
+                                            <option value="Ataque Posicional">Ataque Posicional</option>
+                                            <option value="Ataque Directo">Ataque Directo</option>
+                                            <option value="Ataque Rápido">Ataque Rápido</option>
+                                        </select>
+                                    </div>
+                                    <div class="profile-input-group">
+                                        <label>PRINCIPIOS OPERATIVOS</label>
+                                        <textarea id="dna-ataque-principios" class="profile-input profile-textarea" placeholder="Ej: Tercer hombre, Amplitud máxima, Rotaciones..."></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="dna-section-label">ORGANIZACIÓN DEFENSIVA</div>
+                                <div class="profile-form-grid">
+                                    <div class="profile-input-group">
+                                        <label>MÉTODO DEFENSIVO</label>
+                                        <select id="dna-defensa" class="profile-input">
+                                            <option value="Defensa Zonal">Defensa Zonal</option>
+                                            <option value="Hombre a Hombre">Hombre a Hombre</option>
+                                            <option value="Individual">Individual</option>
+                                            <option value="Combinada">Combinada</option>
+                                            <option value="Presión Alta">Presión Alta</option>
+                                        </select>
+                                    </div>
+                                    <div class="profile-input-group">
+                                        <label>ALTURA DEL BLOQUE</label>
+                                        <select id="dna-bloque" class="profile-input">
+                                            <option value="Alto">Bloque Alto</option>
+                                            <option value="Medio">Bloque Medio</option>
+                                            <option value="Bajo">Bloque Bajo</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="dna-section-label">TRANSICIONES</div>
+                                <div class="profile-form-grid">
+                                    <div class="profile-input-group">
+                                        <label>TRANSICIÓN OFENSIVA (DEF→AT)</label>
+                                        <select id="dna-trans-of" class="profile-input">
+                                            <option value="Contraataque">Contraataque</option>
+                                            <option value="Conservación">Conservación</option>
+                                        </select>
+                                    </div>
+                                    <div class="profile-input-group">
+                                        <label>TRANSICIÓN DEFENSIVA (AT→DEF)</label>
+                                        <select id="dna-trans-def" class="profile-input">
+                                            <option value="Presión tras pérdida">Presión tras pérdida</option>
+                                            <option value="Repliegue Medio">Repliegue Medio</option>
+                                            <option value="Repliegue Bajo">Repliegue Bajo</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="dna-section-label">CONSTREÑIMIENTOS DEL DT</div>
+                                <div class="profile-input-group" style="margin-top: 10px;">
+                                    <label>REGLAS DE PROVOCACIÓN Y ATRACTORES</label>
+                                    <textarea id="dna-constraints" class="profile-input profile-textarea profile-textarea-lg" placeholder="Ej: Jugar siempre hacia adelante tras recuperación, máx. 3 toques en zona defensiva, pivote siempre como referencia..."></textarea>
+                                </div>
+                            </div>
+
+                            <button class="btn-save-profile" onclick="DTEngine.saveProfile()" style="margin-top: 25px;">GUARDAR CONFIGURACIÓN COMPLETA</button>
+
                         </div>
                     </section>
                 </main>
@@ -305,10 +376,47 @@ window.DTEngine = {
                                 <h4>Biblioteca de Tareas</h4>
                                 <button id="btn-toggle-filter" class="btn-text" onclick="DTEngine.toggleFilter()">Ver Toda</button>
                             </div>
+                            <button class="btn-add-custom-task" onclick="DTEngine.openCustomTaskModal()">+ Añadir Tarea Personalizada</button>
                             <div id="library-list" class="exercise-list-container"></div>
                         </div>
                         <div class="drawer-footer-actions">
                             <button class="btn-save-staged" onclick="DTEngine.saveStagedTasks()">GUARDAR CAMBIOS</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal de Tarea Personalizada -->
+                <div id="modal-custom-task" class="modal-overlay hidden" onclick="DTEngine.closeCustomTaskModal()">
+                    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 520px;">
+                        <div class="modal-header">
+                            <div class="m-title-group">
+                                <span class="m-task-id">BÓVEDA PRIVADA</span>
+                                <h2 class="m-task-title">Nueva Tarea Personalizada</h2>
+                            </div>
+                            <button class="btn-close-modal" onclick="DTEngine.closeCustomTaskModal()">✕</button>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 18px; margin-top: 20px;">
+                            <div class="profile-input-group">
+                                <label class="profile-input-group label" style="font-size:10px;color:var(--dt-text-dim);font-weight:900;letter-spacing:1px;">NOMBRE DE LA TAREA</label>
+                                <input type="text" id="custom-task-name" class="profile-input" placeholder="Ej: Rondo de pressing específico">
+                            </div>
+                            <div class="profile-input-group">
+                                <label style="font-size:10px;color:var(--dt-text-dim);font-weight:900;letter-spacing:1px;">ETIQUETA TÁCTICA (FASE)</label>
+                                <select id="custom-task-phase" class="profile-input">
+                                    <option value="MD-4">MD-4 (Tensión)</option>
+                                    <option value="MD-3">MD-3 (Duración)</option>
+                                    <option value="MD-2">MD-2 (Velocidad)</option>
+                                    <option value="MD-1">MD-1 (Activación)</option>
+                                    <option value="PARTIDO">Partido (MD)</option>
+                                    <option value="RECUPERACIÓN">Recuperación (MD+1)</option>
+                                    <option value="BASE">Base / Libre</option>
+                                </select>
+                            </div>
+                            <div class="profile-input-group">
+                                <label style="font-size:10px;color:var(--dt-text-dim);font-weight:900;letter-spacing:1px;">REGLAS / CONSTREÑIMIENTOS</label>
+                                <textarea id="custom-task-rules" class="profile-input profile-textarea" placeholder="Describe los objetivos tácticos, restricciones de espacio o número de jugadores..."></textarea>
+                            </div>
+                            <button class="btn-save-profile" onclick="DTEngine.saveCustomTask()">GUARDAR EN BÓVEDA PRIVADA</button>
                         </div>
                     </div>
                 </div>
@@ -647,17 +755,50 @@ window.DTEngine = {
         // Fase actual limpia
         const currentPhase = currentLabel.split(' ')[0].trim().toUpperCase();
 
-        let filtered = window.ExercisesLibrary || [];
+        // --- FUENTES DE DATOS ---
+        const customTasks = window.CustomExercises || [];
+        let globalTasks = window.ExercisesLibrary || [];
         
-        // Si no estamos en 'Ver Toda', filtramos por fase exacta
+        // Filtrar tareas globales por fase si aplica
         if (!this._showAllExercises && (currentPhase.startsWith('MD-') || currentPhase === 'PARTIDO')) {
-            filtered = filtered.filter(ex => 
+            globalTasks = globalTasks.filter(ex =>
                 ex.morfociclo_phase?.trim().toUpperCase() === currentPhase
             );
         }
 
-        container.innerHTML = filtered.map(ex => {
-            const isStaged = this._stagedTasks.some(t => t.id === ex.numericId);
+        // --- RENDER CUSTOM (prioridad, badge dorado) ---
+        const customFiltered = this._showAllExercises
+            ? customTasks
+            : customTasks.filter(ex => !ex.morfociclo_phase || ex.morfociclo_phase.trim().toUpperCase() === currentPhase || currentPhase === 'BASE');
+
+        const customHTML = customFiltered.map(ex => {
+            const isStaged = this._stagedTasks.some(t => t.id === ex.numericId && t.isCustom);
+            return `
+                <div class="exercise-card custom-task-card ${isStaged ? 'staged-card' : ''}">
+                    <div class="ex-info">
+                        <span class="ex-id custom-badge">★ TUYA</span>
+                        <h5 class="ex-title">${ex.title}</h5>
+                        <p class="ex-meta">${ex.morfociclo_phase || 'Personalizada'} | ${ex.description || ''}</p>
+                    </div>
+                    <div class="ex-actions">
+                        <select class="block-select" id="select-c${ex.numericId}">
+                            <option value="gimnasio">Gimnasio</option>
+                            <option value="entrada_calor">E. Calor</option>
+                            <option value="parte_principal" selected>P. Principal</option>
+                            <option value="doble_turno">2º Turno</option>
+                            <option value="vuelta_calma">V. Calma</option>
+                        </select>
+                        <button id="btn-add-c${ex.numericId}" class="ex-add-btn ${isStaged ? 'staged' : ''}" onclick="DTEngine.stageExercise(${ex.numericId}, true)">
+                            ${isStaged ? '✓' : '+'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // --- RENDER GLOBAL ---
+        const globalHTML = globalTasks.map(ex => {
+            const isStaged = this._stagedTasks.some(t => t.id === ex.numericId && !t.isCustom);
             return `
                 <div class="exercise-card ${isStaged ? 'staged-card' : ''}">
                     <div class="ex-info">
@@ -673,13 +814,16 @@ window.DTEngine = {
                             <option value="doble_turno">2º Turno</option>
                             <option value="vuelta_calma">V. Calma</option>
                         </select>
-                        <button id="btn-add-${ex.numericId}" class="ex-add-btn ${isStaged ? 'staged' : ''}" onclick="DTEngine.stageExercise(${ex.numericId})">
+                        <button id="btn-add-${ex.numericId}" class="ex-add-btn ${isStaged ? 'staged' : ''}" onclick="DTEngine.stageExercise(${ex.numericId}, false)">
                             ${isStaged ? '✓' : '+'}
                         </button>
                     </div>
                 </div>
             `;
-        }).join('') || '<p class="empty-msg">No hay tareas para esta fase.</p>';
+        }).join('');
+
+        const combined = customHTML + globalHTML;
+        container.innerHTML = combined || '<p class="empty-msg">No hay tareas para esta fase.</p>';
     },
 
     _stagedTasks: [],
@@ -694,20 +838,19 @@ window.DTEngine = {
         }
     },
 
-    stageExercise(id) {
-        const block = document.getElementById(`select-${id}`).value;
-        const btn = document.getElementById(`btn-add-${id}`);
+    stageExercise(id, isCustom = false) {
+        const selectEl = document.getElementById(isCustom ? `select-c${id}` : `select-${id}`);
+        const block = selectEl ? selectEl.value : 'parte_principal';
+        const btnEl = document.getElementById(isCustom ? `btn-add-c${id}` : `btn-add-${id}`);
         
         // Toggle selection
-        const existingIdx = this._stagedTasks.findIndex(t => t.id === id);
+        const existingIdx = this._stagedTasks.findIndex(t => t.id === id && t.isCustom === isCustom);
         if (existingIdx > -1) {
             this._stagedTasks.splice(existingIdx, 1);
-            btn.classList.remove('staged');
-            btn.innerText = '+';
+            if (btnEl) { btnEl.classList.remove('staged'); btnEl.innerText = '+'; }
         } else {
-            this._stagedTasks.push({ id, block });
-            btn.classList.add('staged');
-            btn.innerText = '✓';
+            this._stagedTasks.push({ id, block, isCustom });
+            if (btnEl) { btnEl.classList.add('staged'); btnEl.innerText = '✓'; }
         }
     },
 
@@ -1127,6 +1270,17 @@ window.DTEngine = {
             if (teamNameEl) teamNameEl.value = teamData.name || '';
             if (teamColorEl) teamColorEl.value = teamData.primary_color || '#079FA0';
             if (methodologyEl) methodologyEl.value = teamData.methodology || 'Periodización Táctica';
+
+            // Cargar ADN Táctico desde tactical_dna
+            const dna = teamData.tactical_dna || {};
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+            setVal('dna-ataque',            dna.ataque);
+            setVal('dna-ataque-principios', dna.ataque_principios);
+            setVal('dna-defensa',           dna.defensa);
+            setVal('dna-bloque',            dna.bloque);
+            setVal('dna-trans-of',          dna.trans_of);
+            setVal('dna-trans-def',         dna.trans_def);
+            setVal('dna-constraints',       dna.constraints);
         }
     },
 
@@ -1134,16 +1288,27 @@ window.DTEngine = {
         const uid = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
         
-        const name = document.getElementById('prof-name').value;
-        const license = document.getElementById('prof-license').value;
+        const name     = document.getElementById('prof-name').value;
+        const license  = document.getElementById('prof-license').value;
         const teamName = document.getElementById('prof-team-name').value;
-        const color = document.getElementById('prof-team-color').value;
+        const color    = document.getElementById('prof-team-color').value;
         const methodology = document.getElementById('prof-methodology').value;
+
+        // Construir objeto ADN Táctico
+        const tactical_dna = {
+            ataque:             document.getElementById('dna-ataque')?.value,
+            ataque_principios:  document.getElementById('dna-ataque-principios')?.value,
+            defensa:            document.getElementById('dna-defensa')?.value,
+            bloque:             document.getElementById('dna-bloque')?.value,
+            trans_of:           document.getElementById('dna-trans-of')?.value,
+            trans_def:          document.getElementById('dna-trans-def')?.value,
+            constraints:        document.getElementById('dna-constraints')?.value,
+        };
         
-        if (!name || !teamName) return alert("Nombre y Equipo son obligatorios.");
+        if (!name || !teamName) return alert('Nombre y Equipo son obligatorios.');
 
         try {
-            console.log("💾 Guardando cambios en perfil y equipo...");
+            console.log('💾 Guardando cambios en perfil, equipo y ADN táctico...');
             
             // 1. Actualizar Usuario
             const uRes = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
@@ -1160,39 +1325,96 @@ window.DTEngine = {
                 body: JSON.stringify({ name: teamName })
             });
             
-            // 3. Actualizar Config Táctica
+            // 3. Actualizar Config Táctica (incluyendo tactical_dna)
             const cRes = await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs?team_id=eq.${teamId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ primary_color: color, methodology })
+                body: JSON.stringify({ primary_color: color, methodology, tactical_dna })
             });
 
             if (uRes.ok && tRes.ok && cRes.ok) {
                 // Actualizar Memoria Global
-                if (window.CurrentUser) {
-                    window.CurrentUser.name = name;
-                    window.CurrentUser.license = license;
-                }
+                if (window.CurrentUser) { window.CurrentUser.name = name; window.CurrentUser.license = license; }
                 if (window.CurrentTeam) {
                     window.CurrentTeam.name = teamName;
                     window.CurrentTeam.primary_color = color;
                     window.CurrentTeam.methodology = methodology;
+                    window.CurrentTeam.tactical_dna = tactical_dna;
                 }
                 
-                // Actualizar UI
+                // Actualizar CSS
                 document.documentElement.style.setProperty('--primary-color', color);
                 document.documentElement.style.setProperty('--primary', color);
                 
-                alert("✅ Perfil y Club actualizados correctamente.");
-                
-                // Forzar re-render del dashboard para ver cambios en widgets
+                alert('✅ Perfil, Club y ADN Táctico actualizados.');
                 this.renderDashboard();
                 this.toggleView('home');
             } else {
-                throw new Error("Error al guardar en el servidor. Verifica tu conexión.");
+                throw new Error('Error al guardar en el servidor. Verifica tu conexión.');
             }
         } catch (err) {
-            alert("🔴 " + err.message);
+            alert('🔴 ' + err.message);
         }
-    }
+    },
+
+    // --- BÓVEDA DE TAREAS PERSONALIZADAS ---
+    openCustomTaskModal() {
+        document.getElementById('custom-task-name').value = '';
+        document.getElementById('custom-task-rules').value = '';
+        document.getElementById('modal-custom-task').classList.remove('hidden');
+    },
+
+    closeCustomTaskModal() {
+        document.getElementById('modal-custom-task').classList.add('hidden');
+    },
+
+    async saveCustomTask() {
+        const uid   = localStorage.getItem('ravix_v5_uid');
+        const token = localStorage.getItem('ravix_token');
+        const name  = document.getElementById('custom-task-name').value.trim();
+        const phase = document.getElementById('custom-task-phase').value;
+        const rules = document.getElementById('custom-task-rules').value.trim();
+
+        if (!name) return alert('El nombre de la tarea es obligatorio.');
+
+        try {
+            console.log('💾 Guardando tarea personalizada en bóveda...');
+            const res = await fetch(`${window.SUPABASE_URL}/rest/v1/custom_exercises`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': window.SUPABASE_KEY,
+                    'Authorization': `Bearer ${token}`,
+                    'Prefer': 'return=representation'
+                },
+                body: JSON.stringify({
+                    user_id: uid,
+                    title: name,
+                    morfociclo_phase: phase,
+                    description: rules
+                })
+            });
+
+            if (!res.ok) throw new Error('Error al guardar en Supabase.');
+
+            const data = await res.json();
+            const newTask = data[0];
+
+            // Inyectar en memoria global inmediatamente
+            if (!window.CustomExercises) window.CustomExercises = [];
+            window.CustomExercises.unshift({
+                ...newTask,
+                numericId: newTask.id,
+                isCustom: true
+            });
+
+            this.closeCustomTaskModal();
+            // Re-renderizar la biblioteca con la nueva tarea al tope
+            this.renderLibrary(this.getMethodologyLabel(this._selectedDate));
+            console.log('✅ Tarea personalizada guardada y priorizada en biblioteca.');
+        } catch (err) {
+            alert('🔴 Error: ' + err.message);
+        }
+    },
+
 };

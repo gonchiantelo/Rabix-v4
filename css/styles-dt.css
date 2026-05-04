@@ -1294,3 +1294,66 @@ body { background: #121212 !important; }
 @media (max-width: 600px) {
     .profile-form-grid { grid-template-columns: 1fr; }
 }
+
+/* ── ADN Táctico ── */
+.dna-section-label {
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--dt-accent);
+    text-transform: uppercase;
+    padding: 14px 0 8px;
+    border-top: 1px solid var(--dt-border);
+    margin-top: 8px;
+}
+
+.profile-textarea {
+    resize: vertical;
+    min-height: 72px;
+    line-height: 1.5;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+}
+
+.profile-textarea-lg {
+    min-height: 100px;
+}
+
+/* ── Bóveda de Tareas Privadas ── */
+.btn-add-custom-task {
+    width: 100%;
+    background: linear-gradient(135deg, var(--dt-accent) 0%, #F58B01 100%);
+    color: #000;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 900;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    margin-bottom: 14px;
+    transition: 0.3s;
+    box-shadow: 0 6px 20px rgba(7,159,160,0.25);
+}
+
+.btn-add-custom-task:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(7,159,160,0.45);
+}
+
+/* Custom task card — badge dorado y borde primario */
+.custom-task-card {
+    border-left: 3px solid #F58B01 !important;
+    background: linear-gradient(135deg, rgba(245,139,1,0.06) 0%, rgba(14,14,20,1) 100%);
+}
+
+.custom-badge {
+    background: linear-gradient(90deg, #F58B01, #FFD700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 900;
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+

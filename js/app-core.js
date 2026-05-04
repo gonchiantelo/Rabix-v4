@@ -282,6 +282,7 @@ window.App = {
                 
                 // --- CARGA GLOBAL DE BIBLIOTECA ---
                 await this.fetchExercisesLibrary();
+                await this.fetchCustomExercises();
 
                 // --- PERSISTENCIA DE USUARIO PARA UI ---
                 window.CurrentUser = userData;
@@ -311,6 +312,25 @@ window.App = {
                 console.log("📚 Biblioteca Táctica cargada globalmente:", window.ExercisesLibrary.length);
             }
         } catch (e) { console.error("🔴 Error cargando biblioteca:", e); }
+    },
+
+    async fetchCustomExercises() {
+        try {
+            const uid   = localStorage.getItem('ravix_v5_uid');
+            const token = localStorage.getItem('ravix_token');
+            const r = await fetch(`${window.SUPABASE_URL}/rest/v1/custom_exercises?user_id=eq.${uid}&order=created_at.desc`, {
+                headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
+            });
+            const data = await r.json();
+            if (Array.isArray(data)) {
+                window.CustomExercises = data.map(ex => ({
+                    ...ex,
+                    numericId: ex.id,
+                    isCustom: true
+                }));
+                console.log('🗃️ Bóveda Privada cargada:', window.CustomExercises.length, 'tareas.');
+            }
+        } catch (e) { console.error('🔴 Error cargando bóveda privada:', e); }
     },
 
     injectRoleAssets(role) {
