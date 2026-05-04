@@ -391,9 +391,9 @@ window.DTEngine = {
                                             <span id="position-modal-title" class="position-modal-title">GK</span>
                                             <button type="button" class="tag-chip-remove" onclick="DTEngine.PitchEngine.closePositionModal()" style="width:22px;height:22px;font-size:16px;">×</button>
                                         </div>
-                                        <label style="font-size:10px;color:var(--dt-text-dim,#606070);font-weight:900;letter-spacing:1px;display:block;margin-bottom:8px;">PERFIL ESPERADO</label>
-                                        <textarea id="position-profile-input" class="profile-input profile-textarea" placeholder="Ej: Portero dominante en el juego aéreo, buen pateador..."></textarea>
-                                        <button type="button" class="btn-save-profile" onclick="DTEngine.PitchEngine.savePositionProfile()" style="margin-top:12px;padding:10px 20px;font-size:11px;">GUARDAR PERFIL</button>
+                                        <label style="font-size:10px;color:var(--dt-text-dim,#606070);font-weight:900;letter-spacing:1px;display:block;margin-bottom:8px;">ROLES Y CARACTERÍSTICAS (SELECCIONA 1-3)</label>
+                                        <div id="position-profile-options" class="role-options-grid"></div>
+                                        <button type="button" class="btn-save-profile" onclick="DTEngine.PitchEngine.savePositionProfile()" style="margin-top:12px;padding:10px 20px;font-size:11px;">GUARDAR ROLES</button>
                                     </div>
                                 </div>
                             </div>
@@ -1548,8 +1548,15 @@ window.DTEngine = {
     // ══════════════════════════════════════════════════════
     PitchEngine: {
         _esquema: '1-4-3-3',
-        _profiles: {},      // { 'GK': 'texto...', 'LI': '...' }
+        _profiles: {},      // { 'GK': ['Atajador bajo palos', '...'], 'LI': [...] }
         _activePosition: null,
+
+        _roleDictionary: {
+            GK: ['Líbero', 'Atajador bajo palos', 'Dominante aéreo', 'Salida con pies'],
+            DEF: ['Stopper', 'Líbero/Cobertura', 'Salida limpia', 'Carrilero Ofensivo', 'Marca férrea'],
+            MED: ['Pivote Posicional', 'Organizador/Playmaker', 'Box-to-Box', 'Destructor', 'Llegador'],
+            ATA: ['Falso 9', 'Target Man (Referencia)', 'Extremo a pie cambiado', 'Extremo puro', 'Ruptura al espacio']
+        },
 
         _formations: {
             '1-4-3-3': [
@@ -1600,11 +1607,9 @@ window.DTEngine = {
             const formation = this._formations[esquema];
             if (!formation) return;
 
-            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#079FA0';
-
             const rowsHTML = formation.map(rowDef => {
                 const positionsHTML = rowDef.positions.map(pos => {
-                    const hasProfile = !!this._profiles[pos.id];
+                    const hasProfile = this._profiles[pos.id] && this._profiles[pos.id].length > 0;
                     return `
                         <div class="pitch-position ${hasProfile ? 'has-profile' : ''}"
                              onclick="DTEngine.PitchEngine.openPositionModal('${pos.id}', '${pos.label}')"
@@ -1617,7 +1622,6 @@ window.DTEngine = {
                 return `<div class="pitch-row">${positionsHTML}</div>`;
             }).join('');
 
-            // Field markings HTML
             container.innerHTML = `
                 <div class="pitch-field">
                     <div class="pitch-center-circle"></div>
@@ -1629,16 +1633,48 @@ window.DTEngine = {
             `;
         },
 
+        _getLineFromPos(posId) {
+            if (posId === 'GK') return 'GK';
+            if (posId.startsWith('DF') || posId === 'LI' || posId === 'LD' || posId.startsWith('CR')) return 'DEF';
+            if (posId.startsWith('MC') || posId.startsWith('MCO') || posId.startsWith('MCD')) return 'MED';
+            return 'ATA';
+        },
+
         openPositionModal(posId, label) {
             this._activePosition = posId;
             const modal = document.getElementById('position-modal');
             const title = document.getElementById('position-modal-title');
-            const textarea = document.getElementById('position-profile-input');
-            if (!modal || !title || !textarea) return;
+            const optionsContainer = document.getElementById('position-profile-options');
+            if (!modal || !title || !optionsContainer) return;
+            
             title.textContent = label;
-            textarea.value = this._profiles[posId] || '';
+            
+            // Si antes había string, limpiarlo (migración silenciosa)
+            if (typeof this._profiles[posId] === 'string') this._profiles[posId] = [];
+            
+            const currentRoles = Array.isArray(this._profiles[posId]) ? this._profiles[posId] : [];
+            const line = this._getLineFromPos(posId);
+            const roles = this._roleDictionary[line] || [];
+            
+            optionsContainer.innerHTML = roles.map(role => {
+                const isSelected = currentRoles.includes(role);
+                return `
+                    <label class="role-chip ${isSelected ? 'selected' : ''}">
+                        <input type="checkbox" value="${role}" ${isSelected ? 'checked' : ''} onchange="DTEngine.PitchEngine.toggleRole(this.parentElement)">
+                        <span class="role-chip-text">${role}</span>
+                    </label>
+                `;
+            }).join('');
+            
             modal.classList.remove('hidden');
-            setTimeout(() => textarea.focus(), 50);
+        },
+
+        toggleRole(labelElement) {
+            if (labelElement.querySelector('input').checked) {
+                labelElement.classList.add('selected');
+            } else {
+                labelElement.classList.remove('selected');
+            }
         },
 
         closePositionModal() {
@@ -1649,11 +1685,12 @@ window.DTEngine = {
 
         savePositionProfile() {
             if (!this._activePosition) return;
-            const textarea = document.getElementById('position-profile-input');
-            if (textarea) {
-                this._profiles[this._activePosition] = textarea.value.trim();
+            const optionsContainer = document.getElementById('position-profile-options');
+            if (optionsContainer) {
+                const checkboxes = optionsContainer.querySelectorAll('input[type="checkbox"]:checked');
+                const selectedRoles = Array.from(checkboxes).map(cb => cb.value);
+                this._profiles[this._activePosition] = selectedRoles;
             }
-            // Re-render to show the dot indicator
             this.renderPitch(this._esquema);
             this.closePositionModal();
         }

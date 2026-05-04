@@ -1640,3 +1640,47 @@ body { background: #121212 !important; }
     font-size: 14px;
 }
 
+
+/* ── Position Role Chips ── */
+.role-options-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.role-chip {
+    display: inline-flex;
+    align-items: center;
+    background: var(--dt-card-bg);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: 0.2s;
+    user-select: none;
+}
+
+.role-chip input[type="checkbox"] {
+    display: none;
+}
+
+.role-chip-text {
+    font-size: 11px;
+    color: var(--dt-text);
+}
+
+.role-chip:hover {
+    border-color: rgba(7,159,160,0.4);
+    background: rgba(7,159,160,0.1);
+}
+
+.role-chip.selected {
+    background: rgba(7,159,160,0.2);
+    border-color: var(--dt-accent);
+}
+
+.role-chip.selected .role-chip-text {
+    color: var(--dt-accent);
+    font-weight: 600;
+}
