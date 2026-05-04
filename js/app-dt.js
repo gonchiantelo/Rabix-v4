@@ -171,7 +171,9 @@ window.DTEngine = {
                         <div class="platinum-widget stats-widget" onclick="DTEngine.toggleView('analytics')">
                             <div class="pw-header">
                                 <h3>Monitor de Rendimiento Platinado</h3>
-                                <span class="pw-action">Detalle Estadístico →<                            <div class="pw-charts-row">
+                                <span class="pw-action">Detalle Estadístico →</span>
+                            </div>
+                            <div class="pw-charts-row">
                                 <div class="pw-mini-chart">
                                     <canvas id="home-chart-load"></canvas>
                                 </div>

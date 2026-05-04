@@ -129,26 +129,25 @@ window.App = {
     },
 
     handleRouting() {
-        const hash = window.location.hash || '#home';
-        console.log("📍 Navegando a:", hash);
+        const hash = window.location.hash;
+        console.log("📍 Router ejecutado, hash:", hash || '(vacío)');
 
-        // Ocultar todas las secciones principales
-        const views = ['view-login', 'view-onboarding'];
-        views.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = 'none';
-        });
+        // El routing interno de las vistas del DT es manejado por DTEngine.toggleView.
+        // Solo actuamos si DTEngine ya está disponible en el DOM.
+        if (!window.DTEngine) {
+            console.warn('⚠️ handleRouting: DTEngine aún no disponible, encolado para después.');
+            return;
+        }
 
         if (hash === '#view-profile') {
-            document.getElementById('app-shell').style.display = 'block';
-            if (window.DTEngine) window.DTEngine.toggleView('profile');
-            this.loadProfile();
-        } else if (hash === '#home' || hash === '#calendar' || hash === '#analytics') {
-            document.getElementById('app-shell').style.display = 'block';
-            if (window.DTEngine) {
-                const view = hash.replace('#', '');
-                window.DTEngine.toggleView(view === 'home' ? 'home' : view);
-            }
+            window.DTEngine.toggleView('profile');
+        } else if (hash === '#calendar') {
+            window.DTEngine.toggleView('calendar');
+        } else if (hash === '#analytics') {
+            window.DTEngine.toggleView('analytics');
+        } else {
+            // '#home' o cualquier hash vacío/desconocido → home
+            window.DTEngine.toggleView('home');
         }
     },
 
@@ -321,7 +320,18 @@ window.App = {
 
         const script = document.createElement('script');
         script.src = 'js/app-dt.js';
-        script.onload = () => { if (window.DTEngine) window.DTEngine.renderDashboard(); };
+        script.onload = () => {
+            if (window.DTEngine) {
+                // Renderizar el dashboard completo primero
+                window.DTEngine.renderDashboard().then(() => {
+                    // Después de renderizar, aplicar el hash inicial si existe
+                    const initialHash = window.location.hash;
+                    if (initialHash && initialHash !== '#home') {
+                        window.App.handleRouting();
+                    }
+                });
+            }
+        };
         document.body.appendChild(script);
     },
 
