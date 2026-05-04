@@ -227,7 +227,7 @@ window.DTEngine = {
                     </section>
 
                     <!-- SECCIÓN PERFIL DEL DT (#view-profile) -->
-                    <section id="view-profile" class="dt-profile-view" style="display: none;">
+                    <section id="view-profile" class="view-section" style="display: none;">
                         <div class="profile-view-container">
 
                             <!-- BLOQUE 1: IDENTIDAD -->
@@ -516,6 +516,11 @@ window.DTEngine = {
         // --- FLUJO ESTRICTO DE RENDERIZADO ---
         this.generateCalendar();   // 1. Grilla y Tareas
         this.updateHomeUI();       // 2. Timeline
+
+        // --- INICIALIZAR COMPONENTES DE PERFIL ---
+        if (this.TagInput) this.TagInput.init();
+        if (this.RulesTagInput) this.RulesTagInput.init();
+        if (this.PitchEngine && typeof this.PitchEngine.init === 'function') this.PitchEngine.init();
 
         // 3. Sincronizar Analítica solo si hay biblioteca
         if (window.ExercisesLibrary) {
