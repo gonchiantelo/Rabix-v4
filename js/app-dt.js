@@ -171,9 +171,7 @@ window.DTEngine = {
                         <div class="platinum-widget stats-widget" onclick="DTEngine.toggleView('analytics')">
                             <div class="pw-header">
                                 <h3>Monitor de Rendimiento Platinado</h3>
-                                <span class="pw-action">Detalle Estadístico →</span>
-                            </div>
-                            <div class="pw-charts-row">
+                                <span class="pw-action">Detalle Estadístico →<                            <div class="pw-charts-row">
                                 <div class="pw-mini-chart">
                                     <canvas id="home-chart-load"></canvas>
                                 </div>
@@ -226,7 +224,53 @@ window.DTEngine = {
                         </div>
                     </section>
 
+                    <!-- SECCIÓN PERFIL DEL DT (#view-profile) -->
+                    <section id="view-profile" class="dt-profile-view" style="display: none;">
+                        <div class="profile-view-container">
+                            <div class="profile-card">
+                                <h3 class="profile-section-title">IDENTIDAD STAFF</h3>
+                                <div class="profile-form-grid">
+                                    <div class="profile-input-group">
+                                        <label>NOMBRE COMPLETO</label>
+                                        <input type="text" id="prof-name" class="profile-input" placeholder="Nombre del DT">
+                                    </div>
+                                    <div class="profile-input-group">
+                                        <label>LICENCIA</label>
+                                        <select id="prof-license" class="profile-input">
+                                            <option value="UEFA PRO">UEFA PRO</option>
+                                            <option value="CONMEBOL PRO">CONMEBOL PRO</option>
+                                            <option value="AFA / ATFA">AFA / ATFA</option>
+                                            <option value="AMATEUR">AMATEUR</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <h3 class="profile-section-title">CONFIGURACIÓN DEL CLUB</h3>
+                                <div class="profile-form-grid">
+                                    <div class="profile-input-group">
+                                        <label>NOMBRE DEL EQUIPO</label>
+                                        <input type="text" id="prof-team-name" class="profile-input" placeholder="Nombre del Club">
+                                    </div>
+                                    <div class="profile-input-group">
+                                        <label>COLOR PRINCIPAL</label>
+                                        <input type="color" id="prof-team-color" class="profile-input" style="height: 48px; padding: 5px;">
+                                    </div>
+                                    <div class="profile-input-group" style="grid-column: span 2;">
+                                        <label>METODOLOGÍA</label>
+                                        <select id="prof-methodology" class="profile-input">
+                                            <option value="Periodización Táctica">Periodización Táctica</option>
+                                            <option value="Microciclo Estructurado">Microciclo Estructurado</option>
+                                            <option value="Entrenamiento Integrado">Entrenamiento Integrado</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <button class="btn-save-profile" onclick="App.saveProfile()">GUARDAR CONFIGURACIÓN</button>
+                            </div>
+                        </div>
+                    </section>
                 </main>
+            </div>
 
                 <!-- Drawer Lateral (Cajón Táctico) -->
                 <div id="dt-drawer" class="drawer-overlay hidden">
@@ -957,7 +1001,7 @@ window.DTEngine = {
         const home = document.getElementById('dt-home-view');
         const cal = document.getElementById('dt-calendar-view');
         const an = document.getElementById('dt-analytics-view');
-        const prof = document.getElementById('dt-profile-view');
+        const prof = document.getElementById('view-profile');
         
         [home, cal, an, prof].forEach(v => { if(v) v.style.display = 'none'; });
 

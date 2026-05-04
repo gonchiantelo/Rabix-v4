@@ -219,58 +219,6 @@
         </div>
     </section>
 
-    <!-- SECCIÓN PERFIL DEL DT (#view-profile) -->
-    <section id="view-profile" class="view-section hidden" style="display: none; background: #050508; min-height: 100vh;">
-        <div class="profile-view-container">
-            <div class="profile-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                    <h2 style="font-family:'Outfit'; font-size: 28px; color: #FFF; margin: 0;">Perfil del DT</h2>
-                    <button onclick="location.hash='#home'" class="btn-logout" style="border-radius: 100px; padding: 8px 20px;">✕ VOLVER</button>
-                </div>
-
-                <form id="profile-form">
-                    <h3 class="profile-section-title">IDENTIDAD STAFF</h3>
-                    <div class="profile-form-grid">
-                        <div class="profile-input-group">
-                            <label>NOMBRE COMPLETO</label>
-                            <input type="text" id="prof-name" class="profile-input" placeholder="Ej: Pep Guardiola" required>
-                        </div>
-                        <div class="profile-input-group">
-                            <label>LICENCIA ACTUAL</label>
-                            <select id="prof-license" class="profile-input">
-                                <option value="UEFA PRO">UEFA PRO</option>
-                                <option value="CONMEBOL PRO">CONMEBOL PRO</option>
-                                <option value="AFA / ATFA">AFA / ATFA</option>
-                                <option value="AMATEUR">AMATEUR</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <h3 class="profile-section-title">CONFIGURACIÓN DEL CLUB</h3>
-                    <div class="profile-form-grid">
-                        <div class="profile-input-group">
-                            <label>NOMBRE DEL EQUIPO</label>
-                            <input type="text" id="prof-team-name" class="profile-input" placeholder="Ej: Manchester City" required>
-                        </div>
-                        <div class="profile-input-group">
-                            <label>COLOR PRINCIPAL</label>
-                            <input type="color" id="prof-team-color" class="profile-input" style="height: 52px; padding: 5px;">
-                        </div>
-                        <div class="profile-input-group" style="grid-column: span 2;">
-                            <label>METODOLOGÍA DE TRABAJO</label>
-                            <select id="prof-methodology" class="profile-input">
-                                <option value="Periodización Táctica">Periodización Táctica</option>
-                                <option value="Microciclo Estructurado">Microciclo Estructurado</option>
-                                <option value="Entrenamiento Integrado">Entrenamiento Integrado</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-save-profile">GUARDAR CONFIGURACIÓN</button>
-                </form>
-            </div>
-        </div>
-    </section>
 
     <script src="./js/app-core.js"></script>
 </body>

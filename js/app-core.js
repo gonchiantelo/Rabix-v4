@@ -133,19 +133,22 @@ window.App = {
         console.log("📍 Navegando a:", hash);
 
         // Ocultar todas las secciones principales
-        const views = ['view-login', 'view-onboarding', 'app-shell', 'view-profile'];
+        const views = ['view-login', 'view-onboarding'];
         views.forEach(id => {
             const el = document.getElementById(id);
             if (el) el.style.display = 'none';
         });
 
         if (hash === '#view-profile') {
-            document.getElementById('view-profile').style.display = 'block';
-            this.loadProfile();
-        } else if (hash === '#home') {
             document.getElementById('app-shell').style.display = 'block';
-            // Si DTEngine existe, forzar re-render para asegurar datos frescos
-            if (window.DTEngine) window.DTEngine.renderDashboard();
+            if (window.DTEngine) window.DTEngine.toggleView('profile');
+            this.loadProfile();
+        } else if (hash === '#home' || hash === '#calendar' || hash === '#analytics') {
+            document.getElementById('app-shell').style.display = 'block';
+            if (window.DTEngine) {
+                const view = hash.replace('#', '');
+                window.DTEngine.toggleView(view === 'home' ? 'home' : view);
+            }
         }
     },
 
