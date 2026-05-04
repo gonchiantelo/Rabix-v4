@@ -125,7 +125,7 @@ window.DTEngine = {
                 <main class="dt-main-content">
                     <section id="dt-home-view" class="dt-home-view">
                         <!-- Widget 1: Perfil & Identidad -->
-                        <div class="platinum-widget profile-widget" onclick="location.hash='#view-profile'" style="cursor: pointer;">
+                        <div class="platinum-widget profile-widget" onclick="window.DTEngine.toggleView('profile')" style="cursor: pointer;">
                             <div class="pw-content">
                                 <div class="dt-avatar-ring">
                                     <div class="dt-avatar-inner"></div>
