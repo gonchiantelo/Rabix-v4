@@ -1684,3 +1684,20 @@ body { background: #121212 !important; }
     color: var(--dt-accent);
     font-weight: 600;
 }
+
+/* ── Role Badge ── */
+.role-badge {
+    position: absolute;
+    top: -25px;
+    white-space: nowrap;
+    background: rgba(0,0,0,0.8);
+    color: var(--primary-color, #079FA0);
+    border: 1px solid var(--primary-color, #079FA0);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 5;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
