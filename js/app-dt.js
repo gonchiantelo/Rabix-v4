@@ -284,9 +284,24 @@ window.DTEngine = {
                                             <option value="Ataque Rápido">Ataque Rápido</option>
                                         </select>
                                     </div>
-                                    <div class="profile-input-group">
+                                    <div class="profile-input-group" style="grid-column: span 2;">
                                         <label>PRINCIPIOS OPERATIVOS</label>
-                                        <textarea id="dna-ataque-principios" class="profile-input profile-textarea" placeholder="Ej: Tercer hombre, Amplitud máxima, Rotaciones..."></textarea>
+                                        <div class="tag-input-wrapper" id="tag-input-wrapper">
+                                            <div class="tag-chips" id="tag-chips"></div>
+                                            <div class="tag-input-row">
+                                                <input
+                                                    type="text"
+                                                    id="tag-input"
+                                                    class="tag-input-field"
+                                                    list="tag-suggestions"
+                                                    placeholder="Buscar o escribir un principio..."
+                                                    autocomplete="off"
+                                                    onkeydown="DTEngine.TagInput.onKeyDown(event)"
+                                                >
+                                                <datalist id="tag-suggestions"></datalist>
+                                                <button type="button" class="tag-add-btn" onclick="DTEngine.TagInput.addFromInput()">+</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1256,6 +1271,9 @@ window.DTEngine = {
         const userData = window.CurrentUser;
         const teamData = window.CurrentTeam;
         
+        // Inicializar el componente Tag Input (datalist + render)
+        this.TagInput.init();
+        
         if (userData) {
             const nameEl = document.getElementById('prof-name');
             const licenseEl = document.getElementById('prof-license');
@@ -1275,7 +1293,7 @@ window.DTEngine = {
             const dna = teamData.tactical_dna || {};
             const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
             setVal('dna-ataque',            dna.ataque);
-            setVal('dna-ataque-principios', dna.ataque_principios);
+            DTEngine.TagInput.load(dna.principios || []);
             setVal('dna-defensa',           dna.defensa);
             setVal('dna-bloque',            dna.bloque);
             setVal('dna-trans-of',          dna.trans_of);
@@ -1297,7 +1315,7 @@ window.DTEngine = {
         // Construir objeto ADN Táctico
         const tactical_dna = {
             ataque:             document.getElementById('dna-ataque')?.value,
-            ataque_principios:  document.getElementById('dna-ataque-principios')?.value,
+            principios:         DTEngine.TagInput.getTags(),
             defensa:            document.getElementById('dna-defensa')?.value,
             bloque:             document.getElementById('dna-bloque')?.value,
             trans_of:           document.getElementById('dna-trans-of')?.value,
@@ -1416,5 +1434,88 @@ window.DTEngine = {
             alert('🔴 Error: ' + err.message);
         }
     },
+
+    // ══════════════════════════════════════════════════════
+    // MÓDULO TAG INPUT — Principios Operativos del Modelo de Juego
+    // ══════════════════════════════════════════════════════
+    TagInput: {
+        _tags: [],
+
+        // Diccionario base de principios (ofensivos + defensivos)
+        _dictionary: [
+            // Ofensivos
+            'Atracción y Cambio de Orientación',
+            'Cobertura Espacio Cercano',
+            'Tercer Hombre',
+            'Creación de Superioridades',
+            'Juego a Espaldas',
+            'Temporización Ofensiva',
+            // Defensivos
+            'Orientación del Rival',
+            'Reducción Líneas de Pase',
+            'Equilibrio Defensivo',
+            'Densidad Defensiva',
+            'Compensación de Espacios',
+            'Unidad Defensiva'
+        ],
+
+        init() {
+            // Inyectar opciones en el datalist
+            const dl = document.getElementById('tag-suggestions');
+            if (!dl) return;
+            dl.innerHTML = this._dictionary
+                .map(p => `<option value="${p}">`)
+                .join('');
+        },
+
+        load(tagsArray) {
+            this._tags = Array.isArray(tagsArray) ? [...tagsArray] : [];
+            this.init();
+            this._render();
+        },
+
+        getTags() {
+            return [...this._tags];
+        },
+
+        addTag(val) {
+            const trimmed = val.trim();
+            if (!trimmed || this._tags.includes(trimmed)) return;
+            this._tags.push(trimmed);
+            this._render();
+        },
+
+        removeTag(idx) {
+            this._tags.splice(idx, 1);
+            this._render();
+        },
+
+        addFromInput() {
+            const input = document.getElementById('tag-input');
+            if (!input || !input.value.trim()) return;
+            this.addTag(input.value);
+            input.value = '';
+            input.focus();
+        },
+
+        onKeyDown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.addFromInput();
+            }
+        },
+
+        _render() {
+            const container = document.getElementById('tag-chips');
+            if (!container) return;
+            container.innerHTML = this._tags.map((tag, i) => `
+                <span class="tag-chip">
+                    <span class="tag-chip-text">${tag}</span>
+                    <button type="button" class="tag-chip-remove" onclick="DTEngine.TagInput.removeTag(${i})">×</button>
+                </span>
+            `).join('');
+        }
+    },
+
 
 };

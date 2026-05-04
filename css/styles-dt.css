@@ -1357,3 +1357,120 @@ body { background: #121212 !important; }
     letter-spacing: 1px;
 }
 
+
+/* ── Tag Input Component (Principios Operativos) ── */
+.tag-input-wrapper {
+    background: var(--dt-card-bg, #0e0e14);
+    border: 1px solid var(--dt-border, rgba(255,255,255,0.08));
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.2s;
+}
+
+.tag-input-wrapper:focus-within {
+    border-color: var(--dt-accent, #079FA0);
+    box-shadow: 0 0 0 3px rgba(7,159,160,0.12);
+}
+
+.tag-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 28px;
+}
+
+.tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, rgba(7,159,160,0.18) 0%, rgba(7,159,160,0.08) 100%);
+    border: 1px solid rgba(7,159,160,0.35);
+    border-radius: 100px;
+    padding: 4px 10px 4px 12px;
+    animation: chipIn 0.18s ease-out;
+}
+
+@keyframes chipIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.tag-chip-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--dt-accent, #079FA0);
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+.tag-chip-remove {
+    background: none;
+    border: none;
+    color: rgba(7,159,160,0.6);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    transition: background 0.15s, color 0.15s;
+}
+
+.tag-chip-remove:hover {
+    background: rgba(255,80,80,0.2);
+    color: #ff5050;
+}
+
+.tag-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.tag-input-field {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--dt-text, #E0E0E0);
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    padding: 4px 0;
+    caret-color: var(--dt-accent, #079FA0);
+}
+
+.tag-input-field::placeholder {
+    color: rgba(255,255,255,0.25);
+    font-size: 12px;
+}
+
+.tag-add-btn {
+    width: 30px;
+    height: 30px;
+    background: var(--dt-accent, #079FA0);
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: 900;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.15s, box-shadow 0.15s;
+    line-height: 1;
+}
+
+.tag-add-btn:hover {
+    transform: scale(1.12);
+    box-shadow: 0 4px 14px rgba(7,159,160,0.45);
+}
