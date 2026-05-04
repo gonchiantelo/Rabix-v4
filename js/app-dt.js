@@ -125,7 +125,7 @@ window.DTEngine = {
                 <main class="dt-main-content">
                     <section id="dt-home-view" class="dt-home-view">
                         <!-- Widget 1: Perfil & Identidad -->
-                        <div class="platinum-widget profile-widget">
+                        <div class="platinum-widget profile-widget" onclick="location.hash='#view-profile'" style="cursor: pointer;">
                             <div class="pw-content">
                                 <div class="dt-avatar-ring">
                                     <div class="dt-avatar-inner"></div>
@@ -225,6 +225,7 @@ window.DTEngine = {
                             </div>
                         </div>
                     </section>
+
                 </main>
 
                 <!-- Drawer Lateral (Cajón Táctico) -->
@@ -956,8 +957,9 @@ window.DTEngine = {
         const home = document.getElementById('dt-home-view');
         const cal = document.getElementById('dt-calendar-view');
         const an = document.getElementById('dt-analytics-view');
+        const prof = document.getElementById('dt-profile-view');
         
-        [home, cal, an].forEach(v => { if(v) v.style.display = 'none'; });
+        [home, cal, an, prof].forEach(v => { if(v) v.style.display = 'none'; });
 
         if (view === 'home') {
             home.style.display = 'block';
@@ -965,6 +967,9 @@ window.DTEngine = {
         } else if (view === 'analytics') {
             an.style.display = 'block';
             this.renderAnalytics();
+        } else if (view === 'profile') {
+            prof.style.display = 'block';
+            this.loadProfile();
         } else {
             cal.style.display = 'block';
         }
@@ -1056,5 +1061,92 @@ window.DTEngine = {
             },
             options: chartOptions
         });
+    },
+
+    loadProfile() {
+        const userData = window.CurrentUser;
+        const teamData = window.CurrentTeam;
+        
+        if (userData) {
+            const nameEl = document.getElementById('prof-name');
+            const licenseEl = document.getElementById('prof-license');
+            if (nameEl) nameEl.value = userData.name || '';
+            if (licenseEl) licenseEl.value = userData.license || 'UEFA PRO';
+        }
+        
+        if (teamData) {
+            const teamNameEl = document.getElementById('prof-team-name');
+            const teamColorEl = document.getElementById('prof-team-color');
+            const methodologyEl = document.getElementById('prof-methodology');
+            if (teamNameEl) teamNameEl.value = teamData.name || '';
+            if (teamColorEl) teamColorEl.value = teamData.primary_color || '#079FA0';
+            if (methodologyEl) methodologyEl.value = teamData.methodology || 'Periodización Táctica';
+        }
+    },
+
+    async saveProfile() {
+        const uid = localStorage.getItem('ravix_v5_uid');
+        const token = localStorage.getItem('ravix_token');
+        
+        const name = document.getElementById('prof-name').value;
+        const license = document.getElementById('prof-license').value;
+        const teamName = document.getElementById('prof-team-name').value;
+        const color = document.getElementById('prof-team-color').value;
+        const methodology = document.getElementById('prof-methodology').value;
+        
+        if (!name || !teamName) return alert("Nombre y Equipo son obligatorios.");
+
+        try {
+            console.log("💾 Guardando cambios en perfil y equipo...");
+            
+            // 1. Actualizar Usuario
+            const uRes = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ name, license })
+            });
+            
+            // 2. Actualizar Equipo
+            const teamId = window.CurrentTeam?.id;
+            const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams?id=eq.${teamId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ name: teamName })
+            });
+            
+            // 3. Actualizar Config Táctica
+            const cRes = await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs?team_id=eq.${teamId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ primary_color: color, methodology })
+            });
+
+            if (uRes.ok && tRes.ok && cRes.ok) {
+                // Actualizar Memoria Global
+                if (window.CurrentUser) {
+                    window.CurrentUser.name = name;
+                    window.CurrentUser.license = license;
+                }
+                if (window.CurrentTeam) {
+                    window.CurrentTeam.name = teamName;
+                    window.CurrentTeam.primary_color = color;
+                    window.CurrentTeam.methodology = methodology;
+                }
+                
+                // Actualizar UI
+                document.documentElement.style.setProperty('--primary-color', color);
+                document.documentElement.style.setProperty('--primary', color);
+                
+                alert("✅ Perfil y Club actualizados correctamente.");
+                
+                // Forzar re-render del dashboard para ver cambios en widgets
+                this.renderDashboard();
+                this.toggleView('home');
+            } else {
+                throw new Error("Error al guardar en el servidor. Verifica tu conexión.");
+            }
+        } catch (err) {
+            alert("🔴 " + err.message);
+        }
     }
 };

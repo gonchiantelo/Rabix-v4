@@ -122,8 +122,113 @@ window.App = {
         const token = localStorage.getItem('ravix_token');
         if (uid && token) {
             this.checkSession(uid, token);
+            window.addEventListener('hashchange', () => this.handleRouting());
         } else {
             document.getElementById('view-login').style.display = 'flex';
+        }
+    },
+
+    handleRouting() {
+        const hash = window.location.hash || '#home';
+        console.log("📍 Navegando a:", hash);
+
+        // Ocultar todas las secciones principales
+        const views = ['view-login', 'view-onboarding', 'app-shell', 'view-profile'];
+        views.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+
+        if (hash === '#view-profile') {
+            document.getElementById('view-profile').style.display = 'block';
+            this.loadProfile();
+        } else if (hash === '#home') {
+            document.getElementById('app-shell').style.display = 'block';
+            // Si DTEngine existe, forzar re-render para asegurar datos frescos
+            if (window.DTEngine) window.DTEngine.renderDashboard();
+        }
+    },
+
+    loadProfile() {
+        if (!window.CurrentUser || !window.CurrentTeam) return;
+        
+        document.getElementById('prof-name').value = window.CurrentUser.name || '';
+        document.getElementById('prof-license').value = window.CurrentUser.license || 'UEFA PRO';
+        document.getElementById('prof-team-name').value = window.CurrentTeam.name || '';
+        document.getElementById('prof-team-color').value = window.CurrentTeam.primary_color || '#079FA0';
+        document.getElementById('prof-methodology').value = window.CurrentTeam.methodology || 'Periodización Táctica';
+    },
+
+    async saveProfile(e) {
+        if (e) e.preventDefault();
+        
+        const uid = localStorage.getItem('ravix_v5_uid');
+        const token = localStorage.getItem('ravix_token');
+        const teamId = window.CurrentTeam?.id;
+
+        const name = document.getElementById('prof-name').value;
+        const license = document.getElementById('prof-license').value;
+        const teamName = document.getElementById('prof-team-name').value;
+        const color = document.getElementById('prof-team-color').value;
+        const methodology = document.getElementById('prof-methodology').value;
+
+        try {
+            console.log("🚀 Iniciando UPDATE asíncrono a Supabase...");
+            
+            // 1. Update Users Table
+            const uRes = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
+                method: 'PATCH',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'apikey': window.SUPABASE_KEY, 
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ name, license })
+            });
+
+            // 2. Update Teams Table
+            const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams?id=eq.${teamId}`, {
+                method: 'PATCH',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'apikey': window.SUPABASE_KEY, 
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ name: teamName })
+            });
+
+            // 3. Update Team Configs Table
+            const cRes = await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs?team_id=eq.${teamId}`, {
+                method: 'PATCH',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'apikey': window.SUPABASE_KEY, 
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ primary_color: color, methodology })
+            });
+
+            if (uRes.ok && tRes.ok && cRes.ok) {
+                console.log("✅ Datos actualizados en Supabase.");
+                
+                // Actualizar variables globales
+                window.CurrentUser.name = name;
+                window.CurrentUser.license = license;
+                window.CurrentTeam.name = teamName;
+                window.CurrentTeam.primary_color = color;
+                window.CurrentTeam.methodology = methodology;
+
+                // Refrescar CSS
+                document.documentElement.style.setProperty('--primary-color', color);
+                document.documentElement.style.setProperty('--primary', color);
+
+                alert("Configuración guardada con éxito.");
+                location.hash = '#home';
+            } else {
+                throw new Error("Error al sincronizar con el servidor.");
+            }
+        } catch (err) {
+            alert("🔴 Error: " + err.message);
         }
     },
 
@@ -182,6 +287,9 @@ window.App = {
                 document.getElementById('view-login').style.display = 'none';
                 document.getElementById('app-shell').style.display = 'block';
                 this.injectRoleAssets(userData.role);
+                
+                // Ejecutar router para capturar hash inicial
+                this.handleRouting();
             } else { this.logout(); }
         } catch (e) { console.error("Error checkSession:", e); this.logout(); }
     },
@@ -305,6 +413,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(err.message); 
             }
         };
+    }
+
+    // Listener para el formulario de perfil
+    const profileForm = document.getElementById('profile-form');
+    if (profileForm) {
+        profileForm.onsubmit = (e) => window.App.saveProfile(e);
     }
 });
 
