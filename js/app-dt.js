@@ -1871,3 +1871,54 @@ window.DTEngine = {
 
 
 };
+
+
+// ==========================================
+// 1. INYECCIÓN BLINDADA DEL CONTENEDOR DOM
+// ==========================================
+setTimeout(() => {
+    const mainContent = document.querySelector('.dt-main-content');
+    if (mainContent && !document.getElementById('view-board')) {
+        const boardSection = document.createElement('section');
+        boardSection.id = 'view-board';
+        boardSection.className = 'view-section hidden';
+        boardSection.style.cssText = 'display: none; height: 85vh; width: 100%; margin-top: 15px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); background: #0f172a;';
+        boardSection.innerHTML = '<div id="whiteboard-container" style="width: 100%; height: 100%; position: relative;"></div>';
+        mainContent.appendChild(boardSection);
+        console.log("Contenedor #view-board inyectado a la fuerza.");
+    }
+}, 500);
+
+// ==========================================
+// 2. PARCHE DE ENRUTAMIENTO (TOGGLE VIEW)
+// ==========================================
+const originalToggleView = window.DTEngine.toggleView;
+window.DTEngine.toggleView = function(viewName) {
+    // Mantener funcionalidad de otras vistas
+    if (originalToggleView && viewName !== 'board') {
+        originalToggleView.call(this, viewName);
+    }
+    
+    // Lógica estricta y exclusiva para la Pizarra
+    if (viewName === 'board') {
+        // Ocultar todo
+        document.querySelectorAll('.view-section').forEach(el => {
+            el.style.display = 'none';
+        });
+        
+        // Mostrar Pizarra
+        const boardEl = document.getElementById('view-board');
+        if (boardEl) {
+            boardEl.style.display = 'block';
+            boardEl.classList.remove('hidden');
+            
+            // Encender el motor SVG
+            if(window.DTEngine.Board && typeof window.DTEngine.Board.init === 'function') {
+                window.DTEngine.Board.init();
+            }
+        } else {
+            console.error("Error: #view-board no existe al intentar enrutar.");
+        }
+    }
+};
+
