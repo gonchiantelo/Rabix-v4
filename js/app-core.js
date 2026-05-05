@@ -174,6 +174,20 @@ window.App = {
         const color = document.getElementById('prof-team-color').value;
         const methodology = document.getElementById('prof-methodology').value;
 
+        let tactical_dna = {};
+        if (window.DTEngine) {
+            tactical_dna = {
+                ataque: document.getElementById('dna-ataque')?.value,
+                principios: window.DTEngine.TagInput.getTags(),
+                defensa: document.getElementById('dna-defensa')?.value,
+                bloque: document.getElementById('dna-bloque')?.value,
+                trans_of: document.getElementById('dna-trans-of')?.value,
+                trans_def: document.getElementById('dna-trans-def')?.value,
+                reglas_provocacion: window.DTEngine.RulesTagInput.getTags(),
+                ideal_11: window.DTEngine.PitchEngine.getData()
+            };
+        }
+
         try {
             console.log("🚀 Iniciando UPDATE asíncrono a Supabase...");
             
@@ -207,7 +221,7 @@ window.App = {
                     'apikey': window.SUPABASE_KEY, 
                     'Authorization': `Bearer ${token}` 
                 },
-                body: JSON.stringify({ primary_color: color, methodology })
+                body: JSON.stringify({ primary_color: color, methodology, tactical_dna })
             });
 
             if (uRes.ok && tRes.ok && cRes.ok) {
@@ -276,6 +290,7 @@ window.App = {
                         window.CurrentTeam.match_dates = configData.match_dates || [];
                         window.CurrentTeam.methodology = configData.methodology || "No definida";
                         window.CurrentTeam.primary_color = configData.primary_color || null;
+                        window.CurrentTeam.tactical_dna = configData.tactical_dna || {};
                         console.log("🧠 Memoria táctica recuperada:", window.CurrentTeam.match_dates);
                     }
                 }

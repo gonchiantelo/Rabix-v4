@@ -1563,7 +1563,12 @@ window.DTEngine = {
         _profiles: {},      // { 'GK': { rol: '', fisicos: [], tacticos: [] } }
         _activePosition: null,
 
-        _rolesDict: ['Portero Líbero', 'Atajador Tradicional', 'Zaguero Marcador', 'Lateral Ofensivo', 'Volante Tapón', 'Todoterreno', 'Organizador', 'Extremo Puro', 'Falso 9', 'Delantero Referencia', 'Atacante de Ruptura'],
+        rolesByLine: {
+            GK: ['Portero Líbero', 'Atajador Tradicional', 'Dominador Aéreo'],
+            DEF: ['Zaguero Marcador', 'Zaguero Libre', 'Lateral Defensivo', 'Lateral Ofensivo', 'Carrilero'],
+            MED: ['Volante Tapón', 'Todoterreno', 'Organizador', 'Volante Mixto', 'Enganche', 'Rol Libre'],
+            ATA: ['Extremo Abierto', 'Extremo Pierna Cambiada', 'Falso 9', 'Delantero Referencia', 'Atacante de Ruptura']
+        },
         _fisicosDict: ['Velocidad Alta', 'Dominante Aéreo', 'Fuerte en Duelos', 'Biotipo Alto', 'Biotipo Bajo', 'Gran Resistencia (Stamina)', 'Agilidad/Explosividad'],
         _tacticosDict: ['Inteligencia Táctica', 'Salida Limpia', 'Agresivo en Presión', 'Lectura de Anticipación', 'Buen 1v1 Ofensivo', 'Buen 1v1 Defensivo', 'Juego de Espaldas'],
 
@@ -1658,6 +1663,21 @@ window.DTEngine = {
             if (!profile || typeof profile !== 'object' || Array.isArray(profile)) {
                 profile = { rol: '', fisicos: [], tacticos: [] };
             }
+
+            // Logic to detect line
+            let lineKey = 'ATA';
+            const upperLabel = posId.toUpperCase();
+            if (upperLabel === 'GK') {
+                lineKey = 'GK';
+            } else if (upperLabel.includes('M') || upperLabel.includes('CARR')) {
+                lineKey = 'MED';
+            } else if (upperLabel.includes('E') || upperLabel.includes('DC') || upperLabel.includes('DEL') || upperLabel === 'DI' || upperLabel === 'DD') {
+                lineKey = 'ATA';
+            } else if (upperLabel.includes('D') || upperLabel === 'LI' || upperLabel === 'LD') {
+                lineKey = 'DEF';
+            }
+            
+            const lineRoles = this.rolesByLine[lineKey] || [];
             
             const renderChips = (containerId, dict, type, selectedItems) => {
                 const container = document.getElementById(containerId);
@@ -1673,7 +1693,7 @@ window.DTEngine = {
                 }).join('');
             };
             
-            renderChips('options-rol', this._rolesDict, 'radio', profile.rol);
+            renderChips('options-rol', lineRoles, 'radio', profile.rol);
             renderChips('options-fisicos', this._fisicosDict, 'checkbox', profile.fisicos || []);
             renderChips('options-tacticos', this._tacticosDict, 'checkbox', profile.tacticos || []);
             
