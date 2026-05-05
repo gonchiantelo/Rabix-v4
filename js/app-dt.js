@@ -118,6 +118,7 @@ window.DTEngine = {
                         <button onclick="DTEngine.toggleView('home')" class="btn-logout">🏠 HOME</button>
                         <button id="btn-nav-calendar" onclick="DTEngine.toggleView('calendar')" class="btn-logout">📅 CALENDARIO</button>
                         <button id="btn-nav-analytics" onclick="DTEngine.toggleView('analytics')" class="btn-logout">📊 ANALÍTICA</button>
+                        <button onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" class="btn-logout">🏟️ PIZARRA</button>
                         <button onclick="App.logout()" class="btn-logout">SALIR</button>
                     </div>
                 </header>
@@ -421,7 +422,7 @@ window.DTEngine = {
                         </div>
                     </section>
                     
-                    <section id="view-board" class="view-section hidden" style="display: none;"><div style="display: flex; gap: 20px; height: 75vh; margin-top: 20px;"><div class="board-toolbar" style="width: 200px; background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);"><h4 style="color: var(--primary-color); margin-bottom: 15px;">HERRAMIENTAS</h4><button onclick="DTEngine.Board.addToken('local')" style="width:100%; padding: 10px; margin-bottom:10px; background: var(--primary-color); border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer;">+ Local</button><button onclick="DTEngine.Board.addToken('rival')" style="width:100%; padding: 10px; margin-bottom:10px; background: #ff4d4d; border:none; border-radius:6px; color:#fff; font-weight:bold; cursor:pointer;">+ Rival</button><button onclick="DTEngine.Board.addToken('ball')" style="width:100%; padding: 10px; margin-bottom:20px; background: #fff; border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer;">+ Balón</button><button onclick="DTEngine.Board.toggleDraw()" style="width:100%; padding: 10px; margin-bottom:10px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Lápiz Libre</button><button onclick="DTEngine.Board.clearBoard()" style="width:100%; padding: 10px; background: transparent; border:1px solid #ff4d4d; border-radius:6px; color:#ff4d4d; cursor:pointer;">Limpiar</button></div><div class="board-canvas-container" style="flex: 1; background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);"><canvas id="tactical-board" width="800" height="600"></canvas></div></div></section>
+                    <section id="view-board" class="view-section" style="display: none;"><div style="display: flex; gap: 20px; height: 75vh; margin-top: 20px;"><div class="board-toolbar" style="width: 200px; background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);"><h4 style="color: var(--primary-color); margin-bottom: 15px;">HERRAMIENTAS</h4><button onclick="DTEngine.Board.addToken('local')" style="width:100%; padding: 10px; margin-bottom:10px; background: var(--primary-color); border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer;">+ Local</button><button onclick="DTEngine.Board.addToken('rival')" style="width:100%; padding: 10px; margin-bottom:10px; background: #ff4d4d; border:none; border-radius:6px; color:#fff; font-weight:bold; cursor:pointer;">+ Rival</button><button onclick="DTEngine.Board.addToken('ball')" style="width:100%; padding: 10px; margin-bottom:20px; background: #fff; border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer;">+ Balón</button><button onclick="DTEngine.Board.toggleDraw()" style="width:100%; padding: 10px; margin-bottom:10px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Lápiz Libre</button><button onclick="DTEngine.Board.clearBoard()" style="width:100%; padding: 10px; background: transparent; border:1px solid #ff4d4d; border-radius:6px; color:#ff4d4d; cursor:pointer;">Limpiar</button></div><div class="board-canvas-container" style="flex: 1; background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);"><canvas id="tactical-board" width="800" height="600"></canvas></div></div></section>
                 </main>
             </div>
 
@@ -1580,14 +1581,28 @@ window.DTEngine = {
     // ══════════════════════════════════════════════════════
         Board: { 
         canvas: null, 
-        init: function() { 
-            const el = document.getElementById('tactical-board'); 
-            if (!el || this.canvas) return; 
-            this.canvas = new fabric.Canvas('tactical-board', { selection: true }); 
-            this.canvas.setWidth(el.parentElement.clientWidth); 
-            this.canvas.setHeight(el.parentElement.clientHeight); 
-            this.drawPitch(); 
-        }, 
+        init: function() {
+    try {
+        if (typeof fabric === 'undefined') {
+            console.error('Fabric.js no está cargado. Verifica el CDN en index.html');
+            return;
+        }
+        const canvasElement = document.getElementById('tactical-board');
+        if (!canvasElement) {
+            console.error('No se encontró el elemento canvas #tactical-board en el DOM');
+            return;
+        }
+        if (this.canvas) return; // Ya inicializado
+        
+        this.canvas = new fabric.Canvas('tactical-board', { selection: true });
+        const container = canvasElement.parentElement;
+        this.canvas.setWidth(container.clientWidth || 800);
+        this.canvas.setHeight(container.clientHeight || 600);
+        this.drawPitch();
+    } catch (err) {
+        console.error('Error al inicializar la Pizarra:', err);
+    }
+}, 
         drawPitch: function() { 
             this.canvas.setBackgroundColor('#1c2a22', this.canvas.renderAll.bind(this.canvas)); 
             const w = this.canvas.width; 
