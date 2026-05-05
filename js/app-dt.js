@@ -422,10 +422,8 @@ window.DTEngine = {
                         </div>
                     </section>
                     
-                    <section id="view-board" class="view-section hidden" style="display: none; height: 85vh; width: 100%; margin-top: 15px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); background: #1a1a1a;">
-    <div id="whiteboard-container" style="width: 100%; height: 100%; position: relative;">
-        <!-- Aquí se inyectará el nuevo motor táctico -->
-    </div>
+                    <section id="view-board" class="view-section hidden" style="display: none; height: 85vh; width: 100%; margin-top: 15px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); background: #0f172a;">
+    <div id="whiteboard-container" style="width: 100%; height: 100%; position: relative;"></div>
 </section>
                 </main>
             </div>
@@ -1586,7 +1584,19 @@ window.DTEngine = {
         Board: {
         engineType: 'whiteboard',
         init: function() {
-            console.log("Pizarra lista para inicializar el nuevo motor...");
+            try {
+                const container = document.getElementById('whiteboard-container');
+                if (!container) {
+                    console.error('No se encontró #whiteboard-container en el DOM.');
+                    return;
+                }
+                // Inyecta el SVG usando comillas simples o dobles seguras para evitar choques de backticks
+                container.innerHTML = '<div id="dom-pitch" style="width: 100%; height: 100%; background: #0f172a; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;"><svg viewBox="0 -5 105 78" style="width: 95%; height: 95%; overflow: visible; opacity: 0.8;"><rect x="0" y="0" width="105" height="68" fill="none" stroke="#334155" stroke-width="0.4"/><line x1="52.5" y1="0" x2="52.5" y2="68" stroke="#334155" stroke-width="0.4"/><circle cx="52.5" cy="34" r="9.15" fill="none" stroke="#334155" stroke-width="0.4"/><circle cx="52.5" cy="34" r="0.5" fill="#334155"/><rect x="0" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/><rect x="0" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/><circle cx="11" cy="34" r="0.4" fill="#334155"/><path d="M 16.5 24.84 A 9.15 9.15 0 0 1 16.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/><rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/><rect x="99.5" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/><circle cx="94" cy="34" r="0.4" fill="#334155"/><path d="M 88.5 24.84 A 9.15 9.15 0 0 0 88.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/></svg><div id="tokens-layer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div></div>';
+                
+                if(typeof this.deployTeams === 'function') this.deployTeams('4-3-3', '4-4-2');
+            } catch (err) {
+                console.error('Error inicializando la Pizarra SVG:', err);
+            }
         }
     },
 
