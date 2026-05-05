@@ -422,7 +422,7 @@ window.DTEngine = {
                         </div>
                     </section>
                     
-                    <section id="view-board" class="view-section" style="display: none;"><div style="display: flex; gap: 20px; height: 75vh; margin-top: 20px;"><div class="board-toolbar" style="width: 200px; background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);"><h4 style="color: var(--primary-color); margin-bottom: 15px;">HERRAMIENTAS</h4><button onclick="DTEngine.Board.deploy11v11()" style="width:100%; padding: 12px; margin-bottom:15px; background: var(--primary-color); border:none; border-radius:6px; color:#000; font-weight:900; cursor:pointer;">DESPLEGAR 11 vs 11</button><button onclick="DTEngine.Board.addToken('ball')" style="width:100%; padding: 10px; margin-bottom:20px; background: #fff; border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer;">+ Balón</button><button onclick="DTEngine.Board.toggleZones()" style="width:100%; padding: 10px; margin-bottom:10px; background: transparent; border:1px solid #00F2FE; border-radius:6px; color:#00F2FE; font-weight:bold; cursor:pointer;">Ver Carriles / Zonas</button><button onclick="DTEngine.Board.toggleDraw()" style="width:100%; padding: 10px; margin-bottom:10px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Lápiz Libre</button><button onclick="DTEngine.Board.clearBoard()" style="width:100%; padding: 10px; background: transparent; border:1px solid #ff4d4d; border-radius:6px; color:#ff4d4d; cursor:pointer;">Limpiar</button></div><div class="board-canvas-container" style="flex: 1; background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);"><canvas id="tactical-board" width="800" height="600"></canvas></div></div></section>
+                    <section id="view-board" class="view-section" style="display: none;"><div style="display: flex; gap: 20px; height: 75vh; margin-top: 20px;"><div class="board-toolbar" style="width: 200px; background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);"><h4 style="color: var(--primary-color); margin-bottom: 15px;">HERRAMIENTAS</h4><button onclick="DTEngine.Board.deploy11v11()" style="width:100%; padding: 12px; margin-bottom:15px; background: var(--primary-color); border:none; border-radius:6px; color:#000; font-weight:900; cursor:pointer;">DESPLEGAR 11 vs 11</button><button onclick="DTEngine.Board.addToken('ball')" style="width:100%; padding: 10px; margin-bottom:20px; background: #fff; border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer;">+ Balón</button><button onclick="DTEngine.Board.toggleZones()" style="width:100%; padding: 10px; margin-bottom:10px; background: transparent; border:1px solid #00F2FE; border-radius:6px; color:#00F2FE; font-weight:bold; cursor:pointer;">Ver Carriles / Zonas</button><button onclick="DTEngine.Board.toggleOrientation()" style="width:100%; padding: 10px; margin-bottom:15px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Rotar Cancha 🔄</button><div style="display:flex; gap:5px; margin-bottom:15px;"><div onclick="DTEngine.Board.changePitchColor('#243b2a')" style="flex:1; height:25px; background:#243b2a; border-radius:4px; cursor:pointer; border:1px solid rgba(255,255,255,0.3);" title="Verde Clásico"></div><div onclick="DTEngine.Board.changePitchColor('#1a1a1a')" style="flex:1; height:25px; background:#1a1a1a; border-radius:4px; cursor:pointer; border:1px solid rgba(255,255,255,0.3);" title="Negro Táctico"></div><div onclick="DTEngine.Board.changePitchColor('#1e3a5f')" style="flex:1; height:25px; background:#1e3a5f; border-radius:4px; cursor:pointer; border:1px solid rgba(255,255,255,0.3);" title="Azul Pizarra"></div></div><button onclick="DTEngine.Board.toggleDraw()" style="width:100%; padding: 10px; margin-bottom:10px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Lápiz Libre</button><button onclick="DTEngine.Board.clearBoard()" style="width:100%; padding: 10px; background: transparent; border:1px solid #ff4d4d; border-radius:6px; color:#ff4d4d; cursor:pointer;">Limpiar</button></div><div class="board-canvas-container" style="flex: 1; background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);"><canvas id="tactical-board" width="800" height="600"></canvas></div></div></section>
                 </main>
             </div>
 
@@ -1581,30 +1581,52 @@ window.DTEngine = {
     // ══════════════════════════════════════════════════════
         Board: { 
         canvas: null, 
+        isVertical: false,
+        pitchColor: '#243b2a',
+
+        resizeCanvas: function() {
+            const container = document.getElementById('tactical-board')?.parentElement;
+            if (container && this.canvas) {
+                this.canvas.setWidth(container.clientWidth);
+                this.canvas.setHeight(container.clientHeight);
+                this.clearBoard(); // Redibuja con las nuevas dimensiones
+            }
+        },
+
+        toggleOrientation: function() {
+            this.isVertical = !this.isVertical;
+            this.clearBoard();
+        },
+
+        changePitchColor: function(color) {
+            this.pitchColor = color;
+            this.drawPitch();
+        },
+
         init: function() {
-    try {
-        if (typeof fabric === 'undefined') {
-            console.error('Fabric.js no está cargado. Verifica el CDN en index.html');
-            return;
-        }
-        const canvasElement = document.getElementById('tactical-board');
-        if (!canvasElement) {
-            console.error('No se encontró el elemento canvas #tactical-board en el DOM');
-            return;
-        }
-        if (this.canvas) return; // Ya inicializado
-        
-        this.canvas = new fabric.Canvas('tactical-board', { selection: true });
-        const container = canvasElement.parentElement;
-        this.canvas.setWidth(container.clientWidth || 800);
-        this.canvas.setHeight(container.clientHeight || 600);
-        this.drawPitch();
-    } catch (err) {
-        console.error('Error al inicializar la Pizarra:', err);
-    }
-}, 
+            try {
+                if (typeof fabric === 'undefined') {
+                    console.error('Fabric.js no está cargado. Verifica el CDN en index.html');
+                    return;
+                }
+                const canvasElement = document.getElementById('tactical-board');
+                if (!canvasElement) {
+                    console.error('No se encontró el elemento canvas #tactical-board en el DOM');
+                    return;
+                }
+                if (this.canvas) return; // Ya inicializado
+                
+                this.canvas = new fabric.Canvas('tactical-board', { selection: true });
+                
+                this.resizeCanvas();
+                window.addEventListener('resize', () => window.DTEngine.Board.resizeCanvas());
+            } catch (err) {
+                console.error('Error al inicializar la Pizarra:', err);
+            }
+        }, 
+
         drawPitch: function() {
-            this.canvas.setBackgroundColor('#243b2a', this.canvas.renderAll.bind(this.canvas));
+            this.canvas.setBackgroundColor(this.pitchColor, this.canvas.renderAll.bind(this.canvas));
             
             const w = this.canvas.width;
             const h = this.canvas.height;
@@ -1622,37 +1644,70 @@ window.DTEngine = {
             // Límites del campo
             this.canvas.add(makeRect(m, m, pw, ph));
             
-            // Línea y círculo central
-            this.canvas.add(makeLine([w/2, m, w/2, h-m]));
+            // Círculo central y Saque
             this.canvas.add(makeCircle(w/2, h/2, 60));
-            this.canvas.add(makeCircle(w/2, h/2, 4, '#fff')); // Saque
+            this.canvas.add(makeCircle(w/2, h/2, 4, '#fff'));
 
-            // Áreas Grandes
-            const penW = 130; const penH = 260;
-            this.canvas.add(makeRect(m, h/2 - penH/2, penW, penH)); // Local
-            this.canvas.add(makeRect(w - m - penW, h/2 - penH/2, penW, penH)); // Rival
+            let zLines = [];
+            
+            if (!this.isVertical) {
+                // Modo Horizontal
+                this.canvas.add(makeLine([w/2, m, w/2, h-m])); // Línea central vertical
+                
+                // Áreas Grandes
+                const penW = 130; const penH = 260;
+                this.canvas.add(makeRect(m, h/2 - penH/2, penW, penH)); // Local
+                this.canvas.add(makeRect(w - m - penW, h/2 - penH/2, penW, penH)); // Rival
 
-            // Áreas Chicas
-            const goalW = 45; const goalH = 120;
-            this.canvas.add(makeRect(m, h/2 - goalH/2, goalW, goalH));
-            this.canvas.add(makeRect(w - m - goalW, h/2 - goalH/2, goalW, goalH));
+                // Áreas Chicas
+                const goalW = 45; const goalH = 120;
+                this.canvas.add(makeRect(m, h/2 - goalH/2, goalW, goalH));
+                this.canvas.add(makeRect(w - m - goalW, h/2 - goalH/2, goalW, goalH));
 
-            // Puntos de Penal
-            this.canvas.add(makeCircle(m + 90, h/2, 3, '#fff'));
-            this.canvas.add(makeCircle(w - m - 90, h/2, 3, '#fff'));
+                // Puntos de Penal
+                this.canvas.add(makeCircle(m + 90, h/2, 3, '#fff'));
+                this.canvas.add(makeCircle(w - m - 90, h/2, 3, '#fff'));
+
+                // Zonas Tácticas (5 carriles x 3 sectores)
+                zLines = [
+                    makeLine([m + pw*0.15, m, m + pw*0.15, h-m], true),
+                    makeLine([m + pw*0.35, m, m + pw*0.35, h-m], true),
+                    makeLine([m + pw*0.65, m, m + pw*0.65, h-m], true),
+                    makeLine([m + pw*0.85, m, m + pw*0.85, h-m], true),
+                    makeLine([m, m + ph*0.33, w-m, m + ph*0.33], true),
+                    makeLine([m, m + ph*0.66, w-m, m + ph*0.66], true)
+                ];
+            } else {
+                // Modo Vertical
+                this.canvas.add(makeLine([m, h/2, w-m, h/2])); // Línea central horizontal
+                
+                // Áreas Grandes
+                const penW = 260; const penH = 130;
+                this.canvas.add(makeRect(w/2 - penW/2, m, penW, penH)); // Arriba
+                this.canvas.add(makeRect(w/2 - penW/2, h - m - penH, penW, penH)); // Abajo
+
+                // Áreas Chicas
+                const goalW = 120; const goalH = 45;
+                this.canvas.add(makeRect(w/2 - goalW/2, m, goalW, goalH));
+                this.canvas.add(makeRect(w/2 - goalW/2, h - m - goalH, goalW, goalH));
+
+                // Puntos de Penal
+                this.canvas.add(makeCircle(w/2, m + 90, 3, '#fff'));
+                this.canvas.add(makeCircle(w/2, h - m - 90, 3, '#fff'));
+
+                // Zonas Tácticas adaptadas al formato vertical
+                zLines = [
+                    makeLine([m, m + ph*0.15, w-m, m + ph*0.15], true),
+                    makeLine([m, m + ph*0.35, w-m, m + ph*0.35], true),
+                    makeLine([m, m + ph*0.65, w-m, m + ph*0.65], true),
+                    makeLine([m, m + ph*0.85, w-m, m + ph*0.85], true),
+                    makeLine([m + pw*0.33, m, m + pw*0.33, h-m], true),
+                    makeLine([m + pw*0.66, m, m + pw*0.66, h-m], true)
+                ];
+            }
 
             // Zonas Tácticas (Ocultas por defecto)
-            this.zoneLines = new fabric.Group([
-                // Verticales: 5 Carriles (Exterior, Interior, Central, Interior, Exterior)
-                makeLine([m + pw*0.15, m, m + pw*0.15, h-m], true),
-                makeLine([m + pw*0.35, m, m + pw*0.35, h-m], true),
-                makeLine([m + pw*0.65, m, m + pw*0.65, h-m], true),
-                makeLine([m + pw*0.85, m, m + pw*0.85, h-m], true),
-                // Horizontales: 3 Sectores (Inicio, Creación, Finalización)
-                makeLine([m, m + ph*0.33, w-m, m + ph*0.33], true),
-                makeLine([m, m + ph*0.66, w-m, m + ph*0.66], true)
-            ], { selectable: false, visible: false });
-            
+            this.zoneLines = new fabric.Group(zLines, { selectable: false, visible: false });
             this.canvas.add(this.zoneLines);
             this.canvas.sendToBack(this.zoneLines); // Mantener por debajo de las fichas
         },
