@@ -435,7 +435,7 @@ window.DTEngine = {
         <option value="4-3-3">1-4-3-3</option>
         <option value="3-5-2">1-3-5-2</option>
     </select>
-</div><button onclick="DTEngine.Board.addToken('ball')" style="width:100%; padding: 10px; margin-bottom:20px; background: #fff; border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer;">+ Balón</button><button onclick="DTEngine.Board.toggleZones()" style="width:100%; padding: 10px; margin-bottom:10px; background: transparent; border:1px solid #00F2FE; border-radius:6px; color:#00F2FE; font-weight:bold; cursor:pointer;">Ver Carriles / Zonas</button><button onclick="DTEngine.Board.toggleOrientation()" style="width:100%; padding: 10px; margin-bottom:15px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Rotar Cancha 🔄</button><div style="display:flex; gap:5px; margin-bottom:15px;"><div onclick="DTEngine.Board.changePitchColor('#243b2a')" style="flex:1; height:25px; background:#243b2a; border-radius:4px; cursor:pointer; border:1px solid rgba(255,255,255,0.3);" title="Verde Clásico"></div><div onclick="DTEngine.Board.changePitchColor('#1a1a1a')" style="flex:1; height:25px; background:#1a1a1a; border-radius:4px; cursor:pointer; border:1px solid rgba(255,255,255,0.3);" title="Negro Táctico"></div><div onclick="DTEngine.Board.changePitchColor('#1e3a5f')" style="flex:1; height:25px; background:#1e3a5f; border-radius:4px; cursor:pointer; border:1px solid rgba(255,255,255,0.3);" title="Azul Pizarra"></div></div><button onclick="DTEngine.Board.toggleDraw()" style="width:100%; padding: 10px; margin-bottom:10px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Lápiz Libre</button><button onclick="DTEngine.Board.clearBoard()" style="width:100%; padding: 10px; background: transparent; border:1px solid #ff4d4d; border-radius:6px; color:#ff4d4d; cursor:pointer;">Limpiar</button></div><div class="board-canvas-container" style="flex: 1; background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);"><canvas id="tactical-board" width="800" height="600"></canvas></div></div></section>
+</div><button onclick="DTEngine.Board.addToken('ball')" style="width:100%; padding: 10px; margin-bottom:20px; background: #fff; border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer;">+ Balón</button><button id="btn-zones" onclick="DTEngine.Board.cycleZones()" style="width:100%; padding: 10px; margin-bottom:10px; background: transparent; border:1px solid #00F2FE; border-radius:6px; color:#00F2FE; font-weight:bold; cursor:pointer;">Zonas: Desactivado</button><button onclick="DTEngine.Board.toggleOrientation()" style="width:100%; padding: 10px; margin-bottom:15px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Rotar Cancha 🔄</button><div style="display:flex; gap:5px; margin-bottom:15px;"><div onclick="DTEngine.Board.changePitchColor('#243b2a')" style="flex:1; height:25px; background:#243b2a; border-radius:4px; cursor:pointer; border:1px solid rgba(255,255,255,0.3);" title="Verde Clásico"></div><div onclick="DTEngine.Board.changePitchColor('#1a1a1a')" style="flex:1; height:25px; background:#1a1a1a; border-radius:4px; cursor:pointer; border:1px solid rgba(255,255,255,0.3);" title="Negro Táctico"></div><div onclick="DTEngine.Board.changePitchColor('#1e3a5f')" style="flex:1; height:25px; background:#1e3a5f; border-radius:4px; cursor:pointer; border:1px solid rgba(255,255,255,0.3);" title="Azul Pizarra"></div></div><button onclick="DTEngine.Board.toggleDraw()" style="width:100%; padding: 10px; margin-bottom:10px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Lápiz Libre</button><button onclick="DTEngine.Board.clearBoard()" style="width:100%; padding: 10px; background: transparent; border:1px solid #ff4d4d; border-radius:6px; color:#ff4d4d; cursor:pointer;">Limpiar</button></div><div class="board-canvas-container" style="flex: 1; background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);"><canvas id="tactical-board" width="800" height="600"></canvas></div></div></section>
                 </main>
             </div>
 
@@ -1596,6 +1596,7 @@ window.DTEngine = {
         canvas: null, 
         isVertical: false,
         pitchColor: '#243b2a',
+        zoneMode: 0,
         localForm: '4-3-3',
         rivalForm: '4-4-2',
         formations: {
@@ -1609,7 +1610,7 @@ window.DTEngine = {
             if (container && this.canvas) {
                 this.canvas.setWidth(container.clientWidth);
                 this.canvas.setHeight(container.clientHeight);
-                this.deployTeams(); // Redibuja y reposiciona
+                this.deployTeams(); // Redibuja todo con la nueva escala
             }
         },
 
@@ -1648,96 +1649,100 @@ window.DTEngine = {
 
         drawPitch: function() {
             this.canvas.setBackgroundColor(this.pitchColor, this.canvas.renderAll.bind(this.canvas));
-            
-            const w = this.canvas.width;
-            const h = this.canvas.height;
-            const color = 'rgba(255, 255, 255, 0.4)';
-            const strokeW = 2;
-            
-            const makeLine = (c, dashed=false) => new fabric.Line(c, { stroke: color, strokeWidth: strokeW, selectable: false, strokeDashArray: dashed ? [5, 5] : null });
-            const makeRect = (l, t, w, h) => new fabric.Rect({ left: l, top: t, width: w, height: h, fill: 'transparent', stroke: color, strokeWidth: strokeW, selectable: false });
-            const makeCircle = (l, t, r, fill='transparent') => new fabric.Circle({ left: l, top: t, radius: r, fill: fill, stroke: color, strokeWidth: strokeW, originX: 'center', originY: 'center', selectable: false });
+            this.canvas.getObjects().forEach(o => { if(!o.tacticalData) this.canvas.remove(o); }); // Limpia fondo
 
-            const m = 30; 
-            const pw = w - m*2; 
-            const ph = h - m*2;
+            const cw = this.canvas.width; const ch = this.canvas.height;
+            const ratio = 105 / 68; // Proporción estandar FIFA
+            const m = 20; // Margen
+            let pW, pH; 
             
-            const penDepth = this.isVertical ? ph * 0.16 : pw * 0.16;
-            const penWidth = this.isVertical ? pw * 0.59 : ph * 0.59;
-            const goalDepth = this.isVertical ? ph * 0.05 : pw * 0.05;
-            const goalWidth = this.isVertical ? pw * 0.27 : ph * 0.27;
+            // Calcular tamaño máximo manteniendo proporción
+            if (!this.isVertical) {
+                pW = cw - m*2; pH = pW / ratio;
+                if (pH > ch - m*2) { pH = ch - m*2; pW = pH * ratio; }
+            } else {
+                pH = ch - m*2; pW = pH / ratio;
+                if (pW > cw - m*2) { pW = cw - m*2; pH = pW * ratio; }
+            }
 
-            // Límites del campo
-            this.canvas.add(makeRect(m, m, pw, ph));
+            const oX = (cw - pW) / 2; const oY = (ch - pH) / 2; // Offsets para centrar
             
-            // Círculo central y Saque
-            this.canvas.add(makeCircle(w/2, h/2, 60));
-            this.canvas.add(makeCircle(w/2, h/2, 4, '#fff'));
+            const color = 'rgba(255, 255, 255, 0.4)'; const strokeW = 2;
+            const mLine = (x1, y1, x2, y2) => new fabric.Line([x1, y1, x2, y2], {stroke: color, strokeWidth: strokeW, selectable: false});
+            const mRect = (l, t, w, h) => new fabric.Rect({left: l, top: t, width: w, height: h, fill: 'transparent', stroke: color, strokeWidth: strokeW, selectable: false});
+            const mCirc = (l, t, r) => new fabric.Circle({left: l, top: t, radius: r, fill: 'transparent', stroke: color, strokeWidth: strokeW, originX: 'center', originY: 'center', selectable: false});
+            const mDot = (l, t) => new fabric.Circle({left: l, top: t, radius: 3, fill: '#fff', originX: 'center', originY: 'center', selectable: false});
 
-            let zLines = [];
+            // Constantes FIFA sobre el canvas dibujado
+            const penY = 40.32 / 68; const penX = 16.5 / 105;
+            const goalY = 18.32 / 68; const goalX = 5.5 / 105;
+            const circR = 9.15 / 68; const spotX = 11 / 105;
+
+            this.canvas.add(mRect(oX, oY, pW, pH)); // Borde de la cancha
             
             if (!this.isVertical) {
-                // Modo Horizontal
-                this.canvas.add(makeLine([w/2, m, w/2, h-m])); // Línea central vertical
-                
-                // Áreas Grandes
-                this.canvas.add(makeRect(m, h/2 - penWidth/2, penDepth, penWidth)); // Local
-                this.canvas.add(makeRect(w - m - penDepth, h/2 - penWidth/2, penDepth, penWidth)); // Rival
-
-                // Áreas Chicas
-                this.canvas.add(makeRect(m, h/2 - goalWidth/2, goalDepth, goalWidth));
-                this.canvas.add(makeRect(w - m - goalDepth, h/2 - goalWidth/2, goalDepth, goalWidth));
-
-                // Puntos de Penal
-                this.canvas.add(makeCircle(m + (penDepth * 0.7), h/2, 3, '#fff'));
-                this.canvas.add(makeCircle(w - m - (penDepth * 0.7), h/2, 3, '#fff'));
-
-                // Zonas Tácticas (5 carriles x 3 sectores)
-                zLines = [
-                    makeLine([m + pw*0.15, m, m + pw*0.15, h-m], true),
-                    makeLine([m + pw*0.35, m, m + pw*0.35, h-m], true),
-                    makeLine([m + pw*0.65, m, m + pw*0.65, h-m], true),
-                    makeLine([m + pw*0.85, m, m + pw*0.85, h-m], true),
-                    makeLine([m, m + ph*0.33, w-m, m + ph*0.33], true),
-                    makeLine([m, m + ph*0.66, w-m, m + ph*0.66], true)
-                ];
+                this.canvas.add(mLine(oX + pW/2, oY, oX + pW/2, oY + pH)); 
+                this.canvas.add(mCirc(oX + pW/2, oY + pH/2, pH * circR)); 
+                this.canvas.add(mDot(oX + pW/2, oY + pH/2)); 
+                // Áreas Izquierda
+                this.canvas.add(mRect(oX, oY + pH*(1-penY)/2, pW*penX, pH*penY));
+                this.canvas.add(mRect(oX, oY + pH*(1-goalY)/2, pW*goalX, pH*goalY));
+                this.canvas.add(mDot(oX + pW*spotX, oY + pH/2));
+                // Áreas Derecha
+                this.canvas.add(mRect(oX + pW*(1-penX), oY + pH*(1-penY)/2, pW*penX, pH*penY));
+                this.canvas.add(mRect(oX + pW*(1-goalX), oY + pH*(1-goalY)/2, pW*goalX, pH*goalY));
+                this.canvas.add(mDot(oX + pW*(1-spotX), oY + pH/2));
             } else {
-                // Modo Vertical
-                this.canvas.add(makeLine([m, h/2, w-m, h/2])); // Línea central horizontal
+                this.canvas.add(mLine(oX, oY + pH/2, oX + pW, oY + pH/2));
+                this.canvas.add(mCirc(oX + pW/2, oY + pH/2, pW * circR));
+                this.canvas.add(mDot(oX + pW/2, oY + pH/2));
+                // Áreas Arriba
+                this.canvas.add(mRect(oX + pW*(1-penY)/2, oY, pW*penY, pH*penX));
+                this.canvas.add(mRect(oX + pW*(1-goalY)/2, oY, pW*goalY, pH*goalX));
+                this.canvas.add(mDot(oX + pW/2, oY + pH*spotX));
+                // Áreas Abajo
+                this.canvas.add(mRect(oX + pW*(1-penY)/2, oY + pH*(1-penX), pW*penY, pH*penX));
+                this.canvas.add(mRect(oX + pW*(1-goalY)/2, oY + pH*(1-goalX), pW*goalY, pH*goalX));
+                this.canvas.add(mDot(oX + pW/2, oY + pH*(1-spotX)));
+            }
+
+            // Sistema de Zonas Dinámico (Electric Accent)
+            if (this.zoneMode > 0) {
+                const zCol = 'rgba(0, 242, 254, 0.4)'; // Cyan eléctrico
+                const zLine = (x1, y1, x2, y2) => this.canvas.add(new fabric.Line([x1,y1,x2,y2], {stroke: zCol, strokeWidth: 1.5, strokeDashArray: [4,4], selectable: false}));
                 
-                // Áreas Grandes
-                this.canvas.add(makeRect(w/2 - penWidth/2, m, penWidth, penDepth)); // Arriba
-                this.canvas.add(makeRect(w/2 - penWidth/2, h - m - penDepth, penWidth, penDepth)); // Abajo
-
-                // Áreas Chicas
-                this.canvas.add(makeRect(w/2 - goalWidth/2, m, goalWidth, goalDepth));
-                this.canvas.add(makeRect(w/2 - goalWidth/2, h - m - goalDepth, goalWidth, goalDepth));
-
-                // Puntos de Penal
-                this.canvas.add(makeCircle(w/2, m + (penDepth * 0.7), 3, '#fff'));
-                this.canvas.add(makeCircle(w/2, h - m - (penDepth * 0.7), 3, '#fff'));
-
-                // Zonas Tácticas adaptadas al formato vertical
-                zLines = [
-                    makeLine([m, m + ph*0.15, w-m, m + ph*0.15], true),
-                    makeLine([m, m + ph*0.35, w-m, m + ph*0.35], true),
-                    makeLine([m, m + ph*0.65, w-m, m + ph*0.65], true),
-                    makeLine([m, m + ph*0.85, w-m, m + ph*0.85], true),
-                    makeLine([m + pw*0.33, m, m + pw*0.33, h-m], true),
-                    makeLine([m + pw*0.66, m, m + pw*0.66, h-m], true)
-                ];
+                if (this.zoneMode === 1) { // 5x3 Carriles
+                    const vl = [0.15, 0.35, 0.65, 0.85]; const hl = [0.33, 0.66];
+                    if (!this.isVertical) {
+                        vl.forEach(v => zLine(oX, oY+pH*v, oX+pW, oY+pH*v));
+                        hl.forEach(h => zLine(oX+pW*h, oY, oX+pW*h, oY+pH));
+                    } else {
+                        vl.forEach(v => zLine(oX+pW*v, oY, oX+pW*v, oY+pH));
+                        hl.forEach(h => zLine(oX, oY+pH*h, oX+pW, oY+pH*h));
+                    }
+                } else if (this.zoneMode === 2) { // 20 Zonas
+                    const vl = [0.17, 0.34, 0.66, 0.83]; const hl = [0.25, 0.5, 0.75];
+                    if (!this.isVertical) {
+                        vl.forEach(v => zLine(oX, oY+pH*v, oX+pW, oY+pH*v));
+                        hl.forEach(h => zLine(oX+pW*h, oY, oX+pW*h, oY+pH));
+                    } else {
+                        vl.forEach(v => zLine(oX+pW*v, oY, oX+pW*v, oY+pH));
+                        hl.forEach(h => zLine(oX, oY+pH*h, oX+pW, oY+pH*h));
+                    }
+                }
             }
-
-            // Zonas Tácticas (Ocultas por defecto)
-            this.zoneLines = new fabric.Group(zLines, { selectable: false, visible: false });
-            this.canvas.add(this.zoneLines);
-            this.canvas.sendToBack(this.zoneLines); // Mantener por debajo de las fichas
+            
+            // Asegurar que las líneas queden por debajo de las fichas
+            this.canvas.getObjects().forEach(o => { if(!o.tacticalData) this.canvas.sendToBack(o); });
         },
-        toggleZones: function() {
-            if(this.zoneLines) {
-                this.zoneLines.visible = !this.zoneLines.visible;
-                this.canvas.renderAll();
+        cycleZones: function() {
+            this.zoneMode = (this.zoneMode + 1) % 3; // 0: Off, 1: Carriles 5x3, 2: 20 Zonas
+            const btn = document.getElementById('btn-zones');
+            if (btn) {
+                const labels = ['Zonas: Desactivado', 'Zonas: Carriles (5x3)', 'Zonas: Guardiola (20)'];
+                btn.innerText = labels[this.zoneMode];
             }
+            this.deployTeams();
         }, 
         createFicha: function(type, label, x, y) {
             let bg = type === 'local' ? (window.CurrentTeam?.primary_color || '#0eb1a7') : (type === 'rival' ? '#ff4d4d' : '#ffffff');
