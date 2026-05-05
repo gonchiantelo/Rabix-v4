@@ -435,7 +435,7 @@ window.DTEngine = {
         <option value="4-3-3">1-4-3-3</option>
         <option value="3-5-2">1-3-5-2</option>
     </select>
-</div><button onclick="DTEngine.Board.addToken('ball')" style="width:100%; padding: 10px; margin-bottom:20px; background: #fff; border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer;">+ Balón</button><button id="btn-zones" onclick="DTEngine.Board.cycleZones()" style="width:100%; padding: 10px; margin-bottom:10px; background: transparent; border:1px solid #00F2FE; border-radius:6px; color:#00F2FE; font-weight:bold; cursor:pointer;">Zonas: Desactivado</button><button onclick="DTEngine.Board.toggleOrientation()" style="width:100%; padding: 10px; margin-bottom:15px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Rotar Cancha 🔄</button><div style="display:flex; gap:5px; margin-bottom:15px;"><div onclick="DTEngine.Board.changePitchColor('#243b2a')" style="flex:1; height:25px; background:#243b2a; border-radius:4px; cursor:pointer; border:1px solid rgba(255,255,255,0.3);" title="Verde Clásico"></div><div onclick="DTEngine.Board.changePitchColor('#1a1a1a')" style="flex:1; height:25px; background:#1a1a1a; border-radius:4px; cursor:pointer; border:1px solid rgba(255,255,255,0.3);" title="Negro Táctico"></div><div onclick="DTEngine.Board.changePitchColor('#1e3a5f')" style="flex:1; height:25px; background:#1e3a5f; border-radius:4px; cursor:pointer; border:1px solid rgba(255,255,255,0.3);" title="Azul Pizarra"></div></div><button onclick="DTEngine.Board.toggleDraw()" style="width:100%; padding: 10px; margin-bottom:10px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Lápiz Libre</button><button onclick="DTEngine.Board.clearBoard()" style="width:100%; padding: 10px; background: transparent; border:1px solid #ff4d4d; border-radius:6px; color:#ff4d4d; cursor:pointer;">Limpiar</button></div><div class="board-canvas-container" style="flex: 1; background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);"><canvas id="tactical-board" width="800" height="600"></canvas></div></div></section>
+</div><button onclick="DTEngine.Board.addToken('ball')" style="width:100%; padding: 10px; margin-bottom:20px; background: #fff; border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer;">+ Balón</button><button id="btn-zones" onclick="DTEngine.Board.cycleZones()" style="width:100%; padding: 10px; margin-bottom:10px; background: transparent; border:1px solid #00F2FE; border-radius:6px; color:#00F2FE; font-weight:bold; cursor:pointer;">Zonas: Desactivado</button><button onclick="DTEngine.Board.toggleOrientation()" style="width:100%; padding: 10px; margin-bottom:15px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Rotar Cancha 🔄</button><div style="display:flex; gap:5px; margin-bottom:15px;"><div onclick="DTEngine.Board.changePitchColor('#243b2a')" style="flex:1; height:25px; background:#243b2a; border-radius:4px; cursor:pointer; border:1px solid rgba(255,255,255,0.3);" title="Verde Clásico"></div><div onclick="DTEngine.Board.changePitchColor('#1a1a1a')" style="flex:1; height:25px; background:#1a1a1a; border-radius:4px; cursor:pointer; border:1px solid rgba(255,255,255,0.3);" title="Negro Táctico"></div><div onclick="DTEngine.Board.changePitchColor('#1e3a5f')" style="flex:1; height:25px; background:#1e3a5f; border-radius:4px; cursor:pointer; border:1px solid rgba(255,255,255,0.3);" title="Azul Pizarra"></div></div><button onclick="DTEngine.Board.toggleDraw()" style="width:100%; padding: 10px; margin-bottom:10px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Lápiz Libre</button><button onclick="DTEngine.Board.clearBoard()" style="width:100%; padding: 10px; background: transparent; border:1px solid #ff4d4d; border-radius:6px; color:#ff4d4d; cursor:pointer;">Limpiar</button></div><div class="board-canvas-container" style="flex: 1; width: 100%; min-width: 0; background: #1a2235; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); position: relative;"><canvas id="tactical-board" width="800" height="600"></canvas></div></div></section>
                 </main>
             </div>
 
@@ -1600,9 +1600,30 @@ window.DTEngine = {
         localForm: '4-3-3',
         rivalForm: '4-4-2',
         formations: {
-            '4-3-3': [ {n:1, x:0.05, y:0.5}, {n:4, x:0.18, y:0.15}, {n:2, x:0.12, y:0.35}, {n:6, x:0.12, y:0.65}, {n:3, x:0.18, y:0.85}, {n:5, x:0.25, y:0.5}, {n:8, x:0.32, y:0.25}, {n:10, x:0.32, y:0.75}, {n:7, x:0.42, y:0.15}, {n:9, x:0.42, y:0.5}, {n:11, x:0.42, y:0.85} ],
-            '4-4-2': [ {n:1, x:0.05, y:0.5}, {n:4, x:0.15, y:0.15}, {n:2, x:0.12, y:0.35}, {n:6, x:0.12, y:0.65}, {n:3, x:0.15, y:0.85}, {n:8, x:0.3, y:0.15}, {n:5, x:0.25, y:0.35}, {n:10, x:0.25, y:0.65}, {n:11, x:0.3, y:0.85}, {n:7, x:0.42, y:0.35}, {n:9, x:0.42, y:0.65} ],
-            '3-5-2': [ {n:1, x:0.05, y:0.5}, {n:4, x:0.12, y:0.25}, {n:2, x:0.1, y:0.5}, {n:6, x:0.12, y:0.75}, {n:8, x:0.25, y:0.15}, {n:5, x:0.2, y:0.5}, {n:10, x:0.25, y:0.85}, {n:7, x:0.32, y:0.35}, {n:11, x:0.32, y:0.65}, {n:9, x:0.42, y:0.35}, {n:20, x:0.42, y:0.65} ]
+            '4-3-3': [ 
+                {pos: 'GK', role: 'Portero', x: 0.08, y: 0.5}, {pos: 'LD', role: 'Lateral', x: 0.25, y: 0.15}, 
+                {pos: 'DFC', role: 'Zaguero', x: 0.20, y: 0.35}, {pos: 'DFC', role: 'Zaguero', x: 0.20, y: 0.65}, 
+                {pos: 'LI', role: 'Lateral', x: 0.25, y: 0.85}, {pos: 'MCD', role: 'Pivote', x: 0.35, y: 0.5}, 
+                {pos: 'MC', role: 'Interior', x: 0.45, y: 0.30}, {pos: 'MC', role: 'Interior', x: 0.45, y: 0.70}, 
+                {pos: 'ED', role: 'Extremo', x: 0.60, y: 0.15}, {pos: 'DC', role: 'Delantero', x: 0.60, y: 0.5}, 
+                {pos: 'EI', role: 'Extremo', x: 0.60, y: 0.85} 
+            ],
+            '4-4-2': [
+                {pos: 'GK', role: 'Portero', x: 0.08, y: 0.5}, {pos: 'LD', role: 'Lateral', x: 0.25, y: 0.15}, 
+                {pos: 'DFC', role: 'Zaguero', x: 0.20, y: 0.35}, {pos: 'DFC', role: 'Zaguero', x: 0.20, y: 0.65}, 
+                {pos: 'LI', role: 'Lateral', x: 0.25, y: 0.85}, {pos: 'MD', role: 'Volante', x: 0.45, y: 0.15}, 
+                {pos: 'MC', role: 'Mediocentro', x: 0.40, y: 0.35}, {pos: 'MC', role: 'Mediocentro', x: 0.40, y: 0.65}, 
+                {pos: 'MI', role: 'Volante', x: 0.45, y: 0.85}, {pos: 'DC', role: 'Delantero', x: 0.60, y: 0.40}, 
+                {pos: 'DC', role: 'Delantero', x: 0.60, y: 0.60}
+            ],
+            '3-5-2': [
+                {pos: 'GK', role: 'Portero', x: 0.08, y: 0.5}, {pos: 'DFC', role: 'Zaguero', x: 0.20, y: 0.25}, 
+                {pos: 'DFC', role: 'Líbero', x: 0.15, y: 0.5}, {pos: 'DFC', role: 'Zaguero', x: 0.20, y: 0.75}, 
+                {pos: 'MD', role: 'Carrilero', x: 0.35, y: 0.15}, {pos: 'MCD', role: 'Pivote', x: 0.30, y: 0.5}, 
+                {pos: 'MI', role: 'Carrilero', x: 0.35, y: 0.85}, {pos: 'MC', role: 'Interior', x: 0.45, y: 0.35}, 
+                {pos: 'MC', role: 'Interior', x: 0.45, y: 0.65}, {pos: 'DC', role: 'Delantero', x: 0.60, y: 0.35}, 
+                {pos: 'DC', role: 'Delantero', x: 0.60, y: 0.65}
+            ]
         },
 
         resizeCanvas: function() {
@@ -1736,20 +1757,24 @@ window.DTEngine = {
             // Temporalmente deshabilitado en este refactor
             // this.deployTeams();
         }, 
-        createFicha: function(type, num, x, y) {
-            let bg = type === 'local' ? (window.CurrentTeam?.primary_color || '#fff') : (type === 'rival' ? '#ff4d4d' : '#ffffff');
-            let strokeC = type === 'local' ? '#000' : '#fff';
-            let textC = type === 'local' ? '#000' : '#fff';
+        createFicha: function(type, posText, roleText, x, y) {
+            let isLocal = type === 'local';
+            let bg = isLocal ? (window.CurrentTeam?.primary_color || '#ffff00') : '#ff4d4d';
+            let textC = isLocal ? '#000000' : '#ffffff';
             
-            // Path vectorial de una camiseta deportiva
-            const shirtPath = "M -16 -15 C -6 -19, 6 -19, 16 -15 L 26 -5 L 17 5 L 13 -2 L 13 22 L -13 22 L -13 -2 L -17 5 L -26 -5 Z";
+            // Círculo base
+            let circle = new fabric.Circle({ radius: 18, fill: bg, stroke: isLocal ? '#b3b300' : '#cc0000', strokeWidth: 2, originX: 'center', originY: 'center' });
+            // Texto de posición (Ej: 'MC')
+            let posLabel = new fabric.Text(posText, { fontSize: 13, fill: textC, fontFamily: 'Outfit', fontWeight: 'bold', originX: 'center', originY: 'center' });
             
-            let shirt = new fabric.Path(shirtPath, { fill: bg, stroke: strokeC, strokeWidth: 1.5, originX: 'center', originY: 'center', scaleX: 1.2, scaleY: 1.2 });
-            let number = new fabric.Text(num.toString(), { fontSize: 16, fill: textC, fontFamily: 'Outfit', fontWeight: 'bold', originX: 'center', originY: 'center', top: 3 });
-            let nameplate = new fabric.Text("PLAYER", { fontSize: 10, fill: '#fff', backgroundColor: 'rgba(0,0,0,0.6)', fontFamily: 'Outfit', originX: 'center', originY: 'center', top: 35 });
+            // Badge de Rol (Ej: 'Organizador')
+            let badgeBg = new fabric.Rect({ fill: '#1a2235', stroke: bg, strokeWidth: 1, rx: 4, ry: 4, width: 80, height: 16, originX: 'center', originY: 'center', top: -30 });
+            let roleLabel = new fabric.Text(roleText || '', { fontSize: 8, fill: bg, fontFamily: 'Outfit', fontWeight: 'bold', originX: 'center', originY: 'center', top: -30 });
             
-            let token = new fabric.Group([shirt, number, nameplate], { left: x, top: y, originX: 'center', originY: 'center', hasControls: false, hasBorders: true, borderColor: '#00F2FE', transparentCorners: false });
-            token.tacticalData = { type: type, label: num };
+            // Agrupar elementos. hasControls: false quita los bordes de redimensión, pero permite arrastrar.
+            let token = new fabric.Group([badgeBg, roleLabel, circle, posLabel], { left: x, top: y, originX: 'center', originY: 'center', hasControls: false, hasBorders: true, borderColor: '#00F2FE', transparentCorners: false, hoverCursor: 'grab', moveCursor: 'grabbing' });
+            
+            token.tacticalData = { type: type, pos: posText, role: roleText };
             this.canvas.add(token);
             return token;
         },
@@ -1771,7 +1796,7 @@ window.DTEngine = {
                         finalX = (pW/pH) * finalY; // Ajuste proporcional
                         finalY = pH - temp; 
                     }
-                    this.createFicha(type, p.n, finalX, finalY);
+                    this.createFicha(type, p.pos || '', p.role || '', finalX, finalY);
                 });
             };
             
