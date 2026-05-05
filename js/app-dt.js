@@ -182,6 +182,12 @@ window.DTEngine = {
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Widget 4: Sala de Juegos -->
+                        <div class="platinum-widget" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" style="cursor: pointer; border-color: var(--primary-color);">
+                            <h3 style="color: var(--primary-color); margin-bottom: 5px;">SALA DE JUEGOS</h3>
+                            <p style="color: #888; font-size: 0.85rem;">Pizarra Táctica Interactiva</p>
+                        </div>
                     </section>
 
                     <section id="dt-calendar-view" class="dt-dashboard-view" style="display: none;">
