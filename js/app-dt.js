@@ -422,7 +422,7 @@ window.DTEngine = {
                         </div>
                     </section>
                     
-                    <section id="view-board" class="view-section" style="display: none;"><div style="display: flex; gap: 20px; height: 75vh; margin-top: 20px;"><div class="board-toolbar" style="width: 200px; background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);"><h4 style="color: var(--primary-color); margin-bottom: 15px;">HERRAMIENTAS</h4><button onclick="DTEngine.Board.addToken('local')" style="width:100%; padding: 10px; margin-bottom:10px; background: var(--primary-color); border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer;">+ Local</button><button onclick="DTEngine.Board.addToken('rival')" style="width:100%; padding: 10px; margin-bottom:10px; background: #ff4d4d; border:none; border-radius:6px; color:#fff; font-weight:bold; cursor:pointer;">+ Rival</button><button onclick="DTEngine.Board.addToken('ball')" style="width:100%; padding: 10px; margin-bottom:20px; background: #fff; border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer;">+ Balón</button><button onclick="DTEngine.Board.toggleDraw()" style="width:100%; padding: 10px; margin-bottom:10px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Lápiz Libre</button><button onclick="DTEngine.Board.clearBoard()" style="width:100%; padding: 10px; background: transparent; border:1px solid #ff4d4d; border-radius:6px; color:#ff4d4d; cursor:pointer;">Limpiar</button></div><div class="board-canvas-container" style="flex: 1; background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);"><canvas id="tactical-board" width="800" height="600"></canvas></div></div></section>
+                    <section id="view-board" class="view-section" style="display: none;"><div style="display: flex; gap: 20px; height: 75vh; margin-top: 20px;"><div class="board-toolbar" style="width: 200px; background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);"><h4 style="color: var(--primary-color); margin-bottom: 15px;">HERRAMIENTAS</h4><button onclick="DTEngine.Board.deploy11v11()" style="width:100%; padding: 12px; margin-bottom:15px; background: var(--primary-color); border:none; border-radius:6px; color:#000; font-weight:900; cursor:pointer;">DESPLEGAR 11 vs 11</button><button onclick="DTEngine.Board.addToken('ball')" style="width:100%; padding: 10px; margin-bottom:20px; background: #fff; border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer;">+ Balón</button><button onclick="DTEngine.Board.toggleDraw()" style="width:100%; padding: 10px; margin-bottom:10px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Lápiz Libre</button><button onclick="DTEngine.Board.clearBoard()" style="width:100%; padding: 10px; background: transparent; border:1px solid #ff4d4d; border-radius:6px; color:#ff4d4d; cursor:pointer;">Limpiar</button></div><div class="board-canvas-container" style="flex: 1; background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);"><canvas id="tactical-board" width="800" height="600"></canvas></div></div></section>
                 </main>
             </div>
 
@@ -1609,8 +1609,38 @@ window.DTEngine = {
             const h = this.canvas.height; 
             const centerLine = new fabric.Line([w/2, 0, w/2, h], { stroke: 'rgba(255,255,255,0.3)', strokeWidth: 2, selectable: false }); 
             const centerCircle = new fabric.Circle({ radius: 60, left: w/2, top: h/2, fill: 'transparent', stroke: 'rgba(255,255,255,0.3)', strokeWidth: 2, originX: 'center', originY: 'center', selectable: false }); 
-            this.canvas.add(centerLine, centerCircle); 
+            
+            // Áreas (Estética de Cancha real)
+            const localArea = new fabric.Rect({ left: 0, top: h/2 - 100, width: 80, height: 200, fill: 'transparent', stroke: 'rgba(255,255,255,0.3)', strokeWidth: 2, selectable: false });
+            const rivalArea = new fabric.Rect({ left: w - 80, top: h/2 - 100, width: 80, height: 200, fill: 'transparent', stroke: 'rgba(255,255,255,0.3)', strokeWidth: 2, selectable: false });
+            
+            this.canvas.add(centerLine, centerCircle, localArea, rivalArea); 
         }, 
+        createFicha: function(type, label, x, y) {
+            let bg = type === 'local' ? (window.CurrentTeam?.primary_color || '#0eb1a7') : (type === 'rival' ? '#ff4d4d' : '#ffffff');
+            let textCol = type === 'local' ? '#000' : '#fff';
+            
+            let circle = new fabric.Circle({ radius: 14, fill: bg, stroke: '#fff', strokeWidth: 2, originX: 'center', originY: 'center' });
+            let text = new fabric.Text(label.toString(), { fontSize: 14, fill: textCol, fontFamily: 'Outfit', fontWeight: 'bold', originX: 'center', originY: 'center' });
+            
+            let token = new fabric.Group([circle, text], { left: x, top: y, originX: 'center', originY: 'center', hasControls: false, hasBorders: true, borderColor: '#00F2FE', transparentCorners: false });
+            token.tacticalData = { type: type, label: label }; 
+            this.canvas.add(token);
+            return token;
+        },
+        deploy11v11: function() {
+            this.clearBoard();
+            const w = this.canvas.width; const h = this.canvas.height;
+            
+            const localPos = [ {l: '1', x: 0.05, y: 0.5}, {l: '4', x: 0.2, y: 0.2}, {l: '2', x: 0.15, y: 0.35}, {l: '6', x: 0.15, y: 0.65}, {l: '3', x: 0.2, y: 0.8}, {l: '5', x: 0.3, y: 0.5}, {l: '8', x: 0.35, y: 0.25}, {l: '10', x: 0.35, y: 0.75}, {l: '7', x: 0.45, y: 0.15}, {l: '9', x: 0.45, y: 0.5}, {l: '11', x: 0.45, y: 0.85} ];
+            const rivalPos = [ {l: '1', x: 0.95, y: 0.5}, {l: '4', x: 0.8, y: 0.2}, {l: '2', x: 0.85, y: 0.35}, {l: '6', x: 0.85, y: 0.65}, {l: '3', x: 0.8, y: 0.8}, {l: '8', x: 0.7, y: 0.25}, {l: '5', x: 0.65, y: 0.4}, {l: '10', x: 0.65, y: 0.6}, {l: '11', x: 0.7, y: 0.75}, {l: '7', x: 0.55, y: 0.35}, {l: '9', x: 0.55, y: 0.65} ];
+
+            localPos.forEach(p => this.createFicha('local', p.l, w * p.x, h * p.y));
+            rivalPos.forEach(p => this.createFicha('rival', p.l, w * p.x, h * p.y));
+            
+            let ball = new fabric.Circle({ radius: 6, fill: '#fff', left: w/2, top: h/2, originX: 'center', originY: 'center', hasControls: false });
+            this.canvas.add(ball);
+        },
         addToken: function(type) { 
             let color = type === 'local' ? (window.CurrentTeam?.primary_color || '#0eb1a7') : (type === 'rival' ? '#ff4d4d' : '#ffffff'); 
             let r = type === 'ball' ? 8 : 16; 
@@ -1621,8 +1651,8 @@ window.DTEngine = {
         toggleDraw: function() { 
             this.canvas.isDrawingMode = !this.canvas.isDrawingMode; 
             if (this.canvas.isDrawingMode) { 
-                this.canvas.freeDrawingBrush.color = 'var(--primary-color, #0eb1a7)'; 
-                this.canvas.freeDrawingBrush.width = 3; 
+                this.canvas.freeDrawingBrush.color = '#FFD700'; 
+                this.canvas.freeDrawingBrush.width = 4; 
             } 
         }, 
         clearBoard: function() { 
