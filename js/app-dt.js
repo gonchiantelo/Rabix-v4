@@ -1640,6 +1640,44 @@ window.DTEngine = {
                 
                 this.canvas = new fabric.Canvas('tactical-board', { selection: true });
                 
+                // Zoom con la rueda del mouse
+                this.canvas.on('mouse:wheel', function(opt) {
+                    var delta = opt.e.deltaY;
+                    var zoom = this.canvas.getZoom();
+                    zoom *= 0.999 ** delta;
+                    if (zoom > 3) zoom = 3;
+                    if (zoom < 0.3) zoom = 0.3;
+                    this.canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+                    opt.e.preventDefault();
+                    opt.e.stopPropagation();
+                }.bind(this));
+
+                // Paneo (Arrastrar el lienzo manteniendo presionada la tecla ALT)
+                this.canvas.on('mouse:down', function(opt) {
+                    var evt = opt.e;
+                    if (evt.altKey === true) {
+                        this.isDragging = true;
+                        this.lastPosX = evt.clientX;
+                        this.lastPosY = evt.clientY;
+                        this.canvas.selection = false;
+                    }
+                }.bind(this));
+                this.canvas.on('mouse:move', function(opt) {
+                    if (this.isDragging) {
+                        var e = opt.e;
+                        var vpt = this.canvas.viewportTransform;
+                        vpt[4] += e.clientX - this.lastPosX;
+                        vpt[5] += e.clientY - this.lastPosY;
+                        this.canvas.requestRenderAll();
+                        this.lastPosX = e.clientX;
+                        this.lastPosY = e.clientY;
+                    }
+                }.bind(this));
+                this.canvas.on('mouse:up', function(opt) {
+                    this.isDragging = false;
+                    this.canvas.selection = true;
+                }.bind(this));
+                
                 this.resizeCanvas();
                 window.addEventListener('resize', () => window.DTEngine.Board.resizeCanvas());
             } catch (err) {
@@ -1649,90 +1687,43 @@ window.DTEngine = {
 
         drawPitch: function() {
             this.canvas.setBackgroundColor(this.pitchColor, this.canvas.renderAll.bind(this.canvas));
-            this.canvas.getObjects().forEach(o => { if(!o.tacticalData) this.canvas.remove(o); }); // Limpia fondo
-
+            this.canvas.getObjects().forEach(o => { if(!o.tacticalData) this.canvas.remove(o); });
+            
+            // Dimensiones fijas profesionales (Escala 10px = 1 metro)
+            const pW = this.isVertical ? 680 : 1050;
+            const pH = this.isVertical ? 1050 : 680;
+            
+            // Centrar el viewport automáticamente
             const cw = this.canvas.width; const ch = this.canvas.height;
-            const ratio = 105 / 68; // Proporción estandar FIFA
-            const m = 20; // Margen
-            let pW, pH; 
-            
-            // Calcular tamaño máximo manteniendo proporción
-            if (!this.isVertical) {
-                pW = cw - m*2; pH = pW / ratio;
-                if (pH > ch - m*2) { pH = ch - m*2; pW = pH * ratio; }
-            } else {
-                pH = ch - m*2; pW = pH / ratio;
-                if (pW > cw - m*2) { pW = cw - m*2; pH = pW * ratio; }
-            }
+            const initialZoom = Math.min(cw / (pW + 100), ch / (pH + 100));
+            this.canvas.setZoom(initialZoom);
+            this.canvas.viewportTransform[4] = (cw - pW * initialZoom) / 2;
+            this.canvas.viewportTransform[5] = (ch - pH * initialZoom) / 2;
 
-            const oX = (cw - pW) / 2; const oY = (ch - pH) / 2; // Offsets para centrar
+            const oX = 0; const oY = 0; // Origen local
             
-            const color = 'rgba(255, 255, 255, 0.4)'; const strokeW = 2;
-            const mLine = (x1, y1, x2, y2) => new fabric.Line([x1, y1, x2, y2], {stroke: color, strokeWidth: strokeW, selectable: false});
+            const color = 'rgba(255, 255, 255, 0.5)'; const strokeW = 3;
             const mRect = (l, t, w, h) => new fabric.Rect({left: l, top: t, width: w, height: h, fill: 'transparent', stroke: color, strokeWidth: strokeW, selectable: false});
+            const mLine = (x1, y1, x2, y2) => new fabric.Line([x1, y1, x2, y2], {stroke: color, strokeWidth: strokeW, selectable: false});
             const mCirc = (l, t, r) => new fabric.Circle({left: l, top: t, radius: r, fill: 'transparent', stroke: color, strokeWidth: strokeW, originX: 'center', originY: 'center', selectable: false});
-            const mDot = (l, t) => new fabric.Circle({left: l, top: t, radius: 3, fill: '#fff', originX: 'center', originY: 'center', selectable: false});
 
-            // Constantes FIFA sobre el canvas dibujado
-            const penY = 40.32 / 68; const penX = 16.5 / 105;
-            const goalY = 18.32 / 68; const goalX = 5.5 / 105;
-            const circR = 9.15 / 68; const spotX = 11 / 105;
+            this.canvas.add(mRect(oX, oY, pW, pH)); // Borde
 
-            this.canvas.add(mRect(oX, oY, pW, pH)); // Borde de la cancha
-            
             if (!this.isVertical) {
                 this.canvas.add(mLine(oX + pW/2, oY, oX + pW/2, oY + pH)); 
-                this.canvas.add(mCirc(oX + pW/2, oY + pH/2, pH * circR)); 
-                this.canvas.add(mDot(oX + pW/2, oY + pH/2)); 
-                // Áreas Izquierda
-                this.canvas.add(mRect(oX, oY + pH*(1-penY)/2, pW*penX, pH*penY));
-                this.canvas.add(mRect(oX, oY + pH*(1-goalY)/2, pW*goalX, pH*goalY));
-                this.canvas.add(mDot(oX + pW*spotX, oY + pH/2));
-                // Áreas Derecha
-                this.canvas.add(mRect(oX + pW*(1-penX), oY + pH*(1-penY)/2, pW*penX, pH*penY));
-                this.canvas.add(mRect(oX + pW*(1-goalX), oY + pH*(1-goalY)/2, pW*goalX, pH*goalY));
-                this.canvas.add(mDot(oX + pW*(1-spotX), oY + pH/2));
+                this.canvas.add(mCirc(oX + pW/2, oY + pH/2, 91.5)); 
+                this.canvas.add(mRect(oX, oY + pH/2 - 201.6, 165, 403.2)); // Área grande izq
+                this.canvas.add(mRect(oX, oY + pH/2 - 91.6, 55, 183.2)); // Área chica izq
+                this.canvas.add(mRect(oX + pW - 165, oY + pH/2 - 201.6, 165, 403.2)); // Área grande der
+                this.canvas.add(mRect(oX + pW - 55, oY + pH/2 - 91.6, 55, 183.2)); // Área chica der
             } else {
-                this.canvas.add(mLine(oX, oY + pH/2, oX + pW, oY + pH/2));
-                this.canvas.add(mCirc(oX + pW/2, oY + pH/2, pW * circR));
-                this.canvas.add(mDot(oX + pW/2, oY + pH/2));
-                // Áreas Arriba
-                this.canvas.add(mRect(oX + pW*(1-penY)/2, oY, pW*penY, pH*penX));
-                this.canvas.add(mRect(oX + pW*(1-goalY)/2, oY, pW*goalY, pH*goalX));
-                this.canvas.add(mDot(oX + pW/2, oY + pH*spotX));
-                // Áreas Abajo
-                this.canvas.add(mRect(oX + pW*(1-penY)/2, oY + pH*(1-penX), pW*penY, pH*penX));
-                this.canvas.add(mRect(oX + pW*(1-goalY)/2, oY + pH*(1-goalX), pW*goalY, pH*goalX));
-                this.canvas.add(mDot(oX + pW/2, oY + pH*(1-spotX)));
+                this.canvas.add(mLine(oX, oY + pH/2, oX + pW, oY + pH/2)); 
+                this.canvas.add(mCirc(oX + pW/2, oY + pH/2, 91.5)); 
+                this.canvas.add(mRect(oX + pW/2 - 201.6, oY, 403.2, 165)); // Arriba grande
+                this.canvas.add(mRect(oX + pW/2 - 91.6, oY, 183.2, 55)); // Arriba chica
+                this.canvas.add(mRect(oX + pW/2 - 201.6, oY + pH - 165, 403.2, 165)); // Abajo grande
+                this.canvas.add(mRect(oX + pW/2 - 91.6, oY + pH - 55, 183.2, 55)); // Abajo chica
             }
-
-            // Sistema de Zonas Dinámico (Electric Accent)
-            if (this.zoneMode > 0) {
-                const zCol = 'rgba(0, 242, 254, 0.4)'; // Cyan eléctrico
-                const zLine = (x1, y1, x2, y2) => this.canvas.add(new fabric.Line([x1,y1,x2,y2], {stroke: zCol, strokeWidth: 1.5, strokeDashArray: [4,4], selectable: false}));
-                
-                if (this.zoneMode === 1) { // 5x3 Carriles
-                    const vl = [0.15, 0.35, 0.65, 0.85]; const hl = [0.33, 0.66];
-                    if (!this.isVertical) {
-                        vl.forEach(v => zLine(oX, oY+pH*v, oX+pW, oY+pH*v));
-                        hl.forEach(h => zLine(oX+pW*h, oY, oX+pW*h, oY+pH));
-                    } else {
-                        vl.forEach(v => zLine(oX+pW*v, oY, oX+pW*v, oY+pH));
-                        hl.forEach(h => zLine(oX, oY+pH*h, oX+pW, oY+pH*h));
-                    }
-                } else if (this.zoneMode === 2) { // 20 Zonas
-                    const vl = [0.17, 0.34, 0.66, 0.83]; const hl = [0.25, 0.5, 0.75];
-                    if (!this.isVertical) {
-                        vl.forEach(v => zLine(oX, oY+pH*v, oX+pW, oY+pH*v));
-                        hl.forEach(h => zLine(oX+pW*h, oY, oX+pW*h, oY+pH));
-                    } else {
-                        vl.forEach(v => zLine(oX+pW*v, oY, oX+pW*v, oY+pH));
-                        hl.forEach(h => zLine(oX, oY+pH*h, oX+pW, oY+pH*h));
-                    }
-                }
-            }
-            
-            // Asegurar que las líneas queden por debajo de las fichas
             this.canvas.getObjects().forEach(o => { if(!o.tacticalData) this.canvas.sendToBack(o); });
         },
         cycleZones: function() {
@@ -1742,23 +1733,30 @@ window.DTEngine = {
                 const labels = ['Zonas: Desactivado', 'Zonas: Carriles (5x3)', 'Zonas: Guardiola (20)'];
                 btn.innerText = labels[this.zoneMode];
             }
-            this.deployTeams();
+            // Temporalmente deshabilitado en este refactor
+            // this.deployTeams();
         }, 
-        createFicha: function(type, label, x, y) {
-            let bg = type === 'local' ? (window.CurrentTeam?.primary_color || '#0eb1a7') : (type === 'rival' ? '#ff4d4d' : '#ffffff');
-            let textCol = type === 'local' ? '#000' : '#fff';
+        createFicha: function(type, num, x, y) {
+            let bg = type === 'local' ? (window.CurrentTeam?.primary_color || '#fff') : (type === 'rival' ? '#ff4d4d' : '#ffffff');
+            let strokeC = type === 'local' ? '#000' : '#fff';
+            let textC = type === 'local' ? '#000' : '#fff';
             
-            let circle = new fabric.Circle({ radius: 14, fill: bg, stroke: '#fff', strokeWidth: 2, originX: 'center', originY: 'center' });
-            let text = new fabric.Text(label.toString(), { fontSize: 14, fill: textCol, fontFamily: 'Outfit', fontWeight: 'bold', originX: 'center', originY: 'center' });
+            // Path vectorial de una camiseta deportiva
+            const shirtPath = "M -16 -15 C -6 -19, 6 -19, 16 -15 L 26 -5 L 17 5 L 13 -2 L 13 22 L -13 22 L -13 -2 L -17 5 L -26 -5 Z";
             
-            let token = new fabric.Group([circle, text], { left: x, top: y, originX: 'center', originY: 'center', hasControls: false, hasBorders: true, borderColor: '#00F2FE', transparentCorners: false });
-            token.tacticalData = { type: type, label: label }; 
+            let shirt = new fabric.Path(shirtPath, { fill: bg, stroke: strokeC, strokeWidth: 1.5, originX: 'center', originY: 'center', scaleX: 1.2, scaleY: 1.2 });
+            let number = new fabric.Text(num.toString(), { fontSize: 16, fill: textC, fontFamily: 'Outfit', fontWeight: 'bold', originX: 'center', originY: 'center', top: 3 });
+            let nameplate = new fabric.Text("PLAYER", { fontSize: 10, fill: '#fff', backgroundColor: 'rgba(0,0,0,0.6)', fontFamily: 'Outfit', originX: 'center', originY: 'center', top: 35 });
+            
+            let token = new fabric.Group([shirt, number, nameplate], { left: x, top: y, originX: 'center', originY: 'center', hasControls: false, hasBorders: true, borderColor: '#00F2FE', transparentCorners: false });
+            token.tacticalData = { type: type, label: num };
             this.canvas.add(token);
             return token;
         },
         deployTeams: function() {
             this.clearBoard(); // drawPitch ya limpia y dibuja el fondo
-            const w = this.canvas.width; const h = this.canvas.height;
+            const pW = this.isVertical ? 680 : 1050;
+            const pH = this.isVertical ? 1050 : 680;
             
             const placeTokens = (formKey, type) => {
                 const form = this.formations[formKey] || this.formations['4-3-3'];
@@ -1766,12 +1764,12 @@ window.DTEngine = {
                     let px = p.x; let py = p.y;
                     if (type === 'rival') { px = 1 - px; py = 1 - py; } // Espejo para el rival
                     
-                    let finalX = w * px; let finalY = h * py;
+                    let finalX = pW * px; let finalY = pH * py;
                     // Rotar coordenadas si el campo es vertical
                     if (this.isVertical) {
                         let temp = finalX; 
-                        finalX = (w/h) * finalY; // Ajuste proporcional
-                        finalY = h - temp; 
+                        finalX = (pW/pH) * finalY; // Ajuste proporcional
+                        finalY = pH - temp; 
                     }
                     this.createFicha(type, p.n, finalX, finalY);
                 });
@@ -1781,7 +1779,7 @@ window.DTEngine = {
             placeTokens(this.rivalForm, 'rival');
             
             // Balón en el centro
-            this.canvas.add(new fabric.Circle({ radius: 6, fill: '#fff', left: w/2, top: h/2, originX: 'center', originY: 'center', hasControls: false }));
+            this.canvas.add(new fabric.Circle({ radius: 8, fill: '#fff', left: pW/2, top: pH/2, originX: 'center', originY: 'center', hasControls: false }));
         },
         updateFormation: function(type, val) {
             if (type === 'local') this.localForm = val;
