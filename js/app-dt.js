@@ -1877,48 +1877,51 @@ window.DTEngine = {
 // 1. INYECCIÓN BLINDADA DEL CONTENEDOR DOM
 // ==========================================
 setTimeout(() => {
-    const mainContent = document.querySelector('.dt-main-content');
-    if (mainContent && !document.getElementById('view-board')) {
-        const boardSection = document.createElement('section');
-        boardSection.id = 'view-board';
-        boardSection.className = 'view-section hidden';
-        boardSection.style.cssText = 'display: none; height: 85vh; width: 100%; margin-top: 15px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); background: #0f172a;';
-        boardSection.innerHTML = '<div id="whiteboard-container" style="width: 100%; height: 100%; position: relative;"></div>';
-        mainContent.appendChild(boardSection);
-        console.log("Contenedor #view-board inyectado a la fuerza.");
+    let boardView = document.getElementById('view-board');
+    if (!boardView) {
+        boardView = document.createElement('section');
+        boardView.id = 'view-board';
+        boardView.className = 'view-section hidden';
+        boardView.innerHTML = '<div id="whiteboard-container" style="width: 100%; height: 100%; position: relative;"></div>';
+        
+        // Insertar en el contenedor principal de vistas
+        const mainContainer = document.querySelector('.dt-main-content') || document.body;
+        mainContainer.appendChild(boardView);
     }
-}, 500);
+    // ESTILOS ESTRICTOS: Oculto por defecto
+    boardView.style.cssText = 'display: none; height: 80vh; width: 100%; margin-top: 15px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); background: #0f172a;';
+}, 100);
 
 // ==========================================
 // 2. PARCHE DE ENRUTAMIENTO (TOGGLE VIEW)
 // ==========================================
-const originalToggleView = window.DTEngine.toggleView;
 window.DTEngine.toggleView = function(viewName) {
-    // Mantener funcionalidad de otras vistas
-    if (originalToggleView && viewName !== 'board') {
-        originalToggleView.call(this, viewName);
-    }
-    
-    // Lógica estricta y exclusiva para la Pizarra
-    if (viewName === 'board') {
-        // Ocultar todo
-        document.querySelectorAll('.view-section').forEach(el => {
-            el.style.display = 'none';
-        });
-        
-        // Mostrar Pizarra
-        const boardEl = document.getElementById('view-board');
-        if (boardEl) {
-            boardEl.style.display = 'block';
-            boardEl.classList.remove('hidden');
-            
-            // Encender el motor SVG
-            if(window.DTEngine.Board && typeof window.DTEngine.Board.init === 'function') {
+    // 1. Ocultar absolutamente todas las vistas
+    document.querySelectorAll('.view-section').forEach(view => {
+        view.style.display = 'none';
+        view.classList.add('hidden');
+    });
+
+    // 2. Mapear el viewName con el ID real del HTML
+    let targetId = viewName;
+    if (viewName === 'board') targetId = 'view-board';
+    if (viewName === 'home') targetId = 'dt-home-view'; // Ajusta si tu home tiene otro ID
+    if (viewName === 'calendar') targetId = 'view-calendar';
+    if (viewName === 'analytics') targetId = 'view-analytics';
+
+    // 3. Buscar y mostrar la vista solicitada
+    const targetView = document.getElementById(targetId) || document.getElementById('view-' + viewName);
+    if (targetView) {
+        targetView.style.display = 'block';
+        targetView.classList.remove('hidden');
+
+        // 4. Inicializar la Pizarra solo cuando se la llama por primera vez
+        if (viewName === 'board' && window.DTEngine.Board) {
+            if (!document.getElementById('dom-pitch')) {
                 window.DTEngine.Board.init();
             }
-        } else {
-            console.error("Error: #view-board no existe al intentar enrutar.");
         }
+    } else {
+        console.error("ToggleView Error: No se encontró la vista en el DOM para", viewName);
     }
 };
-
