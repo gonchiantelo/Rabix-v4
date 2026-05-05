@@ -422,7 +422,7 @@ window.DTEngine = {
                         </div>
                     </section>
                     
-                    <section id="view-board" class="view-section" style="display: none;"><div style="display: flex; gap: 20px; height: 75vh; margin-top: 20px;"><div class="board-toolbar" style="width: 200px; background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);"><h4 style="color: var(--primary-color); margin-bottom: 15px;">HERRAMIENTAS</h4><button onclick="DTEngine.Board.deploy11v11()" style="width:100%; padding: 12px; margin-bottom:15px; background: var(--primary-color); border:none; border-radius:6px; color:#000; font-weight:900; cursor:pointer;">DESPLEGAR 11 vs 11</button><button onclick="DTEngine.Board.addToken('ball')" style="width:100%; padding: 10px; margin-bottom:20px; background: #fff; border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer;">+ Balón</button><button onclick="DTEngine.Board.toggleDraw()" style="width:100%; padding: 10px; margin-bottom:10px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Lápiz Libre</button><button onclick="DTEngine.Board.clearBoard()" style="width:100%; padding: 10px; background: transparent; border:1px solid #ff4d4d; border-radius:6px; color:#ff4d4d; cursor:pointer;">Limpiar</button></div><div class="board-canvas-container" style="flex: 1; background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);"><canvas id="tactical-board" width="800" height="600"></canvas></div></div></section>
+                    <section id="view-board" class="view-section" style="display: none;"><div style="display: flex; gap: 20px; height: 75vh; margin-top: 20px;"><div class="board-toolbar" style="width: 200px; background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);"><h4 style="color: var(--primary-color); margin-bottom: 15px;">HERRAMIENTAS</h4><button onclick="DTEngine.Board.deploy11v11()" style="width:100%; padding: 12px; margin-bottom:15px; background: var(--primary-color); border:none; border-radius:6px; color:#000; font-weight:900; cursor:pointer;">DESPLEGAR 11 vs 11</button><button onclick="DTEngine.Board.addToken('ball')" style="width:100%; padding: 10px; margin-bottom:20px; background: #fff; border:none; border-radius:6px; color:#000; font-weight:bold; cursor:pointer;">+ Balón</button><button onclick="DTEngine.Board.toggleZones()" style="width:100%; padding: 10px; margin-bottom:10px; background: transparent; border:1px solid #00F2FE; border-radius:6px; color:#00F2FE; font-weight:bold; cursor:pointer;">Ver Carriles / Zonas</button><button onclick="DTEngine.Board.toggleDraw()" style="width:100%; padding: 10px; margin-bottom:10px; background: #333; border:1px solid #555; border-radius:6px; color:#fff; cursor:pointer;">Lápiz Libre</button><button onclick="DTEngine.Board.clearBoard()" style="width:100%; padding: 10px; background: transparent; border:1px solid #ff4d4d; border-radius:6px; color:#ff4d4d; cursor:pointer;">Limpiar</button></div><div class="board-canvas-container" style="flex: 1; background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);"><canvas id="tactical-board" width="800" height="600"></canvas></div></div></section>
                 </main>
             </div>
 
@@ -1603,18 +1603,64 @@ window.DTEngine = {
         console.error('Error al inicializar la Pizarra:', err);
     }
 }, 
-        drawPitch: function() { 
-            this.canvas.setBackgroundColor('#1c2a22', this.canvas.renderAll.bind(this.canvas)); 
-            const w = this.canvas.width; 
-            const h = this.canvas.height; 
-            const centerLine = new fabric.Line([w/2, 0, w/2, h], { stroke: 'rgba(255,255,255,0.3)', strokeWidth: 2, selectable: false }); 
-            const centerCircle = new fabric.Circle({ radius: 60, left: w/2, top: h/2, fill: 'transparent', stroke: 'rgba(255,255,255,0.3)', strokeWidth: 2, originX: 'center', originY: 'center', selectable: false }); 
+        drawPitch: function() {
+            this.canvas.setBackgroundColor('#243b2a', this.canvas.renderAll.bind(this.canvas));
             
-            // Áreas (Estética de Cancha real)
-            const localArea = new fabric.Rect({ left: 0, top: h/2 - 100, width: 80, height: 200, fill: 'transparent', stroke: 'rgba(255,255,255,0.3)', strokeWidth: 2, selectable: false });
-            const rivalArea = new fabric.Rect({ left: w - 80, top: h/2 - 100, width: 80, height: 200, fill: 'transparent', stroke: 'rgba(255,255,255,0.3)', strokeWidth: 2, selectable: false });
+            const w = this.canvas.width;
+            const h = this.canvas.height;
+            const color = 'rgba(255, 255, 255, 0.4)';
+            const strokeW = 2;
             
-            this.canvas.add(centerLine, centerCircle, localArea, rivalArea); 
+            const makeLine = (c, dashed=false) => new fabric.Line(c, { stroke: color, strokeWidth: strokeW, selectable: false, strokeDashArray: dashed ? [5, 5] : null });
+            const makeRect = (l, t, w, h) => new fabric.Rect({ left: l, top: t, width: w, height: h, fill: 'transparent', stroke: color, strokeWidth: strokeW, selectable: false });
+            const makeCircle = (l, t, r, fill='transparent') => new fabric.Circle({ left: l, top: t, radius: r, fill: fill, stroke: color, strokeWidth: strokeW, originX: 'center', originY: 'center', selectable: false });
+
+            const m = 30; // Margen
+            const pw = w - m*2;
+            const ph = h - m*2;
+
+            // Límites del campo
+            this.canvas.add(makeRect(m, m, pw, ph));
+            
+            // Línea y círculo central
+            this.canvas.add(makeLine([w/2, m, w/2, h-m]));
+            this.canvas.add(makeCircle(w/2, h/2, 60));
+            this.canvas.add(makeCircle(w/2, h/2, 4, '#fff')); // Saque
+
+            // Áreas Grandes
+            const penW = 130; const penH = 260;
+            this.canvas.add(makeRect(m, h/2 - penH/2, penW, penH)); // Local
+            this.canvas.add(makeRect(w - m - penW, h/2 - penH/2, penW, penH)); // Rival
+
+            // Áreas Chicas
+            const goalW = 45; const goalH = 120;
+            this.canvas.add(makeRect(m, h/2 - goalH/2, goalW, goalH));
+            this.canvas.add(makeRect(w - m - goalW, h/2 - goalH/2, goalW, goalH));
+
+            // Puntos de Penal
+            this.canvas.add(makeCircle(m + 90, h/2, 3, '#fff'));
+            this.canvas.add(makeCircle(w - m - 90, h/2, 3, '#fff'));
+
+            // Zonas Tácticas (Ocultas por defecto)
+            this.zoneLines = new fabric.Group([
+                // Verticales: 5 Carriles (Exterior, Interior, Central, Interior, Exterior)
+                makeLine([m + pw*0.15, m, m + pw*0.15, h-m], true),
+                makeLine([m + pw*0.35, m, m + pw*0.35, h-m], true),
+                makeLine([m + pw*0.65, m, m + pw*0.65, h-m], true),
+                makeLine([m + pw*0.85, m, m + pw*0.85, h-m], true),
+                // Horizontales: 3 Sectores (Inicio, Creación, Finalización)
+                makeLine([m, m + ph*0.33, w-m, m + ph*0.33], true),
+                makeLine([m, m + ph*0.66, w-m, m + ph*0.66], true)
+            ], { selectable: false, visible: false });
+            
+            this.canvas.add(this.zoneLines);
+            this.canvas.sendToBack(this.zoneLines); // Mantener por debajo de las fichas
+        },
+        toggleZones: function() {
+            if(this.zoneLines) {
+                this.zoneLines.visible = !this.zoneLines.visible;
+                this.canvas.renderAll();
+            }
         }, 
         createFicha: function(type, label, x, y) {
             let bg = type === 'local' ? (window.CurrentTeam?.primary_color || '#0eb1a7') : (type === 'rival' ? '#ff4d4d' : '#ffffff');
