@@ -1584,68 +1584,8 @@ window.DTEngine = {
         Board: {
         engineType: 'whiteboard',
         init: function() {
-            // 1. Eliminar versiones anidadas corruptas
-            const oldBoards = document.querySelectorAll('#view-board');
-            oldBoards.forEach(b => b.remove());
-
-            // 2. Crear la Página Independiente
-            const boardPage = document.createElement('section');
-            boardPage.id = 'view-board';
-            boardPage.className = 'view-section hidden';
-            boardPage.style.cssText = 'display: none; width: 100%; height: 85vh; margin-top: 20px;';
-
-            // 3. Layout de Espacio de Trabajo (Flexbox)
-            boardPage.innerHTML = `
-                <div style="display: flex; gap: 20px; width: 100%; height: 100%;">
-                    <!-- SIDEBAR: Herramientas -->
-                    <div style="width: 260px; background: #111827; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 20px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;">
-                        <h3 style="color: var(--primary-color, #ffff00); margin: 0; font-family: Outfit; font-size: 1.2rem;">SALA DE JUEGOS</h3>
-                        <p style="color: #6b7280; font-size: 0.8rem; margin-top: -10px; margin-bottom: 10px;">Diseño Táctico</p>
-                        
-                        <label style="color: #9ca3af; font-size: 0.75rem; font-weight: bold; margin-bottom: -10px;">ESQUEMA LOCAL</label>
-                        <select id="select-local" onchange="DTEngine.Board.updateFormations()" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
-                            <option value="4-3-3">1-4-3-3 Ofensivo</option>
-                            <option value="4-4-2">1-4-4-2 Clásico</option>
-                        </select>
-
-                        <label style="color: #9ca3af; font-size: 0.75rem; font-weight: bold; margin-top: 10px; margin-bottom: -10px;">ESQUEMA RIVAL</label>
-                        <select id="select-rival" onchange="DTEngine.Board.updateFormations()" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
-                            <option value="4-4-2">1-4-4-2 Clásico</option>
-                            <option value="4-3-3">1-4-3-3 Ofensivo</option>
-                        </select>
-
-                        <button onclick="DTEngine.Board.updateFormations()" style="margin-top: auto; padding: 12px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.2s;">↻ Restaurar Posiciones</button>
-                    </div>
-
-                    <!-- MAIN: Cancha SVG -->
-                    <div id="whiteboard-container" style="flex: 1; background: #0f172a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                        <svg viewBox="0 -5 105 78" style="width: 95%; height: 95%; overflow: visible; opacity: 0.8;">
-                            <rect x="0" y="0" width="105" height="68" fill="none" stroke="#334155" stroke-width="0.4"/>
-                            <line x1="52.5" y1="0" x2="52.5" y2="68" stroke="#334155" stroke-width="0.4"/>
-                            <circle cx="52.5" cy="34" r="9.15" fill="none" stroke="#334155" stroke-width="0.4"/>
-                            <circle cx="52.5" cy="34" r="0.5" fill="#334155"/>
-                            <rect x="0" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                            <rect x="0" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                            <circle cx="11" cy="34" r="0.4" fill="#334155"/>
-                            <path d="M 16.5 24.84 A 9.15 9.15 0 0 1 16.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/>
-                            <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                            <rect x="99.5" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                            <circle cx="94" cy="34" r="0.4" fill="#334155"/>
-                            <path d="M 88.5 24.84 A 9.15 9.15 0 0 0 88.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/>
-                        </svg>
-                        <div id="tokens-layer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
-                    </div>
-                </div>
-            `;
-
-            // 4. Inyección segura a nivel raíz (hermano de dt-home-view)
-            const mainContent = document.querySelector('main.dt-main-content');
-            if (mainContent) {
-                mainContent.appendChild(boardPage);
-                this.updateFormations();
-            } else {
-                console.error("No se encontró main.dt-main-content");
-            }
+            // Inicialización pasiva, el DOM ya se inyecta por el timeout
+            console.log("Pizarra táctica iniciada.");
         },
         updateFormations: function() {
             const loc = document.getElementById('select-local')?.value || '4-3-3';
@@ -1928,33 +1868,67 @@ window.DTEngine = {
 
 };
 // ==========================================
-// PARCHE DE ENRUTAMIENTO (TOGGLE VIEW ESTRICTO)
+// INYECCIÓN PASIVA DE LA PIZARRA TÁCTICA
 // ==========================================
-window.DTEngine.toggleView = function(viewName) {
-    const mainContent = document.querySelector('main.dt-main-content');
-    if (!mainContent) return;
-    
-    // Ocultar todas las secciones hijas
-    Array.from(mainContent.children).forEach(child => {
-        if (child.tagName === 'SECTION' || child.tagName === 'DIV') {
-            child.style.display = 'none';
-        }
-    });
-
-    // Lógica específica
-    if (viewName === 'board') {
-        let boardEl = document.getElementById('view-board');
-        if (!boardEl) {
-            if (window.DTEngine.Board) window.DTEngine.Board.init();
-            boardEl = document.getElementById('view-board');
-        }
-        if (boardEl) boardEl.style.display = 'block';
-    } else {
-        // Mostrar la vista correspondiente (Home, Calendar, etc.)
-        let target = document.getElementById('dt-' + viewName + '-view') || document.getElementById('view-' + viewName);
-        // Fallback por si el Home tiene otro ID (como app-shell interno)
-        if (viewName === 'home') target = document.getElementById('dt-home-view') || mainContent.firstElementChild;
+setTimeout(() => {
+    if (!document.getElementById('view-board')) {
+        const boardPage = document.createElement('section');
+        boardPage.id = 'view-board';
+        boardPage.className = 'view-section'; // El router nativo oculta/muestra por esta clase
+        boardPage.style.display = 'none'; // Inicia oculta
         
-        if (target) target.style.display = 'block';
+        // Layout del Workspace
+        boardPage.innerHTML = `
+            <div style="display: flex; gap: 20px; width: 100%; height: 85vh; margin-top: 10px;">
+                <!-- SIDEBAR: Herramientas -->
+                <div style="width: 260px; background: #111827; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 20px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;">
+                    <h3 style="color: var(--primary-color, #ffff00); margin: 0; font-family: Outfit; font-size: 1.2rem;">SALA DE JUEGOS</h3>
+                    <p style="color: #6b7280; font-size: 0.8rem; margin-top: -10px; margin-bottom: 10px;">Diseño Táctico</p>
+                    
+                    <label style="color: #9ca3af; font-size: 0.75rem; font-weight: bold; margin-bottom: -10px;">ESQUEMA LOCAL</label>
+                    <select id="select-local" onchange="if(window.DTEngine && DTEngine.Board) DTEngine.Board.deployTeams()" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
+                        <option value="4-3-3">1-4-3-3 Ofensivo</option>
+                        <option value="4-4-2">1-4-4-2 Clásico</option>
+                    </select>
+
+                    <label style="color: #9ca3af; font-size: 0.75rem; font-weight: bold; margin-top: 10px; margin-bottom: -10px;">ESQUEMA RIVAL</label>
+                    <select id="select-rival" onchange="if(window.DTEngine && DTEngine.Board) DTEngine.Board.deployTeams()" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
+                        <option value="4-4-2">1-4-4-2 Clásico</option>
+                        <option value="4-3-3">1-4-3-3 Ofensivo</option>
+                    </select>
+
+                    <button onclick="if(window.DTEngine && DTEngine.Board) DTEngine.Board.deployTeams()" style="margin-top: auto; padding: 12px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.2s;">↻ Restaurar Posiciones</button>
+                </div>
+
+                <!-- MAIN: Cancha SVG -->
+                <div id="whiteboard-container" style="flex: 1; background: #0f172a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    <svg viewBox="0 -5 105 78" style="width: 95%; height: 95%; overflow: visible; opacity: 0.8;">
+                        <rect x="0" y="0" width="105" height="68" fill="none" stroke="#334155" stroke-width="0.4"/>
+                        <line x1="52.5" y1="0" x2="52.5" y2="68" stroke="#334155" stroke-width="0.4"/>
+                        <circle cx="52.5" cy="34" r="9.15" fill="none" stroke="#334155" stroke-width="0.4"/>
+                        <circle cx="52.5" cy="34" r="0.5" fill="#334155"/>
+                        <rect x="0" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                        <rect x="0" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                        <circle cx="11" cy="34" r="0.4" fill="#334155"/>
+                        <path d="M 16.5 24.84 A 9.15 9.15 0 0 1 16.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/>
+                        <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                        <rect x="99.5" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                        <circle cx="94" cy="34" r="0.4" fill="#334155"/>
+                        <path d="M 88.5 24.84 A 9.15 9.15 0 0 0 88.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/>
+                    </svg>
+                    <div id="tokens-layer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+        `;
+        
+        // Inyectar en el contenedor principal donde viven las otras vistas
+        const appShell = document.getElementById('app-shell') || document.querySelector('.dt-shell-container') || document.querySelector('.dt-main-content');
+        if (appShell) {
+            appShell.appendChild(boardPage);
+            // Inicializar fichas en silencio
+            if(window.DTEngine && DTEngine.Board && typeof DTEngine.Board.deployTeams === 'function') {
+                DTEngine.Board.deployTeams();
+            }
+        }
     }
-};
+}, 800);
