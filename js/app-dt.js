@@ -422,9 +422,19 @@ window.DTEngine = {
                         </div>
                     </section>
                     
-                    <section id="view-board" class="view-section hidden" style="display: none; height: 85vh; width: 100%; margin-top: 15px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); background: #0f172a;">
-    <div id="whiteboard-container" style="width: 100%; height: 100%; position: relative;"></div>
-</section>
+                    <section id="view-board" class="view-section hidden" style="display: none; width: 100%; height: 85vh; margin-top: 15px; background: #0f172a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 -5 105 78" style="width: 90%; height: 90%; opacity: 0.8; overflow: visible;">
+                            <!-- Cancha Base Proporcional -->
+                            <rect x="0" y="0" width="105" height="68" fill="none" stroke="#334155" stroke-width="0.4"/>
+                            <line x1="52.5" y1="0" x2="52.5" y2="68" stroke="#334155" stroke-width="0.4"/>
+                            <circle cx="52.5" cy="34" r="9.15" fill="none" stroke="#334155" stroke-width="0.4"/>
+                            <circle cx="52.5" cy="34" r="0.5" fill="#334155"/>
+                            <rect x="0" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                            <rect x="0" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                            <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                            <rect x="99.5" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                        </svg>
+                    </section>
                 </main>
             </div>
 
@@ -512,7 +522,6 @@ window.DTEngine = {
                 </div>
             </div>
         `;
-        if(window.DTEngine.Board && typeof window.DTEngine.Board.init === 'function') window.DTEngine.Board.init();
 
         // --- AISLAMIENTO TOTAL DE NAVEGACIÓN (Bloqueo de Bubbling) ---
         setTimeout(() => {
