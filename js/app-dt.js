@@ -512,7 +512,7 @@ window.DTEngine = {
                 </div>
             </div>
         `;
-        if(window.DTEngine.Board) window.DTEngine.Board.injectNative();
+        if(window.DTEngine.Board && typeof window.DTEngine.Board.init === 'function') window.DTEngine.Board.init();
 
         // --- AISLAMIENTO TOTAL DE NAVEGACIÓN (Bloqueo de Bubbling) ---
         setTimeout(() => {
@@ -1583,7 +1583,7 @@ window.DTEngine = {
     // MÓDULO PITCH ENGINE — Pizarra del 11 Ideal
     // ══════════════════════════════════════════════════════
     Board: {
-        injectNative: function() {
+        init: function() {
             const mainContent = document.querySelector('.dt-main-content');
             if (!mainContent || document.getElementById('view-board')) return;
 
