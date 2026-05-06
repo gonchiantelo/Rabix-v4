@@ -512,6 +512,7 @@ window.DTEngine = {
                 </div>
             </div>
         `;
+        if(window.DTEngine.Board) window.DTEngine.Board.injectNative();
 
         // --- AISLAMIENTO TOTAL DE NAVEGACIÓN (Bloqueo de Bubbling) ---
         setTimeout(() => {
@@ -1581,6 +1582,105 @@ window.DTEngine = {
     // ══════════════════════════════════════════════════════
     // MÓDULO PITCH ENGINE — Pizarra del 11 Ideal
     // ══════════════════════════════════════════════════════
+    Board: {
+        injectNative: function() {
+            const mainContent = document.querySelector('.dt-main-content');
+            if (!mainContent || document.getElementById('view-board')) return;
+
+            const boardPage = document.createElement('section');
+            boardPage.id = 'view-board';
+            boardPage.className = 'view-section hidden';
+            boardPage.style.display = 'none'; // Se inicia oculta para no pisar al Home
+
+            boardPage.innerHTML = `
+                <div style="display: flex; gap: 20px; width: 100%; height: 85vh; margin-top: 15px;">
+                    <!-- SIDEBAR: Herramientas -->
+                    <div style="width: 260px; background: #111827; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 20px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;">
+                        <h3 style="color: var(--primary-color, #ffff00); margin: 0; font-family: Outfit; font-size: 1.2rem;">SALA DE JUEGOS</h3>
+                        <p style="color: #6b7280; font-size: 0.8rem; margin-top: -10px; margin-bottom: 10px;">Diseño Táctico</p>
+                        
+                        <label style="color: #9ca3af; font-size: 0.75rem; font-weight: bold; margin-bottom: -10px;">ESQUEMA LOCAL</label>
+                        <select id="slocal" onchange="window.DTEngine.Board.deployTeams(this.value, document.getElementById('srival').value)" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
+                            <option value="4-3-3">1-4-3-3 Ofensivo</option>
+                            <option value="4-4-2">1-4-4-2 Clásico</option>
+                        </select>
+
+                        <label style="color: #9ca3af; font-size: 0.75rem; font-weight: bold; margin-top: 10px; margin-bottom: -10px;">ESQUEMA RIVAL</label>
+                        <select id="srival" onchange="window.DTEngine.Board.deployTeams(document.getElementById('slocal').value, this.value)" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
+                            <option value="4-4-2">1-4-4-2 Clásico</option>
+                            <option value="4-3-3">1-4-3-3 Ofensivo</option>
+                        </select>
+
+                        <button onclick="window.DTEngine.Board.deployTeams(document.getElementById('slocal').value, document.getElementById('srival').value)" style="margin-top: auto; padding: 12px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 6px; cursor: pointer; font-weight: bold;">↻ Restaurar Posiciones</button>
+                    </div>
+
+                    <!-- MAIN: Cancha SVG -->
+                    <div style="flex: 1; background: #0f172a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 -5 105 78" style="width: 95%; height: 95%; overflow: visible; opacity: 0.8;">
+                            <rect x="0" y="0" width="105" height="68" fill="none" stroke="#334155" stroke-width="0.4"/>
+                            <line x1="52.5" y1="0" x2="52.5" y2="68" stroke="#334155" stroke-width="0.4"/>
+                            <circle cx="52.5" cy="34" r="9.15" fill="none" stroke="#334155" stroke-width="0.4"/>
+                            <circle cx="52.5" cy="34" r="0.5" fill="#334155"/>
+                            <rect x="0" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                            <rect x="0" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                            <circle cx="11" cy="34" r="0.4" fill="#334155"/>
+                            <path d="M 16.5 24.84 A 9.15 9.15 0 0 1 16.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/>
+                            <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                            <rect x="99.5" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                            <circle cx="94" cy="34" r="0.4" fill="#334155"/>
+                            <path d="M 88.5 24.84 A 9.15 9.15 0 0 0 88.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/>
+                        </svg>
+                        <div id="tokens-layer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+                    </div>
+                </div>
+            `;
+            
+            mainContent.appendChild(boardPage);
+            this.deployTeams();
+        },
+
+        deployTeams: function(loc = '4-3-3', riv = '4-4-2') {
+            const layer = document.getElementById('tokens-layer');
+            if (!layer) return;
+            layer.innerHTML = '';
+            
+            const forms = {
+                '4-3-3': [ {p:'GK', r:'Portero', x:0.08, y:0.5}, {p:'LD', r:'Lateral', x:0.25, y:0.15}, {p:'DFC', r:'Zaguero', x:0.20, y:0.35}, {p:'DFC', r:'Zaguero', x:0.20, y:0.65}, {p:'LI', r:'Lateral', x:0.25, y:0.85}, {p:'MCD', r:'Pivote', x:0.35, y:0.5}, {p:'MC', r:'Interior', x:0.45, y:0.3}, {p:'MC', r:'Interior', x:0.45, y:0.7}, {p:'ED', r:'Extremo', x:0.55, y:0.15}, {p:'DC', r:'Delantero', x:0.55, y:0.5}, {p:'EI', r:'Extremo', x:0.55, y:0.85} ],
+                '4-4-2': [ {p:'GK', r:'Portero', x:0.08, y:0.5}, {p:'LD', r:'Lateral', x:0.25, y:0.15}, {p:'DFC', r:'Zaguero', x:0.20, y:0.35}, {p:'DFC', r:'Zaguero', x:0.20, y:0.65}, {p:'LI', r:'Lateral', x:0.25, y:0.85}, {p:'MD', r:'Volante', x:0.45, y:0.15}, {p:'MC', r:'Medio', x:0.40, y:0.35}, {p:'MC', r:'Medio', x:0.40, y:0.65}, {p:'MI', r:'Volante', x:0.45, y:0.85}, {p:'DC', r:'Delantero', x:0.55, y:0.4}, {p:'DC', r:'Delantero', x:0.55, y:0.6} ]
+            };
+
+            const fLocal = forms[loc] || forms['4-3-3'];
+            const fRival = forms[riv] || forms['4-4-2'];
+
+            fLocal.forEach(t => this.createFicha('local', t.p, t.r, t.x, t.y));
+            fRival.forEach(t => this.createFicha('rival', t.p, t.r, 1 - t.x, 1 - t.y));
+        },
+        
+        createFicha: function(type, posText, roleText, percentX, percentY) {
+            const layer = document.getElementById('tokens-layer');
+            const isLocal = type === 'local';
+            const bg = isLocal ? 'var(--primary-color, #ffff00)' : '#ff4d4d';
+            const textC = isLocal ? '#000' : '#fff';
+
+            const ficha = document.createElement('div');
+            ficha.style.cssText = `position: absolute; left: ${percentX * 100}%; top: ${percentY * 100}%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: grab; user-select: none; z-index: 10;`;
+            
+            ficha.innerHTML = `<div style="background: #1a2235; border: 1px solid ${bg}; color: ${bg}; font-size: 0.55rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-family: Outfit; margin-bottom: 3px; pointer-events: none; white-space: nowrap;">${roleText}</div><div style="width: 32px; height: 32px; background: ${bg}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 900; color: ${textC}; box-shadow: 0 4px 6px rgba(0,0,0,0.3); pointer-events: none;">${posText}</div>`;
+
+            let isDragging = false;
+            ficha.addEventListener('pointerdown', (e) => { isDragging = true; ficha.style.cursor = 'grabbing'; ficha.style.zIndex = 100; ficha.setPointerCapture(e.pointerId); });
+            ficha.addEventListener('pointermove', (e) => {
+                if (!isDragging) return;
+                const rect = layer.getBoundingClientRect();
+                ficha.style.left = `${((e.clientX - rect.left) / rect.width) * 100}%`;
+                ficha.style.top = `${((e.clientY - rect.top) / rect.height) * 100}%`;
+            });
+            ficha.addEventListener('pointerup', (e) => { isDragging = false; ficha.style.cursor = 'grab'; ficha.style.zIndex = 10; ficha.releasePointerCapture(e.pointerId); });
+            
+            layer.appendChild(ficha);
+        }
+    },
+
     PitchEngine: {
         _esquema: '1-4-3-3',
         _profiles: {},      // { 'GK': { rol: '', fisicos: [], tacticos: [] } }
@@ -1853,131 +1953,3 @@ window.DTEngine = {
 
 };
 
-// ==========================================
-// MÓDULO 4: PIZARRA TÁCTICA (DOM/SVG ENGINE)
-// ==========================================
-window.DTEngine.Board = {
-    deployTeams: function(loc = '4-3-3', riv = '4-4-2') {
-        const layer = document.getElementById('tokens-layer');
-        if (!layer) return;
-        layer.innerHTML = ''; // Limpiar capa
-        
-        const forms = {
-            '4-3-3': [ {p:'GK', r:'Portero', x:0.08, y:0.5}, {p:'LD', r:'Lateral', x:0.25, y:0.15}, {p:'DFC', r:'Zaguero', x:0.20, y:0.35}, {p:'DFC', r:'Zaguero', x:0.20, y:0.65}, {p:'LI', r:'Lateral', x:0.25, y:0.85}, {p:'MCD', r:'Pivote', x:0.35, y:0.5}, {p:'MC', r:'Interior', x:0.45, y:0.3}, {p:'MC', r:'Interior', x:0.45, y:0.7}, {p:'ED', r:'Extremo', x:0.55, y:0.15}, {p:'DC', r:'Delantero', x:0.55, y:0.5}, {p:'EI', r:'Extremo', x:0.55, y:0.85} ],
-            '4-4-2': [ {p:'GK', r:'Portero', x:0.08, y:0.5}, {p:'LD', r:'Lateral', x:0.25, y:0.15}, {p:'DFC', r:'Zaguero', x:0.20, y:0.35}, {p:'DFC', r:'Zaguero', x:0.20, y:0.65}, {p:'LI', r:'Lateral', x:0.25, y:0.85}, {p:'MD', r:'Volante', x:0.45, y:0.15}, {p:'MC', r:'Medio', x:0.40, y:0.35}, {p:'MC', r:'Medio', x:0.40, y:0.65}, {p:'MI', r:'Volante', x:0.45, y:0.85}, {p:'DC', r:'Delantero', x:0.55, y:0.4}, {p:'DC', r:'Delantero', x:0.55, y:0.6} ]
-        };
-
-        const fLocal = forms[loc] || forms['4-3-3'];
-        const fRival = forms[riv] || forms['4-4-2'];
-
-        fLocal.forEach(t => this.createFicha('local', t.p, t.r, t.x, t.y));
-        fRival.forEach(t => this.createFicha('rival', t.p, t.r, 1 - t.x, 1 - t.y)); // Espejo
-    },
-    
-    createFicha: function(type, posText, roleText, percentX, percentY) {
-        const layer = document.getElementById('tokens-layer');
-        const isLocal = type === 'local';
-        const bg = isLocal ? 'var(--primary-color, #ffff00)' : '#ff4d4d';
-        const textC = isLocal ? '#000' : '#fff';
-
-        const ficha = document.createElement('div');
-        ficha.style.cssText = `position: absolute; left: ${percentX * 100}%; top: ${percentY * 100}%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: grab; user-select: none; z-index: 10;`;
-        
-        ficha.innerHTML = `<div style="background: #1a2235; border: 1px solid ${bg}; color: ${bg}; font-size: 0.55rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-family: Outfit; margin-bottom: 3px; pointer-events: none; white-space: nowrap;">${roleText}</div><div style="width: 32px; height: 32px; background: ${bg}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 900; color: ${textC}; box-shadow: 0 4px 6px rgba(0,0,0,0.3); pointer-events: none;">${posText}</div>`;
-
-        let isDragging = false;
-        ficha.addEventListener('pointerdown', (e) => { isDragging = true; ficha.style.cursor = 'grabbing'; ficha.style.zIndex = 100; ficha.setPointerCapture(e.pointerId); });
-        ficha.addEventListener('pointermove', (e) => {
-            if (!isDragging) return;
-            const rect = layer.getBoundingClientRect();
-            ficha.style.left = `${((e.clientX - rect.left) / rect.width) * 100}%`;
-            ficha.style.top = `${((e.clientY - rect.top) / rect.height) * 100}%`;
-        });
-        ficha.addEventListener('pointerup', (e) => { isDragging = false; ficha.style.cursor = 'grab'; ficha.style.zIndex = 10; ficha.releasePointerCapture(e.pointerId); });
-        
-        layer.appendChild(ficha);
-    }
-};
-
-// ==========================================
-// INTERCEPTOR LAZY LOAD PARA EL ROUTER
-// ==========================================
-if (!window.DTEngine._originalToggle) {
-    window.DTEngine._originalToggle = window.DTEngine.toggleView; // Respaldar router original
-}
-
-window.DTEngine.toggleView = function(viewName) {
-    // Si es la Pizarra, construimos el DOM "on the fly"
-    if (viewName === 'board') {
-        const mainContent = document.querySelector('.dt-main-content');
-        if (!mainContent) return;
-
-        let boardView = document.getElementById('view-board');
-        
-        // Si no existe, la creamos e inyectamos
-        if (!boardView) {
-            boardView = document.createElement('section');
-            boardView.id = 'view-board';
-            boardView.className = 'view-section';
-            boardView.style.cssText = 'width: 100%; animation: fadeIn 0.3s ease-out;';
-            
-            boardView.innerHTML = `
-            <div style="display: flex; gap: 20px; width: 100%; height: 85vh; margin-top: 15px;">
-                <!-- SIDEBAR -->
-                <div style="width: 260px; background: #111827; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 20px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;">
-                    <h3 style="color: var(--primary-color, #ffff00); margin: 0; font-family: Outfit; font-size: 1.2rem;">SALA DE JUEGOS</h3>
-                    <p style="color: #6b7280; font-size: 0.8rem; margin-top: -10px; margin-bottom: 10px;">Diseño Táctico</p>
-                    
-                    <label style="color: #9ca3af; font-size: 0.75rem; font-weight: bold; margin-bottom: -10px;">ESQUEMA LOCAL</label>
-                    <select id="slocal" onchange="window.DTEngine.Board.deployTeams(this.value, document.getElementById('srival').value)" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
-                        <option value="4-3-3">1-4-3-3 Ofensivo</option>
-                        <option value="4-4-2">1-4-4-2 Clásico</option>
-                    </select>
-
-                    <label style="color: #9ca3af; font-size: 0.75rem; font-weight: bold; margin-top: 10px; margin-bottom: -10px;">ESQUEMA RIVAL</label>
-                    <select id="srival" onchange="window.DTEngine.Board.deployTeams(document.getElementById('slocal').value, this.value)" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
-                        <option value="4-4-2">1-4-4-2 Clásico</option>
-                        <option value="4-3-3">1-4-3-3 Ofensivo</option>
-                    </select>
-
-                    <button onclick="window.DTEngine.Board.deployTeams(document.getElementById('slocal').value, document.getElementById('srival').value)" style="margin-top: auto; padding: 12px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 6px; cursor: pointer; font-weight: bold;">↻ Restaurar Posiciones</button>
-                </div>
-                <!-- CANCHA SVG -->
-                <div style="flex: 1; background: #0f172a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                    <svg viewBox="0 -5 105 78" style="width: 95%; height: 95%; overflow: visible; opacity: 0.8;">
-                        <rect x="0" y="0" width="105" height="68" fill="none" stroke="#334155" stroke-width="0.4"/>
-                        <line x1="52.5" y1="0" x2="52.5" y2="68" stroke="#334155" stroke-width="0.4"/>
-                        <circle cx="52.5" cy="34" r="9.15" fill="none" stroke="#334155" stroke-width="0.4"/>
-                        <circle cx="52.5" cy="34" r="0.5" fill="#334155"/>
-                        <rect x="0" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                        <rect x="0" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                        <circle cx="11" cy="34" r="0.4" fill="#334155"/>
-                        <path d="M 16.5 24.84 A 9.15 9.15 0 0 1 16.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/>
-                        <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                        <rect x="99.5" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                        <circle cx="94" cy="34" r="0.4" fill="#334155"/>
-                        <path d="M 88.5 24.84 A 9.15 9.15 0 0 0 88.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/>
-                    </svg>
-                    <div id="tokens-layer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
-                </div>
-            </div>`;
-            
-            mainContent.appendChild(boardView);
-            window.DTEngine.Board.deployTeams(); // Posicionar jugadores iniciales
-        }
-
-        // Esconder todos los hermanos (Home, Calendar, etc.)
-        Array.from(mainContent.children).forEach(child => { 
-            if(child.tagName === 'SECTION' || child.tagName === 'DIV') child.style.display = 'none'; 
-        });
-        
-        // Mostrar Pizarra
-        boardView.style.display = 'block';
-        return; // Interrumpir ejecución
-    }
-
-    // Si NO es 'board', devolverle el control al enrutador nativo de la app
-    if (window.DTEngine._originalToggle) {
-        window.DTEngine._originalToggle.call(window.DTEngine, viewName);
-    }
-};
