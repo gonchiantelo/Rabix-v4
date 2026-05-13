@@ -422,7 +422,7 @@ window.DTEngine = {
                         </div>
                     </section>
                     
-                    <section id="view-board" class="view-section hidden" style="display: none; width: 100%; margin-top: 15px;">
+                    <section id="view-board" class="view-section hidden" style="display: none; width: 100%; margin-top: 15px; box-sizing: border-box;">
                         <div style="display: flex; gap: 20px; width: 100%; height: 85vh;">
                             <div style="width: 260px; background: #111827; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 20px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;">
                                 <h3 style="color: var(--primary-color, #00F2FE); margin: 0; font-family: Outfit; font-size: 1.2rem;">SALA DE JUEGOS</h3>
@@ -432,12 +432,16 @@ window.DTEngine = {
                                 <select id="slocal" onchange="window.DTEngine.Board.deployTeams(this.value, document.getElementById('srival').value)" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
                                     <option value="4-3-3">1-4-3-3 Ofensivo</option>
                                     <option value="4-4-2">1-4-4-2 Clásico</option>
+                                    <option value="4-2-3-1">1-4-2-3-1 Equilibrado</option>
+                                    <option value="3-5-2">1-3-5-2 Carrileros</option>
                                 </select>
                     
                                 <label style="color: #9ca3af; font-size: 0.75rem; font-weight: bold; margin-top: 10px; margin-bottom: -10px;">ESQUEMA RIVAL</label>
                                 <select id="srival" onchange="window.DTEngine.Board.deployTeams(document.getElementById('slocal').value, this.value)" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
                                     <option value="4-4-2">1-4-4-2 Clásico</option>
                                     <option value="4-3-3">1-4-3-3 Ofensivo</option>
+                                    <option value="4-2-3-1">1-4-2-3-1 Equilibrado</option>
+                                    <option value="3-5-2">1-3-5-2 Carrileros</option>
                                 </select>
                     
                                 <button onclick="window.DTEngine.Board.deployTeams(document.getElementById('slocal').value, document.getElementById('srival').value)" style="margin-top: auto; padding: 12px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 6px; cursor: pointer; font-weight: bold;">↻ Restaurar Posiciones</button>
@@ -1622,63 +1626,145 @@ window.DTEngine = {
         init: function() {
             const layer = document.getElementById('tokens-layer');
             if (!layer) return;
-            const loc = document.getElementById('slocal')?.value || '4-3-3';
-            const riv = document.getElementById('srival')?.value || '4-4-2';
+            const loc = document.getElementById('slocal') ? document.getElementById('slocal').value : '4-3-3';
+            const riv = document.getElementById('srival') ? document.getElementById('srival').value : '4-4-2';
             this.deployTeams(loc, riv);
         },
 
-        deployTeams: function(loc = '4-3-3', riv = '4-4-2') {
+        deployTeams: function(loc, riv) {
+            if (!loc) loc = '4-3-3';
+            if (!riv) riv = '4-4-2';
             const layer = document.getElementById('tokens-layer');
             if (!layer) return;
-            layer.innerHTML = ''; 
-            
+            layer.innerHTML = '';
+
             const forms = {
-                '4-3-3': [ {p:'GK', r:'Portero', x:0.08, y:0.5}, {p:'LD', r:'Lateral', x:0.25, y:0.15}, {p:'DFC', r:'Zaguero', x:0.20, y:0.35}, {p:'DFC', r:'Zaguero', x:0.20, y:0.65}, {p:'LI', r:'Lateral', x:0.25, y:0.85}, {p:'MCD', r:'Pivote', x:0.35, y:0.5}, {p:'MC', r:'Interior', x:0.45, y:0.3}, {p:'MC', r:'Interior', x:0.45, y:0.7}, {p:'ED', r:'Extremo', x:0.55, y:0.15}, {p:'DC', r:'Delantero', x:0.55, y:0.5}, {p:'EI', r:'Extremo', x:0.55, y:0.85} ],
-                '4-4-2': [ {p:'GK', r:'Portero', x:0.08, y:0.5}, {p:'LD', r:'Lateral', x:0.25, y:0.15}, {p:'DFC', r:'Zaguero', x:0.20, y:0.35}, {p:'DFC', r:'Zaguero', x:0.20, y:0.65}, {p:'LI', r:'Lateral', x:0.25, y:0.85}, {p:'MD', r:'Volante', x:0.45, y:0.15}, {p:'MC', r:'Medio', x:0.40, y:0.35}, {p:'MC', r:'Medio', x:0.40, y:0.65}, {p:'MI', r:'Volante', x:0.45, y:0.85}, {p:'DC', r:'Delantero', x:0.55, y:0.4}, {p:'DC', r:'Delantero', x:0.55, y:0.6} ]
+                '4-3-3': [
+                    {p:'POR', r:'Portero',   x:0.07, y:0.50},
+                    {p:'LD',  r:'Lat. Der.', x:0.22, y:0.18},
+                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.38},
+                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.62},
+                    {p:'LI',  r:'Lat. Izq.', x:0.22, y:0.82},
+                    {p:'MCD', r:'Pivote',    x:0.38, y:0.50},
+                    {p:'MC',  r:'Interior',  x:0.46, y:0.30},
+                    {p:'MC',  r:'Interior',  x:0.46, y:0.70},
+                    {p:'ED',  r:'Extremo',   x:0.58, y:0.18},
+                    {p:'DC',  r:'Delantero', x:0.60, y:0.50},
+                    {p:'EI',  r:'Extremo',   x:0.58, y:0.82}
+                ],
+                '4-4-2': [
+                    {p:'POR', r:'Portero',   x:0.07, y:0.50},
+                    {p:'LD',  r:'Lat. Der.', x:0.22, y:0.18},
+                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.38},
+                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.62},
+                    {p:'LI',  r:'Lat. Izq.', x:0.22, y:0.82},
+                    {p:'MD',  r:'Volante',   x:0.42, y:0.18},
+                    {p:'MC',  r:'Medio',     x:0.40, y:0.38},
+                    {p:'MC',  r:'Medio',     x:0.40, y:0.62},
+                    {p:'MI',  r:'Volante',   x:0.42, y:0.82},
+                    {p:'DC',  r:'Delantero', x:0.58, y:0.38},
+                    {p:'DC',  r:'Delantero', x:0.58, y:0.62}
+                ],
+                '4-2-3-1': [
+                    {p:'POR', r:'Portero',   x:0.07, y:0.50},
+                    {p:'LD',  r:'Lat. Der.', x:0.22, y:0.18},
+                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.38},
+                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.62},
+                    {p:'LI',  r:'Lat. Izq.', x:0.22, y:0.82},
+                    {p:'MCD', r:'Pivote',    x:0.36, y:0.38},
+                    {p:'MCD', r:'Pivote',    x:0.36, y:0.62},
+                    {p:'ED',  r:'Ext. Der.', x:0.50, y:0.20},
+                    {p:'MCO', r:'Enganche',  x:0.50, y:0.50},
+                    {p:'EI',  r:'Ext. Izq.', x:0.50, y:0.80},
+                    {p:'DC',  r:'Delantero', x:0.62, y:0.50}
+                ],
+                '3-5-2': [
+                    {p:'POR', r:'Portero',   x:0.07, y:0.50},
+                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.28},
+                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.50},
+                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.72},
+                    {p:'CRL', r:'Carrilero', x:0.36, y:0.12},
+                    {p:'MC',  r:'Medio',     x:0.38, y:0.35},
+                    {p:'MC',  r:'Medio',     x:0.38, y:0.50},
+                    {p:'MC',  r:'Medio',     x:0.38, y:0.65},
+                    {p:'CRL', r:'Carrilero', x:0.36, y:0.88},
+                    {p:'DC',  r:'Delantero', x:0.58, y:0.38},
+                    {p:'DC',  r:'Delantero', x:0.58, y:0.62}
+                ]
             };
 
             const fLocal = forms[loc] || forms['4-3-3'];
             const fRival = forms[riv] || forms['4-4-2'];
-
-            fLocal.forEach(t => this.createFicha('local', t.p, t.r, t.x, t.y));
-            fRival.forEach(t => this.createFicha('rival', t.p, t.r, 1 - t.x, 1 - t.y));
+            fLocal.forEach(function(t) { window.DTEngine.Board.createFicha('local', t.p, t.r, t.x, t.y); });
+            fRival.forEach(function(t) { window.DTEngine.Board.createFicha('rival', t.p, t.r, 1 - t.x, 1 - t.y); });
         },
-        
+
         createFicha: function(type, posText, roleText, percentX, percentY) {
             const layer = document.getElementById('tokens-layer');
+            if (!layer) return;
             const isLocal = type === 'local';
-            const bg = isLocal ? 'var(--primary-color, #00F2FE)' : '#ff4d4d'; 
-            const textC = isLocal ? '#000' : '#fff';
+            const colorMain  = isLocal ? '#00F2FE' : '#ff4d4d';
+            const colorBg    = isLocal ? 'rgba(0,242,254,0.15)' : 'rgba(255,77,77,0.15)';
+            const colorShadow= isLocal ? 'rgba(0,242,254,0.4)'  : 'rgba(255,77,77,0.4)';
+            const textColor  = isLocal ? '#001a1f' : '#fff';
 
-            const ficha = document.createElement('div');
-            ficha.style.cssText = `position: absolute; left: ${percentX * 100}%; top: ${percentY * 100}%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: grab; user-select: none; z-index: 10; pointer-events: auto; transition: transform 0.1s;`;
-            
-            ficha.innerHTML = `<div style="background: #1a2235; border: 1px solid ${bg}; color: ${bg}; font-size: 0.55rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-family: Outfit; margin-bottom: 3px; pointer-events: none; white-space: nowrap;">${roleText}</div><div style="width: 35px; height: 35px; background: ${bg}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 900; color: ${textC}; box-shadow: 0 4px 10px rgba(0,0,0,0.5); pointer-events: none;">${posText}</div>`;
+            var lx = (percentX * 100).toFixed(2);
+            var ly = (percentY * 100).toFixed(2);
 
-            let isDragging = false;
-            ficha.addEventListener('pointerdown', (e) => { 
-                isDragging = true; 
-                ficha.style.cursor = 'grabbing'; 
-                ficha.style.zIndex = 100; 
-                ficha.style.transform = 'translate(-50%, -50%) scale(1.1)';
-                ficha.setPointerCapture(e.pointerId); 
+            var ficha = document.createElement('div');
+            ficha.style.position   = 'absolute';
+            ficha.style.left       = lx + '%';
+            ficha.style.top        = ly + '%';
+            ficha.style.transform  = 'translate(-50%, -50%)';
+            ficha.style.display    = 'flex';
+            ficha.style.flexDirection = 'column';
+            ficha.style.alignItems = 'center';
+            ficha.style.cursor     = 'grab';
+            ficha.style.userSelect = 'none';
+            ficha.style.zIndex     = '10';
+            ficha.style.pointerEvents = 'auto';
+            ficha.style.transition = 'transform 0.12s ease, filter 0.12s ease';
+
+            var label = document.createElement('div');
+            label.style.cssText = 'background:' + colorBg + '; border:1px solid ' + colorMain + '; color:' + colorMain + '; font-size:0.52rem; padding:2px 7px; border-radius:4px; font-weight:800; font-family:Outfit,sans-serif; margin-bottom:4px; pointer-events:none; white-space:nowrap; letter-spacing:0.5px;';
+            label.textContent = roleText;
+
+            var circle = document.createElement('div');
+            circle.style.cssText = 'width:38px; height:38px; background:' + colorMain + '; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:900; color:' + textColor + '; box-shadow: 0 0 12px ' + colorShadow + ', 0 4px 10px rgba(0,0,0,0.6); pointer-events:none; font-family:Outfit,sans-serif; letter-spacing:-0.5px;';
+            circle.textContent = posText;
+
+            ficha.appendChild(label);
+            ficha.appendChild(circle);
+
+            var isDragging = false;
+
+            ficha.addEventListener('pointerdown', function(e) {
+                isDragging = true;
+                ficha.style.cursor = 'grabbing';
+                ficha.style.zIndex = '100';
+                ficha.style.transform = 'translate(-50%, -50%) scale(1.18)';
+                ficha.style.filter = 'drop-shadow(0 0 8px ' + colorMain + ')';
+                ficha.setPointerCapture(e.pointerId);
             });
-            
-            ficha.addEventListener('pointermove', (e) => {
+
+            ficha.addEventListener('pointermove', function(e) {
                 if (!isDragging) return;
-                const rect = layer.getBoundingClientRect();
-                ficha.style.left = \`\${((e.clientX - rect.left) / rect.width) * 100}%\`;
-                ficha.style.top = \`\${((e.clientY - rect.top) / rect.height) * 100}%\`;
+                var rect = layer.getBoundingClientRect();
+                var nx = ((e.clientX - rect.left) / rect.width)  * 100;
+                var ny = ((e.clientY - rect.top)  / rect.height) * 100;
+                ficha.style.left = nx.toFixed(2) + '%';
+                ficha.style.top  = ny.toFixed(2) + '%';
             });
-            
-            ficha.addEventListener('pointerup', (e) => { 
-                isDragging = false; 
-                ficha.style.cursor = 'grab'; 
-                ficha.style.zIndex = 10; 
+
+            ficha.addEventListener('pointerup', function(e) {
+                isDragging = false;
+                ficha.style.cursor = 'grab';
+                ficha.style.zIndex = '10';
                 ficha.style.transform = 'translate(-50%, -50%) scale(1)';
-                ficha.releasePointerCapture(e.pointerId); 
+                ficha.style.filter = 'none';
+                ficha.releasePointerCapture(e.pointerId);
             });
-            
+
             layer.appendChild(ficha);
         }
     },
