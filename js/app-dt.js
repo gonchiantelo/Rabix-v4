@@ -220,6 +220,9 @@ window.DTEngine = {
                             <div id="process-phases-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
                         </div>
 
+                        <!-- ═══ ROADMAP BANNER (inyectado dinámicamente por Periodization.renderTimeline) ═══ -->
+                        <div id="periodo-roadmap" style="margin-bottom: 16px;"></div>
+
                         <!-- Navegador de Meses Reubicado -->
                         <div id="dt-weekly-view">
                             <div class="month-nav calendar-nav-ux">
@@ -541,37 +544,72 @@ window.DTEngine = {
 
                 <!-- Modal de Tarea Personalizada -->
                 <div id="modal-custom-task" class="modal-overlay hidden" onclick="DTEngine.closeCustomTaskModal()">
-                    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 520px;">
-                        <div class="modal-header">
-                            <div class="m-title-group">
-                                <span class="m-task-id">BÓVEDA PRIVADA</span>
-                                <h2 class="m-task-title">Nueva Tarea Personalizada</h2>
-                            </div>
-                            <button class="btn-close-modal" onclick="DTEngine.closeCustomTaskModal()">✕</button>
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 18px; margin-top: 20px;">
-                            <div class="profile-input-group">
-                                <label class="profile-input-group label" style="font-size:10px;color:var(--dt-text-dim);font-weight:900;letter-spacing:1px;">NOMBRE DE LA TAREA</label>
-                                <input type="text" id="custom-task-name" class="profile-input" placeholder="Ej: Rondo de pressing específico">
-                            </div>
-                            <div class="profile-input-group">
-                                <label style="font-size:10px;color:var(--dt-text-dim);font-weight:900;letter-spacing:1px;">ETIQUETA TÁCTICA (FASE)</label>
-                                <select id="custom-task-phase" class="profile-input">
-                                    <option value="MD-4">MD-4 (Tensión)</option>
-                                    <option value="MD-3">MD-3 (Duración)</option>
-                                    <option value="MD-2">MD-2 (Velocidad)</option>
-                                    <option value="MD-1">MD-1 (Activación)</option>
-                                    <option value="PARTIDO">Partido (MD)</option>
-                                    <option value="RECUPERACIÓN">Recuperación (MD+1)</option>
-                                    <option value="BASE">Base / Libre</option>
+                    <div onclick="event.stopPropagation()" style="background:#111827;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:30px;width:100%;max-width:520px;color:#fff;position:relative;">
+                        <button onclick="DTEngine.closeCustomTaskModal()" style="position:absolute;top:16px;right:16px;background:transparent;border:none;color:#6b7280;font-size:1.2rem;cursor:pointer;">✕</button>
+                        <p style="margin:0 0 2px 0;font-size:0.65rem;font-weight:800;color:#00F2FE;letter-spacing:2px;font-family:Outfit,sans-serif;">BÓVEDA PRIVADA</p>
+                        <h2 style="margin:0 0 20px 0;color:var(--primary-color,#00F2FE);font-family:Outfit,sans-serif;font-size:1.4rem;">Nueva Tarea Táctica</h2>
+
+                        <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">NOMBRE DE LA TAREA</label>
+                        <input type="text" id="custom-task-name" placeholder="Ej: Rondo de pressing específico" style="width:100%;padding:12px;margin-bottom:15px;background:#1f2937;border:1px solid #374151;border-radius:8px;color:#fff;outline:none;box-sizing:border-box;">
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
+                            <div>
+                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">MOMENTO DEL JUEGO</label>
+                                <select id="task-moment" style="width:100%;padding:12px;background:#1f2937;border:1px solid #374151;border-radius:8px;color:#fff;outline:none;">
+                                    <option value="Ataque Organizado">Ataque Organizado</option>
+                                    <option value="Defensa Organizada">Defensa Organizada</option>
+                                    <option value="Transición O-D">Transición O-D</option>
+                                    <option value="Transición D-O">Transición D-O</option>
+                                    <option value="ABP">Pelota Parada (ABP)</option>
                                 </select>
                             </div>
-                            <div class="profile-input-group">
-                                <label style="font-size:10px;color:var(--dt-text-dim);font-weight:900;letter-spacing:1px;">REGLAS / CONSTREÑIMIENTOS</label>
-                                <textarea id="custom-task-rules" class="profile-input profile-textarea" placeholder="Describe los objetivos tácticos, restricciones de espacio o número de jugadores..."></textarea>
+                            <div>
+                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">TIPO DE TAREA (SSP)</label>
+                                <select id="task-ssp" style="width:100%;padding:12px;background:#1f2937;border:1px solid #374151;border-radius:8px;color:#fff;outline:none;">
+                                    <option value="General">General</option>
+                                    <option value="Dirigida">Dirigida</option>
+                                    <option value="Especial">Especial</option>
+                                    <option value="Competitiva">Competitiva</option>
+                                </select>
                             </div>
-                            <button class="btn-save-profile" onclick="DTEngine.saveCustomTask()">GUARDAR EN BÓVEDA PRIVADA</button>
                         </div>
+
+                        <div style="background:rgba(0,242,254,0.05);border:1px solid rgba(0,242,254,0.2);border-radius:8px;padding:15px;margin-bottom:15px;">
+                            <label style="font-size:0.75rem;color:#00F2FE;font-weight:bold;display:block;margin-bottom:10px;">⏱ DOSIFICACIÓN (VOLUMEN Y DENSIDAD)</label>
+                            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                                <div>
+                                    <label style="font-size:0.65rem;color:#9ca3af;display:block;margin-bottom:4px;">SERIES/BLOQUES</label>
+                                    <input type="number" id="task-blocks" placeholder="Ej: 4" min="1" style="width:100%;padding:10px;background:#111827;border:1px solid #374151;border-radius:6px;color:#fff;outline:none;box-sizing:border-box;">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.65rem;color:#9ca3af;display:block;margin-bottom:4px;">T. TRABAJO (min)</label>
+                                    <input type="number" id="task-work" placeholder="Ej: 5" min="1" style="width:100%;padding:10px;background:#111827;border:1px solid #374151;border-radius:6px;color:#fff;outline:none;box-sizing:border-box;">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.65rem;color:#9ca3af;display:block;margin-bottom:4px;">T. PAUSA (min)</label>
+                                    <input type="number" id="task-pause" placeholder="Ej: 1" min="0" style="width:100%;padding:10px;background:#111827;border:1px solid #374151;border-radius:6px;color:#fff;outline:none;box-sizing:border-box;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">ETIQUETA TÁCTICA (FASE)</label>
+                        <select id="custom-task-phase" style="width:100%;padding:12px;margin-bottom:15px;background:#1f2937;border:1px solid #374151;border-radius:8px;color:#fff;outline:none;">
+                            <option value="MD-4">MD-4 (Tensión)</option>
+                            <option value="MD-3">MD-3 (Duración)</option>
+                            <option value="MD-2">MD-2 (Velocidad)</option>
+                            <option value="MD-1">MD-1 (Activación)</option>
+                            <option value="PARTIDO">Partido (MD)</option>
+                            <option value="RECUPERACIÓN">Recuperación (MD+1)</option>
+                            <option value="BASE">Base / Libre</option>
+                        </select>
+
+                        <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">MATERIALES NECESARIOS</label>
+                        <input type="text" id="task-materials" placeholder="Ej: 10 conos, 6 petos, balones" style="width:100%;padding:12px;margin-bottom:15px;background:#1f2937;border:1px solid #374151;border-radius:8px;color:#fff;outline:none;box-sizing:border-box;">
+
+                        <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">REGLAS / CONSTREÑIMIENTOS</label>
+                        <textarea id="custom-task-rules" rows="3" placeholder="Describe los objetivos, comodines, límites de toques..." style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;margin-bottom:20px;resize:none;box-sizing:border-box;"></textarea>
+
+                        <button onclick="DTEngine.saveCustomTask()" style="width:100%;padding:14px;background:var(--primary-color,#00F2FE);color:#000;border:none;border-radius:8px;font-weight:900;font-family:Outfit,sans-serif;font-size:1.05rem;cursor:pointer;letter-spacing:0.5px;">GUARDAR EN BÓVEDA PRIVADA</button>
                     </div>
                 </div>
 
@@ -659,11 +697,22 @@ window.DTEngine = {
             const renderBlock = (blockId, title) => {
                 const tasks = assignments.filter(a => a.block === blockId);
                 const tasksHtml = tasks.map((a) => {
-                    const ex = (window.ExercisesLibrary || []).find(e => e.numericId === a.id);
+                    const ex = (window.ExercisesLibrary || []).find(e => e.numericId === a.id)
+                           || (window.CustomExercises  || []).find(e => e.numericId === a.id);
                     if (!ex) return '';
+                    let timeBadge = '';
+                    const ser = ex.series || ex.blocks;
+                    const wrk = ex.work_time || ex.duration;
+                    const pse = ex.pause_time;
+                    if (ser && wrk) {
+                        const pausePart = pse ? ` (${pse}')` : '';
+                        timeBadge = `<span style="color:#00F2FE;font-size:0.6rem;font-weight:700;margin-right:3px;white-space:nowrap;">⏱ ${ser}x${wrk}'${pausePart}</span>`;
+                    } else if (wrk) {
+                        timeBadge = `<span style="color:#00F2FE;font-size:0.6rem;font-weight:700;margin-right:3px;">⏱ ${wrk}'</span>`;
+                    }
                     return `
                         <div class="task-chip" onclick="event.stopPropagation(); DTEngine.openTaskModal(${a.id})">
-                            <span class="tc-name">${ex.title}</span>
+                            ${timeBadge}<span class="tc-name">${ex.title}</span>
                             ${!isPast ? `<span class="tc-delete" onclick="event.stopPropagation(); DTEngine.removeTask('${dateStr}', ${assignments.indexOf(a)})">\u00d7</span>` : ''}
                         </div>
                     `;
@@ -1538,6 +1587,10 @@ window.DTEngine = {
     openCustomTaskModal() {
         document.getElementById('custom-task-name').value = '';
         document.getElementById('custom-task-rules').value = '';
+        const tb = document.getElementById('task-blocks'); if (tb) tb.value = '';
+        const tw = document.getElementById('task-work');   if (tw) tw.value = '';
+        const tp = document.getElementById('task-pause');  if (tp) tp.value = '';
+        const tm = document.getElementById('task-materials'); if (tm) tm.value = '';
         document.getElementById('modal-custom-task').classList.remove('hidden');
     },
 
@@ -1546,13 +1599,21 @@ window.DTEngine = {
     },
 
     async saveCustomTask() {
-        const uid = localStorage.getItem('ravix_v5_uid');
+        const uid   = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
-        const name = document.getElementById('custom-task-name').value.trim();
+        const name  = document.getElementById('custom-task-name').value.trim();
         const phase = document.getElementById('custom-task-phase').value;
         const rules = document.getElementById('custom-task-rules').value.trim();
+        const moment   = document.getElementById('task-moment')    ? document.getElementById('task-moment').value    : '';
+        const ssp      = document.getElementById('task-ssp')       ? document.getElementById('task-ssp').value       : '';
+        const blocks   = document.getElementById('task-blocks')    ? parseInt(document.getElementById('task-blocks').value)  || null : null;
+        const workTime = document.getElementById('task-work')      ? parseInt(document.getElementById('task-work').value)    || null : null;
+        const pauseTime= document.getElementById('task-pause')     ? parseInt(document.getElementById('task-pause').value)   || null : null;
+        const materials= document.getElementById('task-materials') ? document.getElementById('task-materials').value.trim()          : '';
 
         if (!name) return alert('El nombre de la tarea es obligatorio.');
+
+        const totalMinutes = (blocks && workTime) ? blocks * workTime : null;
 
         try {
             console.log('💾 Guardando tarea personalizada en bóveda...');
@@ -1568,7 +1629,14 @@ window.DTEngine = {
                     user_id: uid,
                     title: name,
                     morfociclo_phase: phase,
-                    description: rules
+                    description: rules,
+                    game_moment: moment,
+                    ssp_type: ssp,
+                    series: blocks,
+                    duration: totalMinutes,
+                    work_time: workTime,
+                    pause_time: pauseTime,
+                    materials: materials
                 })
             });
 
@@ -1577,7 +1645,6 @@ window.DTEngine = {
             const data = await res.json();
             const newTask = data[0];
 
-            // Inyectar en memoria global inmediatamente
             if (!window.CustomExercises) window.CustomExercises = [];
             window.CustomExercises.unshift({
                 ...newTask,
@@ -1586,7 +1653,6 @@ window.DTEngine = {
             });
 
             this.closeCustomTaskModal();
-            // Re-renderizar la biblioteca con la nueva tarea al tope
             this.renderLibrary(this.getMethodologyLabel(this._selectedDate));
             console.log('✅ Tarea personalizada guardada y priorizada en biblioteca.');
         } catch (err) {
@@ -2176,6 +2242,45 @@ window.DTEngine = {
 
             tlEl.innerHTML = html;
             if (legEl) legEl.innerHTML = legendHtml;
+
+            // ══ ROADMAP BANNER ══
+            var roadmapEl = document.getElementById('periodo-roadmap');
+            if (roadmapEl && per.fases[currentIdx]) {
+                var currentFase = per.fases[currentIdx];
+                var fasesDone = currentIdx;
+                var fasesTotal = per.fases.length;
+                // Progress within current phase
+                var today2 = new Date();
+                var phaseStart = new Date(currentFase.start + 'T00:00:00');
+                var phaseEnd = new Date(currentFase.end + 'T00:00:00');
+                var phaseLen = Math.max(1, phaseEnd - phaseStart);
+                var elapsed = Math.max(0, Math.min(phaseLen, today2 - phaseStart));
+                var phasePct = Math.round((elapsed / phaseLen) * 100);
+                // Microciclos restantes (assume 1 per week)
+                var weeksLeft = Math.max(0, Math.round((phaseEnd - today2) / (7 * 86400000)));
+                var phaseColor = currentFase.color || '#00F2FE';
+
+                roadmapEl.innerHTML = '<div style="background:linear-gradient(90deg,#111827 0%,#1a2235 100%);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px;">'
+                    + '<div style="display:flex;flex-direction:column;gap:5px;">'
+                    + '<div style="display:flex;gap:10px;align-items:center;">'
+                    + '<span style="background:rgba(0,242,254,0.1);color:#00F2FE;padding:4px 10px;border-radius:4px;font-size:0.65rem;font-weight:800;border:1px solid rgba(0,242,254,0.3);font-family:Outfit,sans-serif;letter-spacing:1px;">MACROCICLO ' + (fasesDone + 1) + '</span>'
+                    + '<span style="color:#9ca3af;font-size:0.8rem;font-weight:600;font-family:Outfit,sans-serif;">' + per.macrociclo + '</span>'
+                    + '</div>'
+                    + '<h2 style="margin:4px 0 0 0;color:#fff;font-family:Outfit,sans-serif;font-size:1.5rem;letter-spacing:-0.5px;font-weight:800;">' + currentFase.name + ' <span style="color:#6b7280;font-size:1rem;font-weight:500;">/ Mesociclo ' + (currentIdx + 1) + '</span></h2>'
+                    + '<p style="margin:2px 0 0 0;color:#6b7280;font-size:0.8rem;font-family:Outfit,sans-serif;">Microciclo actual — Progreso de fase</p>'
+                    + '</div>'
+                    + '<div style="text-align:right;min-width:180px;">'
+                    + '<div style="display:flex;justify-content:space-between;margin-bottom:5px;">'
+                    + '<span style="color:#9ca3af;font-size:0.7rem;font-weight:700;font-family:Outfit,sans-serif;">PROGRESO DE ETAPA</span>'
+                    + '<span style="color:' + phaseColor + ';font-size:0.7rem;font-weight:800;font-family:Outfit,sans-serif;">' + phasePct + '%</span>'
+                    + '</div>'
+                    + '<div style="width:100%;height:6px;background:#1f2937;border-radius:3px;overflow:hidden;">'
+                    + '<div style="width:' + phasePct + '%;height:100%;background:' + phaseColor + ';box-shadow:0 0 8px ' + phaseColor + ';transition:width 0.5s ease;"></div>'
+                    + '</div>'
+                    + '<p style="margin:5px 0 0 0;color:#6b7280;font-size:0.68rem;font-family:Outfit,sans-serif;">Restan ' + weeksLeft + ' microciclo' + (weeksLeft !== 1 ? 's' : '') + '</p>'
+                    + '</div>'
+                    + '</div>';
+            }
         },
 
         renderProcessView: function() {
