@@ -15,6 +15,8 @@ window.DTEngine = {
     _showAllExercises: false,
     _stagedLabel: null,  // Etiqueta pendiente de confirmar (Lazy Execution)
     _charts: {}, // Almacén para instancias de Chart.js
+    _calendarView: 'weekly', // 'weekly' | 'process'
+    _periodization: null, // { macrociclo, fases: [{name, start, end, objetivos}], fase_actual_idx }
 
     async fetchMonthLogs() {
         const year = this._currentDate.getFullYear();
@@ -192,15 +194,43 @@ window.DTEngine = {
                     </section>
 
                     <section id="dt-calendar-view" class="dt-dashboard-view" style="display: none;">
-                        <!-- Navegador de Meses Reubicado -->
-                        <div class="month-nav calendar-nav-ux">
-                            <button type="button" id="btn-prev-month" class="btn-nav">◀</button>
-                            <span class="current-month-display">${monthName}</span>
-                            <button type="button" id="btn-next-month" class="btn-nav">▶</button>
+
+                        <!-- ═══ HEADER DE PERIODIZACIÓN ═══ -->
+                        <div id="periodization-header" style="background: linear-gradient(135deg, #0d1117 0%, #111827 100%); border: 1px solid rgba(0,242,254,0.08); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <span style="font-family: Outfit, sans-serif; font-size: 0.65rem; font-weight: 800; color: #00F2FE; letter-spacing: 2px; text-transform: uppercase;">PERIODIZACIÓN</span>
+                                    <span id="periodo-macro-name" style="font-family: Outfit, sans-serif; font-size: 0.85rem; color: #e5e7eb; font-weight: 600;">—</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 6px; background: #1a2235; border-radius: 8px; padding: 3px;">
+                                    <button id="btn-view-weekly" onclick="DTEngine.Periodization.setView('weekly')" style="padding: 6px 14px; border-radius: 6px; border: none; font-size: 0.7rem; font-weight: 700; font-family: Outfit, sans-serif; cursor: pointer; transition: all 0.2s; background: #00F2FE; color: #0d1117; letter-spacing: 0.5px;">SEMANAL</button>
+                                    <button id="btn-view-process" onclick="DTEngine.Periodization.setView('process')" style="padding: 6px 14px; border-radius: 6px; border: none; font-size: 0.7rem; font-weight: 700; font-family: Outfit, sans-serif; cursor: pointer; transition: all 0.2s; background: transparent; color: #6b7280; letter-spacing: 0.5px;">PROCESO</button>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                <span style="font-size: 0.6rem; color: #6b7280; font-weight: 700; letter-spacing: 1.5px; font-family: Outfit, sans-serif;">ESTADO DEL PROCESO:</span>
+                                <span id="periodo-fase-label" style="font-size: 0.72rem; color: #00F2FE; font-weight: 800; font-family: Outfit, sans-serif; background: rgba(0,242,254,0.08); padding: 3px 10px; border-radius: 4px;">—</span>
+                            </div>
+                            <div id="periodo-timeline" style="display: flex; align-items: center; gap: 0; width: 100%; height: 28px; border-radius: 6px; overflow: hidden; background: #1a2235;"></div>
+                            <div id="periodo-legend" style="display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap;"></div>
                         </div>
-                        
-                        <div id="dt-calendar-grid" class="macro-calendar-grid">
-                            <!-- Inyección dinámica -->
+
+                        <!-- ═══ VISTA PROCESO (oculta por defecto) ═══ -->
+                        <div id="dt-process-view" style="display: none;">
+                            <div id="process-phases-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
+                        </div>
+
+                        <!-- Navegador de Meses Reubicado -->
+                        <div id="dt-weekly-view">
+                            <div class="month-nav calendar-nav-ux">
+                                <button type="button" id="btn-prev-month" class="btn-nav">◀</button>
+                                <span class="current-month-display">${monthName}</span>
+                                <button type="button" id="btn-next-month" class="btn-nav">▶</button>
+                            </div>
+                            
+                            <div id="dt-calendar-grid" class="macro-calendar-grid">
+                                <!-- Inyección dinámica -->
+                            </div>
                         </div>
                     </section>
 
@@ -1295,6 +1325,7 @@ window.DTEngine = {
             targetView = board;
         } else if (viewName === 'calendar') {
             targetView = cal;
+            setTimeout(function() { window.DTEngine.Periodization.init(); }, 50);
         }
 
         if (targetView) {
@@ -2038,6 +2069,226 @@ window.DTEngine = {
         }
     },
 
+    // ══════════════════════════════════════════════════════
+    // MÓDULO PERIODIZACIÓN — Macro/Meso/Microciclo
+    // ══════════════════════════════════════════════════════
+    Periodization: {
+        _defaultPhases: [
+            { name: 'Pretemporada',  color: '#f59e0b', objetivos: ['Volumen aeróbico', 'Fuerza base', 'Cohesión táctica inicial'] },
+            { name: 'Competencia',   color: '#00F2FE', objetivos: ['Afinación táctica', 'Intensidad específica', 'Automatismos'] },
+            { name: 'Play-offs',     color: '#a855f7', objetivos: ['Pico de rendimiento', 'Gestión de carga', 'Estrategia rival'] },
+            { name: 'Transición',    color: '#6b7280', objetivos: ['Recuperación activa', 'Evaluación de temporada', 'Planificación'] }
+        ],
+
+        init: function() {
+            var self = this;
+            var stored = window.CurrentTeam ? window.CurrentTeam.periodization : null;
+
+            if (stored && stored.macrociclo) {
+                window.DTEngine._periodization = stored;
+            }
+
+            if (!window.DTEngine._periodization) {
+                window.DTEngine._periodization = self._buildDefault();
+            }
+
+            self.renderTimeline();
+            self.renderProcessView();
+            self.setView(window.DTEngine._calendarView || 'weekly');
+        },
+
+        _buildDefault: function() {
+            var year = new Date().getFullYear();
+            var phases = this._defaultPhases.map(function(p, i) {
+                var startMonth = i * 3;
+                var endMonth = startMonth + 2;
+                return {
+                    name: p.name,
+                    color: p.color,
+                    objetivos: p.objetivos.slice(),
+                    start: year + '-' + String(startMonth + 1).padStart(2, '0') + '-01',
+                    end: year + '-' + String(endMonth + 1).padStart(2, '0') + '-28',
+                    completed: false
+                };
+            });
+            return {
+                macrociclo: 'Temporada ' + year,
+                fases: phases,
+                fase_actual_idx: 0
+                };
+        },
+
+        _getCurrentPhaseIdx: function() {
+            var per = window.DTEngine._periodization;
+            if (!per || !per.fases) return 0;
+            var today = new Date().toISOString().split('T')[0];
+            for (var i = 0; i < per.fases.length; i++) {
+                if (today >= per.fases[i].start && today <= per.fases[i].end) return i;
+            }
+            return per.fase_actual_idx || 0;
+        },
+
+        renderTimeline: function() {
+            var per = window.DTEngine._periodization;
+            if (!per) return;
+
+            var macroEl = document.getElementById('periodo-macro-name');
+            var faseEl = document.getElementById('periodo-fase-label');
+            var tlEl = document.getElementById('periodo-timeline');
+            var legEl = document.getElementById('periodo-legend');
+            if (!macroEl || !faseEl || !tlEl) return;
+
+            var currentIdx = this._getCurrentPhaseIdx();
+            per.fase_actual_idx = currentIdx;
+
+            macroEl.textContent = per.macrociclo || 'Sin definir';
+            faseEl.textContent = per.fases[currentIdx] ? per.fases[currentIdx].name : '—';
+
+            var totalDays = 0;
+            var phaseDays = [];
+            per.fases.forEach(function(f) {
+                var s = new Date(f.start + 'T00:00:00');
+                var e = new Date(f.end + 'T00:00:00');
+                var d = Math.max(1, Math.round((e - s) / 86400000));
+                phaseDays.push(d);
+                totalDays += d;
+            });
+
+            var html = '';
+            var legendHtml = '';
+            per.fases.forEach(function(f, i) {
+                var pct = ((phaseDays[i] / totalDays) * 100).toFixed(1);
+                var isPast = i < currentIdx;
+                var isCurrent = i === currentIdx;
+                var opacity = isPast ? '1' : (isCurrent ? '0.85' : '0.25');
+                var bgColor = f.color || '#334155';
+                var borderStyle = isCurrent ? 'border: 2px solid #fff; margin: -1px;' : '';
+
+                html += '<div style="width: ' + pct + '%; height: 100%; background: ' + bgColor + '; opacity: ' + opacity + '; position: relative; transition: opacity 0.3s; ' + borderStyle + '" title="' + f.name + '">';
+                if (isCurrent) {
+                    html += '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.55rem; color: #fff; font-weight: 900; font-family: Outfit, sans-serif; white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,0.6);">' + f.name.toUpperCase() + '</div>';
+                }
+                html += '</div>';
+
+                var dotStyle = isPast ? 'background:' + bgColor : (isCurrent ? 'background:' + bgColor + '; box-shadow: 0 0 6px ' + bgColor : 'background: #334155');
+                legendHtml += '<div style="display: flex; align-items: center; gap: 5px;"><div style="width: 8px; height: 8px; border-radius: 50%; ' + dotStyle + ';"></div><span style="font-size: 0.6rem; color: ' + (isCurrent ? '#e5e7eb' : '#6b7280') + '; font-family: Outfit, sans-serif; font-weight: ' + (isCurrent ? '700' : '500') + ';">' + f.name + '</span></div>';
+            });
+
+            tlEl.innerHTML = html;
+            if (legEl) legEl.innerHTML = legendHtml;
+        },
+
+        renderProcessView: function() {
+            var per = window.DTEngine._periodization;
+            var grid = document.getElementById('process-phases-grid');
+            if (!per || !grid) return;
+
+            var currentIdx = this._getCurrentPhaseIdx();
+            var tasks = window.DTEngine._assignedTasks || {};
+            var totalSessionsGlobal = 0;
+            Object.keys(tasks).forEach(function(k) { totalSessionsGlobal += tasks[k].length; });
+
+            var html = '';
+            per.fases.forEach(function(fase, i) {
+                var isPast = i < currentIdx;
+                var isCurrent = i === currentIdx;
+                var statusText = isPast ? 'COMPLETADA' : (isCurrent ? 'EN CURSO' : 'PENDIENTE');
+                var statusColor = isPast ? '#10b981' : (isCurrent ? '#00F2FE' : '#374151');
+                var borderColor = isCurrent ? fase.color : 'rgba(255,255,255,0.05)';
+
+                var sessionsInPhase = 0;
+                Object.keys(tasks).forEach(function(dateStr) {
+                    if (dateStr >= fase.start && dateStr <= fase.end) {
+                        sessionsInPhase += tasks[dateStr].length;
+                    }
+                });
+
+                var objHtml = '';
+                fase.objetivos.forEach(function(obj, oi) {
+                    var checkColor = isPast ? '#10b981' : (isCurrent && oi === 0 ? '#00F2FE' : '#374151');
+                    var icon = isPast ? '✓' : (isCurrent && oi === 0 ? '◉' : '○');
+                    objHtml += '<div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03);"><span style="color: ' + checkColor + '; font-size: 0.7rem; width: 16px;">' + icon + '</span><span style="font-size: 0.72rem; color: ' + (isPast ? '#9ca3af' : '#e5e7eb') + '; font-family: Outfit, sans-serif;">' + obj + '</span></div>';
+                });
+
+                html += '<div style="background: linear-gradient(145deg, #111827 0%, #0d1117 100%); border: 1px solid ' + borderColor + '; border-radius: 12px; padding: 20px; transition: border-color 0.3s;">';
+                html += '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;"><h4 style="color: ' + fase.color + '; font-family: Outfit, sans-serif; font-size: 0.9rem; margin: 0; font-weight: 700;">' + fase.name + '</h4><span style="font-size: 0.55rem; font-weight: 800; color: ' + statusColor + '; background: rgba(255,255,255,0.03); padding: 3px 8px; border-radius: 4px; letter-spacing: 1px; font-family: Outfit, sans-serif;">' + statusText + '</span></div>';
+                html += '<div style="display: flex; gap: 16px; margin-bottom: 14px;"><div style="text-align: center;"><div style="font-size: 1.3rem; font-weight: 900; color: #e5e7eb; font-family: Outfit, sans-serif;">' + sessionsInPhase + '</div><div style="font-size: 0.55rem; color: #6b7280; font-weight: 700; letter-spacing: 0.5px;">SESIONES</div></div><div style="text-align: center;"><div style="font-size: 1.3rem; font-weight: 900; color: #e5e7eb; font-family: Outfit, sans-serif;">' + fase.start.substring(5) + '</div><div style="font-size: 0.55rem; color: #6b7280; font-weight: 700; letter-spacing: 0.5px;">INICIO</div></div><div style="text-align: center;"><div style="font-size: 1.3rem; font-weight: 900; color: #e5e7eb; font-family: Outfit, sans-serif;">' + fase.end.substring(5) + '</div><div style="font-size: 0.55rem; color: #6b7280; font-weight: 700; letter-spacing: 0.5px;">FIN</div></div></div>';
+                html += '<div style="font-size: 0.6rem; color: #6b7280; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; font-family: Outfit, sans-serif;">OBJETIVOS</div>';
+                html += objHtml;
+                html += '</div>';
+            });
+
+            grid.innerHTML = html;
+        },
+
+        setView: function(viewName) {
+            window.DTEngine._calendarView = viewName;
+            var weekly = document.getElementById('dt-weekly-view');
+            var process = document.getElementById('dt-process-view');
+            var btnW = document.getElementById('btn-view-weekly');
+            var btnP = document.getElementById('btn-view-process');
+
+            if (weekly) weekly.style.display = viewName === 'weekly' ? 'block' : 'none';
+            if (process) process.style.display = viewName === 'process' ? 'block' : 'none';
+
+            if (btnW) {
+                btnW.style.background = viewName === 'weekly' ? '#00F2FE' : 'transparent';
+                btnW.style.color = viewName === 'weekly' ? '#0d1117' : '#6b7280';
+            }
+            if (btnP) {
+                btnP.style.background = viewName === 'process' ? '#00F2FE' : 'transparent';
+                btnP.style.color = viewName === 'process' ? '#0d1117' : '#6b7280';
+            }
+        },
+
+        save: function() {
+            var per = window.DTEngine._periodization;
+            if (!per) return;
+
+            var teamId = window.CurrentTeam ? window.CurrentTeam.id : null;
+            var token = localStorage.getItem('ravix_token');
+            if (!teamId || !token) {
+                console.warn('Periodization.save: No team or token');
+                return;
+            }
+
+            fetch(window.SUPABASE_URL + '/rest/v1/team_configs?team_id=eq.' + teamId, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': window.SUPABASE_KEY,
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ periodization: per })
+            }).then(function(res) {
+                if (res.ok) {
+                    console.log('✅ Periodización guardada en Supabase.');
+                    if (window.CurrentTeam) window.CurrentTeam.periodization = per;
+                } else {
+                    console.error('🔴 Error al guardar periodización:', res.status);
+                }
+            }).catch(function(err) {
+                console.error('🔴 Error de red al guardar periodización:', err);
+            });
+        },
+
+        updatePhase: function(idx, field, value) {
+            var per = window.DTEngine._periodization;
+            if (!per || !per.fases[idx]) return;
+            per.fases[idx][field] = value;
+            this.renderTimeline();
+            this.renderProcessView();
+            this.save();
+        },
+
+        setMacroName: function(name) {
+            var per = window.DTEngine._periodization;
+            if (!per) return;
+            per.macrociclo = name;
+            this.renderTimeline();
+            this.save();
+        }
+    }
 
 };
 

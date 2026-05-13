@@ -291,6 +291,7 @@ window.App = {
                         window.CurrentTeam.methodology = configData.methodology || "No definida";
                         window.CurrentTeam.primary_color = configData.primary_color || null;
                         window.CurrentTeam.tactical_dna = configData.tactical_dna || {};
+                        window.CurrentTeam.periodization = configData.periodization || null;
                         console.log("🧠 Memoria táctica recuperada:", window.CurrentTeam.match_dates);
                     }
                 }
