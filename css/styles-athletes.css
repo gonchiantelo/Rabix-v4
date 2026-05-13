@@ -1,0 +1,481 @@
+/*
+ * RAVIX V5 — ATHLETE LAB STYLES
+ * Premium Light Mode / Olimpic Gold System
+ * Scoped under .athlete-world to NEVER collide with DT dark mode.
+ */
+
+/* ─── RESET WITHIN SCOPE ─── */
+.athlete-world * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ─── ROOT SHELL ─── */
+.athlete-world {
+    font-family: 'Inter', sans-serif;
+    background: #f4f6f8;
+    color: #1a1a1a;
+    min-height: 100vh;
+}
+
+/* ─── HEADER ─── */
+.aw-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 40px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+.aw-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.aw-brand-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #1a1a1a;
+    letter-spacing: -0.5px;
+}
+
+.aw-brand-badge {
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.aw-nav {
+    display: flex;
+    gap: 8px;
+}
+
+.aw-nav-btn {
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: transparent;
+    color: #4a5568;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+}
+
+.aw-nav-btn:hover {
+    background: #f8f9fa;
+    border-color: #d4af37;
+    color: #1a1a1a;
+}
+
+.aw-nav-btn.active {
+    background: linear-gradient(135deg, #bf953f, #d4af37);
+    border-color: #d4af37;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(212,175,55,0.3);
+}
+
+.aw-logout-btn {
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: transparent;
+    color: #9ca3af;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.aw-logout-btn:hover { color: #ef4444; border-color: #ef4444; }
+
+/* ─── MAIN CONTENT ─── */
+.aw-main {
+    padding: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* ─── PAGE HERO ─── */
+.aw-page-hero {
+    margin-bottom: 36px;
+}
+
+.aw-hero-eyebrow {
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.aw-hero-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    line-height: 1;
+    background: linear-gradient(135deg, #bf953f 0%, #d4af37 40%, #b38728 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.aw-hero-subtitle {
+    font-size: 0.9rem;
+    color: #4a5568;
+    margin-top: 8px;
+    font-weight: 400;
+}
+
+/* ─── STATS BAR ─── */
+.aw-stats-bar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
+
+.aw-stat-pill {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    flex: 1;
+    min-width: 160px;
+}
+
+.aw-stat-icon {
+    font-size: 1.4rem;
+}
+
+.aw-stat-value {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #1a1a1a;
+    line-height: 1;
+}
+
+.aw-stat-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+/* ─── ATHLETE GRID ─── */
+.aw-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+/* ─── ATHLETE CARD ─── */
+.aw-card {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.04);
+}
+
+.aw-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* Card Header */
+.aw-card-header {
+    padding: 24px 24px 0 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.aw-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.aw-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f4f6f8;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.aw-avatar-placeholder {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f0f4f8, #e2e8f0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    border: 3px solid #f4f6f8;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.aw-status-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.aw-status-dot.available { background: #10b981; }
+.aw-status-dot.caution   { background: #f59e0b; }
+.aw-status-dot.rest      { background: #ef4444; }
+
+.aw-card-identity {
+    flex: 1;
+    min-width: 0;
+}
+
+.aw-athlete-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #1a1a1a;
+    letter-spacing: -0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.aw-sport-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.06));
+    border: 1px solid rgba(212,175,55,0.35);
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: #92700a;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.aw-card-number {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: #f0f4f8;
+    line-height: 1;
+    letter-spacing: -2px;
+    align-self: flex-start;
+    margin-top: -4px;
+}
+
+/* ─── COMETTI PILLARS GRID ─── */
+.aw-pillars {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: #f0f4f8;
+    margin: 20px 24px 0 24px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.aw-pillar {
+    background: #ffffff;
+    padding: 14px 10px;
+    text-align: center;
+}
+
+.aw-pillar-icon {
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+}
+
+.aw-pillar-label {
+    font-size: 0.55rem;
+    font-weight: 800;
+    color: #9ca3af;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.aw-pillar-value {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 900;
+    color: #1a1a1a;
+}
+
+.aw-pillar-sub {
+    font-size: 0.6rem;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+/* ─── METRICS ROW ─── */
+.aw-metrics {
+    display: flex;
+    gap: 0;
+    margin: 16px 24px 0 24px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f8f9fa;
+    border: 1px solid #e2e8f0;
+}
+
+.aw-metric {
+    flex: 1;
+    padding: 10px 8px;
+    text-align: center;
+    border-right: 1px solid #e2e8f0;
+}
+
+.aw-metric:last-child { border-right: none; }
+
+.aw-metric-val {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 900;
+    color: #1a1a1a;
+}
+
+.aw-metric-lbl {
+    font-size: 0.55rem;
+    color: #9ca3af;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+/* ─── CARD FOOTER / FATIGUE MOTOR ─── */
+.aw-card-footer {
+    padding: 18px 24px 22px 24px;
+    margin-top: 16px;
+}
+
+.aw-recovery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.aw-recovery-label {
+    font-size: 0.62rem;
+    font-weight: 800;
+    color: #9ca3af;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.aw-recovery-pct {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 900;
+}
+
+.aw-recovery-pct.optimal { color: #10b981; }
+.aw-recovery-pct.caution { color: #f59e0b; }
+.aw-recovery-pct.alert   { color: #ef4444; }
+
+.aw-recovery-bar-wrap {
+    width: 100%;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.aw-recovery-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+}
+
+.aw-recovery-bar.optimal {
+    background: linear-gradient(90deg, #10b981, #34d399);
+    box-shadow: 0 0 8px rgba(16,185,129,0.4);
+}
+
+.aw-recovery-bar.caution {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    box-shadow: 0 0 8px rgba(245,158,11,0.4);
+}
+
+.aw-recovery-bar.alert {
+    background: linear-gradient(90deg, #ef4444, #f87171);
+    box-shadow: 0 0 8px rgba(239,68,68,0.4);
+}
+
+.aw-recovery-note {
+    font-size: 0.62rem;
+    color: #9ca3af;
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+/* ─── SECTION DIVIDER ─── */
+.aw-section-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    margin: 32px 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.aw-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+}
+
+/* ─── GOLD ACCENT UTILITY ─── */
+.gold-text {
+    background: linear-gradient(135deg, #bf953f, #d4af37, #b38728);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}

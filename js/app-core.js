@@ -350,26 +350,45 @@ window.App = {
     },
 
     injectRoleAssets(role) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet'; link.href = 'css/styles-dt.css';
-        document.head.appendChild(link);
+        const isAthlete = role === 'player' || role === 'athlete' || role === 'jugador';
 
-        const script = document.createElement('script');
-        script.src = 'js/app-dt.js';
-        script.onload = () => {
-            if (window.DTEngine) {
-                // Renderizar el dashboard completo primero
-                window.DTEngine.renderDashboard().then(() => {
-                    // Después de renderizar, aplicar el hash inicial si existe
-                    const initialHash = window.location.hash;
-                    if (initialHash && initialHash !== '#home') {
-                        window.App.handleRouting();
-                    }
-                });
-            }
-        };
-        document.body.appendChild(script);
+        if (isAthlete) {
+            // ── MUNDO ATLETA ──
+            const cssLink = document.createElement('link');
+            cssLink.rel = 'stylesheet';
+            cssLink.href = 'css/styles-athletes.css';
+            document.head.appendChild(cssLink);
+
+            const script = document.createElement('script');
+            script.src = 'js/app-player.js';
+            script.onload = () => {
+                if (window.PlayerEngine) {
+                    window.PlayerEngine.init();
+                }
+            };
+            document.body.appendChild(script);
+        } else {
+            // ── MUNDO DT (default) ──
+            const link = document.createElement('link');
+            link.rel = 'stylesheet'; link.href = 'css/styles-dt.css';
+            document.head.appendChild(link);
+
+            const script = document.createElement('script');
+            script.src = 'js/app-dt.js';
+            script.onload = () => {
+                if (window.DTEngine) {
+                    window.DTEngine.renderDashboard().then(() => {
+                        const initialHash = window.location.hash;
+                        if (initialHash && initialHash !== '#home') {
+                            window.App.handleRouting();
+                        }
+                    });
+                }
+            };
+            document.body.appendChild(script);
+        }
     },
+
 
     toggleAuth(mode) {
         document.getElementById('login-form').style.display = mode === 'login' ? 'block' : 'none';
