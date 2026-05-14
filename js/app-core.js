@@ -117,15 +117,33 @@ window.Wizard = {
 };
 
 window.App = {
+    currentRole: 'dt', // 'dt' | 'athlete' — seteado por el Portal
+
     async init() {
         const uid = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
         if (uid && token) {
+            // Sesion activa: saltar el portal y restaurar directo
             this.checkSession(uid, token);
             window.addEventListener('hashchange', () => this.handleRouting());
         } else {
-            document.getElementById('view-login').style.display = 'flex';
+            // Sin sesión: mostrar Portal de Entrada
+            document.getElementById('view-portal').style.display = 'flex';
         }
+    },
+
+    selectRole: function(role) {
+        this.currentRole = role; // 'dt' o 'athlete'
+
+        if (role === 'athlete') {
+            document.body.classList.add('testing-athlete');
+        } else {
+            document.body.classList.remove('testing-athlete');
+        }
+
+        // Transición suave: ocultar portal, mostrar login
+        document.getElementById('view-portal').style.display = 'none';
+        document.getElementById('view-login').style.display = 'flex';
     },
 
     handleRouting() {
@@ -257,6 +275,13 @@ window.App = {
             if (users && users[0]) {
                 const userData = users[0];
 
+                // Restaurar rol guardado desde la metadata del usuario
+                const savedRole = userData.app_role || this.currentRole || 'dt';
+                this.currentRole = savedRole;
+                if (savedRole === 'athlete') {
+                    document.body.classList.add('testing-athlete');
+                }
+
                 // --- STRICT ROUTER GUARD ---
                 if (!userData.name || !userData.team_id) {
                     document.getElementById('view-login').style.display = 'none';
@@ -271,7 +296,6 @@ window.App = {
                 });
                 const configs = await cRes.json();
                 
-                // Cargar Equipo y Entorno
                 const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams?id=eq.${userData.team_id}`, {
                     headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
                 });
@@ -281,36 +305,35 @@ window.App = {
                 if (configs && configs[0]) {
                     const configData = configs[0];
                     if (configData.primary_color) {
-                        // Inyectar en ambas variables para compatibilidad total
                         document.documentElement.style.setProperty('--primary', configData.primary_color);
                         document.documentElement.style.setProperty('--primary-color', configData.primary_color);
-                        console.log("🎨 Branding del Club inyectado:", configData.primary_color);
+                        console.log('🎨 Branding del Club inyectado:', configData.primary_color);
                     }
                     if (window.CurrentTeam) {
                         window.CurrentTeam.match_dates = configData.match_dates || [];
-                        window.CurrentTeam.methodology = configData.methodology || "No definida";
+                        window.CurrentTeam.methodology = configData.methodology || 'No definida';
                         window.CurrentTeam.primary_color = configData.primary_color || null;
                         window.CurrentTeam.tactical_dna = configData.tactical_dna || {};
                         window.CurrentTeam.periodization = configData.periodization || null;
-                        console.log("🧠 Memoria táctica recuperada:", window.CurrentTeam.match_dates);
+                        console.log('🧠 Memoria táctica recuperada:', window.CurrentTeam.match_dates);
                     }
                 }
                 
-                // --- CARGA GLOBAL DE BIBLIOTECA ---
                 await this.fetchExercisesLibrary();
                 await this.fetchCustomExercises();
 
-                // --- PERSISTENCIA DE USUARIO PARA UI ---
                 window.CurrentUser = userData;
 
                 document.getElementById('view-login').style.display = 'none';
+                document.getElementById('view-portal').style.display = 'none';
                 document.getElementById('app-shell').style.display = 'block';
-                this.injectRoleAssets(userData.role);
+
+                // Redirigir según rol
+                this.injectRoleAssets(savedRole);
                 
-                // Ejecutar router para capturar hash inicial
                 this.handleRouting();
             } else { this.logout(); }
-        } catch (e) { console.error("Error checkSession:", e); this.logout(); }
+        } catch (e) { console.error('Error checkSession:', e); this.logout(); }
     },
 
     async fetchExercisesLibrary() {
@@ -429,6 +452,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 localStorage.setItem('ravix_token', data.access_token);
                 localStorage.setItem('ravix_v5_uid', data.user.id);
+
+                // Leer rol desde Supabase user_metadata y sincronizar
+                const metaRole = data.user?.user_metadata?.role;
+                if (metaRole) window.App.currentRole = metaRole;
+
                 window.App.checkSession(data.user.id, data.access_token);
             } catch (err) { 
                 console.error("🔴 Login Fail:", err);
@@ -455,7 +483,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const r = await fetch(`${window.SUPABASE_URL}/auth/v1/signup`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY },
-                    body: JSON.stringify({ email, password: pass })
+                    body: JSON.stringify({ 
+                        email, 
+                        password: pass,
+                        options: {
+                            data: { role: window.App.currentRole || 'dt' }
+                        }
+                    })
                 });
 
                 const contentType = r.headers.get("content-type");
