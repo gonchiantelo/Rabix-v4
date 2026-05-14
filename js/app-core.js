@@ -122,9 +122,11 @@ window.Wizard = {
 
         const fullName  = document.getElementById('ath-name').value;
         const sport     = document.getElementById('ath-sport').value;
+        const position  = document.getElementById('ath-position').value;
         const birthDate = document.getElementById('ath-birth').value;
         const weight    = document.getElementById('ath-weight').value;
         const height    = document.getElementById('ath-height').value;
+        const wingspan  = document.getElementById('ath-wingspan').value;
         const goal      = document.getElementById('ath-goal').value;
 
         if (!fullName || !sport) return alert('Por favor, completa los campos obligatorios.');
@@ -143,14 +145,14 @@ window.Wizard = {
                 res = await fetch(`${window.SUPABASE_URL}/rest/v1/profiles_athlete?user_id=eq.${uid}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ full_name: fullName, sport, birth_date: birthDate, weight_kg: weight, height_cm: height, goal })
+                    body: JSON.stringify({ full_name: fullName, sport, position, birth_date: birthDate, weight_kg: weight, height_cm: height, wingspan_cm: wingspan, goal })
                 });
             } else {
                 // Crear nuevo perfil atleta
                 res = await fetch(`${window.SUPABASE_URL}/rest/v1/profiles_athlete`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ user_id: uid, full_name: fullName, sport, birth_date: birthDate, weight_kg: weight, height_cm: height, goal })
+                    body: JSON.stringify({ user_id: uid, full_name: fullName, sport, position, birth_date: birthDate, weight_kg: weight, height_cm: height, wingspan_cm: wingspan, goal })
                 });
             }
 
@@ -348,18 +350,35 @@ window.App = {
                 const userData = users[0];
 
                 // Restaurar rol guardado desde la metadata del usuario
-                const savedRole = userData.app_role || this.currentRole || 'dt';
-                this.currentRole = savedRole;
-                if (savedRole === 'athlete') {
-                    document.body.classList.add('testing-athlete');
+                const activeRole = this.currentRole || userData.app_role || 'dt';
+                this.currentRole = activeRole;
+                if (activeRole === 'athlete') {
+                    document.body.classList.add('testing-athlete', 'mode-athlete');
                 }
 
-                // --- STRICT ROUTER GUARD ---
-                if (!userData.name || !userData.team_id) {
-                    document.getElementById('view-login').style.display = 'none';
-                    document.getElementById('app-shell').style.display = 'none';
-                    document.getElementById('view-onboarding').style.display = 'flex';
-                    return;
+                if (activeRole === 'athlete') {
+                    // --- GUARDIA ATLETA ---
+                    const athRes = await fetch(`${window.SUPABASE_URL}/rest/v1/profiles_athlete?user_id=eq.${uid}`, {
+                        headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
+                    });
+                    const athData = await athRes.json();
+                    
+                    if (!athData || athData.length === 0 || !athData[0].full_name) {
+                        // Usuario existe en Auth pero NO tiene perfil de atleta
+                        document.getElementById('view-login').style.display = 'none';
+                        document.getElementById('app-shell').style.display = 'none';
+                        window.Wizard.startFor('athlete');
+                        return;
+                    }
+                } else {
+                    // --- GUARDIA DT ---
+                    if (!userData.name || !userData.team_id) {
+                        // Usuario existe en Auth pero NO tiene perfil de DT (team_id, nombre)
+                        document.getElementById('view-login').style.display = 'none';
+                        document.getElementById('app-shell').style.display = 'none';
+                        window.Wizard.startFor('dt');
+                        return;
+                    }
                 }
 
                 // --- RE-BRANDING DINÁMICO & MEMORIA TÁCTICA ---
@@ -401,7 +420,7 @@ window.App = {
                 document.getElementById('app-shell').style.display = 'block';
 
                 // Redirigir según rol
-                this.injectRoleAssets(savedRole);
+                this.injectRoleAssets(activeRole);
                 
                 this.handleRouting();
             } else { this.logout(); }

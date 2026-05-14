@@ -287,6 +287,10 @@
                                 <option value="Otro">Otro</option>
                             </select>
                         </div>
+                        <div>
+                            <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">POSICI&Oacute;N / ESPECIALIDAD</label>
+                            <input type="text" id="ath-position" class="ob-input" placeholder="Ej: Pivote, 100m Libres..." style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
+                        </div>
                     </div>
                     <div class="ob-footer" style="margin-top:28px;">
                         <button class="btn-ob-next" onclick="window.Wizard.nextStep()" style="background:linear-gradient(135deg,#bf953f,#b38728); width:100%;">CONTINUAR</button>
@@ -306,9 +310,15 @@
                             <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">ALTURA (cm)</label>
                             <input type="number" id="ath-height" class="ob-input" placeholder="Ej: 181" style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
                         </div>
-                        <div style="grid-column:1/-1;">
-                            <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">FECHA DE NACIMIENTO</label>
-                            <input type="date" id="ath-birth" class="ob-input" style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
+                        <div style="grid-column:1/-1; display:flex; gap:14px;">
+                            <div style="flex:1;">
+                                <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">ENVERGADURA (cm)</label>
+                                <input type="number" id="ath-wingspan" class="ob-input" placeholder="Ej: 185" style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
+                            </div>
+                            <div style="flex:1;">
+                                <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">FECHA DE NACIMIENTO</label>
+                                <input type="date" id="ath-birth" class="ob-input" style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
+                            </div>
                         </div>
                     </div>
                     <div class="ob-footer" style="margin-top:28px;">
@@ -322,14 +332,12 @@
                     <h2 style="font-family:Outfit; font-size:24px; color:#1a1a2e; margin:0 0 6px;">Objetivo Principal</h2>
                     <p style="color:#888; font-size:13px; margin-bottom:24px;">Definir el foco de tu laboratorio personal.</p>
                     <div style="display:grid; gap:10px;">
-                        <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">OBJETIVO</label>
+                        <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">OBJETIVO NEUROMUSCULAR</label>
                         <select id="ath-goal" class="ob-input" style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
-                            <option value="Fuerza Maxima">Fuerza M&aacute;xima</option>
-                            <option value="Resistencia Aerobica">Resistencia Aer&oacute;bica</option>
-                            <option value="Velocidad Explosiva">Velocidad Explosiva</option>
-                            <option value="Recuperacion de Lesion">Recuperaci&oacute;n de Lesi&oacute;n</option>
-                            <option value="Composicion Corporal">Composici&oacute;n Corporal</option>
-                            <option value="Rendimiento General">Rendimiento General</option>
+                            <option value="Fuerza Explosiva">Fuerza Explosiva</option>
+                            <option value="Resistencia">Resistencia</option>
+                            <option value="Pliometria">Pliometr&iacute;a</option>
+                            <option value="Recuperacion">Recuperaci&oacute;n</option>
                         </select>
                     </div>
                     <div class="ob-footer" style="margin-top:28px;">
