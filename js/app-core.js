@@ -256,7 +256,7 @@ window.App = {
     saveProfile: async function(e) {
         if(e) e.preventDefault();
         const role = this.currentRole || 'dt';
-        const table = role === 'athlete' ? 'profiles_athlete' : 'profiles_dt';
+        const table = role === 'athlete' ? 'profiles_athlete' : 'users';
         const uid = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
 
@@ -274,10 +274,12 @@ window.App = {
                 goal: document.getElementById('ath-goal')?.value
             };
         } else {
+            // Histórico para DT: apuntamos a la tabla 'users' original.
             profileData = {
                 ...profileData,
-                club_name: document.getElementById('ob-club-name')?.value,
-                league: document.getElementById('ob-league')?.value
+                name: document.getElementById('ob-name')?.value,
+                staff_role: document.getElementById('ob-role')?.value,
+                license: document.getElementById('ob-license')?.value
             };
         }
 
