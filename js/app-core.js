@@ -253,90 +253,55 @@ window.App = {
         document.getElementById('prof-methodology').value = window.CurrentTeam.methodology || 'Periodización Táctica';
     },
 
-    async saveProfile(e) {
-        if (e) e.preventDefault();
-        
+    saveProfile: async function(e) {
+        if(e) e.preventDefault();
+        const role = this.currentRole || 'dt';
+        const table = role === 'athlete' ? 'profiles_athlete' : 'profiles_dt';
         const uid = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
-        const teamId = window.CurrentTeam?.id;
 
-        const name = document.getElementById('prof-name').value;
-        const license = document.getElementById('prof-license').value;
-        const teamName = document.getElementById('prof-team-name').value;
-        const color = document.getElementById('prof-team-color').value;
-        const methodology = document.getElementById('prof-methodology').value;
-
-        let tactical_dna = {};
-        if (window.DTEngine) {
-            tactical_dna = {
-                ataque: document.getElementById('dna-ataque')?.value,
-                principios: window.DTEngine.TagInput.getTags(),
-                defensa: document.getElementById('dna-defensa')?.value,
-                bloque: document.getElementById('dna-bloque')?.value,
-                trans_of: document.getElementById('dna-trans-of')?.value,
-                trans_def: document.getElementById('dna-trans-def')?.value,
-                reglas_provocacion: window.DTEngine.RulesTagInput.getTags(),
-                ideal_11: window.DTEngine.PitchEngine.getData()
+        // Recopilar datos del Wizard según el rol
+        let profileData = { id: uid };
+        
+        if (role === 'athlete') {
+            profileData = {
+                ...profileData,
+                full_name: document.getElementById('ath-name')?.value,
+                sport: document.getElementById('ath-sport')?.value,
+                position: document.getElementById('ath-pos')?.value,
+                height: parseFloat(document.getElementById('ath-height')?.value),
+                weight: parseFloat(document.getElementById('ath-weight')?.value),
+                goal: document.getElementById('ath-goal')?.value
+            };
+        } else {
+            profileData = {
+                ...profileData,
+                club_name: document.getElementById('ob-club-name')?.value,
+                league: document.getElementById('ob-league')?.value
             };
         }
 
         try {
-            console.log("🚀 Iniciando UPDATE asíncrono a Supabase...");
+            const r = await fetch(`${window.SUPABASE_URL}/rest/v1/${table}`, {
+                method: 'POST',
+                headers: { 
+                    'apikey': window.SUPABASE_KEY, 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'resolution=merge-duplicates' // Esto evita errores si el perfil ya existe
+                },
+                body: JSON.stringify(profileData)
+            });
+
+            if (!r.ok) throw new Error("Error al sincronizar con el Laboratorio");
+
+            console.log(`✅ Perfil de ${role} guardado con éxito.`);
+            // Redirigir al Dashboard final
+            role === 'athlete' ? window.PlayerEngine?.init() : location.reload();
             
-            // 1. Update Users Table
-            const uRes = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
-                method: 'PATCH',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'apikey': window.SUPABASE_KEY, 
-                    'Authorization': `Bearer ${token}` 
-                },
-                body: JSON.stringify({ name, license })
-            });
-
-            // 2. Update Teams Table
-            const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams?id=eq.${teamId}`, {
-                method: 'PATCH',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'apikey': window.SUPABASE_KEY, 
-                    'Authorization': `Bearer ${token}` 
-                },
-                body: JSON.stringify({ name: teamName })
-            });
-
-            // 3. Update Team Configs Table
-            const cRes = await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs?team_id=eq.${teamId}`, {
-                method: 'PATCH',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'apikey': window.SUPABASE_KEY, 
-                    'Authorization': `Bearer ${token}` 
-                },
-                body: JSON.stringify({ primary_color: color, methodology, tactical_dna })
-            });
-
-            if (uRes.ok && tRes.ok && cRes.ok) {
-                console.log("✅ Datos actualizados en Supabase.");
-                
-                // Actualizar variables globales
-                window.CurrentUser.name = name;
-                window.CurrentUser.license = license;
-                window.CurrentTeam.name = teamName;
-                window.CurrentTeam.primary_color = color;
-                window.CurrentTeam.methodology = methodology;
-
-                // Refrescar CSS
-                document.documentElement.style.setProperty('--primary-color', color);
-                document.documentElement.style.setProperty('--primary', color);
-
-                alert("Configuración guardada con éxito.");
-                location.hash = '#home';
-            } else {
-                throw new Error("Error al sincronizar con el servidor.");
-            }
         } catch (err) {
-            alert("🔴 Error: " + err.message);
+            console.error("🔴 Error de Sincronización:", err);
+            alert("Hubo un problema al guardar tus datos en la base de datos.");
         }
     },
 

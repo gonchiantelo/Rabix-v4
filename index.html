@@ -209,11 +209,11 @@
                         <div style="display: flex; gap: 15px;">
                             <div style="flex: 2;">
                                 <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">NOMBRE DEL CLUB</label>
-                                <input type="text" id="ob-team-name" class="ob-input" placeholder="Ej: Manchester City">
+                                <input type="text" id="ob-club-name" class="ob-input" placeholder="Ej: Manchester City">
                             </div>
                             <div style="flex: 1;">
-                                <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">COLOR</label>
-                                <input type="color" id="ob-team-color" class="ob-input" style="padding: 5px; height: 58px;" value="#00F2FE">
+                                <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">LIGA / COMPETICIÓN</label>
+                                <input type="text" id="ob-league" class="ob-input" placeholder="Ej: Premier League">
                             </div>
                         </div>
 
@@ -247,7 +247,7 @@
 
                 <div class="ob-footer">
                     <button class="btn-ob-prev" onclick="window.Wizard.prevStep()">VOLVER</button>
-                    <button class="btn-ob-next" onclick="window.Wizard.finish()">FINALIZAR Y ENTRAR</button>
+                    <button class="btn-ob-next" onclick="window.App.saveProfile()">FINALIZAR Y ENTRAR</button>
                 </div>
             </div>
         </div> <!-- /wizard-dt -->
@@ -289,7 +289,7 @@
                         </div>
                         <div>
                             <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">POSICI&Oacute;N / ESPECIALIDAD</label>
-                            <input type="text" id="ath-position" class="ob-input" placeholder="Ej: Pivote, 100m Libres..." style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
+                            <input type="text" id="ath-pos" class="ob-input" placeholder="Ej: Pivote, 100m Libres..." style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
                         </div>
                     </div>
                     <div class="ob-footer" style="margin-top:28px;">
@@ -342,7 +342,7 @@
                     </div>
                     <div class="ob-footer" style="margin-top:28px;">
                         <button class="btn-ob-prev" onclick="window.Wizard.prevStep()">VOLVER</button>
-                        <button class="btn-ob-next" onclick="window.Wizard.finishAthlete()" style="background:linear-gradient(135deg,#bf953f,#b38728);">FINALIZAR Y ENTRAR</button>
+                        <button class="btn-ob-next" onclick="window.App.saveProfile(event)" style="background:linear-gradient(135deg,#bf953f,#b38728);">FINALIZAR Y ENTRAR</button>
                     </div>
                 </div>
             </div>
