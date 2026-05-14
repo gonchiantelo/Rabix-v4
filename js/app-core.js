@@ -509,6 +509,49 @@ window.App = {
         document.getElementById('register-form').style.display = mode === 'register' ? 'block' : 'none';
     },
 
+    // --- ACTUALIZACIÓN DE SIGNUP ---
+    signUp: async function(email, pass) {
+        const role = this.currentRole; // Captura si es 'dt' o 'athlete'
+        
+        try {
+            const r = await fetch(`${window.SUPABASE_URL}/auth/v1/signup`, {
+                method: 'POST',
+                headers: { 
+                    'apikey': window.SUPABASE_KEY,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    email, 
+                    password: pass,
+                    options: { 
+                        data: { role: role } // Esto es CLAVE para que Supabase sepa qué es el usuario
+                    }
+                })
+            });
+
+            const data = await r.json();
+
+            // MANEJO DE USUARIO EXISTENTE (Dual Role)
+            if (r.status === 400 && (data.msg?.includes('already registered') || data.message?.includes('already registered'))) {
+                console.log("🔄 Usuario detectado. Intentando vincular nuevo rol...");
+                // Si ya existe, lo mandamos al login. El login detectará la falta de perfil y lanzará el Wizard.
+                alert("Ya tienes una cuenta en Ravix. Por favor, inicia sesión para activar tu perfil de " + (role === 'athlete' ? 'Atleta' : 'Staff') + ".");
+                window.App.toggleAuth('login');
+                return;
+            }
+
+            if (!r.ok) throw new Error(data.msg || data.message || "Error al crear cuenta");
+
+            // Registro exitoso
+            alert("¡Cuenta creada! Verifica tu email para activar el acceso al " + (role === 'athlete' ? 'Laboratorio' : 'Staff') + ".");
+            window.App.toggleAuth('login');
+
+        } catch (err) {
+            console.error("🔴 Signup Fail:", err);
+            alert(err.message);
+        }
+    },
+
     logout() { localStorage.clear(); location.reload(); }
 };
 
@@ -556,7 +599,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Register Form — signUp dual con gestión de email duplicado
+    // Register Form
     const regForm = document.getElementById('register-form');
     if (regForm) {
         regForm.onsubmit = async function(e) {
@@ -566,71 +609,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const conf  = document.getElementById('register-confirm-password').value;
             if (pass !== conf) return alert('Las contraseñas no coinciden');
 
-            const role = window.App.currentRole || 'dt';
-
-            try {
-                if (!window.SUPABASE_URL || window.SUPABASE_URL.includes('undefined')) {
-                    throw new Error('Error de configuración: URL de Supabase no definida.');
-                }
-
-                // 1. Intentar registro
-                let r = await fetch(`${window.SUPABASE_URL}/auth/v1/signup`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY },
-                    body: JSON.stringify({ email, password: pass, options: { data: { role } } })
-                });
-
-                let data = await r.json();
-
-                // 2. Si el email ya existe (identity already registered), hacer login silencioso
-                //    y crear el perfil secundario para el rol actual
-                const isEmailTaken = !r.ok &&
-                    (data.msg?.toLowerCase().includes('already registered') ||
-                     data.code === 'user_already_exists' ||
-                     data.error_description?.toLowerCase().includes('already registered'));
-
-                if (isEmailTaken) {
-                    console.log('ℹ️ Email ya existe. Iniciando sesión para agregar perfil secundario...');
-                    const loginRes = await fetch(`${window.SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY },
-                        body: JSON.stringify({ email, password: pass })
-                    });
-                    data = await loginRes.json();
-                    if (!loginRes.ok) throw new Error('Email ya registrado con otra contraseña. Usa el portal correspondiente para iniciar sesión.');
-                }
-
-                if (data.access_token) {
-                    localStorage.setItem('ravix_token', data.access_token);
-                    localStorage.setItem('ravix_v5_uid', data.user.id);
-
-                    // 3. Si el rol actual es atleta, verificar y crear profiles_athlete
-                    if (role === 'athlete') {
-                        const checkRes = await fetch(
-                            `${window.SUPABASE_URL}/rest/v1/profiles_athlete?user_id=eq.${data.user.id}`,
-                            { headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${data.access_token}` } }
-                        );
-                        const existing = await checkRes.json();
-                        if (!existing || existing.length === 0) {
-                            // Crear entrada inicial vacía; el Wizard Atleta la completará
-                            await fetch(`${window.SUPABASE_URL}/rest/v1/profiles_athlete`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${data.access_token}` },
-                                body: JSON.stringify({ user_id: data.user.id })
-                            });
-                        }
-                    }
-
-                    // 4. Lanzar wizard del rol correspondiente
-                    window.Wizard.startFor(role);
-                } else {
-                    alert('Verifica tu email para activar la cuenta.');
-                    window.App.toggleAuth('login');
-                }
-            } catch (err) {
-                console.error('🔴 Signup Fail:', err);
-                alert(err.message);
-            }
+            await window.App.signUp(email, pass);
         };
     }
 
