@@ -35,6 +35,35 @@
     border-top: 4px solid #bf953f;
 }
 
+/* ---- EMPTY STATE ---- */
+.aw-empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+    color: #999;
+    font-family: 'Inter', sans-serif;
+}
+.aw-empty-icon {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    filter: grayscale(0.3);
+}
+.aw-empty-state h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.3rem;
+    color: #1a1a2e;
+    margin: 0 0 8px;
+}
+.aw-empty-state p {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    max-width: 280px;
+}
+
 /* ---- VIEW ATLETA HEADER ---- */
 .athlete-world .aw-header {
     text-align: center;

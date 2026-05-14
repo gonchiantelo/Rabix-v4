@@ -12,82 +12,88 @@ window.SUPABASE_KEY = window.SUPA_KEY;
 window.Wizard = {
     step: 1,
     path: 'create',
-    
+    mode: 'dt', // 'dt' | 'athlete'
+
+    // Inicializar modo según el rol seleccionado en el portal
+    startFor(role) {
+        this.mode = role;
+        this.step = 1;
+        const onboarding = document.getElementById('view-onboarding');
+        if (onboarding) onboarding.style.display = 'flex';
+        // Mostrar el wizard correcto
+        document.getElementById('wizard-dt').style.display  = role === 'dt' ? 'block' : 'none';
+        document.getElementById('wizard-athlete').style.display = role === 'athlete' ? 'block' : 'none';
+    },
+
+    // ── PATH DT (existente) ──
     setPath(p) {
         this.path = p;
         document.querySelectorAll('.path-card').forEach(c => c.classList.remove('active'));
         document.getElementById(`path-card-${p}`)?.classList.add('active');
-        
         document.getElementById('ob-ui-create').style.display = p === 'create' ? 'block' : 'none';
-        document.getElementById('ob-ui-join').style.display = p === 'join' ? 'block' : 'none';
+        document.getElementById('ob-ui-join').style.display   = p === 'join'   ? 'block' : 'none';
     },
 
     nextStep() {
-        if (this.step < 3) {
-            document.getElementById(`ob-step-${this.step}`).style.display = 'none';
+        const maxStep = this.mode === 'athlete' ? 3 : 3;
+        if (this.step < maxStep) {
+            const prefix = this.mode === 'athlete' ? 'ath' : 'ob';
+            document.getElementById(`${prefix}-step-${this.step}`).style.display = 'none';
             this.step++;
-            document.getElementById(`ob-step-${this.step}`).style.display = 'block';
+            document.getElementById(`${prefix}-step-${this.step}`).style.display = 'block';
             this.updateStepper();
         }
     },
 
     prevStep() {
         if (this.step > 1) {
-            document.getElementById(`ob-step-${this.step}`).style.display = 'none';
+            const prefix = this.mode === 'athlete' ? 'ath' : 'ob';
+            document.getElementById(`${prefix}-step-${this.step}`).style.display = 'none';
             this.step--;
-            document.getElementById(`ob-step-${this.step}`).style.display = 'block';
+            document.getElementById(`${prefix}-step-${this.step}`).style.display = 'block';
             this.updateStepper();
         }
     },
 
     updateStepper() {
+        const prefix = this.mode === 'athlete' ? 'ath-ball' : 'ob-ball';
         for (let i = 1; i <= 3; i++) {
-            const ball = document.getElementById(`ob-ball-${i}`);
+            const ball = document.getElementById(`${prefix}-${i}`);
             if (ball) ball.classList.toggle('active', i <= this.step);
         }
     },
 
+    // ── FINISH PATH DT ──
     async finish() {
-        const uid = localStorage.getItem('ravix_v5_uid');
+        const uid   = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
-        const name = document.getElementById('ob-name').value;
-        const role = document.getElementById('ob-role').value;
+        const name  = document.getElementById('ob-name').value;
+        const role  = document.getElementById('ob-role').value;
         const license = document.getElementById('ob-license').value;
-
-        if (!name) return alert("Por favor, ingresa tu nombre.");
+        if (!name) return alert('Por favor, ingresa tu nombre.');
 
         try {
-            console.log(`🚀 Finalizando Onboarding (${this.path})...`);
             let teamId = null;
-
             if (this.path === 'create') {
-                const tName = document.getElementById('ob-team-name').value || "Mi Club";
+                const tName  = document.getElementById('ob-team-name').value || 'Mi Club';
                 const tColor = document.getElementById('ob-team-color').value;
                 const tMethodology = document.getElementById('ob-methodology').value;
                 const tSystems = document.getElementById('ob-systems-input').value;
-                const tCode = 'CU-' + Math.floor(1000 + Math.random() * 9000);
+                const tCode  = 'CU-' + Math.floor(1000 + Math.random() * 9000);
 
-                // 1. Crear Equipo (Insert + Select) -> Columnas: name, code, owner_id
                 const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}`, 'Prefer': 'return=representation' },
                     body: JSON.stringify({ name: tName, code: tCode, owner_id: uid })
                 });
                 const teams = await tRes.json();
-                if (!tRes.ok || !teams[0]) throw new Error("Error al fundar equipo.");
+                if (!tRes.ok || !teams[0]) throw new Error('Error al fundar equipo.');
                 teamId = teams[0].id;
 
-                // 2. Crear Config Táctica -> Columnas: team_id, owner_id, primary_color, methodology, base_systems
                 await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ 
-                        team_id: teamId, 
-                        owner_id: uid, 
-                        primary_color: tColor,
-                        methodology: tMethodology,
-                        base_systems: tSystems 
-                    })
+                    body: JSON.stringify({ team_id: teamId, owner_id: uid, primary_color: tColor, methodology: tMethodology, base_systems: tSystems })
                 });
             } else {
                 const code = document.getElementById('ob-invite-code').value;
@@ -95,23 +101,62 @@ window.Wizard = {
                     headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
                 });
                 const teams = await tRes.json();
-                if (!teams || !teams[0]) throw new Error("Código inválido o equipo no encontrado.");
+                if (!teams || !teams[0]) throw new Error('Código inválido o equipo no encontrado.');
                 teamId = teams[0].id;
             }
 
-            // 3. Actualizar Usuario -> Columnas: name, staff_role, license, team_id
-            console.log("📝 Actualizando perfil usuario:", { name, staff_role: role, license, teamId });
             const uRes = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ name: name, staff_role: role, license: license, team_id: teamId })
+                body: JSON.stringify({ name, staff_role: role, license, team_id: teamId })
             });
+            if (!uRes.ok) throw new Error('Error al actualizar perfil.');
+            location.reload();
+        } catch (err) { alert(err.message); }
+    },
 
-            if (!uRes.ok) throw new Error("Error al actualizar perfil.");
+    // ── FINISH PATH ATLETA ──
+    async finishAthlete() {
+        const uid   = localStorage.getItem('ravix_v5_uid');
+        const token = localStorage.getItem('ravix_token');
 
-            console.log("✅ Onboarding completado.");
-            location.reload(); 
+        const fullName  = document.getElementById('ath-name').value;
+        const sport     = document.getElementById('ath-sport').value;
+        const birthDate = document.getElementById('ath-birth').value;
+        const weight    = document.getElementById('ath-weight').value;
+        const height    = document.getElementById('ath-height').value;
+        const goal      = document.getElementById('ath-goal').value;
 
+        if (!fullName || !sport) return alert('Por favor, completa los campos obligatorios.');
+
+        try {
+            // Verificar si ya existe un perfil atleta para este uid
+            const check = await fetch(
+                `${window.SUPABASE_URL}/rest/v1/profiles_athlete?user_id=eq.${uid}`,
+                { headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` } }
+            );
+            const existing = await check.json();
+
+            let res;
+            if (existing && existing.length > 0) {
+                // Ya existe — actualizar
+                res = await fetch(`${window.SUPABASE_URL}/rest/v1/profiles_athlete?user_id=eq.${uid}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ full_name: fullName, sport, birth_date: birthDate, weight_kg: weight, height_cm: height, goal })
+                });
+            } else {
+                // Crear nuevo perfil atleta
+                res = await fetch(`${window.SUPABASE_URL}/rest/v1/profiles_athlete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ user_id: uid, full_name: fullName, sport, birth_date: birthDate, weight_kg: weight, height_cm: height, goal })
+                });
+            }
+
+            if (!res.ok) throw new Error('Error al guardar perfil de atleta.');
+            console.log('✅ Perfil atleta guardado.');
+            location.reload();
         } catch (err) { alert(err.message); }
     }
 };
@@ -492,54 +537,80 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Register Form
+    // Register Form — signUp dual con gestión de email duplicado
     const regForm = document.getElementById('register-form');
     if (regForm) {
         regForm.onsubmit = async function(e) {
             e.preventDefault();
             const email = document.getElementById('register-email').value;
-            const pass = document.getElementById('register-password').value;
-            const conf = document.getElementById('register-confirm-password').value;
-            if (pass !== conf) return alert("Las contraseñas no coinciden");
+            const pass  = document.getElementById('register-password').value;
+            const conf  = document.getElementById('register-confirm-password').value;
+            if (pass !== conf) return alert('Las contraseñas no coinciden');
+
+            const role = window.App.currentRole || 'dt';
 
             try {
                 if (!window.SUPABASE_URL || window.SUPABASE_URL.includes('undefined')) {
-                    throw new Error("Error de configuración: URL de Supabase no definida.");
+                    throw new Error('Error de configuración: URL de Supabase no definida.');
                 }
 
-                const r = await fetch(`${window.SUPABASE_URL}/auth/v1/signup`, {
+                // 1. Intentar registro
+                let r = await fetch(`${window.SUPABASE_URL}/auth/v1/signup`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY },
-                    body: JSON.stringify({ 
-                        email, 
-                        password: pass,
-                        options: {
-                            data: { role: window.App.currentRole || 'dt' }
-                        }
-                    })
+                    body: JSON.stringify({ email, password: pass, options: { data: { role } } })
                 });
 
-                const contentType = r.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    const errorText = await r.text();
-                    console.error("🔴 Error de servidor (No JSON):", errorText);
-                    throw new Error("Error en el registro. Contacta al administrador.");
+                let data = await r.json();
+
+                // 2. Si el email ya existe (identity already registered), hacer login silencioso
+                //    y crear el perfil secundario para el rol actual
+                const isEmailTaken = !r.ok &&
+                    (data.msg?.toLowerCase().includes('already registered') ||
+                     data.code === 'user_already_exists' ||
+                     data.error_description?.toLowerCase().includes('already registered'));
+
+                if (isEmailTaken) {
+                    console.log('ℹ️ Email ya existe. Iniciando sesión para agregar perfil secundario...');
+                    const loginRes = await fetch(`${window.SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY },
+                        body: JSON.stringify({ email, password: pass })
+                    });
+                    data = await loginRes.json();
+                    if (!loginRes.ok) throw new Error('Email ya registrado con otra contraseña. Usa el portal correspondiente para iniciar sesión.');
                 }
 
-                const data = await r.json();
-                if (!r.ok) throw new Error(data.msg || data.message || "Error al crear cuenta");
-                
                 if (data.access_token) {
                     localStorage.setItem('ravix_token', data.access_token);
                     localStorage.setItem('ravix_v5_uid', data.user.id);
-                    window.App.checkSession(data.user.id, data.access_token);
-                } else { 
-                    alert("Verifica tu email para activar la cuenta."); 
-                    window.App.toggleAuth('login'); 
+
+                    // 3. Si el rol actual es atleta, verificar y crear profiles_athlete
+                    if (role === 'athlete') {
+                        const checkRes = await fetch(
+                            `${window.SUPABASE_URL}/rest/v1/profiles_athlete?user_id=eq.${data.user.id}`,
+                            { headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${data.access_token}` } }
+                        );
+                        const existing = await checkRes.json();
+                        if (!existing || existing.length === 0) {
+                            // Crear entrada inicial vacía; el Wizard Atleta la completará
+                            await fetch(`${window.SUPABASE_URL}/rest/v1/profiles_athlete`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${data.access_token}` },
+                                body: JSON.stringify({ user_id: data.user.id })
+                            });
+                        }
+                    }
+
+                    // 4. Lanzar wizard del rol correspondiente
+                    window.Wizard.startFor(role);
+                } else {
+                    alert('Verifica tu email para activar la cuenta.');
+                    window.App.toggleAuth('login');
                 }
-            } catch (err) { 
-                console.error("🔴 Signup Fail:", err);
-                alert(err.message); 
+            } catch (err) {
+                console.error('🔴 Signup Fail:', err);
+                alert(err.message);
             }
         };
     }

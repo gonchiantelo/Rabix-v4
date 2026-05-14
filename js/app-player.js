@@ -1,51 +1,80 @@
-/* =========================================
-   MUNDO ATLETA - PLAYER ENGINE (Cometti)
-========================================= */
+/*
+    MUNDO ATLETA - PLAYER ENGINE (Cometti)
+    Sin mockData — datos reales desde Supabase o estado vacío.
+*/
 
 window.PlayerEngine = {
+
     init: function() {
-        document.body.classList.add('testing-athlete');
-
-        // Forzar ocultamiento de todo y mostrar Atletas
+        // Mostrar la vista de atletas
         document.querySelectorAll('.view-section').forEach(s => s.style.display = 'none');
-
         const view = document.getElementById('view-athletes');
         if (view) {
             view.style.display = 'block';
-            this.render();
+            this.loadAthletes();
         }
     },
 
-    render: function() {
+    loadAthletes: async function() {
+        const uid   = localStorage.getItem('ravix_v5_uid');
+        const token = localStorage.getItem('ravix_token');
+        const grid  = document.getElementById('athlete-grid');
+        if (!grid) return;
+
+        grid.innerHTML = '<p class="aw-empty-state">Cargando atletas...</p>';
+
+        try {
+            const r = await fetch(
+                `${window.SUPABASE_URL}/rest/v1/profiles_athlete?coach_id=eq.${uid}&order=created_at.desc`,
+                { headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` } }
+            );
+            const athletes = await r.json();
+
+            if (!r.ok || !Array.isArray(athletes) || athletes.length === 0) {
+                grid.innerHTML = `
+                    <div class="aw-empty-state">
+                        <div class="aw-empty-icon">🏅</div>
+                        <h3>Sin atletas registrados</h3>
+                        <p>Los atletas aparecerán aquí una vez que completen su registro.</p>
+                    </div>`;
+                return;
+            }
+
+            this.render(athletes);
+        } catch (e) {
+            console.error('🔴 PlayerEngine.loadAthletes:', e);
+            grid.innerHTML = `<div class="aw-empty-state"><p>Error al cargar atletas.</p></div>`;
+        }
+    },
+
+    render: function(athletes) {
         const grid = document.getElementById('athlete-grid');
         if (!grid) return;
 
-        grid.innerHTML = `
+        grid.innerHTML = athletes.map(a => `
             <div class="athlete-card">
-                <h3 style="font-family:Outfit; margin:0;">MATEO FERNÁNDEZ</h3>
-                <p style="color:#bf953f; font-weight:900; font-size:12px;">FÚTBOL | PIVOTE</p>
-                <hr style="opacity:0.1; margin:10px 0;">
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; font-size:10px; font-weight:bold;">
-                    <div>ESTRUCTURA<br><span style="color:#666;">78kg / 1.81m</span></div>
-                    <div>NERVIOSO<br><span style="color:#666;">CMJ: 52cm</span></div>
-                    <div>BIOMEC.<br><span style="color:#666;">VO2: 62</span></div>
+                <h3 style="font-family:Outfit; margin:0; font-size:1.1rem;">${a.full_name || 'Atleta'}</h3>
+                <p style="color:#bf953f; font-weight:900; font-size:11px; margin-top:4px; letter-spacing:1px;">
+                    ${(a.sport || '—').toUpperCase()} ${a.position ? '| ' + a.position.toUpperCase() : ''}
+                </p>
+                <hr style="opacity:0.1; margin:12px 0;">
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; font-size:10px; font-weight:700; color:#999;">
+                    <div>
+                        ESTRUCTURA<br>
+                        <span style="color:#1a1a2e; font-size:13px; font-weight:800;">
+                            ${a.weight_kg ? a.weight_kg + 'kg' : '—'} / ${a.height_cm ? a.height_cm + 'cm' : '—'}
+                        </span>
+                    </div>
+                    <div>
+                        OBJETIVO<br>
+                        <span style="color:#1a1a2e; font-size:12px; font-weight:800;">${a.goal || '—'}</span>
+                    </div>
+                    <div>
+                        NACIMIENTO<br>
+                        <span style="color:#1a1a2e; font-size:12px; font-weight:800;">${a.birth_date || '—'}</span>
+                    </div>
                 </div>
             </div>
-            <div class="athlete-card">
-                <h3 style="font-family:Outfit; margin:0;">LUCAS ROMERO</h3>
-                <p style="color:#bf953f; font-weight:900; font-size:12px;">NATACIÓN | LIBRE</p>
-                <hr style="opacity:0.1; margin:10px 0;">
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; font-size:10px; font-weight:bold;">
-                    <div>ESTRUCTURA<br><span style="color:#666;">74kg / 1.85m</span></div>
-                    <div>NERVIOSO<br><span style="color:#666;">RSI: 2.6</span></div>
-                    <div>BIOMEC.<br><span style="color:#666;">VO2: 71</span></div>
-                </div>
-            </div>
-        `;
+        `).join('');
     }
 };
-
-// Auto-init al cargar el DOM
-document.addEventListener('DOMContentLoaded', function() {
-    window.PlayerEngine.init();
-});
