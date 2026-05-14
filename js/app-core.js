@@ -256,54 +256,74 @@ window.App = {
     saveProfile: async function(e) {
         if(e) e.preventDefault();
         const role = this.currentRole || 'dt';
-        const table = role === 'athlete' ? 'profiles_athlete' : 'users';
-        const uid = localStorage.getItem('ravix_v5_uid');
+        const uid   = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
 
-        // Recopilar datos del Wizard según el rol
-        let profileData = { id: uid };
-        
+        // BIFURCACIÓN ESTRICTA: el Atleta jamás toca la tabla users
         if (role === 'athlete') {
-            profileData = {
-                ...profileData,
-                full_name: document.getElementById('ath-name')?.value,
-                sport: document.getElementById('ath-sport')?.value,
-                position: document.getElementById('ath-pos')?.value,
-                height: parseFloat(document.getElementById('ath-height')?.value),
-                weight: parseFloat(document.getElementById('ath-weight')?.value),
-                goal: document.getElementById('ath-goal')?.value
+            const profileData = {
+                user_id:   uid,          // FK correcta en profiles_athlete
+                full_name: document.getElementById('ath-name')?.value  || null,
+                sport:     document.getElementById('ath-sport')?.value || null,
+                position:  document.getElementById('ath-pos')?.value   || null,
+                height:    parseFloat(document.getElementById('ath-height')?.value) || null,
+                weight:    parseFloat(document.getElementById('ath-weight')?.value) || null,
+                goal:      document.getElementById('ath-goal')?.value  || null
             };
+
+            if (!profileData.full_name || !profileData.sport) {
+                return alert('Por favor, completa los campos obligatorios.');
+            }
+
+            try {
+                // Upsert en profiles_athlete según user_id
+                const r = await fetch(`${window.SUPABASE_URL}/rest/v1/profiles_athlete`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': window.SUPABASE_KEY,
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'resolution=merge-duplicates'
+                    },
+                    body: JSON.stringify(profileData)
+                });
+                if (!r.ok) {
+                    const err = await r.json().catch(() => ({}));
+                    throw new Error(err.message || 'Error al guardar perfil de atleta.');
+                }
+                console.log('✅ Perfil de atleta guardado en profiles_athlete.');
+                location.reload();
+            } catch (err) {
+                console.error('🔴 Error de Sincronización Atleta:', err);
+                alert('Hubo un problema al guardar tus datos: ' + err.message);
+            }
+
         } else {
-            // Histórico para DT: apuntamos a la tabla 'users' original.
-            profileData = {
-                ...profileData,
-                name: document.getElementById('ob-name')?.value,
-                staff_role: document.getElementById('ob-role')?.value,
-                license: document.getElementById('ob-license')?.value
-            };
-        }
+            // PATH DT: apunta exclusivamente a la tabla users histórica
+            // Solo se envían columnas que existen en users
+            const name     = document.getElementById('ob-name')?.value   || null;
+            const staffRole = document.getElementById('ob-role')?.value  || null;
+            const license  = document.getElementById('ob-license')?.value || null;
 
-        try {
-            const r = await fetch(`${window.SUPABASE_URL}/rest/v1/${table}`, {
-                method: 'POST',
-                headers: { 
-                    'apikey': window.SUPABASE_KEY, 
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'resolution=merge-duplicates' // Esto evita errores si el perfil ya existe
-                },
-                body: JSON.stringify(profileData)
-            });
+            if (!name) return alert('Por favor, ingresa tu nombre.');
 
-            if (!r.ok) throw new Error("Error al sincronizar con el Laboratorio");
-
-            console.log(`✅ Perfil de ${role} guardado con éxito.`);
-            // Redirigir al Dashboard final
-            role === 'athlete' ? window.PlayerEngine?.init() : location.reload();
-            
-        } catch (err) {
-            console.error("🔴 Error de Sincronización:", err);
-            alert("Hubo un problema al guardar tus datos en la base de datos.");
+            try {
+                const r = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': window.SUPABASE_KEY,
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, staff_role: staffRole, license })
+                });
+                if (!r.ok) throw new Error('Error al actualizar perfil de staff.');
+                console.log('✅ Perfil de DT guardado en users.');
+                location.reload();
+            } catch (err) {
+                console.error('🔴 Error de Sincronización DT:', err);
+                alert('Hubo un problema al guardar tus datos: ' + err.message);
+            }
         }
     },
 
