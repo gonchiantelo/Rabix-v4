@@ -133,17 +133,44 @@ window.App = {
     },
 
     selectRole: function(role) {
-        this.currentRole = role; // 'dt' o 'athlete'
+        this.currentRole = role;
+
+        const body = document.body;
+        const subtitle = document.getElementById('login-subtitle');
+        const emailInput = document.getElementById('login-username');
+        const submitBtn = document.getElementById('login-submit-btn');
 
         if (role === 'athlete') {
-            document.body.classList.add('testing-athlete');
+            body.classList.add('mode-athlete', 'testing-athlete');
+            body.classList.remove('mode-dt');
+            if (subtitle) subtitle.textContent = 'LABORATORIO DE RENDIMIENTO';
+            if (emailInput) emailInput.placeholder = 'ID de Atleta o Email';
+            if (submitBtn) submitBtn.textContent = 'ACCEDER AL LABORATORIO';
         } else {
-            document.body.classList.remove('testing-athlete');
+            body.classList.add('mode-dt');
+            body.classList.remove('mode-athlete', 'testing-athlete');
+            if (subtitle) subtitle.textContent = 'ALTO RENDIMIENTO — STAFF';
+            if (emailInput) emailInput.placeholder = 'Email de Staff';
+            if (submitBtn) submitBtn.textContent = 'ENTRAR AL SISTEMA';
         }
 
-        // Transición suave: ocultar portal, mostrar login
-        document.getElementById('view-portal').style.display = 'none';
-        document.getElementById('view-login').style.display = 'flex';
+        // Transición suave portal → login
+        const portal = document.getElementById('view-portal');
+        const login  = document.getElementById('view-login');
+        if (portal) { portal.style.opacity = '0'; portal.style.pointerEvents = 'none'; setTimeout(() => { portal.style.display = 'none'; portal.style.opacity = ''; portal.style.pointerEvents = ''; }, 380); }
+        if (login)  { login.style.display = 'flex'; requestAnimationFrame(() => { login.style.opacity = '1'; }); }
+    },
+
+    goBackToPortal: function() {
+        const portal = document.getElementById('view-portal');
+        const login  = document.getElementById('view-login');
+
+        // Resetear clases de modo
+        document.body.classList.remove('mode-athlete', 'mode-dt', 'testing-athlete');
+        this.currentRole = 'dt';
+
+        if (login)  { login.style.display = 'none'; }
+        if (portal) { portal.style.display = 'flex'; }
     },
 
     handleRouting() {

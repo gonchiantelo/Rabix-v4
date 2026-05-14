@@ -19,23 +19,28 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
 </head>
-<body class="testing-athlete">
+<body>
 
     <!-- PORTAL DE ENTRADA MULTI-ROL -->
-    <section id="view-portal" class="view-section" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #050510; color: white;">
-        <h1 style="font-family: Outfit; font-size: 2.5rem; margin: 0 0 5px;">RAVIX V5</h1>
-        <p style="color: #A0A0B0; margin-bottom: 40px; font-weight: bold; letter-spacing: 2px; font-size: 0.85rem;">SELECCIONA TU ENTORNO</p>
-
-        <div style="display: flex; gap: 20px; width: 100%; max-width: 600px; padding: 0 20px;">
-            <div id="portal-dt" onclick="window.App.selectRole('dt')" style="flex: 1; background: #111827; border: 1px solid rgba(0, 242, 254, 0.3); border-radius: 16px; padding: 40px 20px; text-align: center; cursor: pointer; transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='#00F2FE'" onmouseout="this.style.transform=''; this.style.borderColor='rgba(0,242,254,0.3)'">
-                <div style="font-size: 2.5rem; margin-bottom: 15px;">⚡</div>
-                <h2 style="color: #00F2FE; font-family: Outfit; margin: 0; font-size: 1.3rem;">STAFF T&Eacute;CNICO</h2>
-                <p style="color: #666; font-size: 0.8rem; margin-top: 10px; line-height: 1.4;">Tactical OS &amp; Gesti&oacute;n</p>
+    <section id="view-portal">
+        <div class="portal-bg"></div>
+        <div class="portal-content">
+            <div class="portal-brand">
+                <span class="portal-brand-name">RAVIX</span><span class="portal-brand-v">V5</span>
             </div>
-            <div id="portal-athlete" onclick="window.App.selectRole('athlete')" style="flex: 1; background: #ffffff; border: 1px solid rgba(191, 149, 63, 0.5); border-radius: 16px; padding: 40px 20px; text-align: center; cursor: pointer; transition: transform 0.2s, border-color 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='#bf953f'" onmouseout="this.style.transform=''; this.style.borderColor='rgba(191,149,63,0.5)'">
-                <div style="font-size: 2.5rem; margin-bottom: 15px;">🏆</div>
-                <h2 style="background: linear-gradient(135deg, #bf953f, #b38728); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: Outfit; margin: 0; font-size: 1.3rem;">ATLETA</h2>
-                <p style="color: #666; font-size: 0.8rem; margin-top: 10px; line-height: 1.4;">Laboratorio de Rendimiento</p>
+            <p class="portal-eyebrow">SELECCIONA TU ENTORNO</p>
+
+            <div class="portal-cards">
+                <div id="portal-dt" class="portal-card portal-card--dt" onclick="window.App.selectRole('dt')">
+                    <div class="portal-card-icon">&#9889;</div>
+                    <h2 class="portal-card-title portal-card-title--dt">STAFF T&Eacute;CNICO</h2>
+                    <p class="portal-card-desc">Tactical OS &amp; Gesti&oacute;n</p>
+                </div>
+                <div id="portal-athlete" class="portal-card portal-card--athlete" onclick="window.App.selectRole('athlete')">
+                    <div class="portal-card-icon">&#127942;</div>
+                    <h2 class="portal-card-title portal-card-title--athlete">ATLETA</h2>
+                    <p class="portal-card-desc">Laboratorio de Rendimiento</p>
+                </div>
             </div>
         </div>
     </section>
@@ -43,13 +48,18 @@
     <!-- SECCIÓN LOGIN -->
     <section id="view-login" class="login-view" style="display: none;">
         <div class="login-card card">
+            <!-- Botón Volver -->
+            <button id="login-back-btn" class="login-back-btn" onclick="window.App.goBackToPortal()" aria-label="Volver al portal">
+                &#8592; Volver
+            </button>
+
             <div class="brand-name">RAVIX V5</div>
-            <p class="login-subtitle">ALTO RENDIMIENTO</p>
+            <p class="login-subtitle" id="login-subtitle">ALTO RENDIMIENTO</p>
             
             <form id="login-form">
                 <input type="email" id="login-username" class="rform-input mb-10" placeholder="Email" required autocomplete="username">
                 <input type="password" id="login-password" class="rform-input mb-20" placeholder="Contraseña" required autocomplete="current-password">
-                <button type="submit" class="btn-primary btn-full">ENTRAR AL SISTEMA</button>
+                <button type="submit" class="btn-primary btn-full" id="login-submit-btn">ENTRAR AL SISTEMA</button>
                 <p class="auth-toggle">¿No tienes cuenta? <a href="#" onclick="window.App.toggleAuth('register')">Regístrate aquí</a></p>
             </form>
 

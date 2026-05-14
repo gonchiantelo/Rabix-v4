@@ -1,19 +1,19 @@
 :root {
     /* ── 'Elite Deep' Palette — Definitive V5 ── */
-    --bg: #0A0B1E;              /* Ultra-Deep Indigo */
+    --bg: #0A0B1E;
     --bg-2: #0E0F26;
-    --surface: #141531;         /* Deep Navy Surface */
+    --surface: #141531;
     --surface-2: #1A1B3A;
     --border: rgba(255, 255, 255, 0.07);
     --border-2: rgba(255, 255, 255, 0.13);
 
-    --accent: #079FA0;          /* Teal — Interactive */
-    --accent-bright: #9FD8C5;   /* Mint — Highlights */
+    --accent: #079FA0;
+    --accent-bright: #9FD8C5;
     --accent-dim: rgba(7, 159, 160, 0.15);
 
-    --text: #F0F0F8;            /* Clean White */
-    --text-2: #A0A0C0;          /* Muted Lavender */
-    --text-3: #5A5A80;          /* Steel Purple */
+    --text: #F0F0F8;
+    --text-2: #A0A0C0;
+    --text-3: #5A5A80;
 
     --btn-primary-bg: linear-gradient(135deg, #F58B01 0%, #E85D3A 100%);
     --btn-primary-glow: rgba(245, 139, 1, 0.4);
@@ -25,7 +25,36 @@
     --f-title: 'Outfit', sans-serif;
     --f-body: 'Inter', sans-serif;
     --transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-premium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     --header-h: 68px;
+
+    /* ── Portal / Login tokens (modo DT default) ── */
+    --login-bg: #050510;
+    --login-surface: rgba(17, 24, 39, 0.85);
+    --login-border: rgba(0, 242, 254, 0.25);
+    --login-accent: #00F2FE;
+    --login-text: #F0F0F8;
+    --login-text-muted: #A0A0B0;
+    --login-input-bg: rgba(255,255,255,0.04);
+    --login-input-border: rgba(0, 242, 254, 0.2);
+    --login-input-focus: #00F2FE;
+    --login-btn-bg: linear-gradient(135deg, #00F2FE 0%, #0072FF 100%);
+    --login-btn-glow: rgba(0, 242, 254, 0.3);
+}
+
+/* ── Modo Atleta: override de tokens ── */
+body.mode-athlete {
+    --login-bg: #F5F5F7;
+    --login-surface: #FFFFFF;
+    --login-border: rgba(191, 149, 63, 0.3);
+    --login-accent: #bf953f;
+    --login-text: #1A1A2E;
+    --login-text-muted: #6B6B7B;
+    --login-input-bg: #FAFAFA;
+    --login-input-border: rgba(191, 149, 63, 0.25);
+    --login-input-focus: #bf953f;
+    --login-btn-bg: linear-gradient(135deg, #bf953f 0%, #b38728 100%);
+    --login-btn-glow: rgba(191, 149, 63, 0.35);
 }
 
 /* ── Reset ── */
@@ -36,6 +65,7 @@ body {
     font-family: var(--f-body);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+    transition: background-color var(--transition-premium), color var(--transition-premium);
 }
 
 /* ── Core Layout ── */
@@ -57,7 +87,13 @@ body {
     font-family: var(--f-title);
     font-size: 22px;
     font-weight: 900;
-    background: linear-gradient(135deg, var(--text) 20%, var(--accent-bright) 100%);
+    color: var(--login-accent);
+    letter-spacing: -0.5px;
+    transition: color var(--transition-premium);
+}
+
+body.mode-athlete .brand-name {
+    background: linear-gradient(135deg, #bf953f, #b38728);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -107,17 +143,6 @@ body {
     font-family: inherit;
 }
 
-/* ── Login View ── */
-.login-view {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.login-card { width: 100%; max-width: 400px; text-align: center; }
-.login-title { font-size: 40px; margin-bottom: 10px; }
-.login-subtitle { color: var(--text-3); margin-bottom: 30px; }
-
 /* ── Helpers ── */
 .hidden { display: none !important; }
 .btn-full { width: 100%; }
@@ -142,17 +167,258 @@ body {
 .auth-toggle {
     margin-top: 20px;
     font-size: 13px;
-    color: var(--text-3);
+    color: var(--login-text-muted);
+    transition: color var(--transition-premium);
 }
-
 .auth-toggle a {
-    color: var(--accent);
+    color: var(--login-accent);
     text-decoration: none;
     font-weight: 700;
     transition: 0.2s;
 }
-
 .auth-toggle a:hover {
-    color: var(--accent-bright);
-    text-shadow: 0 0 10px var(--accent);
+    opacity: 0.75;
+    text-shadow: 0 0 10px var(--login-accent);
+}
+
+/* ═══════════════════════════════════════
+   PORTAL DE ENTRADA
+═══════════════════════════════════════ */
+#view-portal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: #050510;
+    overflow: hidden;
+    transition: opacity var(--transition-premium);
+}
+
+/* Partículas de fondo (CSS puro) */
+.portal-bg {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 60% 50% at 20% 50%, rgba(0, 242, 254, 0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 80% 50%, rgba(0, 114, 255, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.portal-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.portal-brand {
+    font-family: 'Outfit', sans-serif;
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+.portal-brand-name { color: #FFFFFF; }
+.portal-brand-v {
+    color: #00F2FE;
+    text-shadow: 0 0 30px rgba(0, 242, 254, 0.6);
+}
+
+.portal-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #5A5A80;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+}
+
+.portal-cards {
+    display: flex;
+    gap: 18px;
+    width: 100%;
+    max-width: 560px;
+    padding: 0 20px;
+}
+
+.portal-card {
+    flex: 1;
+    border-radius: 18px;
+    padding: 36px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform var(--transition-premium), box-shadow var(--transition-premium), border-color var(--transition-premium);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Modo DT */
+.portal-card--dt {
+    background: rgba(17, 24, 39, 0.9);
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    box-shadow: 0 0 0 0 rgba(0, 242, 254, 0);
+}
+.portal-card--dt:hover {
+    transform: translateY(-6px);
+    border-color: #00F2FE;
+    box-shadow: 0 12px 40px rgba(0, 242, 254, 0.15), inset 0 0 30px rgba(0, 242, 254, 0.04);
+}
+.portal-card--dt .portal-card-title { color: #00F2FE; }
+
+/* Modo Atleta */
+.portal-card--athlete {
+    background: rgba(255, 255, 255, 0.97);
+    border: 1px solid rgba(191, 149, 63, 0.3);
+    box-shadow: 0 0 0 0 rgba(191, 149, 63, 0);
+}
+.portal-card--athlete:hover {
+    transform: translateY(-6px);
+    border-color: #bf953f;
+    box-shadow: 0 12px 40px rgba(191, 149, 63, 0.2), inset 0 0 30px rgba(191, 149, 63, 0.04);
+}
+.portal-card--athlete .portal-card-title {
+    background: linear-gradient(135deg, #bf953f, #b38728);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.portal-card--athlete .portal-card-desc { color: #888; }
+
+.portal-card-icon {
+    font-size: 2.2rem;
+    margin-bottom: 14px;
+    display: block;
+}
+
+.portal-card-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 900;
+    margin: 0 0 8px;
+    letter-spacing: -0.3px;
+}
+
+.portal-card-desc {
+    font-size: 0.78rem;
+    color: #555;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+/* ═══════════════════════════════════════
+   LOGIN ADAPTATIVO
+═══════════════════════════════════════ */
+.login-view {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--login-bg);
+    transition: background var(--transition-premium);
+}
+
+.login-card {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    background: var(--login-surface) !important;
+    border: 1px solid var(--login-border) !important;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.25) !important;
+    transition:
+        background var(--transition-premium),
+        border-color var(--transition-premium),
+        box-shadow var(--transition-premium);
+}
+
+/* Botón Volver */
+.login-back-btn {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    background: none;
+    border: none;
+    color: var(--login-text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    opacity: 0.55;
+    transition: opacity 0.2s, color 0.2s;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+.login-back-btn:hover {
+    opacity: 1;
+    color: var(--login-accent);
+}
+
+/* Login: title & subtitle */
+.login-title { font-size: 40px; margin-bottom: 10px; }
+.login-subtitle {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    color: var(--login-text-muted);
+    margin-bottom: 28px;
+    text-transform: uppercase;
+    transition: color var(--transition-premium);
+}
+
+/* Inputs adaptativos */
+.rform-input {
+    width: 100%;
+    padding: 14px 20px;
+    background: var(--login-input-bg);
+    border: 1px solid var(--login-input-border);
+    border-radius: var(--radius-sm);
+    color: var(--login-text);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition:
+        border-color var(--transition-premium),
+        background var(--transition-premium),
+        color var(--transition-premium),
+        box-shadow 0.2s;
+}
+.rform-input::placeholder {
+    color: var(--login-text-muted);
+    transition: color var(--transition-premium);
+}
+.rform-input:focus {
+    border-color: var(--login-input-focus);
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.05), 0 0 12px rgba(0,0,0,0.03);
+}
+body.mode-athlete .rform-input:focus {
+    box-shadow: 0 0 0 3px rgba(191, 149, 63, 0.12);
+}
+body:not(.mode-athlete) .rform-input:focus {
+    box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.1);
+}
+
+/* Botón submit del login */
+#login-submit-btn, #register-form .btn-primary {
+    background: var(--login-btn-bg);
+    box-shadow: 0 8px 24px var(--login-btn-glow);
+    transition:
+        background var(--transition-premium),
+        box-shadow var(--transition-premium),
+        transform 0.2s;
+    color: #fff;
+    border: none;
+    width: 100%;
+    padding: 14px 24px;
+    border-radius: 30px;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+}
+#login-submit-btn:hover, #register-form .btn-primary:hover {
+    transform: translateY(-2px);
 }
