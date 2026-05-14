@@ -1,85 +1,51 @@
 /* =========================================
-   MUNDO ATLETA - PLAYER ENGINE
+   MUNDO ATLETA - PLAYER ENGINE (Cometti)
 ========================================= */
 
 window.PlayerEngine = {
-    mockData: [
-        {
-            id: 1,
-            name: "Kevin De Bruyne",
-            sport: "Fútbol - Mediocampista",
-            avatar: "⚽",
-            structural: { weight: 76, height: 181, fat: 9.5 },
-            neuromuscular: { rsi: 2.8, cmj: 45 },
-            fatigue: 85 // Motor de disponibilidad
-        },
-        {
-            id: 2,
-            name: "Adam Peaty",
-            sport: "Natación - Pecho",
-            avatar: "🏊‍♂️",
-            structural: { weight: 86, height: 191, fat: 8.0 },
-            neuromuscular: { rsi: 2.1, cmj: 52 },
-            fatigue: 92
-        }
-    ],
-
     init: function() {
-        console.log("PlayerEngine Init - Mundo Atleta listo");
-        this.renderAthletes();
+        document.body.classList.add('testing-athlete');
+
+        // Forzar ocultamiento de todo y mostrar Atletas
+        document.querySelectorAll('.view-section').forEach(s => s.style.display = 'none');
+
+        const view = document.getElementById('view-athletes');
+        if (view) {
+            view.style.display = 'block';
+            this.render();
+        }
     },
 
-    renderAthletes: function() {
-        const grid = document.getElementById('athletes-grid');
+    render: function() {
+        const grid = document.getElementById('athlete-grid');
         if (!grid) return;
 
-        grid.innerHTML = '';
-
-        this.mockData.forEach(athlete => {
-            const card = document.createElement('div');
-            card.className = 'aw-card';
-            
-            card.innerHTML = `
-                <div class="aw-card-header">
-                    <div class="aw-avatar">${athlete.avatar}</div>
-                    <div class="aw-info">
-                        <h2>${athlete.name}</h2>
-                        <p>${athlete.sport}</p>
-                    </div>
+        grid.innerHTML = `
+            <div class="athlete-card">
+                <h3 style="font-family:Outfit; margin:0;">MATEO FERNÁNDEZ</h3>
+                <p style="color:#bf953f; font-weight:900; font-size:12px;">FÚTBOL | PIVOTE</p>
+                <hr style="opacity:0.1; margin:10px 0;">
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; font-size:10px; font-weight:bold;">
+                    <div>ESTRUCTURA<br><span style="color:#666;">78kg / 1.81m</span></div>
+                    <div>NERVIOSO<br><span style="color:#666;">CMJ: 52cm</span></div>
+                    <div>BIOMEC.<br><span style="color:#666;">VO2: 62</span></div>
                 </div>
-
-                <div class="aw-pillars">
-                    <div class="aw-pillar">
-                        <div class="aw-pillar-title">Estructural</div>
-                        <div class="aw-pillar-value">${athlete.structural.weight} <span class="aw-pillar-unit">kg</span></div>
-                        <div class="aw-pillar-value" style="font-size:14px; color:#666; margin-top:5px;">Adiposidad: ${athlete.structural.fat}%</div>
-                    </div>
-                    <div class="aw-pillar">
-                        <div class="aw-pillar-title">Neuromuscular</div>
-                        <div class="aw-pillar-value">${athlete.neuromuscular.cmj} <span class="aw-pillar-unit">cm CMJ</span></div>
-                        <div class="aw-pillar-value" style="font-size:14px; color:#666; margin-top:5px;">RSI: ${athlete.neuromuscular.rsi}</div>
-                    </div>
+            </div>
+            <div class="athlete-card">
+                <h3 style="font-family:Outfit; margin:0;">LUCAS ROMERO</h3>
+                <p style="color:#bf953f; font-weight:900; font-size:12px;">NATACIÓN | LIBRE</p>
+                <hr style="opacity:0.1; margin:10px 0;">
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; font-size:10px; font-weight:bold;">
+                    <div>ESTRUCTURA<br><span style="color:#666;">74kg / 1.85m</span></div>
+                    <div>NERVIOSO<br><span style="color:#666;">RSI: 2.6</span></div>
+                    <div>BIOMEC.<br><span style="color:#666;">VO2: 71</span></div>
                 </div>
-
-                <div class="aw-fatigue">
-                    <div class="aw-fatigue-header">
-                        <span class="aw-fatigue-title">Disponibilidad (Motor)</span>
-                        <span class="aw-fatigue-percent">${athlete.fatigue}%</span>
-                    </div>
-                    <div class="aw-progress-bar">
-                        <div class="aw-progress-fill" style="width: ${athlete.fatigue}%"></div>
-                    </div>
-                </div>
-            `;
-            
-            grid.appendChild(card);
-        });
+            </div>
+        `;
     }
 };
 
-// Auto-init si la vista está activa, o exponerlo para que el App core lo inicialice.
-document.addEventListener('DOMContentLoaded', () => {
-    // Si la vista no está oculta al cargar, renderizamos. 
-    // Aunque el router principal debería manejar esto, lo dejamos listo.
+// Auto-init al cargar el DOM
+document.addEventListener('DOMContentLoaded', function() {
     window.PlayerEngine.init();
 });

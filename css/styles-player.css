@@ -1,183 +1,61 @@
 /* =========================================
    MUNDO ATLETA - PREMIUM LIGHT MODE
 ========================================= */
-.athlete-world {
-    background-color: #F8F9FA;
-    min-height: 100vh;
-    padding: 40px;
-    font-family: 'Inter', sans-serif;
-    color: #1A1D20;
-    width: 100%;
-    box-sizing: border-box;
+
+.athlete-world, .testing-athlete #view-login {
+    background: #ffffff !important;
+    color: #1a1a1a !important;
 }
 
-.athlete-world.hidden {
-    display: none !important;
+.testing-athlete .login-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(191, 149, 63, 0.2) !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
 }
 
-/* HEADER */
+.testing-athlete .brand-name {
+    background: linear-gradient(135deg, #bf953f, #b38728) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+/* ---- ATHLETE GRID & CARD (Cometti) ---- */
+.athlete-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.athlete-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-top: 4px solid #bf953f;
+}
+
+/* ---- VIEW ATLETA HEADER ---- */
 .athlete-world .aw-header {
     text-align: center;
-    margin-bottom: 50px;
+    padding: 40px 20px 10px;
 }
 
 .athlete-world .aw-title {
     font-family: 'Outfit', sans-serif;
     font-size: 42px;
     font-weight: 900;
-    color: #1A1D20;
+    color: #1a1a1a;
     margin: 0;
     text-transform: uppercase;
     letter-spacing: -1px;
 }
 
 .athlete-world .aw-subtitle {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
-    color: #D4AF37; /* Dorado Premium */
+    color: #bf953f;
     letter-spacing: 3px;
     text-transform: uppercase;
     margin-top: 5px;
-}
-
-/* GRID */
-.athlete-world .aw-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    gap: 30px;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-/* CARD DE ATLETA */
-.athlete-world .aw-card {
-    background: #FFFFFF;
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-}
-
-.athlete-world .aw-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
-    border-color: #D4AF37;
-}
-
-/* HEADER CARD */
-.athlete-world .aw-card-header {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    border-bottom: 1px solid #EBEBEB;
-    padding-bottom: 20px;
-}
-
-.athlete-world .aw-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: #F0F0F0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    border: 2px solid #D4AF37;
-    color: #1A1D20;
-}
-
-.athlete-world .aw-info h2 {
-    font-family: 'Outfit', sans-serif;
-    font-size: 24px;
-    font-weight: 700;
-    margin: 0 0 5px 0;
-}
-
-.athlete-world .aw-info p {
-    font-size: 13px;
-    color: #666;
-    margin: 0;
-    font-weight: 600;
-}
-
-/* PILARES (GRID INTERNO) */
-.athlete-world .aw-pillars {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
-
-.athlete-world .aw-pillar {
-    background: #F8F9FA;
-    padding: 15px;
-    border-radius: 12px;
-    border: 1px solid #EBEBEB;
-}
-
-.athlete-world .aw-pillar-title {
-    font-size: 11px;
-    font-weight: 800;
-    color: #999;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-    letter-spacing: 1px;
-}
-
-.athlete-world .aw-pillar-value {
-    font-size: 18px;
-    font-weight: 700;
-    color: #1A1D20;
-}
-
-.athlete-world .aw-pillar-unit {
-    font-size: 12px;
-    color: #666;
-    font-weight: 500;
-}
-
-/* FATIGUE MOTOR */
-.athlete-world .aw-fatigue {
-    background: #F8F9FA;
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid #EBEBEB;
-}
-
-.athlete-world .aw-fatigue-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.athlete-world .aw-fatigue-title {
-    font-size: 12px;
-    font-weight: 800;
-    color: #1A1D20;
-    text-transform: uppercase;
-}
-
-.athlete-world .aw-fatigue-percent {
-    font-size: 16px;
-    font-weight: 900;
-    color: #D4AF37;
-}
-
-.athlete-world .aw-progress-bar {
-    width: 100%;
-    height: 8px;
-    background: #EBEBEB;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.athlete-world .aw-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #D4AF37, #F3E5AB);
-    border-radius: 4px;
-    transition: width 1s ease-in-out;
 }
