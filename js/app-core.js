@@ -498,44 +498,56 @@ window.App = {
 
     // --- ACTUALIZACIÓN DE SIGNUP ---
     signUp: async function(email, pass) {
-        const role = this.currentRole; // Captura si es 'dt' o 'athlete'
-        
+        const role = this.currentRole || 'dt';
+        console.log(`[RAVIX AUTH] Intentando registrar: ${email} como ${role}`);
+
         try {
-            const r = await fetch(`${window.SUPABASE_URL}/auth/v1/signup`, {
+            const r = await fetch(`${window.SUPA_URL}/auth/v1/signup`, {
                 method: 'POST',
                 headers: { 
-                    'apikey': window.SUPABASE_KEY,
+                    'apikey': window.SUPA_KEY,
                     'Content-Type': 'application/json'
                 },
+                // CORRECCIÓN CRÍTICA: La API REST usa 'data', no 'options.data'
                 body: JSON.stringify({ 
-                    email, 
+                    email: email, 
                     password: pass,
-                    options: { 
-                        data: { role: role } // Esto es CLAVE para que Supabase sepa qué es el usuario
-                    }
+                    data: { role: role } 
                 })
             });
 
             const data = await r.json();
+            console.log("[RAVIX AUTH] Respuesta de Supabase:", data);
 
-            // MANEJO DE USUARIO EXISTENTE (Dual Role)
+            // 1. Manejo de usuario existente
             if (r.status === 400 && (data.msg?.includes('already registered') || data.message?.includes('already registered'))) {
-                console.log("🔄 Usuario detectado. Intentando vincular nuevo rol...");
-                // Si ya existe, lo mandamos al login. El login detectará la falta de perfil y lanzará el Wizard.
-                alert("Ya tienes una cuenta en Ravix. Por favor, inicia sesión para activar tu perfil de " + (role === 'athlete' ? 'Atleta' : 'Staff') + ".");
+                console.log("🔄 Usuario ya existe en Auth. Redirigiendo a Login para activar el nuevo perfil...");
+                alert("Tu email ya está en la base de datos. Por favor, inicia sesión para continuar.");
                 window.App.toggleAuth('login');
                 return;
             }
 
-            if (!r.ok) throw new Error(data.msg || data.message || "Error al crear cuenta");
+            // 2. Manejo de errores reales
+            if (!r.ok) {
+                throw new Error(data.msg || data.message || data.error_description || "Error desconocido al crear la cuenta");
+            }
 
-            // Registro exitoso
-            alert("¡Cuenta creada! Verifica tu email para activar el acceso al " + (role === 'athlete' ? 'Laboratorio' : 'Staff') + ".");
-            window.App.toggleAuth('login');
+            // 3. Éxito: Auto-Login (Confirmación de email desactivada)
+            if (data.session) {
+                console.log("✅ Registro exitoso. Iniciando sesión automática...");
+                localStorage.setItem('ravix_token', data.session.access_token);
+                localStorage.setItem('ravix_v5_uid', data.user.id);
+                
+                // Ir directo al Wizard porque es una cuenta 100% nueva
+                window.Wizard.startFor(role);
+            } else {
+                // Fallback por si la API no devolvió sesión por algún motivo
+                window.App.toggleAuth('login');
+            }
 
         } catch (err) {
-            console.error("🔴 Signup Fail:", err);
-            alert(err.message);
+            console.error("🔴 Error en Registro:", err);
+            alert("Hubo un problema de conexión con el servidor: " + err.message);
         }
     },
 
