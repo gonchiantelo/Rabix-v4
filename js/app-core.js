@@ -499,7 +499,7 @@ window.App = {
     // --- ACTUALIZACIÓN DE SIGNUP ---
     signUp: async function(email, pass) {
         const role = this.currentRole || 'dt';
-        console.log(`[RAVIX AUTH] Intentando registrar: ${email} como ${role}`);
+        console.log(`[RAVIX AUTH] Registrando: ${email} como ${role}`);
 
         try {
             const r = await fetch(`${window.SUPA_URL}/auth/v1/signup`, {
@@ -508,7 +508,6 @@ window.App = {
                     'apikey': window.SUPA_KEY,
                     'Content-Type': 'application/json'
                 },
-                // CORRECCIÓN CRÍTICA: La API REST usa 'data', no 'options.data'
                 body: JSON.stringify({ 
                     email: email, 
                     password: pass,
@@ -517,37 +516,32 @@ window.App = {
             });
 
             const data = await r.json();
-            console.log("[RAVIX AUTH] Respuesta de Supabase:", data);
+            console.log("[RAVIX AUTH] Respuesta Signup:", data);
 
-            // 1. Manejo de usuario existente
-            if (r.status === 400 && (data.msg?.includes('already registered') || data.message?.includes('already registered'))) {
-                console.log("🔄 Usuario ya existe en Auth. Redirigiendo a Login para activar el nuevo perfil...");
-                alert("Tu email ya está en la base de datos. Por favor, inicia sesión para continuar.");
+            if (r.status === 400 && (data.msg?.includes('already registered') || data.message?.includes('already registered') || data.error_description?.includes('already registered'))) {
+                alert("Este email ya está registrado. Por favor, inicia sesión para continuar.");
                 window.App.toggleAuth('login');
                 return;
             }
 
-            // 2. Manejo de errores reales
-            if (!r.ok) {
-                throw new Error(data.msg || data.message || data.error_description || "Error desconocido al crear la cuenta");
-            }
+            if (!r.ok) throw new Error(data.msg || data.message || data.error_description || "Error en el servidor");
 
-            // 3. Éxito: Auto-Login (Confirmación de email desactivada)
-            if (data.session) {
-                console.log("✅ Registro exitoso. Iniciando sesión automática...");
-                localStorage.setItem('ravix_token', data.session.access_token);
+            // CORRECCIÓN DE RAÍZ: API REST devuelve los datos en la raíz
+            if (data.access_token && data.user) {
+                console.log("✅ Registro exitoso. Guardando sesión nativa...");
+                localStorage.setItem('ravix_token', data.access_token);
                 localStorage.setItem('ravix_v5_uid', data.user.id);
                 
-                // Ir directo al Wizard porque es una cuenta 100% nueva
-                window.Wizard.startFor(role);
+                // Lanzar validación de perfil o disparar el Wizard correspondiente
+                await this.checkSession(data.user.id, data.access_token);
             } else {
-                // Fallback por si la API no devolvió sesión por algún motivo
+                console.log("⚠️ No se obtuvieron tokens directos. Redirigiendo a login manual.");
                 window.App.toggleAuth('login');
             }
 
         } catch (err) {
-            console.error("🔴 Error en Registro:", err);
-            alert("Hubo un problema de conexión con el servidor: " + err.message);
+            console.error("🔴 Fallo en Registro:", err);
+            alert("Error: " + err.message);
         }
     },
 
