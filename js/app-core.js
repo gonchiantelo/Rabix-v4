@@ -496,52 +496,75 @@ window.App = {
         document.getElementById('register-form').style.display = mode === 'register' ? 'block' : 'none';
     },
 
-    // --- ACTUALIZACIÓN DE SIGNUP ---
+    // --- SIGNUP CON ENRUTAMIENTO MANUAL (SIN TRIGGER) ---
     signUp: async function(email, pass) {
         const role = this.currentRole || 'dt';
-        console.log(`[RAVIX AUTH] Registrando: ${email} como ${role}`);
+        console.log(`[RAVIX AUTH] Iniciando registro manual para: ${email} como ${role}`);
 
         try {
-            const r = await fetch(`${window.SUPA_URL}/auth/v1/signup`, {
+            // 1. Crear el usuario en el sistema de Auth
+            const rAuth = await fetch(`${window.SUPA_URL}/auth/v1/signup`, {
                 method: 'POST',
-                headers: { 
-                    'apikey': window.SUPA_KEY,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    email: email, 
-                    password: pass,
-                    data: { role: role } 
-                })
+                headers: { 'apikey': window.SUPA_KEY, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, password: pass }) // Ya no dependemos de la metadata aquí
             });
 
-            const data = await r.json();
-            console.log("[RAVIX AUTH] Respuesta Signup:", data);
+            const authData = await rAuth.json();
 
-            if (r.status === 400 && (data.msg?.includes('already registered') || data.message?.includes('already registered') || data.error_description?.includes('already registered'))) {
-                alert("Este email ya está registrado. Por favor, inicia sesión para continuar.");
+            if (rAuth.status === 400 && (authData.msg?.includes('already registered') || authData.message?.includes('already registered') || authData.error_description?.includes('already registered'))) {
+                alert("El email ya existe. Por favor, inicia sesión.");
                 window.App.toggleAuth('login');
                 return;
             }
+            if (!rAuth.ok) throw new Error(authData.msg || authData.message || authData.error_description || "Error de Auth");
 
-            if (!r.ok) throw new Error(data.msg || data.message || data.error_description || "Error en el servidor");
-
-            // CORRECCIÓN DE RAÍZ: API REST devuelve los datos en la raíz
-            if (data.access_token && data.user) {
-                console.log("✅ Registro exitoso. Guardando sesión nativa...");
-                localStorage.setItem('ravix_token', data.access_token);
-                localStorage.setItem('ravix_v5_uid', data.user.id);
+            // 2. Si el registro fue exitoso y nos devolvió token
+            if (authData.access_token && authData.user) {
+                const uid = authData.user.id;
+                const token = authData.access_token;
                 
-                // Lanzar validación de perfil o disparar el Wizard correspondiente
-                await this.checkSession(data.user.id, data.access_token);
+                // Guardamos la sesión
+                localStorage.setItem('ravix_token', token);
+                localStorage.setItem('ravix_v5_uid', uid);
+
+                // 3. ENRUTAMIENTO MANUAL HACIA LA TABLA CORRECTA
+                const table = role === 'athlete' ? 'profiles_athlete' : 'users';
+                
+                // Preparamos el esqueleto inicial según el rol
+                let profilePayload = { id: uid };
+                if (role === 'dt') {
+                    profilePayload = {
+                        id: uid,
+                        name: 'Staff RAVIX',
+                        email: email,
+                        role: 'dt',
+                        objetivo: 'ALTO_RENDIMIENTO',
+                        dt_configured: false
+                    };
+                }
+
+                // Inyectamos el esqueleto en la base de datos
+                await fetch(`${window.SUPA_URL}/rest/v1/${table}`, {
+                    method: 'POST',
+                    headers: { 
+                        'apikey': window.SUPA_KEY, 
+                        'Authorization': `Bearer ${token}`, 
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify(profilePayload)
+                });
+
+                console.log(`✅ Perfil inyectado exitosamente en ${table}`);
+                
+                // 4. Lanzamos el Wizard correspondiente para rellenar los datos
+                window.Wizard.startFor(role);
             } else {
-                console.log("⚠️ No se obtuvieron tokens directos. Redirigiendo a login manual.");
-                window.App.toggleAuth('login');
+                throw new Error("No se pudo iniciar sesión automáticamente tras el registro.");
             }
 
         } catch (err) {
-            console.error("🔴 Fallo en Registro:", err);
-            alert("Error: " + err.message);
+            console.error("🔴 Error Crítico en Registro:", err);
+            alert("Hubo un error: " + err.message);
         }
     },
 
