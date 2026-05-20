@@ -362,6 +362,130 @@
         </div>
     </section>
 
+    <!-- ═══════════════════════════════════════
+         ONBOARDING ATLETA — LABORATORIO DE RENDIMIENTO
+    ═══════════════════════════════════════ -->
+    <section id="view-onboarding-athlete" class="oa-shell" style="display:none;">
+
+        <!-- Panel izquierdo: identidad visual -->
+        <aside class="oa-sidebar">
+            <div class="oa-sidebar-brand">
+                <span class="oa-brand-r">R</span><span class="oa-brand-avix">AVIX</span>
+                <span class="oa-brand-badge">ATHLETE LAB</span>
+            </div>
+            <div class="oa-sidebar-hero">
+                <p class="oa-sidebar-eyebrow">PROTOCOLO DE INGRESO</p>
+                <h1 class="oa-sidebar-title">Tu Perfil<br>de Élite</h1>
+                <p class="oa-sidebar-desc">Cada dato que ingreses construye el modelo biomecánico que guiará tu rendimiento.</p>
+            </div>
+            <ul class="oa-sidebar-pillars">
+                <li class="oa-pillar-item">
+                    <span class="oa-pillar-dot"></span>
+                    <div>
+                        <p class="oa-pillar-name">Estructura</p>
+                        <p class="oa-pillar-sub">Morfología y antropometría</p>
+                    </div>
+                </li>
+                <li class="oa-pillar-item">
+                    <span class="oa-pillar-dot"></span>
+                    <div>
+                        <p class="oa-pillar-name">Neuromuscular</p>
+                        <p class="oa-pillar-sub">Fuerza, potencia y velocidad</p>
+                    </div>
+                </li>
+                <li class="oa-pillar-item">
+                    <span class="oa-pillar-dot"></span>
+                    <div>
+                        <p class="oa-pillar-name">Biomecánica</p>
+                        <p class="oa-pillar-sub">Análisis del movimiento — Cometti</p>
+                    </div>
+                </li>
+            </ul>
+            <p class="oa-sidebar-footer">Protocolo Gilles Cometti © RAVIX V5</p>
+        </aside>
+
+        <!-- Panel derecho: formulario -->
+        <main class="oa-form-panel">
+            <button class="oa-escape-btn" onclick="window.App.logout()">Cancelar y salir</button>
+
+            <form id="athlete-onboarding-form" class="oa-form" onsubmit="window.App.saveProfile(event)">
+                <div class="oa-form-header">
+                    <p class="oa-form-eyebrow">PASO 1 DE 1</p>
+                    <h2 class="oa-form-title">Configura tu Laboratorio</h2>
+                    <p class="oa-form-subtitle">Completa tu identidad deportiva. Podrás ajustar estos datos en cualquier momento.</p>
+                </div>
+
+                <div class="oa-fields">
+
+                    <!-- Nombre -->
+                    <div class="oa-field-group">
+                        <label class="oa-label" for="oa-name">NOMBRE COMPLETO <span class="oa-required">*</span></label>
+                        <div class="oa-input-wrap">
+                            <span class="oa-input-icon">👤</span>
+                            <input type="text" id="oa-name" name="full_name" class="oa-input" placeholder="Ej. Lucas Martínez" required autocomplete="name">
+                        </div>
+                    </div>
+
+                    <!-- Deporte + Posición -->
+                    <div class="oa-field-row">
+                        <div class="oa-field-group">
+                            <label class="oa-label" for="oa-sport">DEPORTE <span class="oa-required">*</span></label>
+                            <div class="oa-input-wrap">
+                                <span class="oa-input-icon">🏅</span>
+                                <select id="oa-sport" name="sport" class="oa-input oa-select" required>
+                                    <option value="" disabled selected>Selecciona...</option>
+                                    <option value="Futbol">Fútbol</option>
+                                    <option value="Natacion">Natación</option>
+                                    <option value="Atletismo">Atletismo</option>
+                                    <option value="Judo">Judo</option>
+                                    <option value="Rugby">Rugby</option>
+                                    <option value="Basquetbol">Basquetbol</option>
+                                    <option value="Tenis">Tenis</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="oa-field-group">
+                            <label class="oa-label" for="oa-position">POSICIÓN / ESPECIALIDAD</label>
+                            <div class="oa-input-wrap">
+                                <span class="oa-input-icon">🎯</span>
+                                <input type="text" id="oa-position" name="position" class="oa-input" placeholder="Ej. Pivote / 100m Libres">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Datos biométricos -->
+                    <p class="oa-section-divider">DATOS BIOMÉTRICOS</p>
+                    <div class="oa-field-row">
+                        <div class="oa-field-group">
+                            <label class="oa-label" for="oa-weight">PESO (kg)</label>
+                            <div class="oa-input-wrap">
+                                <span class="oa-input-icon">⚖️</span>
+                                <input type="number" id="oa-weight" name="weight_kg" class="oa-input" placeholder="78" min="30" max="200" step="0.1">
+                            </div>
+                        </div>
+                        <div class="oa-field-group">
+                            <label class="oa-label" for="oa-height">ALTURA (cm)</label>
+                            <div class="oa-input-wrap">
+                                <span class="oa-input-icon">📏</span>
+                                <input type="number" id="oa-height" name="height_cm" class="oa-input" placeholder="181" min="100" max="250">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón submit -->
+                    <button type="submit" class="oa-submit-btn" id="oa-submit-btn">
+                        <span class="oa-submit-text">ACTIVAR LABORATORIO</span>
+                        <span class="oa-submit-arrow">→</span>
+                    </button>
+
+                    <p class="oa-terms">Tus datos son privados y están cifrados bajo protocolo RAVIX.</p>
+                </div>
+            </form>
+        </main>
+
+    </section>
+
     <script src="./js/app-core.js"></script>
     <script src="./js/app-player.js"></script>
 </body>

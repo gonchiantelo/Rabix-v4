@@ -18,11 +18,31 @@ window.Wizard = {
     startFor(role) {
         this.mode = role;
         this.step = 1;
-        const onboarding = document.getElementById('view-onboarding');
-        if (onboarding) onboarding.style.display = 'flex';
-        // Mostrar el wizard correcto
-        document.getElementById('wizard-dt').style.display  = role === 'dt' ? 'block' : 'none';
-        document.getElementById('wizard-athlete').style.display = role === 'athlete' ? 'block' : 'none';
+
+        if (role === 'athlete') {
+            // ── NUEVO ONBOARDING ATLETA ──
+            // Ocultamos todo lo demás
+            document.getElementById('view-login').style.display = 'none';
+            document.getElementById('view-portal').style.display = 'none';
+            const shell = document.getElementById('app-shell');
+            if (shell) shell.style.display = 'none';
+
+            // Mostramos la nueva pantalla premium con fade-in
+            const oaView = document.getElementById('view-onboarding-athlete');
+            if (oaView) {
+                oaView.style.display = 'flex';
+                // Trigger reflow para que la transición CSS funcione
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => oaView.classList.add('oa-visible'));
+                });
+            }
+        } else {
+            // ── WIZARD DT (original) ──
+            const onboarding = document.getElementById('view-onboarding');
+            if (onboarding) onboarding.style.display = 'flex';
+            document.getElementById('wizard-dt').style.display  = 'block';
+            document.getElementById('wizard-athlete').style.display = 'none';
+        }
     },
 
     // ── PATH DT (existente) ──
@@ -262,18 +282,20 @@ window.App = {
 
         // BIFURCACIÓN ESTRICTA: el Atleta jamás toca la tabla users
         if (role === 'athlete') {
-            const profileData = {
-                user_id:   uid,          // FK correcta en profiles_athlete
-                full_name: document.getElementById('ath-name')?.value  || null,
-                sport:     document.getElementById('ath-sport')?.value || null,
-                position:  document.getElementById('ath-pos')?.value   || null,
-                height:    parseFloat(document.getElementById('ath-height')?.value) || null,
-                weight:    parseFloat(document.getElementById('ath-weight')?.value) || null,
-                goal:      document.getElementById('ath-goal')?.value  || null
-            };
+            // Leer campos del NUEVO formulario de onboarding (#athlete-onboarding-form)
+            const fullName = document.getElementById('oa-name')?.value?.trim()
+                          || document.getElementById('ath-name')?.value?.trim() || null;
+            const sport    = document.getElementById('oa-sport')?.value
+                          || document.getElementById('ath-sport')?.value || null;
+            const position = document.getElementById('oa-position')?.value?.trim()
+                          || document.getElementById('ath-pos')?.value?.trim() || null;
+            const weight   = parseFloat(document.getElementById('oa-weight')?.value
+                          || document.getElementById('ath-weight')?.value) || null;
+            const height   = parseFloat(document.getElementById('oa-height')?.value
+                          || document.getElementById('ath-height')?.value) || null;
 
-            if (!profileData.full_name || !profileData.sport) {
-                return alert('Por favor, completa los campos obligatorios.');
+            if (!fullName || !sport) {
+                return alert('Por favor, completa los campos obligatorios (Nombre y Deporte).');
             }
 
             try {
@@ -286,7 +308,14 @@ window.App = {
                         'Content-Type': 'application/json',
                         'Prefer': 'resolution=merge-duplicates'
                     },
-                    body: JSON.stringify(profileData)
+                    body: JSON.stringify({
+                        user_id:   uid,
+                        full_name: fullName,
+                        sport:     sport,
+                        position:  position,
+                        height_cm: height,
+                        weight_kg: weight,
+                    })
                 });
                 if (!r.ok) {
                     const err = await r.json().catch(() => ({}));
@@ -539,7 +568,9 @@ window.App = {
 
                 // Preparamos el esqueleto inicial según el rol
                 let profilePayload = { id: uid };
-                if (role === 'dt') {
+                if (role === 'athlete') {
+                    profilePayload = { id: uid, email: email }; // email explícito para profiles_athlete
+                } else if (role === 'dt') {
                     profilePayload = {
                         id: uid,
                         name: 'Staff RAVIX',
