@@ -362,80 +362,222 @@
         </div>
     </section>
 
-    <!-- ═══════════════════════════════════════
-         ONBOARDING ATLETA — LABORATORIO DE RENDIMIENTO
-    ═══════════════════════════════════════ -->
-    <section id="view-onboarding-athlete" class="oa-shell" style="display:none;">
-
-        <!-- Panel izquierdo: identidad visual -->
+    <!-- ONBOARDING ATLETA — LABORATORIO DE RENDIMIENTO -->
+    <style>
+    #view-onboarding-athlete {
+        display: flex; min-height: 100vh;
+        font-family: 'Outfit', 'Inter', sans-serif;
+        background: #FAFAFA; opacity: 0;
+        transition: opacity 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+    #view-onboarding-athlete.oa-visible { opacity: 1; }
+    #view-onboarding-athlete .oa-sidebar {
+        width: 360px; flex-shrink: 0; background: #0d0c09;
+        padding: 52px 44px; display: flex; flex-direction: column;
+        position: relative; overflow: hidden;
+    }
+    #view-onboarding-athlete .oa-sidebar::after {
+        content: ''; position: absolute; inset: 0;
+        background: radial-gradient(ellipse 90% 55% at 5% 95%, rgba(191,149,63,.22) 0%, transparent 60%),
+                    radial-gradient(ellipse 55% 35% at 95% 5%, rgba(212,175,55,.10) 0%, transparent 55%);
+        pointer-events: none;
+    }
+    #view-onboarding-athlete .oa-brand {
+        display: flex; align-items: baseline; gap: 5px;
+        margin-bottom: 64px; position: relative; z-index: 1;
+    }
+    #view-onboarding-athlete .oa-brand-logo {
+        font-family: 'Outfit', sans-serif; font-size: 1.7rem;
+        font-weight: 900; letter-spacing: -1px; color: #fff;
+    }
+    #view-onboarding-athlete .oa-brand-logo span {
+        background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    #view-onboarding-athlete .oa-brand-tag {
+        font-size: 0.52rem; font-weight: 800; letter-spacing: 2px;
+        text-transform: uppercase; color: #bf953f;
+        border: 1px solid rgba(191,149,63,.35); border-radius: 4px;
+        padding: 3px 7px; margin-left: 6px; align-self: center;
+    }
+    #view-onboarding-athlete .oa-hero { flex: 1; position: relative; z-index: 1; }
+    #view-onboarding-athlete .oa-eyebrow {
+        font-size: 0.6rem; font-weight: 800; letter-spacing: 3px;
+        text-transform: uppercase; margin-bottom: 14px;
+        background: linear-gradient(135deg, #bf953f, #d4af37);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    #view-onboarding-athlete .oa-title {
+        font-size: 3rem; font-weight: 900; line-height: 1.05;
+        letter-spacing: -2px; color: #fff; margin-bottom: 20px;
+    }
+    #view-onboarding-athlete .oa-desc {
+        font-size: 0.88rem; line-height: 1.75; color: #5c5040; max-width: 260px;
+    }
+    #view-onboarding-athlete .oa-pillars {
+        list-style: none; display: flex; flex-direction: column;
+        gap: 18px; margin-bottom: 44px; position: relative; z-index: 1;
+    }
+    #view-onboarding-athlete .oa-pillar { display: flex; align-items: center; gap: 14px; }
+    #view-onboarding-athlete .oa-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: linear-gradient(135deg, #bf953f, #d4af37);
+        box-shadow: 0 0 8px rgba(191,149,63,.45); flex-shrink: 0;
+    }
+    #view-onboarding-athlete .oa-pname { font-size: 0.82rem; font-weight: 700; color: #c8b080; margin-bottom: 1px; }
+    #view-onboarding-athlete .oa-psub  { font-size: 0.67rem; color: #3e3220; }
+    #view-onboarding-athlete .oa-copy  {
+        font-size: 0.58rem; font-weight: 700; letter-spacing: 1px;
+        color: #2a2010; text-transform: uppercase; position: relative; z-index: 1;
+    }
+    #view-onboarding-athlete .oa-panel {
+        flex: 1; display: flex; align-items: center; justify-content: center;
+        padding: 56px 48px; position: relative; background: #FAFAFA;
+    }
+    #view-onboarding-athlete .oa-exit {
+        position: absolute; top: 24px; right: 28px;
+        background: none; border: none; font-size: 0.72rem; font-weight: 700;
+        color: #bbb; cursor: pointer; letter-spacing: .5px;
+        transition: color .2s; font-family: 'Outfit', sans-serif;
+    }
+    #view-onboarding-athlete .oa-exit:hover { color: #ef4444; }
+    #athlete-onboarding-form {
+        width: 100%; max-width: 460px; background: #fff;
+        border-radius: 24px; padding: 48px 44px;
+        box-shadow: 0 4px 6px rgba(0,0,0,.04), 0 20px 60px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
+        animation: oa-up .5s cubic-bezier(.16,1,.3,1) both;
+    }
+    @keyframes oa-up {
+        from { opacity:0; transform:translateY(20px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+    #view-onboarding-athlete .oa-feyebrow {
+        font-size: 0.58rem; font-weight: 800; letter-spacing: 3px;
+        text-transform: uppercase; margin-bottom: 8px;
+        background: linear-gradient(135deg, #bf953f, #d4af37);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    #view-onboarding-athlete .oa-ftitle {
+        font-size: 1.9rem; font-weight: 900; letter-spacing: -1px;
+        color: #1A1A1E; line-height: 1.1; margin-bottom: 8px;
+    }
+    #view-onboarding-athlete .oa-fsub {
+        font-size: 0.82rem; color: #888; line-height: 1.6;
+        margin-bottom: 32px; font-family: 'Inter', sans-serif;
+    }
+    #view-onboarding-athlete .oa-fields { display: flex; flex-direction: column; gap: 18px; }
+    #view-onboarding-athlete .oa-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    #view-onboarding-athlete .oa-group { display: flex; flex-direction: column; gap: 6px; }
+    #view-onboarding-athlete .oa-lbl {
+        font-size: 0.6rem; font-weight: 800; letter-spacing: 1.5px;
+        text-transform: uppercase; color: #aaa; font-family: 'Outfit', sans-serif;
+    }
+    #view-onboarding-athlete .oa-req { color: #bf953f; }
+    #view-onboarding-athlete .oa-inp {
+        width: 100%; padding: 13px 16px; background: #F5F5F7;
+        border: 1.5px solid transparent; border-radius: 12px;
+        color: #1A1A1E; font-family: 'Inter', sans-serif;
+        font-size: 0.9rem; outline: none;
+        transition: border-color .22s, background .22s, box-shadow .22s;
+    }
+    #view-onboarding-athlete .oa-inp::placeholder { color: #C0C0C8; }
+    #view-onboarding-athlete .oa-inp:focus {
+        background: #fffdf8; border-color: #bf953f;
+        box-shadow: 0 0 0 3px rgba(191,149,63,.13);
+    }
+    #view-onboarding-athlete .oa-sel-wrap { position: relative; }
+    #view-onboarding-athlete .oa-sel-wrap select { appearance: none; cursor: pointer; padding-right: 36px; }
+    #view-onboarding-athlete .oa-chevron {
+        position: absolute; right: 14px; top: 50%;
+        transform: translateY(-50%) rotate(90deg);
+        font-size: 1.1rem; color: #bf953f; pointer-events: none; line-height: 1;
+    }
+    #view-onboarding-athlete .oa-unit-wrap { position: relative; display: flex; align-items: center; }
+    #view-onboarding-athlete .oa-unit-wrap .oa-inp { padding-right: 42px; }
+    #view-onboarding-athlete .oa-unit {
+        position: absolute; right: 14px; font-size: 0.72rem; font-weight: 800;
+        letter-spacing: 1px; color: #bf953f; font-family: 'Outfit', sans-serif; pointer-events: none;
+    }
+    #view-onboarding-athlete .oa-div { display: flex; align-items: center; gap: 10px; }
+    #view-onboarding-athlete .oa-div-line { flex: 1; height: 1px; background: #EBEBEB; }
+    #view-onboarding-athlete .oa-div-lbl {
+        font-size: 0.56rem; font-weight: 800; letter-spacing: 2px;
+        color: #CCC; text-transform: uppercase; font-family: 'Outfit', sans-serif; white-space: nowrap;
+    }
+    #oa-submit-btn {
+        width: 100%; padding: 17px 24px;
+        background: linear-gradient(135deg, #bf953f 0%, #d4af37 50%, #b38728 100%);
+        border: none; border-radius: 14px; color: #fff;
+        font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 900;
+        letter-spacing: 1.5px; cursor: pointer; display: flex;
+        align-items: center; justify-content: center; gap: 10px;
+        box-shadow: 0 8px 24px rgba(191,149,63,.38);
+        transition: transform .2s, box-shadow .2s;
+        position: relative; overflow: hidden; margin-top: 4px;
+    }
+    #oa-submit-btn::before {
+        content: ''; position: absolute; inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,.18), transparent);
+        opacity: 0; transition: opacity .2s;
+    }
+    #oa-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(191,149,63,.48); }
+    #oa-submit-btn:hover::before { opacity: 1; }
+    #oa-submit-btn:active { transform: translateY(0); }
+    #oa-submit-btn .oa-arr { display: inline-block; transition: transform .2s; font-size: 1.05rem; }
+    #oa-submit-btn:hover .oa-arr { transform: translateX(5px); }
+    #view-onboarding-athlete .oa-terms {
+        font-size: 0.67rem; color: #C0B8A8; text-align: center;
+        line-height: 1.5; font-family: 'Inter', sans-serif;
+    }
+    @media (max-width: 760px) {
+        #view-onboarding-athlete { flex-direction: column; }
+        #view-onboarding-athlete .oa-sidebar { width: 100%; padding: 28px 24px 24px; }
+        #view-onboarding-athlete .oa-title { font-size: 2.1rem; }
+        #view-onboarding-athlete .oa-pillars, #view-onboarding-athlete .oa-copy { display: none; }
+        #view-onboarding-athlete .oa-hero { flex: none; }
+        #view-onboarding-athlete .oa-brand { margin-bottom: 24px; }
+        #view-onboarding-athlete .oa-panel { padding: 28px 16px; }
+        #athlete-onboarding-form { padding: 32px 24px; }
+        #view-onboarding-athlete .oa-row { grid-template-columns: 1fr; }
+    }
+    </style>
+    <section id="view-onboarding-athlete" style="display:none;">
         <aside class="oa-sidebar">
-            <div class="oa-sidebar-brand">
-                <span class="oa-brand-r">R</span><span class="oa-brand-avix">AVIX</span>
-                <span class="oa-brand-badge">ATHLETE LAB</span>
+            <div class="oa-brand">
+                <span class="oa-brand-logo"><span>R</span>AVIX</span>
+                <span class="oa-brand-tag">Athlete Lab</span>
             </div>
-            <div class="oa-sidebar-hero">
-                <p class="oa-sidebar-eyebrow">PROTOCOLO DE INGRESO</p>
-                <h1 class="oa-sidebar-title">Tu Perfil<br>de Élite</h1>
-                <p class="oa-sidebar-desc">Cada dato que ingreses construye el modelo biomecánico que guiará tu rendimiento.</p>
+            <div class="oa-hero">
+                <p class="oa-eyebrow">Protocolo de Ingreso</p>
+                <h1 class="oa-title">Tu Perfil<br>de Elite</h1>
+                <p class="oa-desc">Cada dato construye el modelo biomecanico que guiara tu rendimiento en cada sesion.</p>
             </div>
-            <ul class="oa-sidebar-pillars">
-                <li class="oa-pillar-item">
-                    <span class="oa-pillar-dot"></span>
-                    <div>
-                        <p class="oa-pillar-name">Estructura</p>
-                        <p class="oa-pillar-sub">Morfología y antropometría</p>
-                    </div>
-                </li>
-                <li class="oa-pillar-item">
-                    <span class="oa-pillar-dot"></span>
-                    <div>
-                        <p class="oa-pillar-name">Neuromuscular</p>
-                        <p class="oa-pillar-sub">Fuerza, potencia y velocidad</p>
-                    </div>
-                </li>
-                <li class="oa-pillar-item">
-                    <span class="oa-pillar-dot"></span>
-                    <div>
-                        <p class="oa-pillar-name">Biomecánica</p>
-                        <p class="oa-pillar-sub">Análisis del movimiento — Cometti</p>
-                    </div>
-                </li>
+            <ul class="oa-pillars">
+                <li class="oa-pillar"><span class="oa-dot"></span><div><p class="oa-pname">Estructura</p><p class="oa-psub">Morfologia y antropometria</p></div></li>
+                <li class="oa-pillar"><span class="oa-dot"></span><div><p class="oa-pname">Neuromuscular</p><p class="oa-psub">Fuerza, potencia y velocidad</p></div></li>
+                <li class="oa-pillar"><span class="oa-dot"></span><div><p class="oa-pname">Biomecanica</p><p class="oa-psub">Analisis del movimiento Cometti</p></div></li>
             </ul>
-            <p class="oa-sidebar-footer">Protocolo Gilles Cometti © RAVIX V5</p>
+            <p class="oa-copy">Protocolo Gilles Cometti &copy; RAVIX V5</p>
         </aside>
-
-        <!-- Panel derecho: formulario -->
-        <main class="oa-form-panel">
-            <button class="oa-escape-btn" onclick="window.App.logout()">Cancelar y salir</button>
-
-            <form id="athlete-onboarding-form" class="oa-form" onsubmit="window.App.saveProfile(event)">
-                <div class="oa-form-header">
-                    <p class="oa-form-eyebrow">PASO 1 DE 1</p>
-                    <h2 class="oa-form-title">Configura tu Laboratorio</h2>
-                    <p class="oa-form-subtitle">Completa tu identidad deportiva. Podrás ajustar estos datos en cualquier momento.</p>
-                </div>
-
+        <main class="oa-panel">
+            <button class="oa-exit" onclick="window.App.logout()">Cancelar y salir &times;</button>
+            <form id="athlete-onboarding-form" onsubmit="window.App.saveProfile(event)">
+                <p class="oa-feyebrow">Paso 1 de 1</p>
+                <h2 class="oa-ftitle">Configura tu<br>Laboratorio</h2>
+                <p class="oa-fsub">Completa tu identidad deportiva. Podras ajustar estos datos en cualquier momento.</p>
                 <div class="oa-fields">
-
-                    <!-- Nombre -->
-                    <div class="oa-field-group">
-                        <label class="oa-label" for="oa-name">NOMBRE COMPLETO <span class="oa-required">*</span></label>
-                        <div class="oa-input-wrap">
-                            <span class="oa-input-icon">👤</span>
-                            <input type="text" id="oa-name" name="full_name" class="oa-input" placeholder="Ej. Lucas Martínez" required autocomplete="name">
-                        </div>
+                    <div class="oa-group">
+                        <label class="oa-lbl" for="ath-name">Nombre Completo <span class="oa-req">*</span></label>
+                        <input type="text" id="ath-name" class="oa-inp" placeholder="Ej. Lucas Martinez" required autocomplete="name">
                     </div>
-
-                    <!-- Deporte + Posición -->
-                    <div class="oa-field-row">
-                        <div class="oa-field-group">
-                            <label class="oa-label" for="oa-sport">DEPORTE <span class="oa-required">*</span></label>
-                            <div class="oa-input-wrap">
-                                <span class="oa-input-icon">🏅</span>
-                                <select id="oa-sport" name="sport" class="oa-input oa-select" required>
+                    <div class="oa-row">
+                        <div class="oa-group">
+                            <label class="oa-lbl" for="ath-sport">Deporte <span class="oa-req">*</span></label>
+                            <div class="oa-sel-wrap">
+                                <select id="ath-sport" class="oa-inp" required>
                                     <option value="" disabled selected>Selecciona...</option>
-                                    <option value="Futbol">Fútbol</option>
-                                    <option value="Natacion">Natación</option>
+                                    <option value="Futbol">Futbol</option>
+                                    <option value="Natacion">Natacion</option>
                                     <option value="Atletismo">Atletismo</option>
                                     <option value="Judo">Judo</option>
                                     <option value="Rugby">Rugby</option>
@@ -443,47 +585,43 @@
                                     <option value="Tenis">Tenis</option>
                                     <option value="Otro">Otro</option>
                                 </select>
+                                <span class="oa-chevron">&#8250;</span>
                             </div>
                         </div>
-                        <div class="oa-field-group">
-                            <label class="oa-label" for="oa-position">POSICIÓN / ESPECIALIDAD</label>
-                            <div class="oa-input-wrap">
-                                <span class="oa-input-icon">🎯</span>
-                                <input type="text" id="oa-position" name="position" class="oa-input" placeholder="Ej. Pivote / 100m Libres">
+                        <div class="oa-group">
+                            <label class="oa-lbl" for="ath-pos">Posicion / Especialidad</label>
+                            <input type="text" id="ath-pos" class="oa-inp" placeholder="Ej. Pivote, 100m...">
+                        </div>
+                    </div>
+                    <div class="oa-div">
+                        <span class="oa-div-line"></span>
+                        <span class="oa-div-lbl">Datos Biometricos</span>
+                        <span class="oa-div-line"></span>
+                    </div>
+                    <div class="oa-row">
+                        <div class="oa-group">
+                            <label class="oa-lbl" for="ath-weight">Peso</label>
+                            <div class="oa-unit-wrap">
+                                <input type="number" id="ath-weight" class="oa-inp" placeholder="78" min="30" max="200" step="0.1">
+                                <span class="oa-unit">kg</span>
+                            </div>
+                        </div>
+                        <div class="oa-group">
+                            <label class="oa-lbl" for="ath-height">Altura</label>
+                            <div class="oa-unit-wrap">
+                                <input type="number" id="ath-height" class="oa-inp" placeholder="181" min="100" max="250">
+                                <span class="oa-unit">cm</span>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Datos biométricos -->
-                    <p class="oa-section-divider">DATOS BIOMÉTRICOS</p>
-                    <div class="oa-field-row">
-                        <div class="oa-field-group">
-                            <label class="oa-label" for="oa-weight">PESO (kg)</label>
-                            <div class="oa-input-wrap">
-                                <span class="oa-input-icon">⚖️</span>
-                                <input type="number" id="oa-weight" name="weight_kg" class="oa-input" placeholder="78" min="30" max="200" step="0.1">
-                            </div>
-                        </div>
-                        <div class="oa-field-group">
-                            <label class="oa-label" for="oa-height">ALTURA (cm)</label>
-                            <div class="oa-input-wrap">
-                                <span class="oa-input-icon">📏</span>
-                                <input type="number" id="oa-height" name="height_cm" class="oa-input" placeholder="181" min="100" max="250">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Botón submit -->
-                    <button type="submit" class="oa-submit-btn" id="oa-submit-btn">
-                        <span class="oa-submit-text">ACTIVAR LABORATORIO</span>
-                        <span class="oa-submit-arrow">→</span>
+                    <button type="submit" id="oa-submit-btn">
+                        <span>ACTIVAR LABORATORIO</span>
+                        <span class="oa-arr">&#8594;</span>
                     </button>
-
-                    <p class="oa-terms">Tus datos son privados y están cifrados bajo protocolo RAVIX.</p>
+                    <p class="oa-terms">Tus datos son privados y estan cifrados bajo protocolo RAVIX.</p>
                 </div>
             </form>
         </main>
-
     </section>
 
     <script src="./js/app-core.js"></script>
