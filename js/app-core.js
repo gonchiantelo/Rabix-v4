@@ -165,6 +165,7 @@ window.Wizard = {
 
 window.App = {
     currentRole: 'dt', // 'dt' | 'athlete' — seteado por el Portal
+    isProcessingAuth: false, // Candado anti-race-condition
 
     async init() {
         const uid = localStorage.getItem('ravix_v5_uid');
@@ -496,8 +497,14 @@ window.App = {
         document.getElementById('register-form').style.display = mode === 'register' ? 'block' : 'none';
     },
 
-    // --- SIGNUP CON ENRUTAMIENTO MANUAL (SIN TRIGGER) ---
+    // --- SIGNUP CON ENRUTAMIENTO MANUAL + CANDADO ANTI-DOBLE-ENVÍO ---
     signUp: async function(email, pass) {
+        if (this.isProcessingAuth) {
+            console.log("⏳ Autenticación en proceso, ignorando doble clic...");
+            return;
+        }
+
+        this.isProcessingAuth = true;
         const role = this.currentRole || 'dt';
         console.log(`[RAVIX AUTH] Iniciando registro manual para: ${email} como ${role}`);
 
@@ -506,7 +513,7 @@ window.App = {
             const rAuth = await fetch(`${window.SUPA_URL}/auth/v1/signup`, {
                 method: 'POST',
                 headers: { 'apikey': window.SUPA_KEY, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email, password: pass }) // Ya no dependemos de la metadata aquí
+                body: JSON.stringify({ email: email, password: pass })
             });
 
             const authData = await rAuth.json();
@@ -522,14 +529,14 @@ window.App = {
             if (authData.access_token && authData.user) {
                 const uid = authData.user.id;
                 const token = authData.access_token;
-                
+
                 // Guardamos la sesión
                 localStorage.setItem('ravix_token', token);
                 localStorage.setItem('ravix_v5_uid', uid);
 
                 // 3. ENRUTAMIENTO MANUAL HACIA LA TABLA CORRECTA
                 const table = role === 'athlete' ? 'profiles_athlete' : 'users';
-                
+
                 // Preparamos el esqueleto inicial según el rol
                 let profilePayload = { id: uid };
                 if (role === 'dt') {
@@ -546,16 +553,16 @@ window.App = {
                 // Inyectamos el esqueleto en la base de datos
                 await fetch(`${window.SUPA_URL}/rest/v1/${table}`, {
                     method: 'POST',
-                    headers: { 
-                        'apikey': window.SUPA_KEY, 
-                        'Authorization': `Bearer ${token}`, 
-                        'Content-Type': 'application/json' 
+                    headers: {
+                        'apikey': window.SUPA_KEY,
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(profilePayload)
                 });
 
                 console.log(`✅ Perfil inyectado exitosamente en ${table}`);
-                
+
                 // 4. Lanzamos el Wizard correspondiente para rellenar los datos
                 window.Wizard.startFor(role);
             } else {
@@ -565,6 +572,9 @@ window.App = {
         } catch (err) {
             console.error("🔴 Error Crítico en Registro:", err);
             alert("Hubo un error: " + err.message);
+        } finally {
+            // SIEMPRE liberar el candado al terminar, haya éxito o error
+            this.isProcessingAuth = false;
         }
     },
 
@@ -615,11 +625,12 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Register Form
+    // Register Form — único punto de disparo, e.preventDefault() bloquea doble submit
     const regForm = document.getElementById('register-form');
     if (regForm) {
         regForm.onsubmit = async function(e) {
             e.preventDefault();
+            e.stopImmediatePropagation(); // Previene cualquier otro listener encadenado
             const email = document.getElementById('register-email').value;
             const pass  = document.getElementById('register-password').value;
             const conf  = document.getElementById('register-confirm-password').value;
