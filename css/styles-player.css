@@ -1,7 +1,930 @@
 /* =========================================
-   MUNDO ATLETA - PREMIUM LIGHT MODE
+   RAVIX V5 — ATHLETE DASHBOARD PREMIUM
+   Estética: Whoop × Oura × Nike Athlete Lab
+   Paleta: Blanco hueso · Carbón · Degradado Dorado
 ========================================= */
 
+/* ── SCOPE RESETS ── */
+#view-athlete-dashboard * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ── ROOT SHELL ── */
+#view-athlete-dashboard {
+    background: #F5F4F1;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    color: #1C1C1E;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* ═══════════════════════════════
+   HERO HEADER
+═══════════════════════════════ */
+.adp-hero {
+    background: linear-gradient(165deg, #1C1C1E 0%, #0f0e0a 60%, #1a160e 100%);
+    padding: 56px 24px 0;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.adp-hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 70% 60% at 5% 90%, rgba(191,149,63,0.2) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 95% 5%, rgba(212,175,55,0.08) 0%, transparent 55%),
+        radial-gradient(ellipse 30% 30% at 50% 50%, rgba(191,149,63,0.04) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.adp-hero-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+    gap: 16px;
+}
+
+.adp-hero-left {
+    flex: 1;
+}
+
+.adp-date {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: rgba(191,149,63,0.7);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.adp-greeting {
+    font-family: 'Outfit', sans-serif;
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    color: #ffffff;
+    line-height: 1.1;
+    margin-bottom: 8px;
+}
+
+.adp-name {
+    background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.adp-sport-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    color: rgba(255,255,255,0.25);
+    text-transform: uppercase;
+}
+
+/* ── READINESS RING ── */
+.adp-readiness-ring-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.adp-ring-label {
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+}
+
+.adp-ring-container {
+    position: relative;
+    width: 88px;
+    height: 88px;
+}
+
+.adp-ring-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(0deg);
+}
+
+.adp-ring-track {
+    fill: none;
+    stroke: rgba(255,255,255,0.06);
+    stroke-width: 8;
+}
+
+.adp-ring-fill {
+    fill: none;
+    stroke: url(#gold-gradient);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    filter: drop-shadow(0 0 6px rgba(212,175,55,0.5));
+}
+
+.adp-ring-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+}
+
+.adp-ring-score {
+    font-family: 'Outfit', sans-serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: #ffffff;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+.adp-ring-unit {
+    font-size: 8px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 1px;
+}
+
+.adp-ring-status {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(212,175,55,0.8);
+}
+
+/* ── DAILY CHIPS ── */
+.adp-chips {
+    display: flex;
+    gap: 8px;
+    margin-top: 28px;
+    padding-bottom: 20px;
+    position: relative;
+    z-index: 1;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.adp-chips::-webkit-scrollbar { display: none; }
+
+.adp-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 10px 16px;
+    white-space: nowrap;
+    backdrop-filter: blur(8px);
+    transition: all 0.25s;
+}
+
+.adp-chip--done {
+    border-color: rgba(16,185,129,0.3);
+    background: rgba(16,185,129,0.06);
+}
+
+.adp-chip-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.adp-chip-dot--pending { background: rgba(255,255,255,0.2); }
+.adp-chip-dot--done { background: #10b981; box-shadow: 0 0 6px rgba(16,185,129,0.6); }
+
+.adp-chip-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+}
+
+.adp-chip-val {
+    font-size: 11px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.8);
+}
+
+
+/* ═══════════════════════════════
+   SCROLL CONTENT
+═══════════════════════════════ */
+.adp-scroll-content {
+    flex: 1;
+    padding: 24px 16px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+}
+
+/* ═══════════════════════════════
+   CARDS
+═══════════════════════════════ */
+.adp-card {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow:
+        0 1px 3px rgba(0,0,0,0.04),
+        0 8px 24px rgba(0,0,0,0.06),
+        0 32px 48px rgba(0,0,0,0.03);
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s;
+    animation: adp-card-in 0.5s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes adp-card-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.adp-card:nth-child(2) { animation-delay: 0.08s; }
+.adp-card:nth-child(3) { animation-delay: 0.16s; }
+
+/* Top accent bar */
+.adp-card-accent {
+    height: 3px;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+.adp-card-accent--sun  { background: linear-gradient(90deg, #f59e0b, #fbbf24, #fde68a); }
+.adp-card-accent--fire { background: linear-gradient(90deg, #ef4444, #f97316, #fbbf24); }
+.adp-card-accent--gold { background: linear-gradient(90deg, #bf953f, #d4af37, #fcf6ba, #b38728); }
+
+.adp-card-inner {
+    padding: 24px 20px 22px;
+}
+
+/* Card Header */
+.adp-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.adp-card-icon-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.adp-icon-sun      { background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(251,191,36,0.08)); color: #d97706; }
+.adp-icon-fire     { background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(249,115,22,0.08)); color: #ef4444; }
+.adp-icon-strength { background: linear-gradient(135deg, rgba(191,149,63,0.15), rgba(212,175,55,0.08)); color: #b38728; }
+
+.adp-card-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    color: #1C1C1E;
+    letter-spacing: -0.3px;
+}
+
+.adp-card-subtitle {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    margin-top: 3px;
+}
+
+/* Badge */
+.adp-badge {
+    margin-left: auto;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+.adp-badge--pending { background: #fff8e6; color: #d97706; border: 1px solid rgba(217,119,6,0.2); }
+.adp-badge--done    { background: #e6f7f0; color: #059669; border: 1px solid rgba(5,150,105,0.2); }
+
+/* ── PARAM BLOCKS ── */
+.adp-param-block {
+    margin-bottom: 22px;
+}
+
+.adp-param-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.adp-param-label {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #9ca3af;
+    text-transform: uppercase;
+}
+
+.adp-param-value {
+    font-size: 12px;
+    font-weight: 800;
+    color: #bf953f;
+}
+
+/* ── BUTTON CLUSTER (Sleep quality) ── */
+.adp-btn-cluster {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.adp-cluster-btn {
+    padding: 12px 4px;
+    border: 1.5px solid #e8e8ea;
+    border-radius: 14px;
+    background: #fafafa;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+    font-family: 'Inter', sans-serif;
+}
+
+.adp-cluster-btn:hover {
+    border-color: rgba(191,149,63,0.4);
+    color: #bf953f;
+    background: rgba(191,149,63,0.04);
+}
+
+.adp-cluster-btn--active {
+    background: #1C1C1E !important;
+    color: #ffffff !important;
+    border-color: #1C1C1E !important;
+    box-shadow: 0 4px 12px rgba(28,28,30,0.2);
+}
+
+/* ── RANGE SLIDER ── */
+.adp-range-wrap {
+    position: relative;
+    margin: 4px 0;
+}
+
+.adp-range {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 6px;
+    background: #f0ede8;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+}
+
+.adp-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2.5px solid #bf953f;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(191,149,63,0.35), 0 1px 3px rgba(0,0,0,0.1);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.adp-range::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 16px rgba(191,149,63,0.5);
+}
+
+.adp-range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    font-weight: 700;
+    color: #c0bbb3;
+    letter-spacing: 0.5px;
+    margin-top: 8px;
+}
+
+/* ── HOOPER DOTS ── */
+.adp-hooper-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+
+.adp-hooper-dot {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    border: 1.5px solid #e8e8ea;
+    background: #fafafa;
+    font-size: 13px;
+    font-weight: 800;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Outfit', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.adp-hooper-dot:hover {
+    border-color: rgba(239,68,68,0.3);
+    color: #ef4444;
+}
+
+.adp-hooper-dot--active {
+    background: #1C1C1E !important;
+    color: #ffffff !important;
+    border-color: #1C1C1E !important;
+    box-shadow: 0 3px 10px rgba(28,28,30,0.2);
+}
+
+.adp-hooper-dot[data-val="5"].adp-hooper-dot--active,
+.adp-hooper-dot[data-val="6"].adp-hooper-dot--active,
+.adp-hooper-dot[data-val="7"].adp-hooper-dot--active {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    border-color: transparent !important;
+}
+
+/* ── INPUTS ── */
+.adp-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.adp-three-col {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    gap: 8px;
+    align-items: end;
+    margin-bottom: 20px;
+}
+
+.adp-srk-separator {
+    font-size: 20px;
+    font-weight: 900;
+    color: #d4af37;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 14px;
+    line-height: 1;
+}
+
+.adp-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.adp-input-label {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #9ca3af;
+    text-transform: uppercase;
+}
+
+.adp-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.adp-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: #fafafa;
+    border: 1.5px solid #e8e8ea;
+    border-radius: 14px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #1C1C1E;
+    outline: none;
+    transition: all 0.2s;
+    -moz-appearance: textfield;
+}
+.adp-input::-webkit-inner-spin-button,
+.adp-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+.adp-input:focus {
+    border-color: #bf953f;
+    background: #fffdf8;
+    box-shadow: 0 0 0 4px rgba(191,149,63,0.1);
+}
+
+.adp-input--center { text-align: center; }
+
+.adp-input-unit {
+    position: absolute;
+    right: 14px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #bf953f;
+    pointer-events: none;
+    font-family: 'Outfit', sans-serif;
+}
+
+/* ── RPE SCALE ── */
+.adp-rpe-scale {
+    margin-bottom: 20px;
+}
+
+.adp-rpe-scale-label {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.adp-rpe-dots {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+}
+
+.adp-rpe-dot {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    background: #f0ede8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Outfit', sans-serif;
+    user-select: none;
+}
+
+.adp-rpe-dot:hover { transform: scale(1.1); }
+.adp-rpe-dot.rpe-1  { background: #dcfce7; color: #16a34a; }
+.adp-rpe-dot.rpe-2  { background: #d1fae5; color: #059669; }
+.adp-rpe-dot.rpe-3  { background: #fef3c7; color: #d97706; }
+.adp-rpe-dot.rpe-4  { background: #fde68a; color: #b45309; }
+.adp-rpe-dot.rpe-5  { background: #fed7aa; color: #c2410c; }
+.adp-rpe-dot.rpe-6  { background: #fecaca; color: #dc2626; }
+.adp-rpe-dot.rpe-7  { background: #fca5a5; color: #b91c1c; }
+.adp-rpe-dot.rpe-8  { background: #f87171; color: #fff; }
+.adp-rpe-dot.rpe-9  { background: #ef4444; color: #fff; }
+.adp-rpe-dot.rpe-10 { background: linear-gradient(135deg,#dc2626,#991b1b); color: #fff; box-shadow: 0 4px 12px rgba(220,38,38,0.4); }
+
+/* ── CALC RESULT ── */
+.adp-calc-result {
+    background: linear-gradient(135deg, #f8f7f5, #f0ece5);
+    border: 1px solid rgba(191,149,63,0.15);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.adp-calc-result--gold {
+    background: linear-gradient(135deg, #fffdf5, #fdf8e8);
+    border-color: rgba(212,175,55,0.25);
+}
+
+.adp-calc-formula {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: #6b7280;
+    flex-wrap: wrap;
+}
+
+.adp-calc-op {
+    font-size: 18px;
+    color: rgba(191,149,63,0.6);
+}
+
+.adp-calc-total {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.adp-calc-num {
+    font-family: 'Outfit', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: #1C1C1E;
+    line-height: 1;
+    letter-spacing: -1px;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.adp-calc-num--gold { color: #b38728; }
+
+.adp-calc-label {
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    color: #9ca3af;
+    text-transform: uppercase;
+}
+
+/* ── REGIME GRID (Cometti) ── */
+.adp-regime-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.adp-regime-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 8px;
+    border-radius: 16px;
+    border: 1.5px solid #e8e8ea;
+    background: #fafafa;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #6b7280;
+}
+
+.adp-regime-btn:hover {
+    border-color: rgba(191,149,63,0.4);
+    background: rgba(191,149,63,0.04);
+    color: #b38728;
+}
+
+.adp-regime-btn--active {
+    background: #1C1C1E !important;
+    color: #ffffff !important;
+    border-color: #1C1C1E !important;
+    box-shadow: 0 6px 20px rgba(28,28,30,0.2);
+}
+
+.adp-regime-icon {
+    font-size: 22px;
+    line-height: 1;
+}
+
+/* ── SETS LOG ── */
+.adp-sets-log {
+    background: #fafafa;
+    border: 1px solid #f0ede8;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.adp-sets-log-title {
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.adp-sets-log-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 0;
+    color: #c0bbb3;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.adp-set-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0ede8;
+    animation: adp-set-in 0.3s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes adp-set-in {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.adp-set-row:last-child { border-bottom: none; }
+
+.adp-set-regime {
+    font-size: 10px;
+    font-weight: 800;
+    color: #bf953f;
+    letter-spacing: 0.5px;
+    flex: 1;
+}
+
+.adp-set-formula {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #4b5563;
+}
+
+.adp-set-tonnage {
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 900;
+    color: #1C1C1E;
+    min-width: 70px;
+    text-align: right;
+}
+
+.adp-sets-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 14px;
+    border-top: 1px solid #e8e5df;
+    margin-top: 8px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #9ca3af;
+    text-transform: uppercase;
+}
+
+.adp-sets-total-val {
+    font-family: 'Outfit', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    color: #b38728;
+    letter-spacing: -0.5px;
+}
+
+/* ── PRIMARY BUTTONS ── */
+.adp-btn-primary {
+    width: 100%;
+    padding: 17px;
+    background: #1C1C1E;
+    color: #ffffff;
+    border: none;
+    border-radius: 16px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
+    overflow: hidden;
+}
+
+.adp-btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.05) 100%);
+    pointer-events: none;
+}
+
+.adp-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(28,28,30,0.25);
+}
+
+.adp-btn-primary:active {
+    transform: translateY(0);
+}
+
+.adp-btn-primary--gold {
+    background: linear-gradient(135deg, #bf953f 0%, #d4af37 50%, #b38728 100%) !important;
+    box-shadow: 0 4px 16px rgba(191,149,63,0.3);
+}
+
+.adp-btn-primary--gold:hover {
+    box-shadow: 0 10px 28px rgba(191,149,63,0.45) !important;
+}
+
+/* ═══════════════════════════════
+   BOTTOM NAVBAR
+═══════════════════════════════ */
+.adp-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 72px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid rgba(0,0,0,0.06);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 12px env(safe-area-inset-bottom, 0);
+    z-index: 999;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.06);
+}
+
+.adp-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 0;
+    color: #c0bbb3;
+    transition: color 0.2s;
+    position: relative;
+}
+
+.adp-nav-item--active {
+    color: #1C1C1E;
+}
+
+.adp-nav-item--active .adp-nav-icon {
+    background: rgba(28,28,30,0.06);
+}
+
+.adp-nav-icon {
+    width: 40px;
+    height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.adp-nav-item:hover .adp-nav-icon {
+    background: rgba(28,28,30,0.04);
+}
+
+.adp-nav-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+}
+
+/* ── Active gold indicator dot ── */
+.adp-nav-item--active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 20px;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #bf953f, #d4af37);
+}
+
+/* ── ATHLETE GRID (DT view) — Kept for compatibility ── */
 .athlete-world, .testing-athlete #view-login {
     background: #ffffff !important;
     color: #1a1a1a !important;
@@ -19,7 +942,6 @@
     -webkit-text-fill-color: transparent !important;
 }
 
-/* ---- ATHLETE GRID & CARD (Cometti) ---- */
 .athlete-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -35,7 +957,6 @@
     border-top: 4px solid #bf953f;
 }
 
-/* ---- EMPTY STATE ---- */
 .aw-empty-state {
     grid-column: 1 / -1;
     display: flex;
@@ -47,44 +968,20 @@
     color: #999;
     font-family: 'Inter', sans-serif;
 }
-.aw-empty-icon {
-    font-size: 3.5rem;
-    margin-bottom: 20px;
-    filter: grayscale(0.3);
-}
-.aw-empty-state h3 {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.3rem;
-    color: #1a1a2e;
-    margin: 0 0 8px;
-}
-.aw-empty-state p {
-    font-size: 0.875rem;
-    line-height: 1.6;
-    max-width: 280px;
+.aw-empty-icon { font-size: 3.5rem; margin-bottom: 20px; filter: grayscale(0.3); }
+.aw-empty-state h3 { font-family: 'Outfit', sans-serif; font-size: 1.3rem; color: #1a1a2e; margin: 0 0 8px; }
+.aw-empty-state p  { font-size: 0.875rem; line-height: 1.6; max-width: 280px; }
+
+.athlete-world .aw-header { text-align: center; padding: 40px 20px 10px; }
+.athlete-world .aw-title  { font-family: 'Outfit', sans-serif; font-size: 42px; font-weight: 900; color: #1a1a1a; margin: 0; }
+.athlete-world .aw-subtitle { font-size: 13px; font-weight: 700; color: #bf953f; letter-spacing: 3px; text-transform: uppercase; margin-top: 5px; }
+
+/* ── RESPONSIVE ── */
+@media (min-width: 430px) {
+    .adp-hero   { padding: 64px 28px 0; }
+    .adp-scroll-content { padding: 28px 20px 100px; }
+    .adp-card-inner { padding: 28px 24px 24px; }
+    .adp-regime-grid { grid-template-columns: repeat(4, 1fr); }
+    .adp-btn-cluster { gap: 10px; }
 }
 
-/* ---- VIEW ATLETA HEADER ---- */
-.athlete-world .aw-header {
-    text-align: center;
-    padding: 40px 20px 10px;
-}
-
-.athlete-world .aw-title {
-    font-family: 'Outfit', sans-serif;
-    font-size: 42px;
-    font-weight: 900;
-    color: #1a1a1a;
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: -1px;
-}
-
-.athlete-world .aw-subtitle {
-    font-size: 13px;
-    font-weight: 700;
-    color: #bf953f;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-top: 5px;
-}

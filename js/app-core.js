@@ -760,6 +760,7 @@ window.AthWizard = (function () {
             'Culturismo / Bodybuilding', 'Fitness Estetico',
             'Perdida de Peso / Recomposicion', 'Rendimiento General'
         ],
+        'Voleibol': ['Armador', 'Punta / Receptor', 'Opuesto', 'Central', 'Líbero'],
         'Otro': ['General / Polideportivo', 'Rehabilitacion Deportiva', 'Preparacion Fisica Base']
     };
 

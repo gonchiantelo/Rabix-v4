@@ -346,10 +346,341 @@
                     </div>
                 </div>
             </div>
-        </div> <!-- /wizard-athlete -->
+           <!-- SECCIÓN ATHLETE DASHBOARD — PREMIUM REDESIGN -->
+    <section id="view-athlete-dashboard" class="view-section" style="display: none;">
 
+        <!-- SVG Defs for gold gradient on circle -->
+        <svg width="0" height="0" style="position:absolute;">
+            <defs>
+                <linearGradient id="gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#bf953f"/>
+                    <stop offset="50%" stop-color="#fcf6ba"/>
+                    <stop offset="100%" stop-color="#b38728"/>
+                </linearGradient>
+            </defs>
+        </svg>
+
+        <!-- ═══ HERO HEADER ═══ -->
+        <div class="adp-hero">
+            <div class="adp-hero-bg"></div>
+            <div class="adp-hero-content">
+                <div class="adp-hero-left">
+                    <p class="adp-date" id="ad-date">CARGANDO...</p>
+                    <h1 class="adp-greeting">Buenas, <span class="adp-name" id="ad-user-name">Atleta</span></h1>
+                    <p class="adp-sport-tag" id="ad-sport-tag">LABORATORIO DE RENDIMIENTO</p>
+                </div>
+                <div class="adp-readiness-ring-wrap">
+                    <div class="adp-ring-label">READINESS</div>
+                    <div class="adp-ring-container">
+                        <svg class="adp-ring-svg" viewBox="0 0 100 100">
+                            <circle class="adp-ring-track" cx="50" cy="50" r="42"/>
+                            <circle class="adp-ring-fill" id="adp-ring-fill" cx="50" cy="50" r="42"
+                                stroke-dasharray="264 264"
+                                stroke-dashoffset="40"
+                                transform="rotate(-90 50 50)"/>
+                        </svg>
+                        <div class="adp-ring-inner">
+                            <span class="adp-ring-score" id="ad-readiness-score">—</span>
+                            <span class="adp-ring-unit">/ 100</span>
+                        </div>
+                    </div>
+                    <div class="adp-ring-status" id="adp-ring-status">Óptimo</div>
+                </div>
+            </div>
+
+            <!-- Daily summary chips -->
+            <div class="adp-chips">
+                <div class="adp-chip" id="chip-wellness">
+                    <span class="adp-chip-dot adp-chip-dot--pending"></span>
+                    <span class="adp-chip-label">Wellness</span>
+                    <span class="adp-chip-val" id="chip-wellness-val">Pendiente</span>
+                </div>
+                <div class="adp-chip" id="chip-load">
+                    <span class="adp-chip-dot adp-chip-dot--pending"></span>
+                    <span class="adp-chip-label">Carga</span>
+                    <span class="adp-chip-val" id="chip-load-val">Sin registrar</span>
+                </div>
+                <div class="adp-chip" id="chip-strength">
+                    <span class="adp-chip-dot adp-chip-dot--pending"></span>
+                    <span class="adp-chip-label">Tonelaje</span>
+                    <span class="adp-chip-val" id="chip-strength-val">0 Kg</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ SCROLL CONTENT ═══ -->
+        <div class="adp-scroll-content">
+
+            <!-- ── WIDGET 1: WELLNESS PRE-ENTRENO ── -->
+            <div class="adp-card" id="widget-wellness">
+                <div class="adp-card-accent adp-card-accent--sun"></div>
+                <div class="adp-card-inner">
+                    <div class="adp-card-header">
+                        <div class="adp-card-icon-wrap adp-icon-sun">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+                        </div>
+                        <div>
+                            <h2 class="adp-card-title">Control Wellness</h2>
+                            <p class="adp-card-subtitle">PRE-ENTRENO · REPORTE MATUTINO</p>
+                        </div>
+                        <span class="adp-badge adp-badge--pending" id="wellness-badge">PENDIENTE</span>
+                    </div>
+
+                    <!-- Sueño -->
+                    <div class="adp-param-block">
+                        <div class="adp-param-header">
+                            <span class="adp-param-label">CALIDAD DEL SUEÑO</span>
+                            <span class="adp-param-value" id="sleep-display">Buena</span>
+                        </div>
+                        <div class="adp-btn-cluster" id="wellness-sleep">
+                            <button class="adp-cluster-btn" data-value="1">Mala</button>
+                            <button class="adp-cluster-btn" data-value="2">Regular</button>
+                            <button class="adp-cluster-btn adp-cluster-btn--active" data-value="3">Buena</button>
+                            <button class="adp-cluster-btn" data-value="4">Excelente</button>
+                        </div>
+                    </div>
+
+                    <!-- Estrés -->
+                    <div class="adp-param-block">
+                        <div class="adp-param-header">
+                            <span class="adp-param-label">NIVEL DE ESTRÉS</span>
+                            <span class="adp-param-value" id="stress-display">3 / 10</span>
+                        </div>
+                        <div class="adp-range-wrap">
+                            <input type="range" class="adp-range" id="wellness-stress" min="1" max="10" value="3"
+                                oninput="window.AthleteApp.updateRangeDisplay('wellness-stress','stress-display',this.value,'/10')">
+                            <div class="adp-range-track-fill" id="stress-track"></div>
+                        </div>
+                        <div class="adp-range-labels"><span>Bajo (1)</span><span>Extremo (10)</span></div>
+                    </div>
+
+                    <!-- Escala Hooper -->
+                    <div class="adp-param-block">
+                        <div class="adp-param-header">
+                            <span class="adp-param-label">ESCALA HOOPER · DOLOR MUSCULAR</span>
+                            <span class="adp-param-value" id="hooper-display">2 / 7</span>
+                        </div>
+                        <div class="adp-hooper-grid" id="wellness-hooper-dots">
+                            <button class="adp-hooper-dot" data-val="1">1</button>
+                            <button class="adp-hooper-dot adp-hooper-dot--active" data-val="2">2</button>
+                            <button class="adp-hooper-dot" data-val="3">3</button>
+                            <button class="adp-hooper-dot" data-val="4">4</button>
+                            <button class="adp-hooper-dot" data-val="5">5</button>
+                            <button class="adp-hooper-dot" data-val="6">6</button>
+                            <button class="adp-hooper-dot" data-val="7">7</button>
+                        </div>
+                        <div class="adp-range-labels" style="margin-top:6px"><span>Sin dolor</span><span>Extremo</span></div>
+                    </div>
+
+                    <button class="adp-btn-primary" onclick="window.AthleteApp.saveWellness()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Guardar Reporte de Wellness
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── WIDGET 2: CUANTIFICACIÓN DE CARGA ── -->
+            <div class="adp-card" id="widget-load">
+                <div class="adp-card-accent adp-card-accent--fire"></div>
+                <div class="adp-card-inner">
+                    <div class="adp-card-header">
+                        <div class="adp-card-icon-wrap adp-icon-fire">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                        </div>
+                        <div>
+                            <h2 class="adp-card-title">Cuantificación de Carga</h2>
+                            <p class="adp-card-subtitle">POST-ENTRENO · MÉTODO FOSTER</p>
+                        </div>
+                    </div>
+
+                    <div class="adp-two-col">
+                        <div class="adp-input-group">
+                            <label class="adp-input-label">DURACIÓN</label>
+                            <div class="adp-input-wrap">
+                                <input type="number" class="adp-input" id="load-duration" placeholder="90"
+                                    oninput="window.AthleteApp.calculateLoad()" min="1" max="300">
+                                <span class="adp-input-unit">min</span>
+                            </div>
+                        </div>
+                        <div class="adp-input-group">
+                            <label class="adp-input-label">RPE BORG</label>
+                            <div class="adp-input-wrap">
+                                <input type="number" class="adp-input" id="load-rpe" placeholder="7"
+                                    oninput="window.AthleteApp.calculateLoad()" min="1" max="10">
+                                <span class="adp-input-unit">/ 10</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RPE Visual Scale -->
+                    <div class="adp-rpe-scale">
+                        <div class="adp-rpe-scale-label">ESCALA RPE BORG ADAPTADA</div>
+                        <div class="adp-rpe-dots" id="rpe-dots">
+                            <span class="adp-rpe-dot" data-rpe="1" title="Muy fácil">1</span>
+                            <span class="adp-rpe-dot" data-rpe="2" title="Fácil">2</span>
+                            <span class="adp-rpe-dot" data-rpe="3" title="Moderado">3</span>
+                            <span class="adp-rpe-dot" data-rpe="4" title="Algo difícil">4</span>
+                            <span class="adp-rpe-dot" data-rpe="5" title="Difícil">5</span>
+                            <span class="adp-rpe-dot" data-rpe="6" title="Muy difícil">6</span>
+                            <span class="adp-rpe-dot" data-rpe="7" title="Muy muy difícil">7</span>
+                            <span class="adp-rpe-dot" data-rpe="8" title="Extremo">8</span>
+                            <span class="adp-rpe-dot" data-rpe="9" title="Máximo">9</span>
+                            <span class="adp-rpe-dot" data-rpe="10" title="Absoluto máximo">10</span>
+                        </div>
+                    </div>
+
+                    <!-- Carga Result -->
+                    <div class="adp-calc-result" id="load-calc-display">
+                        <div class="adp-calc-formula">
+                            <span id="load-dur-preview">—</span>
+                            <span class="adp-calc-op">×</span>
+                            <span id="load-rpe-preview">—</span>
+                            <span class="adp-calc-op">=</span>
+                        </div>
+                        <div class="adp-calc-total">
+                            <span class="adp-calc-num" id="load-result">0</span>
+                            <span class="adp-calc-label">UA · CARGA TOTAL</span>
+                        </div>
+                    </div>
+
+                    <button class="adp-btn-primary" onclick="window.AthleteApp.saveLoad()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        Registrar Sesión de Entrenamiento
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── WIDGET 3: FUERZA & PLIOMETRÍA (COMETTI) ── -->
+            <div class="adp-card" id="widget-strength">
+                <div class="adp-card-accent adp-card-accent--gold"></div>
+                <div class="adp-card-inner">
+                    <div class="adp-card-header">
+                        <div class="adp-card-icon-wrap adp-icon-strength">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 4v16M18 4v16M3 8h4M17 8h4M3 16h4M17 16h4M7 12h10"/></svg>
+                        </div>
+                        <div>
+                            <h2 class="adp-card-title">Fuerza &amp; Pliometría</h2>
+                            <p class="adp-card-subtitle">MÉTODO COMETTI · TONELAJE ACUMULADO</p>
+                        </div>
+                    </div>
+
+                    <!-- Régimen -->
+                    <div class="adp-param-block">
+                        <span class="adp-param-label">RÉGIMEN DE TRABAJO</span>
+                        <div class="adp-regime-grid" id="strength-regime">
+                            <button class="adp-regime-btn adp-regime-btn--active" data-regime="Concéntrico">
+                                <span class="adp-regime-icon">⚡</span>
+                                <span>Concéntrico</span>
+                            </button>
+                            <button class="adp-regime-btn" data-regime="Excéntrico">
+                                <span class="adp-regime-icon">🔽</span>
+                                <span>Excéntrico</span>
+                            </button>
+                            <button class="adp-regime-btn" data-regime="Isométrico">
+                                <span class="adp-regime-icon">🧱</span>
+                                <span>Isométrico</span>
+                            </button>
+                            <button class="adp-regime-btn" data-regime="Pliométrico">
+                                <span class="adp-regime-icon">🚀</span>
+                                <span>Pliométrico</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- S × R × Kg -->
+                    <div class="adp-three-col">
+                        <div class="adp-input-group">
+                            <label class="adp-input-label">SERIES</label>
+                            <div class="adp-input-wrap">
+                                <input type="number" class="adp-input adp-input--center" id="strength-sets"
+                                    placeholder="0" min="0" max="20"
+                                    oninput="window.AthleteApp.calculateTonnage()">
+                            </div>
+                        </div>
+                        <div class="adp-srk-separator">×</div>
+                        <div class="adp-input-group">
+                            <label class="adp-input-label">REPS</label>
+                            <div class="adp-input-wrap">
+                                <input type="number" class="adp-input adp-input--center" id="strength-reps"
+                                    placeholder="0" min="0" max="100"
+                                    oninput="window.AthleteApp.calculateTonnage()">
+                            </div>
+                        </div>
+                        <div class="adp-srk-separator">×</div>
+                        <div class="adp-input-group">
+                            <label class="adp-input-label">CARGA</label>
+                            <div class="adp-input-wrap">
+                                <input type="number" class="adp-input adp-input--center" id="strength-weight"
+                                    placeholder="0" min="0"
+                                    oninput="window.AthleteApp.calculateTonnage()">
+                                <span class="adp-input-unit">kg</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tonelaje Result -->
+                    <div class="adp-calc-result adp-calc-result--gold">
+                        <div class="adp-calc-formula">
+                            <span id="str-sets-preview">—</span>
+                            <span class="adp-calc-op">×</span>
+                            <span id="str-reps-preview">—</span>
+                            <span class="adp-calc-op">×</span>
+                            <span id="str-weight-preview">—</span>
+                            <span class="adp-calc-op">=</span>
+                        </div>
+                        <div class="adp-calc-total">
+                            <span class="adp-calc-num adp-calc-num--gold" id="strength-result">0</span>
+                            <span class="adp-calc-label">KG · TONELAJE TOTAL</span>
+                        </div>
+                    </div>
+
+                    <!-- Historial de series del día -->
+                    <div class="adp-sets-log" id="sets-log">
+                        <div class="adp-sets-log-title">SERIES REGISTRADAS HOY</div>
+                        <div class="adp-sets-log-empty" id="sets-log-empty">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                            <span>Aún no has registrado series</span>
+                        </div>
+                        <div id="sets-log-list"></div>
+                        <div class="adp-sets-total" id="sets-total-row" style="display:none">
+                            <span>TONELAJE ACUMULADO</span>
+                            <span class="adp-sets-total-val" id="sets-accumulated">0 kg</span>
+                        </div>
+                    </div>
+
+                    <button class="adp-btn-primary adp-btn-primary--gold" onclick="window.AthleteApp.saveStrength()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Añadir Serie al Registro
+                    </button>
+                </div>
+            </div>
+
+            <!-- Spacer for bottom nav -->
+            <div style="height: 24px;"></div>
+        </div>
+
+        <!-- ═══ BOTTOM NAVBAR ═══ -->
+        <nav class="adp-bottom-nav" id="adp-bottom-nav">
+            <button class="adp-nav-item adp-nav-item--active" id="nav-hoy" onclick="window.AthleteApp.switchTab('dashboard', this)">
+                <div class="adp-nav-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <span class="adp-nav-label">Hoy</span>
+            </button>
+            <button class="adp-nav-item" id="nav-metricas" onclick="window.AthleteApp.switchTab('metrics', this)">
+                <div class="adp-nav-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+                <span class="adp-nav-label">Evolución</span>
+            </button>
+            <button class="adp-nav-item" id="nav-perfil" onclick="window.AthleteApp.switchTab('profile', this)">
+                <div class="adp-nav-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <span class="adp-nav-label">Perfil</span>
+            </button>
+        </nav>
     </section>
-
 
     <!-- SECCIÓN MUNDO ATLETA -->
     <section id="view-athletes" class="view-section athlete-world" style="display: none;">
@@ -495,6 +826,7 @@
                                     <option value="Judo">Judo</option>
                                     <option value="Tenis">Tenis</option>
                                     <option value="Fitness">Fitness / Fuerza</option>
+                                    <option value="Voleibol">Voleibol</option>
                                     <option value="Otro">Otro</option>
                                 </select>
                                 <span class="oa-chevron">&#8250;</span>
