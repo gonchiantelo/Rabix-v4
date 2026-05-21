@@ -301,6 +301,24 @@ window.App = {
         const uid   = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
 
+        // Capturar botón para feedback visual
+        const btn = e ? (e.currentTarget || e.target) : null;
+        let originalText = "";
+        if (btn) {
+            originalText = btn.textContent;
+            btn.textContent = "Cargando...";
+            btn.style.opacity = "0.7";
+            btn.disabled = true;
+        }
+
+        const restoreBtn = () => {
+            if (btn) {
+                btn.textContent = originalText;
+                btn.style.opacity = "1";
+                btn.disabled = false;
+            }
+        };
+
         // BIFURCACIÓN ESTRICTA: el Atleta jamás toca la tabla users
         if (role === 'athlete') {
             const g = id => document.getElementById(id)?.value?.trim() || null;
@@ -311,6 +329,7 @@ window.App = {
             const position   = document.getElementById('ath-pos')?.value || null;
 
             if (!fullName || !sport || !position) {
+                restoreBtn();
                 return alert('Por favor, completa los campos obligatorios (Nombre, Deporte y Posicion).');
             }
 
@@ -334,12 +353,15 @@ window.App = {
             try {
                 const { error: upsertErr } = await window.supabase.from('profiles_athlete').upsert(payload, { onConflict: 'user_id' });
                 if (upsertErr) {
-                    throw new Error(upsertErr.message || 'Error al guardar perfil de atleta.');
+                    console.error("Supa Error:", upsertErr.message, upsertErr.details, upsertErr.hint);
+                    restoreBtn();
+                    return alert("Faltan datos requeridos o hubo un error al guardar.");
                 }
                 console.log('✅ Perfil de atleta guardado en profiles_athlete.');
                 location.reload();
             } catch (err) {
                 console.error('🔴 Error de Sincronización Atleta:', err);
+                restoreBtn();
                 alert('Hubo un problema al guardar tus datos: ' + err.message);
             }
 
@@ -350,15 +372,23 @@ window.App = {
             const staffRole = document.getElementById('ob-role')?.value  || null;
             const license  = document.getElementById('ob-license')?.value || null;
 
-            if (!name) return alert('Por favor, ingresa tu nombre.');
+            if (!name) {
+                restoreBtn();
+                return alert('Por favor, ingresa tu nombre.');
+            }
 
             try {
                 const { error: updateErr } = await window.supabase.from('users').update({ name, staff_role: staffRole, license }).eq('id', uid);
-                if (updateErr) throw new Error('Error al actualizar perfil de staff: ' + updateErr.message);
+                if (updateErr) {
+                    console.error("Supa Error:", updateErr.message, updateErr.details, updateErr.hint);
+                    restoreBtn();
+                    return alert("Faltan datos requeridos o hubo un error al guardar.");
+                }
                 console.log('✅ Perfil de DT guardado en users.');
                 location.reload();
             } catch (err) {
                 console.error('🔴 Error de Sincronización DT:', err);
+                restoreBtn();
                 alert('Hubo un problema al guardar tus datos: ' + err.message);
             }
         }

@@ -24,17 +24,30 @@ window.PlayerEngine = {
     saveReadiness: async function() {
         const sleep = parseInt(document.getElementById('input-sleep').value);
         const fatigue = parseInt(document.getElementById('input-fatigue').value);
-        const btn = event.target; // Capturamos el botón que se clickeó
+        // Guardamos estado original del botón para restaurar después
+        const originalText = btn ? btn.textContent : '';
+        if (btn) {
+            btn.textContent = "Registrando...";
+            btn.style.opacity = "0.7";
+            btn.disabled = true;
+        }
 
+        // Validación única
         if (!sleep || !fatigue) {
             alert("Por favor, completá ambos valores de la escala de Hooper.");
+            // Restauramos botón antes de abortar
+            if (btn) {
+                btn.textContent = originalText;
+                btn.style.opacity = "1";
+                btn.disabled = false;
+            }
             return;
         }
 
-        // Feedback visual de carga
-        const originalText = btn.textContent;
-        btn.textContent = "Registrando...";
-        btn.style.opacity = "0.7";
+        // Feedback visual de carga (already set above, no need to repeat)
+        // const originalText = btn.textContent; // removed duplicate
+        // btn.textContent = "Registrando...";
+        // btn.style.opacity = "0.7";
 
         // Obtenemos el ID del atleta logueado (Asegurate de que currentUser exista en tu app)
         const user = window.App.currentUser || (await window.supabase.auth.getUser()).data.user; 
@@ -58,17 +71,17 @@ window.PlayerEngine = {
             ]);
 
         if (error) {
-            console.error("Error guardando Readiness:", error);
-            alert("Hubo un error de conexión con la torre de control.");
-            btn.textContent = originalText;
-            btn.style.opacity = "1";
+            console.error("Supa Error:", error.message, error.details, error.hint);
+            alert("Faltan datos requeridos o hubo un error al guardar.");
+            if (btn) {
+                btn.textContent = originalText;
+                btn.style.opacity = "1";
+                btn.disabled = false;
+            }
             return;
         }
 
         // Éxito: Feedback visual premium
-        btn.textContent = "¡Readiness Actualizado!";
-        btn.style.background = "#bf953f"; // Se pone dorado
-        btn.style.color = "white";
         
         setTimeout(() => {
             btn.textContent = originalText;
