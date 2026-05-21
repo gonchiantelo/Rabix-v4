@@ -362,183 +362,78 @@
         </div>
     </section>
 
-    <!-- ONBOARDING ATLETA — LABORATORIO DE RENDIMIENTO -->
+    <!-- ONBOARDING ATLETA WIZARD -->
     <style>
-    #view-onboarding-athlete {
-        display: flex; min-height: 100vh;
-        font-family: 'Outfit', 'Inter', sans-serif;
-        background: #FAFAFA; opacity: 0;
-        transition: opacity 0.5s cubic-bezier(0.4,0,0.2,1);
-    }
-    #view-onboarding-athlete.oa-visible { opacity: 1; }
-    #view-onboarding-athlete .oa-sidebar {
-        width: 360px; flex-shrink: 0; background: #0d0c09;
-        padding: 52px 44px; display: flex; flex-direction: column;
-        position: relative; overflow: hidden;
-    }
-    #view-onboarding-athlete .oa-sidebar::after {
-        content: ''; position: absolute; inset: 0;
-        background: radial-gradient(ellipse 90% 55% at 5% 95%, rgba(191,149,63,.22) 0%, transparent 60%),
-                    radial-gradient(ellipse 55% 35% at 95% 5%, rgba(212,175,55,.10) 0%, transparent 55%);
-        pointer-events: none;
-    }
-    #view-onboarding-athlete .oa-brand {
-        display: flex; align-items: baseline; gap: 5px;
-        margin-bottom: 64px; position: relative; z-index: 1;
-    }
-    #view-onboarding-athlete .oa-brand-logo {
-        font-family: 'Outfit', sans-serif; font-size: 1.7rem;
-        font-weight: 900; letter-spacing: -1px; color: #fff;
-    }
-    #view-onboarding-athlete .oa-brand-logo span {
-        background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    #view-onboarding-athlete .oa-brand-tag {
-        font-size: 0.52rem; font-weight: 800; letter-spacing: 2px;
-        text-transform: uppercase; color: #bf953f;
-        border: 1px solid rgba(191,149,63,.35); border-radius: 4px;
-        padding: 3px 7px; margin-left: 6px; align-self: center;
-    }
-    #view-onboarding-athlete .oa-hero { flex: 1; position: relative; z-index: 1; }
-    #view-onboarding-athlete .oa-eyebrow {
-        font-size: 0.6rem; font-weight: 800; letter-spacing: 3px;
-        text-transform: uppercase; margin-bottom: 14px;
-        background: linear-gradient(135deg, #bf953f, #d4af37);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    #view-onboarding-athlete .oa-title {
-        font-size: 3rem; font-weight: 900; line-height: 1.05;
-        letter-spacing: -2px; color: #fff; margin-bottom: 20px;
-    }
-    #view-onboarding-athlete .oa-desc {
-        font-size: 0.88rem; line-height: 1.75; color: #5c5040; max-width: 260px;
-    }
-    #view-onboarding-athlete .oa-pillars {
-        list-style: none; display: flex; flex-direction: column;
-        gap: 18px; margin-bottom: 44px; position: relative; z-index: 1;
-    }
-    #view-onboarding-athlete .oa-pillar { display: flex; align-items: center; gap: 14px; }
-    #view-onboarding-athlete .oa-dot {
-        width: 7px; height: 7px; border-radius: 50%;
-        background: linear-gradient(135deg, #bf953f, #d4af37);
-        box-shadow: 0 0 8px rgba(191,149,63,.45); flex-shrink: 0;
-    }
-    #view-onboarding-athlete .oa-pname { font-size: 0.82rem; font-weight: 700; color: #c8b080; margin-bottom: 1px; }
-    #view-onboarding-athlete .oa-psub  { font-size: 0.67rem; color: #3e3220; }
-    #view-onboarding-athlete .oa-copy  {
-        font-size: 0.58rem; font-weight: 700; letter-spacing: 1px;
-        color: #2a2010; text-transform: uppercase; position: relative; z-index: 1;
-    }
-    #view-onboarding-athlete .oa-panel {
-        flex: 1; display: flex; align-items: center; justify-content: center;
-        padding: 56px 48px; position: relative; background: #FAFAFA;
-    }
-    #view-onboarding-athlete .oa-exit {
-        position: absolute; top: 24px; right: 28px;
-        background: none; border: none; font-size: 0.72rem; font-weight: 700;
-        color: #bbb; cursor: pointer; letter-spacing: .5px;
-        transition: color .2s; font-family: 'Outfit', sans-serif;
-    }
-    #view-onboarding-athlete .oa-exit:hover { color: #ef4444; }
-    #athlete-onboarding-form {
-        width: 100%; max-width: 460px; background: #fff;
-        border-radius: 24px; padding: 48px 44px;
-        box-shadow: 0 4px 6px rgba(0,0,0,.04), 0 20px 60px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
-        animation: oa-up .5s cubic-bezier(.16,1,.3,1) both;
-    }
-    @keyframes oa-up {
-        from { opacity:0; transform:translateY(20px); }
-        to   { opacity:1; transform:translateY(0); }
-    }
-    #view-onboarding-athlete .oa-feyebrow {
-        font-size: 0.58rem; font-weight: 800; letter-spacing: 3px;
-        text-transform: uppercase; margin-bottom: 8px;
-        background: linear-gradient(135deg, #bf953f, #d4af37);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    #view-onboarding-athlete .oa-ftitle {
-        font-size: 1.9rem; font-weight: 900; letter-spacing: -1px;
-        color: #1A1A1E; line-height: 1.1; margin-bottom: 8px;
-    }
-    #view-onboarding-athlete .oa-fsub {
-        font-size: 0.82rem; color: #888; line-height: 1.6;
-        margin-bottom: 32px; font-family: 'Inter', sans-serif;
-    }
-    #view-onboarding-athlete .oa-fields { display: flex; flex-direction: column; gap: 18px; }
-    #view-onboarding-athlete .oa-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    #view-onboarding-athlete .oa-group { display: flex; flex-direction: column; gap: 6px; }
-    #view-onboarding-athlete .oa-lbl {
-        font-size: 0.6rem; font-weight: 800; letter-spacing: 1.5px;
-        text-transform: uppercase; color: #aaa; font-family: 'Outfit', sans-serif;
-    }
-    #view-onboarding-athlete .oa-req { color: #bf953f; }
-    #view-onboarding-athlete .oa-inp {
-        width: 100%; padding: 13px 16px; background: #F5F5F7;
-        border: 1.5px solid transparent; border-radius: 12px;
-        color: #1A1A1E; font-family: 'Inter', sans-serif;
-        font-size: 0.9rem; outline: none;
-        transition: border-color .22s, background .22s, box-shadow .22s;
-    }
-    #view-onboarding-athlete .oa-inp::placeholder { color: #C0C0C8; }
-    #view-onboarding-athlete .oa-inp:focus {
-        background: #fffdf8; border-color: #bf953f;
-        box-shadow: 0 0 0 3px rgba(191,149,63,.13);
-    }
-    #view-onboarding-athlete .oa-sel-wrap { position: relative; }
-    #view-onboarding-athlete .oa-sel-wrap select { appearance: none; cursor: pointer; padding-right: 36px; }
-    #view-onboarding-athlete .oa-chevron {
-        position: absolute; right: 14px; top: 50%;
-        transform: translateY(-50%) rotate(90deg);
-        font-size: 1.1rem; color: #bf953f; pointer-events: none; line-height: 1;
-    }
-    #view-onboarding-athlete .oa-unit-wrap { position: relative; display: flex; align-items: center; }
-    #view-onboarding-athlete .oa-unit-wrap .oa-inp { padding-right: 42px; }
-    #view-onboarding-athlete .oa-unit {
-        position: absolute; right: 14px; font-size: 0.72rem; font-weight: 800;
-        letter-spacing: 1px; color: #bf953f; font-family: 'Outfit', sans-serif; pointer-events: none;
-    }
-    #view-onboarding-athlete .oa-div { display: flex; align-items: center; gap: 10px; }
-    #view-onboarding-athlete .oa-div-line { flex: 1; height: 1px; background: #EBEBEB; }
-    #view-onboarding-athlete .oa-div-lbl {
-        font-size: 0.56rem; font-weight: 800; letter-spacing: 2px;
-        color: #CCC; text-transform: uppercase; font-family: 'Outfit', sans-serif; white-space: nowrap;
-    }
-    #oa-submit-btn {
-        width: 100%; padding: 17px 24px;
-        background: linear-gradient(135deg, #bf953f 0%, #d4af37 50%, #b38728 100%);
-        border: none; border-radius: 14px; color: #fff;
-        font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 900;
-        letter-spacing: 1.5px; cursor: pointer; display: flex;
-        align-items: center; justify-content: center; gap: 10px;
-        box-shadow: 0 8px 24px rgba(191,149,63,.38);
-        transition: transform .2s, box-shadow .2s;
-        position: relative; overflow: hidden; margin-top: 4px;
-    }
-    #oa-submit-btn::before {
-        content: ''; position: absolute; inset: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,.18), transparent);
-        opacity: 0; transition: opacity .2s;
-    }
-    #oa-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(191,149,63,.48); }
-    #oa-submit-btn:hover::before { opacity: 1; }
-    #oa-submit-btn:active { transform: translateY(0); }
-    #oa-submit-btn .oa-arr { display: inline-block; transition: transform .2s; font-size: 1.05rem; }
-    #oa-submit-btn:hover .oa-arr { transform: translateX(5px); }
-    #view-onboarding-athlete .oa-terms {
-        font-size: 0.67rem; color: #C0B8A8; text-align: center;
-        line-height: 1.5; font-family: 'Inter', sans-serif;
-    }
-    @media (max-width: 760px) {
-        #view-onboarding-athlete { flex-direction: column; }
-        #view-onboarding-athlete .oa-sidebar { width: 100%; padding: 28px 24px 24px; }
-        #view-onboarding-athlete .oa-title { font-size: 2.1rem; }
-        #view-onboarding-athlete .oa-pillars, #view-onboarding-athlete .oa-copy { display: none; }
-        #view-onboarding-athlete .oa-hero { flex: none; }
-        #view-onboarding-athlete .oa-brand { margin-bottom: 24px; }
-        #view-onboarding-athlete .oa-panel { padding: 28px 16px; }
-        #athlete-onboarding-form { padding: 32px 24px; }
-        #view-onboarding-athlete .oa-row { grid-template-columns: 1fr; }
+    #view-onboarding-athlete{display:flex;min-height:100vh;font-family:'Outfit','Inter',sans-serif;background:#FAFAFA;opacity:0;transition:opacity .5s cubic-bezier(.4,0,.2,1)}
+    #view-onboarding-athlete.oa-visible{opacity:1}
+    #view-onboarding-athlete .oa-sidebar{width:340px;flex-shrink:0;background:#0d0c09;padding:48px 40px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+    #view-onboarding-athlete .oa-sidebar::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 90% 55% at 5% 95%,rgba(191,149,63,.22) 0%,transparent 60%),radial-gradient(ellipse 55% 35% at 95% 5%,rgba(212,175,55,.1) 0%,transparent 55%);pointer-events:none}
+    #view-onboarding-athlete .oa-brand{display:flex;align-items:baseline;gap:5px;margin-bottom:56px;position:relative;z-index:1}
+    #view-onboarding-athlete .oa-brand-logo{font-family:'Outfit',sans-serif;font-size:1.6rem;font-weight:900;letter-spacing:-1px;color:#fff}
+    #view-onboarding-athlete .oa-brand-logo span{background:linear-gradient(135deg,#bf953f,#fcf6ba,#b38728);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    #view-onboarding-athlete .oa-brand-tag{font-size:.5rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#bf953f;border:1px solid rgba(191,149,63,.35);border-radius:4px;padding:3px 7px;margin-left:6px;align-self:center}
+    #view-onboarding-athlete .oa-hero{flex:1;position:relative;z-index:1}
+    #view-onboarding-athlete .oa-eyebrow{font-size:.58rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;background:linear-gradient(135deg,#bf953f,#d4af37);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    #view-onboarding-athlete .oa-title{font-size:2.7rem;font-weight:900;line-height:1.05;letter-spacing:-2px;color:#fff;margin-bottom:18px}
+    #view-onboarding-athlete .oa-desc{font-size:.85rem;line-height:1.75;color:#5c5040;max-width:250px}
+    #view-onboarding-athlete .oa-steps-nav{display:flex;flex-direction:column;gap:14px;margin-top:40px;position:relative;z-index:1}
+    #view-onboarding-athlete .oa-step-nav{display:flex;align-items:center;gap:12px;opacity:.35;transition:opacity .3s}
+    #view-onboarding-athlete .oa-step-nav.active{opacity:1}
+    #view-onboarding-athlete .oa-step-nav.done{opacity:.65}
+    #view-onboarding-athlete .oa-step-num{width:28px;height:28px;border-radius:50%;border:1.5px solid rgba(191,149,63,.4);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:900;color:#bf953f;flex-shrink:0;transition:.3s}
+    #view-onboarding-athlete .oa-step-nav.active .oa-step-num{background:linear-gradient(135deg,#bf953f,#d4af37);border-color:transparent;color:#fff;box-shadow:0 0 12px rgba(191,149,63,.45)}
+    #view-onboarding-athlete .oa-step-nav.done .oa-step-num{background:rgba(191,149,63,.15);color:#bf953f}
+    #view-onboarding-athlete .oa-step-info p:first-child{font-size:.62rem;font-weight:800;color:#c8b080;letter-spacing:.5px}
+    #view-onboarding-athlete .oa-step-info p:last-child{font-size:.68rem;color:#3e3220;margin-top:1px}
+    #view-onboarding-athlete .oa-copy{font-size:.55rem;font-weight:700;letter-spacing:1px;color:#2a2010;text-transform:uppercase;position:relative;z-index:1;margin-top:auto;padding-top:32px}
+    #view-onboarding-athlete .oa-panel{flex:1;display:flex;align-items:center;justify-content:center;padding:52px 44px;position:relative;background:#FAFAFA}
+    #view-onboarding-athlete .oa-exit{position:absolute;top:22px;right:26px;background:none;border:none;font-size:.7rem;font-weight:700;color:#bbb;cursor:pointer;letter-spacing:.5px;transition:color .2s;font-family:'Outfit',sans-serif}
+    #view-onboarding-athlete .oa-exit:hover{color:#ef4444}
+    #athlete-onboarding-form{width:100%;max-width:480px;background:#fff;border-radius:24px;padding:44px 40px;box-shadow:0 4px 6px rgba(0,0,0,.04),0 20px 60px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);animation:oa-up .5s cubic-bezier(.16,1,.3,1) both}
+    @keyframes oa-up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+    .oa-progress-bar{height:3px;background:#F0EDE6;border-radius:2px;margin-bottom:32px;overflow:hidden}
+    .oa-progress-fill{height:100%;background:linear-gradient(90deg,#bf953f,#d4af37);border-radius:2px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+    .oa-step-label{font-size:.56rem;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:6px;background:linear-gradient(135deg,#bf953f,#d4af37);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .oa-ftitle{font-size:1.7rem;font-weight:900;letter-spacing:-1px;color:#1A1A1E;line-height:1.1;margin-bottom:6px}
+    .oa-fsub{font-size:.8rem;color:#999;line-height:1.6;margin-bottom:28px;font-family:'Inter',sans-serif}
+    .oa-fieldset{display:none;flex-direction:column;gap:16px;animation:oa-step-in .35s cubic-bezier(.16,1,.3,1) both}
+    .oa-fieldset.active{display:flex}
+    @keyframes oa-step-in{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+    .oa-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .oa-group{display:flex;flex-direction:column;gap:5px}
+    .oa-group.full{grid-column:1/-1}
+    .oa-lbl{font-size:.58rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;font-family:'Outfit',sans-serif}
+    .oa-req{color:#bf953f}
+    .oa-inp{width:100%;padding:12px 15px;background:#F7F6F2;border:1.5px solid transparent;border-radius:11px;color:#1A1A1E;font-family:'Inter',sans-serif;font-size:.88rem;outline:none;transition:border-color .2s,background .2s,box-shadow .2s}
+    .oa-inp::placeholder{color:#C0C0C8}
+    .oa-inp:focus{background:#fffdf8;border-color:#bf953f;box-shadow:0 0 0 3px rgba(191,149,63,.12)}
+    .oa-sel-wrap{position:relative}
+    .oa-sel-wrap select{appearance:none;cursor:pointer;padding-right:34px}
+    .oa-chevron{position:absolute;right:13px;top:50%;transform:translateY(-50%) rotate(90deg);font-size:1rem;color:#bf953f;pointer-events:none;line-height:1}
+    .oa-unit-wrap{position:relative;display:flex;align-items:center}
+    .oa-unit-wrap .oa-inp{padding-right:40px}
+    .oa-unit{position:absolute;right:13px;font-size:.68rem;font-weight:800;letter-spacing:1px;color:#bf953f;font-family:'Outfit',sans-serif;pointer-events:none}
+    .oa-div{display:flex;align-items:center;gap:10px}
+    .oa-div-line{flex:1;height:1px;background:#EBEBEB}
+    .oa-div-lbl{font-size:.54rem;font-weight:800;letter-spacing:2px;color:#CCC;text-transform:uppercase;font-family:'Outfit',sans-serif;white-space:nowrap}
+    .oa-nav{display:flex;gap:10px;margin-top:8px}
+    .oa-btn-back{flex:1;padding:14px;background:none;border:1.5px solid #E8E5DF;border-radius:12px;color:#999;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:800;letter-spacing:1px;cursor:pointer;transition:.2s}
+    .oa-btn-back:hover{border-color:#bf953f;color:#bf953f}
+    .oa-btn-next,#oa-submit-btn{flex:2;padding:14px 20px;background:linear-gradient(135deg,#bf953f 0%,#d4af37 50%,#b38728 100%);border:none;border-radius:12px;color:#fff;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:900;letter-spacing:1.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 20px rgba(191,149,63,.35);transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden}
+    .oa-btn-next:hover,#oa-submit-btn:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(191,149,63,.45)}
+    .oa-btn-next .oa-arr,#oa-submit-btn .oa-arr{display:inline-block;transition:transform .2s}
+    .oa-btn-next:hover .oa-arr,#oa-submit-btn:hover .oa-arr{transform:translateX(4px)}
+    .oa-terms{font-size:.64rem;color:#C0B8A8;text-align:center;line-height:1.5;font-family:'Inter',sans-serif;margin-top:2px}
+    @media(max-width:760px){
+        #view-onboarding-athlete{flex-direction:column}
+        #view-onboarding-athlete .oa-sidebar{width:100%;padding:24px 20px}
+        #view-onboarding-athlete .oa-title{font-size:2rem}
+        #view-onboarding-athlete .oa-steps-nav,#view-onboarding-athlete .oa-desc{display:none}
+        #view-onboarding-athlete .oa-hero{flex:none}
+        #view-onboarding-athlete .oa-brand{margin-bottom:16px}
+        #view-onboarding-athlete .oa-panel{padding:24px 14px}
+        #athlete-onboarding-form{padding:28px 20px}
+        .oa-row{grid-template-columns:1fr}
     }
     </style>
     <section id="view-onboarding-athlete" style="display:none;">
@@ -550,53 +445,95 @@
             <div class="oa-hero">
                 <p class="oa-eyebrow">Protocolo de Ingreso</p>
                 <h1 class="oa-title">Tu Perfil<br>de Elite</h1>
-                <p class="oa-desc">Cada dato construye el modelo biomecanico que guiara tu rendimiento en cada sesion.</p>
+                <p class="oa-desc">Construimos el modelo biomecanico que guiara tu rendimiento sesion a sesion.</p>
             </div>
-            <ul class="oa-pillars">
-                <li class="oa-pillar"><span class="oa-dot"></span><div><p class="oa-pname">Estructura</p><p class="oa-psub">Morfologia y antropometria</p></div></li>
-                <li class="oa-pillar"><span class="oa-dot"></span><div><p class="oa-pname">Neuromuscular</p><p class="oa-psub">Fuerza, potencia y velocidad</p></div></li>
-                <li class="oa-pillar"><span class="oa-dot"></span><div><p class="oa-pname">Biomecanica</p><p class="oa-psub">Analisis del movimiento Cometti</p></div></li>
-            </ul>
+            <nav class="oa-steps-nav">
+                <div class="oa-step-nav active" id="snav-1">
+                    <div class="oa-step-num">1</div>
+                    <div class="oa-step-info"><p>Identidad</p><p>Perfil y deporte</p></div>
+                </div>
+                <div class="oa-step-nav" id="snav-2">
+                    <div class="oa-step-num">2</div>
+                    <div class="oa-step-info"><p>Biometria</p><p>Morfologia y datos fisicos</p></div>
+                </div>
+                <div class="oa-step-nav" id="snav-3">
+                    <div class="oa-step-num">3</div>
+                    <div class="oa-step-info"><p>Logistica</p><p>Disponibilidad y compromiso</p></div>
+                </div>
+            </nav>
             <p class="oa-copy">Protocolo Gilles Cometti &copy; RAVIX V5</p>
         </aside>
         <main class="oa-panel">
-            <button class="oa-exit" onclick="window.App.logout()">Cancelar y salir &times;</button>
+            <button class="oa-exit" onclick="window.App.logout()">Cancelar &times;</button>
             <form id="athlete-onboarding-form" onsubmit="window.App.saveProfile(event)">
-                <p class="oa-feyebrow">Paso 1 de 1</p>
-                <h2 class="oa-ftitle">Configura tu<br>Laboratorio</h2>
-                <p class="oa-fsub">Completa tu identidad deportiva. Podras ajustar estos datos en cualquier momento.</p>
-                <div class="oa-fields">
+                <div class="oa-progress-bar"><div class="oa-progress-fill" id="oa-progress" style="width:33%"></div></div>
+                <p class="oa-step-label" id="oa-step-label">Paso 1 de 3</p>
+
+                <!-- PASO 1 -->
+                <div class="oa-fieldset active" id="oa-step-1">
+                    <p class="oa-ftitle">Identidad &amp; Deporte</p>
+                    <p class="oa-fsub">Tu perfil deportivo base.</p>
                     <div class="oa-group">
                         <label class="oa-lbl" for="ath-name">Nombre Completo <span class="oa-req">*</span></label>
-                        <input type="text" id="ath-name" class="oa-inp" placeholder="Ej. Lucas Martinez" required autocomplete="name">
+                        <input type="text" id="ath-name" class="oa-inp" placeholder="Lucas Martinez" required autocomplete="name">
+                    </div>
+                    <div class="oa-group">
+                        <label class="oa-lbl" for="ath-phone">Telefono / WhatsApp</label>
+                        <input type="tel" id="ath-phone" class="oa-inp" placeholder="+54 9 11 xxxx-xxxx">
                     </div>
                     <div class="oa-row">
                         <div class="oa-group">
                             <label class="oa-lbl" for="ath-sport">Deporte <span class="oa-req">*</span></label>
                             <div class="oa-sel-wrap">
-                                <select id="ath-sport" class="oa-inp" required>
+                                <select id="ath-sport" class="oa-inp" required onchange="window.AthWizard.onSportChange()">
                                     <option value="" disabled selected>Selecciona...</option>
                                     <option value="Futbol">Futbol</option>
+                                    <option value="Basquetbol">Basquetbol</option>
+                                    <option value="Rugby">Rugby</option>
                                     <option value="Natacion">Natacion</option>
                                     <option value="Atletismo">Atletismo</option>
                                     <option value="Judo">Judo</option>
-                                    <option value="Rugby">Rugby</option>
-                                    <option value="Basquetbol">Basquetbol</option>
                                     <option value="Tenis">Tenis</option>
+                                    <option value="Fitness">Fitness / Fuerza</option>
                                     <option value="Otro">Otro</option>
                                 </select>
                                 <span class="oa-chevron">&#8250;</span>
                             </div>
                         </div>
                         <div class="oa-group">
-                            <label class="oa-lbl" for="ath-pos">Posicion / Especialidad</label>
-                            <input type="text" id="ath-pos" class="oa-inp" placeholder="Ej. Pivote, 100m...">
+                            <label class="oa-lbl" for="ath-pos">Posicion <span class="oa-req">*</span></label>
+                            <div class="oa-sel-wrap">
+                                <select id="ath-pos" class="oa-inp" required>
+                                    <option value="" disabled selected>Primero elige deporte</option>
+                                </select>
+                                <span class="oa-chevron">&#8250;</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="oa-div">
-                        <span class="oa-div-line"></span>
-                        <span class="oa-div-lbl">Datos Biometricos</span>
-                        <span class="oa-div-line"></span>
+                    <div class="oa-group">
+                        <label class="oa-lbl" for="ath-side">Lado Dominante</label>
+                        <div class="oa-sel-wrap">
+                            <select id="ath-side" class="oa-inp">
+                                <option value="">Selecciona...</option>
+                                <option value="Diestro">Diestro</option>
+                                <option value="Zurdo">Zurdo</option>
+                                <option value="Ambidiestro">Ambidiestro</option>
+                            </select>
+                            <span class="oa-chevron">&#8250;</span>
+                        </div>
+                    </div>
+                    <div class="oa-nav">
+                        <button type="button" class="oa-btn-next" onclick="window.AthWizard.next()">Continuar <span class="oa-arr">&#8594;</span></button>
+                    </div>
+                </div>
+
+                <!-- PASO 2 -->
+                <div class="oa-fieldset" id="oa-step-2">
+                    <p class="oa-ftitle">Biometria &amp; Morfologia</p>
+                    <p class="oa-fsub">Base estructural segun protocolo Cometti.</p>
+                    <div class="oa-group">
+                        <label class="oa-lbl" for="ath-birth">Fecha de Nacimiento</label>
+                        <input type="date" id="ath-birth" class="oa-inp">
                     </div>
                     <div class="oa-row">
                         <div class="oa-group">
@@ -614,15 +551,132 @@
                             </div>
                         </div>
                     </div>
-                    <button type="submit" id="oa-submit-btn">
-                        <span>ACTIVAR LABORATORIO</span>
-                        <span class="oa-arr">&#8594;</span>
-                    </button>
-                    <p class="oa-terms">Tus datos son privados y estan cifrados bajo protocolo RAVIX.</p>
+                    <div class="oa-group">
+                        <label class="oa-lbl" for="ath-fat">% Grasa Corporal <span style="font-weight:400;color:#ccc">(opcional)</span></label>
+                        <div class="oa-unit-wrap">
+                            <input type="number" id="ath-fat" class="oa-inp" placeholder="12" min="3" max="60" step="0.1">
+                            <span class="oa-unit">%</span>
+                        </div>
+                    </div>
+                    <div class="oa-nav">
+                        <button type="button" class="oa-btn-back" onclick="window.AthWizard.prev()">&#8592; Atras</button>
+                        <button type="button" class="oa-btn-next" onclick="window.AthWizard.next()">Continuar <span class="oa-arr">&#8594;</span></button>
+                    </div>
+                </div>
+
+                <!-- PASO 3 -->
+                <div class="oa-fieldset" id="oa-step-3">
+                    <p class="oa-ftitle">Logistica &amp; Compromiso</p>
+                    <p class="oa-fsub">Disenaremos tu plan segun tu disponibilidad real.</p>
+                    <div class="oa-row">
+                        <div class="oa-group">
+                            <label class="oa-lbl" for="ath-exp">Anos de experiencia</label>
+                            <input type="number" id="ath-exp" class="oa-inp" placeholder="3" min="0" max="40">
+                        </div>
+                        <div class="oa-group">
+                            <label class="oa-lbl" for="ath-days">Dias por semana</label>
+                            <div class="oa-sel-wrap">
+                                <select id="ath-days" class="oa-inp">
+                                    <option value="">Elegir...</option>
+                                    <option value="2">2 dias</option>
+                                    <option value="3">3 dias</option>
+                                    <option value="4">4 dias</option>
+                                    <option value="5">5 dias</option>
+                                    <option value="6">6 dias</option>
+                                    <option value="7">7 dias</option>
+                                </select>
+                                <span class="oa-chevron">&#8250;</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="oa-group">
+                        <label class="oa-lbl" for="ath-hours">Horas por sesion</label>
+                        <div class="oa-sel-wrap">
+                            <select id="ath-hours" class="oa-inp">
+                                <option value="">Elegir...</option>
+                                <option value="1">1 hora</option>
+                                <option value="1.5">1.5 horas</option>
+                                <option value="2">2 horas</option>
+                                <option value="2.5">2.5 horas o mas</option>
+                            </select>
+                            <span class="oa-chevron">&#8250;</span>
+                        </div>
+                    </div>
+                    <div class="oa-group">
+                        <label class="oa-lbl" for="ath-commitment">Nivel de Compromiso <span class="oa-req">*</span></label>
+                        <div class="oa-sel-wrap">
+                            <select id="ath-commitment" class="oa-inp" required>
+                                <option value="" disabled selected>Selecciona...</option>
+                                <option value="Recreativo">Recreativo</option>
+                                <option value="Competitivo Amateur">Competitivo Amateur</option>
+                                <option value="Alto Rendimiento">Alto Rendimiento / Profesional</option>
+                            </select>
+                            <span class="oa-chevron">&#8250;</span>
+                        </div>
+                    </div>
+                    <div class="oa-nav">
+                        <button type="button" class="oa-btn-back" onclick="window.AthWizard.prev()">&#8592; Atras</button>
+                        <button type="submit" id="oa-submit-btn">
+                            <span>ACTIVAR LABORATORIO</span>
+                            <span class="oa-arr">&#8594;</span>
+                        </button>
+                    </div>
+                    <p class="oa-terms">Datos privados y cifrados bajo protocolo RAVIX.</p>
                 </div>
             </form>
         </main>
     </section>
+    <script>
+    window.AthWizard = {
+        step: 1,
+        total: 3,
+        POSITIONS: {
+            'Futbol':      ['Arquero','Defensor Central','Lateral Derecho','Lateral Izquierdo','Pivote / MCD','Volante Mixto','Extremo Derecho','Extremo Izquierdo','Mediapunta','Delantero Centro','Segundo Delantero'],
+            'Basquetbol':  ['Base','Escolta','Alero','Ala-Pivot','Pivot'],
+            'Rugby':       ['Pilar Izquierdo','Hooker','Pilar Derecho','Segunda Linea','Ala Izquierdo','Ala Derecho / N8','Medio Scrum','Apertura','Centro Izquierdo','Centro Derecho','Wing Izquierdo','Wing Derecho','Fullback'],
+            'Natacion':    ['100m Libre','200m Libre','400m Libre','800m Libre','100m Espalda','200m Espalda','100m Pecho','200m Pecho','100m Mariposa','200m Mariposa','200m Combinado','400m Combinado'],
+            'Atletismo':   ['Velocidad (100m/200m)','Medio Fondo (400m/800m)','Fondo (1500m+)','Salto en Alto','Salto en Largo','Triple Salto','Lanzamiento de Peso','Lanzamiento de Disco','Marcha'],
+            'Judo':        ['Categoria -60kg','-66kg','-73kg','-81kg','-90kg','-100kg','+100kg','Categoria Abierta'],
+            'Tenis':       ['Individual','Dobles','Singles Profesional'],
+            'Fitness':     ['Powerlifting','Halterofilia','CrossFit','Culturismo','Fitness General','Perdida de Peso'],
+            'Otro':        ['General']
+        },
+        onSportChange() {
+            const sport = document.getElementById('ath-sport').value;
+            const sel   = document.getElementById('ath-pos');
+            const positions = this.POSITIONS[sport] || ['General'];
+            sel.innerHTML = positions.map(p => `<option value="${p}">${p}</option>`).join('');
+        },
+        updateUI() {
+            for (let i = 1; i <= this.total; i++) {
+                const fs   = document.getElementById('oa-step-' + i);
+                const snav = document.getElementById('snav-' + i);
+                if (fs) { fs.classList.toggle('active', i === this.step); }
+                if (snav) {
+                    snav.classList.toggle('active', i === this.step);
+                    snav.classList.toggle('done', i < this.step);
+                }
+            }
+            const pct = Math.round((this.step / this.total) * 100);
+            const bar = document.getElementById('oa-progress');
+            if (bar) bar.style.width = pct + '%';
+            const lbl = document.getElementById('oa-step-label');
+            if (lbl) lbl.textContent = 'Paso ' + this.step + ' de ' + this.total;
+        },
+        next() {
+            if (this.step === 1) {
+                const name  = document.getElementById('ath-name').value.trim();
+                const sport = document.getElementById('ath-sport').value;
+                const pos   = document.getElementById('ath-pos').value;
+                if (!name || !sport || !pos) { alert('Completa Nombre, Deporte y Posicion para continuar.'); return; }
+            }
+            if (this.step < this.total) { this.step++; this.updateUI(); }
+        },
+        prev() {
+            if (this.step > 1) { this.step--; this.updateUI(); }
+        }
+    };
+    </script>
 
     <script src="./js/app-core.js"></script>
     <script src="./js/app-player.js"></script>

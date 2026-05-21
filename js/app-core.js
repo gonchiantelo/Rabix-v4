@@ -282,24 +282,35 @@ window.App = {
 
         // BIFURCACIÓN ESTRICTA: el Atleta jamás toca la tabla users
         if (role === 'athlete') {
-            // Leer campos del NUEVO formulario de onboarding (#athlete-onboarding-form)
-            const fullName = document.getElementById('oa-name')?.value?.trim()
-                          || document.getElementById('ath-name')?.value?.trim() || null;
-            const sport    = document.getElementById('oa-sport')?.value
-                          || document.getElementById('ath-sport')?.value || null;
-            const position = document.getElementById('oa-position')?.value?.trim()
-                          || document.getElementById('ath-pos')?.value?.trim() || null;
-            const weight   = parseFloat(document.getElementById('oa-weight')?.value
-                          || document.getElementById('ath-weight')?.value) || null;
-            const height   = parseFloat(document.getElementById('oa-height')?.value
-                          || document.getElementById('ath-height')?.value) || null;
+            const g = id => document.getElementById(id)?.value?.trim() || null;
+            const gn = id => parseFloat(document.getElementById(id)?.value) || null;
 
-            if (!fullName || !sport) {
-                return alert('Por favor, completa los campos obligatorios (Nombre y Deporte).');
+            const fullName   = g('ath-name');
+            const sport      = g('ath-sport');
+            const position   = document.getElementById('ath-pos')?.value || null;
+
+            if (!fullName || !sport || !position) {
+                return alert('Por favor, completa los campos obligatorios (Nombre, Deporte y Posicion).');
             }
 
+            const payload = {
+                user_id:                    uid,
+                full_name:                  fullName,
+                sport:                      sport,
+                position:                   position,
+                phone:                      g('ath-phone'),
+                dominant_side:              document.getElementById('ath-side')?.value || null,
+                birth_date:                 document.getElementById('ath-birth')?.value || null,
+                weight_kg:                  gn('ath-weight'),
+                height_cm:                  gn('ath-height'),
+                body_fat:                   gn('ath-fat'),
+                training_experience_years:  gn('ath-exp'),
+                days_per_week:              gn('ath-days'),
+                hours_per_day:              gn('ath-hours'),
+                commitment_level:           document.getElementById('ath-commitment')?.value || null,
+            };
+
             try {
-                // Upsert en profiles_athlete según user_id
                 const r = await fetch(`${window.SUPABASE_URL}/rest/v1/profiles_athlete`, {
                     method: 'POST',
                     headers: {
@@ -308,14 +319,7 @@ window.App = {
                         'Content-Type': 'application/json',
                         'Prefer': 'resolution=merge-duplicates'
                     },
-                    body: JSON.stringify({
-                        user_id:   uid,
-                        full_name: fullName,
-                        sport:     sport,
-                        position:  position,
-                        height_cm: height,
-                        weight_kg: weight,
-                    })
+                    body: JSON.stringify(payload)
                 });
                 if (!r.ok) {
                     const err = await r.json().catch(() => ({}));
