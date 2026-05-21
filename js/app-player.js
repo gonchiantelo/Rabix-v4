@@ -21,6 +21,62 @@ window.PlayerEngine = {
         }
     },
 
+    saveReadiness: async function() {
+        const sleep = parseInt(document.getElementById('input-sleep').value);
+        const fatigue = parseInt(document.getElementById('input-fatigue').value);
+        const btn = event.target; // Capturamos el botón que se clickeó
+
+        if (!sleep || !fatigue) {
+            alert("Por favor, completá ambos valores de la escala de Hooper.");
+            return;
+        }
+
+        // Feedback visual de carga
+        const originalText = btn.textContent;
+        btn.textContent = "Registrando...";
+        btn.style.opacity = "0.7";
+
+        // Obtenemos el ID del atleta logueado (Asegurate de que currentUser exista en tu app)
+        const user = window.App.currentUser || (await window.supabase.auth.getUser()).data.user; 
+        const userId = user ? user.id : null;
+
+        if (!userId) {
+            console.error("No hay usuario logueado");
+            return;
+        }
+
+        // Usamos tu nuevo ORM súper estable para insertar los datos
+        const { data, error } = await window.supabase
+            .from('athlete_readiness') // Asegurate de que esta tabla exista en Supabase
+            .insert([
+                { 
+                    athlete_id: userId, 
+                    sleep_quality: sleep, 
+                    fatigue_level: fatigue,
+                    date: new Date().toISOString().split('T')[0] // Guarda la fecha "YYYY-MM-DD"
+                }
+            ]);
+
+        if (error) {
+            console.error("Error guardando Readiness:", error);
+            alert("Hubo un error de conexión con la torre de control.");
+            btn.textContent = originalText;
+            btn.style.opacity = "1";
+            return;
+        }
+
+        // Éxito: Feedback visual premium
+        btn.textContent = "¡Readiness Actualizado!";
+        btn.style.background = "#bf953f"; // Se pone dorado
+        btn.style.color = "white";
+        
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = "#1a1a1e"; // Vuelve al oscuro
+            btn.style.opacity = "1";
+        }, 2500);
+    },
+
     loadAthletes: async function() {
         const uid   = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
@@ -29,12 +85,8 @@ window.PlayerEngine = {
 
         grid.innerHTML = '<p class="aw-empty-state">Cargando atletas...</p>';
         try {
-            const r = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/profiles_athlete?coach_id=eq.${uid}&order=created_at.desc`,
-                { headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` } }
-            );
-            const athletes = await r.json();
-            if (!r.ok || !Array.isArray(athletes) || athletes.length === 0) {
+            const { data: athletes, error } = await window.supabase.from('profiles_athlete').select('*').eq('coach_id', uid).order('created_at', { ascending: false });
+            if (error || !Array.isArray(athletes) || athletes.length === 0) {
                 grid.innerHTML = `
                     <div class="aw-empty-state">
                         <div class="aw-empty-icon">🏅</div>

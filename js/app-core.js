@@ -9,6 +9,9 @@ window.SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIs
 window.SUPABASE_URL = window.SUPA_URL;
 window.SUPABASE_KEY = window.SUPA_KEY;
 
+window.supabase = supabase.createClient(window.SUPA_URL, window.SUPA_KEY);
+
+
 window.Wizard = {
     step: 1,
     path: 'create',
@@ -105,36 +108,21 @@ window.Wizard = {
                 const tSystems = document.getElementById('ob-systems-input').value;
                 const tCode  = 'CU-' + Math.floor(1000 + Math.random() * 9000);
 
-                const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}`, 'Prefer': 'return=representation' },
-                    body: JSON.stringify({ name: tName, code: tCode, owner_id: uid })
-                });
-                const teams = await tRes.json();
-                if (!tRes.ok || !teams[0]) throw new Error('Error al fundar equipo.');
+                const { data: teams, error: tErr } = await window.supabase.from('teams').insert({ name: tName, code: tCode, owner_id: uid }).select();
+                if (tErr || !teams || !teams[0]) throw new Error('Error al fundar equipo: ' + (tErr?.message || ''));
                 teamId = teams[0].id;
 
-                await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ team_id: teamId, owner_id: uid, primary_color: tColor, methodology: tMethodology, base_systems: tSystems })
-                });
+                const { error: tcErr } = await window.supabase.from('team_configs').insert({ team_id: teamId, owner_id: uid, primary_color: tColor, methodology: tMethodology, base_systems: tSystems });
+                if (tcErr) console.error(tcErr);
             } else {
                 const code = document.getElementById('ob-invite-code').value;
-                const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams?code=eq.${code}`, {
-                    headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
-                });
-                const teams = await tRes.json();
-                if (!teams || !teams[0]) throw new Error('Código inválido o equipo no encontrado.');
+                const { data: teams, error: tErr } = await window.supabase.from('teams').select('*').eq('code', code);
+                if (tErr || !teams || !teams[0]) throw new Error('Código inválido o equipo no encontrado.');
                 teamId = teams[0].id;
             }
 
-            const uRes = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ name, staff_role: role, license, team_id: teamId })
-            });
-            if (!uRes.ok) throw new Error('Error al actualizar perfil.');
+            const { error: uErr } = await window.supabase.from('users').update({ name, staff_role: role, license, team_id: teamId }).eq('id', uid);
+            if (uErr) throw new Error('Error al actualizar perfil: ' + uErr.message);
             location.reload();
         } catch (err) { alert(err.message); }
     },
@@ -157,30 +145,21 @@ window.Wizard = {
 
         try {
             // Verificar si ya existe un perfil atleta para este uid
-            const check = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/profiles_athlete?id=eq.${uid}`,
-                { headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` } }
-            );
-            const existing = await check.json();
+            const { data: existing, error: checkErr } = await window.supabase.from('profiles_athlete').select('*').eq('id', uid);
+            if (checkErr) throw new Error(checkErr.message);
 
             let res;
             if (existing && existing.length > 0) {
                 // Ya existe — actualizar
-                res = await fetch(`${window.SUPABASE_URL}/rest/v1/profiles_athlete?id=eq.${uid}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ full_name: fullName, sport, position, birth_date: birthDate, weight_kg: weight, height_cm: height, wingspan_cm: wingspan, goal })
-                });
+                const { error: resErr } = await window.supabase.from('profiles_athlete').update({ full_name: fullName, sport, position, birth_date: birthDate, weight_kg: weight, height_cm: height, wingspan_cm: wingspan, goal }).eq('id', uid);
+                if (resErr) throw new Error(resErr.message);
             } else {
                 // Crear nuevo perfil atleta
-                res = await fetch(`${window.SUPABASE_URL}/rest/v1/profiles_athlete`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ user_id: uid, full_name: fullName, sport, position, birth_date: birthDate, weight_kg: weight, height_cm: height, wingspan_cm: wingspan, goal })
-                });
+                const { error: resErr } = await window.supabase.from('profiles_athlete').insert({ user_id: uid, full_name: fullName, sport, position, birth_date: birthDate, weight_kg: weight, height_cm: height, wingspan_cm: wingspan, goal });
+                if (resErr) throw new Error(resErr.message);
             }
 
-            if (!res.ok) throw new Error('Error al guardar perfil de atleta.');
+            // Error checks already handled
             console.log('✅ Perfil atleta guardado.');
             location.reload();
         } catch (err) { alert(err.message); }
@@ -353,19 +332,9 @@ window.App = {
             };
 
             try {
-                const r = await fetch(`${window.SUPABASE_URL}/rest/v1/profiles_athlete`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': window.SUPABASE_KEY,
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'resolution=merge-duplicates'
-                    },
-                    body: JSON.stringify(payload)
-                });
-                if (!r.ok) {
-                    const err = await r.json().catch(() => ({}));
-                    throw new Error(err.message || 'Error al guardar perfil de atleta.');
+                const { error: upsertErr } = await window.supabase.from('profiles_athlete').upsert(payload, { onConflict: 'user_id' });
+                if (upsertErr) {
+                    throw new Error(upsertErr.message || 'Error al guardar perfil de atleta.');
                 }
                 console.log('✅ Perfil de atleta guardado en profiles_athlete.');
                 location.reload();
@@ -384,16 +353,8 @@ window.App = {
             if (!name) return alert('Por favor, ingresa tu nombre.');
 
             try {
-                const r = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'apikey': window.SUPABASE_KEY,
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ name, staff_role: staffRole, license })
-                });
-                if (!r.ok) throw new Error('Error al actualizar perfil de staff.');
+                const { error: updateErr } = await window.supabase.from('users').update({ name, staff_role: staffRole, license }).eq('id', uid);
+                if (updateErr) throw new Error('Error al actualizar perfil de staff: ' + updateErr.message);
                 console.log('✅ Perfil de DT guardado en users.');
                 location.reload();
             } catch (err) {
@@ -414,15 +375,11 @@ window.App = {
             LOG('INIT')(`uid=${uid.slice(0,8)}... | role="${role}"`);
 
             // ── 2. Verificar que el token sigue siendo válido ─────────────
-            LOG('AUTH')('Verificando token con /auth/v1/user...');
-            const userRes = await fetch(`${window.SUPA_URL}/auth/v1/user`, {
-                headers: { 'apikey': window.SUPA_KEY, 'Authorization': `Bearer ${token}` }
-            });
-            if (!userRes.ok) {
-                const errData = await userRes.json().catch(() => ({}));
-                throw new Error(`Token inválido o expirado (${userRes.status}): ${errData.message || 'unauthorized'}`);
+            LOG('AUTH')('Verificando token con supabase.auth.getUser...');
+            const { data: { user: authUser }, error: userErr } = await window.supabase.auth.getUser(token);
+            if (userErr || !authUser) {
+                throw new Error(`Token inválido o expirado: ${userErr?.message || 'unauthorized'}`);
             }
-            const authUser = await userRes.json();
             LOG('AUTH')(`Token válido. Email verificado: ${authUser.email}`);
 
             // ── 3. Bifurcación estricta por rol ──────────────────────────
@@ -431,12 +388,8 @@ window.App = {
                 document.body.classList.remove('mode-dt');
 
                 LOG('ATHLETE')(`Buscando perfil en profiles_athlete... id=${uid.slice(0,8)}...`);
-                const athRes = await fetch(
-                    `${window.SUPA_URL}/rest/v1/profiles_athlete?id=eq.${uid}&select=*`,
-                    { headers: { 'apikey': window.SUPA_KEY, 'Authorization': `Bearer ${token}` } }
-                );
-                if (!athRes.ok) throw new Error(`Error HTTP ${athRes.status} al leer profiles_athlete`);
-                const athData = await athRes.json();
+                const { data: athData, error: athErr } = await window.supabase.from('profiles_athlete').select('*').eq('id', uid);
+                if (athErr) throw new Error(`Error al leer profiles_athlete: ${athErr.message}`);
                 LOG('ATHLETE')(`Filas encontradas: ${athData.length}. full_name="${athData[0]?.full_name || 'vacío'}"`);
 
                 if (!athData.length || !athData[0].full_name) {
@@ -460,12 +413,8 @@ window.App = {
             document.body.classList.remove('mode-athlete', 'testing-athlete');
 
             LOG('DT')(`Buscando perfil en users... id=${uid.slice(0,8)}...`);
-            const dtRes = await fetch(
-                `${window.SUPA_URL}/rest/v1/users?id=eq.${uid}&select=*`,
-                { headers: { 'apikey': window.SUPA_KEY, 'Authorization': `Bearer ${token}` } }
-            );
-            if (!dtRes.ok) throw new Error(`Error HTTP ${dtRes.status} al leer tabla users`);
-            const users = await dtRes.json();
+            const { data: users, error: dtErr } = await window.supabase.from('users').select('*').eq('id', uid);
+            if (dtErr) throw new Error(`Error al leer tabla users: ${dtErr.message}`);
             LOG('DT')(`Filas encontradas: ${users.length}. name="${users[0]?.name || 'vacío'}" team_id="${users[0]?.team_id || 'null'}"`);
 
             if (!users.length) {
@@ -490,14 +439,10 @@ window.App = {
             }
 
             LOG('DT')('Perfil completo. Cargando config de equipo...');
-            const [cRes, tRes] = await Promise.all([
-                fetch(`${window.SUPA_URL}/rest/v1/team_configs?team_id=eq.${userData.team_id}`,
-                    { headers: { 'apikey': window.SUPA_KEY, 'Authorization': `Bearer ${token}` } }),
-                fetch(`${window.SUPA_URL}/rest/v1/teams?id=eq.${userData.team_id}`,
-                    { headers: { 'apikey': window.SUPA_KEY, 'Authorization': `Bearer ${token}` } })
+            const [ { data: configs }, { data: teams } ] = await Promise.all([
+                window.supabase.from('team_configs').select('*').eq('team_id', userData.team_id),
+                window.supabase.from('teams').select('*').eq('id', userData.team_id)
             ]);
-            const configs = await cRes.json();
-            const teams   = await tRes.json();
             window.CurrentTeam = teams?.[0] || null;
             LOG('DT')(`Team: "${window.CurrentTeam?.name || 'N/A'}" | Config: ${configs.length} registros`);
 
@@ -544,10 +489,8 @@ window.App = {
     async fetchExercisesLibrary() {
         try {
             const token = localStorage.getItem('ravix_token');
-            const r = await fetch(`${window.SUPABASE_URL}/rest/v1/exercises_library`, {
-                headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
-            });
-            const data = await r.json();
+            const { data, error } = await window.supabase.from('exercises_library').select('*');
+            if (error) throw error;
             if (data) {
                 window.ExercisesLibrary = data.map(ex => ({
                     ...ex,
@@ -562,10 +505,8 @@ window.App = {
         try {
             const uid   = localStorage.getItem('ravix_v5_uid');
             const token = localStorage.getItem('ravix_token');
-            const r = await fetch(`${window.SUPABASE_URL}/rest/v1/custom_exercises?user_id=eq.${uid}&order=created_at.desc`, {
-                headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
-            });
-            const data = await r.json();
+            const { data, error } = await window.supabase.from('custom_exercises').select('*').eq('user_id', uid).order('created_at', { ascending: false });
+            if (error) throw error;
             if (Array.isArray(data)) {
                 window.CustomExercises = data.map(ex => ({
                     ...ex,
@@ -648,25 +589,24 @@ window.App = {
 
         try {
             // 1. Crear el usuario en el sistema de Auth
-            const rAuth = await fetch(`${window.SUPA_URL}/auth/v1/signup`, {
-                method: 'POST',
-                headers: { 'apikey': window.SUPA_KEY, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email, password: pass })
+            const { data: authData, error: authError } = await window.supabase.auth.signUp({
+                email: email,
+                password: pass
             });
 
-            const authData = await rAuth.json();
-
-            if (rAuth.status === 400 && (authData.msg?.includes('already registered') || authData.message?.includes('already registered') || authData.error_description?.includes('already registered'))) {
-                alert("El email ya existe. Por favor, inicia sesión.");
-                window.App.toggleAuth('login');
-                return;
+            if (authError) {
+                if (authError.message?.includes('already registered')) {
+                    alert("El email ya existe. Por favor, inicia sesión.");
+                    window.App.toggleAuth('login');
+                    return;
+                }
+                throw new Error(authError.message);
             }
-            if (!rAuth.ok) throw new Error(authData.msg || authData.message || authData.error_description || "Error de Auth");
 
             // 2. Si el registro fue exitoso y nos devolvió token
-            if (authData.access_token && authData.user) {
+            if (authData.session && authData.user) {
                 const uid = authData.user.id;
-                const token = authData.access_token;
+                const token = authData.session.access_token;
 
                 // Guardamos la sesión
                 localStorage.setItem('ravix_token', token);
@@ -691,15 +631,8 @@ window.App = {
                 }
 
                 // Inyectamos el esqueleto en la base de datos
-                await fetch(`${window.SUPA_URL}/rest/v1/${table}`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': window.SUPA_KEY,
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(profilePayload)
-                });
+                const { error: insertErr } = await window.supabase.from(table).insert(profilePayload);
+                if (insertErr) throw new Error(insertErr.message);
 
                 console.log(`✅ Perfil inyectado exitosamente en ${table}`);
 
@@ -917,27 +850,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (btn) { btn.disabled = true; btn.textContent = 'Ingresando...'; }
 
             try {
-                const r = await fetch(`${window.SUPA_URL}/auth/v1/token?grant_type=password`, {
-                    method: 'POST',
-                    headers: { 'apikey': window.SUPA_KEY, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password: pass })
+                const { data, error } = await window.supabase.auth.signInWithPassword({
+                    email,
+                    password: pass
                 });
 
-                const data = await r.json();
-
-                if (!r.ok) {
-                    throw new Error(data.error_description || data.msg || data.message || 'Credenciales incorrectas.');
+                if (error) {
+                    throw new Error(error.message || 'Credenciales incorrectas.');
                 }
 
-                if (data.access_token && data.user) {
+                if (data.session && data.user) {
                     console.log('✅ Token recibido. Guardando sesión...');
-                    localStorage.setItem('ravix_token', data.access_token);
+                    localStorage.setItem('ravix_token', data.session.access_token);
                     localStorage.setItem('ravix_v5_uid', data.user.id);
                     // Persistir el rol elegido en el portal para que checkSession lo use
                     localStorage.setItem('ravix_active_role', role);
                     window.App.currentRole = role;
 
-                    await window.App.checkSession(data.user.id, data.access_token);
+                    await window.App.checkSession(data.user.id, data.session.access_token);
                 } else {
                     throw new Error('No se recibió el token de autorización.');
                 }

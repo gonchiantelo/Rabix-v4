@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="./css/styles-core.css" />
     <link rel="stylesheet" href="./css/styles-player.css" />
 
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <!-- Tipografía -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -429,15 +432,9 @@
                     <!-- Sueño -->
                     <div class="adp-param-block">
                         <div class="adp-param-header">
-                            <span class="adp-param-label">CALIDAD DEL SUEÑO</span>
-                            <span class="adp-param-value" id="sleep-display">Buena</span>
+                            <span class="adp-param-label">CALIDAD DEL SUEÑO (1-10)</span>
                         </div>
-                        <div class="adp-btn-cluster" id="wellness-sleep">
-                            <button class="adp-cluster-btn" data-value="1">Mala</button>
-                            <button class="adp-cluster-btn" data-value="2">Regular</button>
-                            <button class="adp-cluster-btn adp-cluster-btn--active" data-value="3">Buena</button>
-                            <button class="adp-cluster-btn" data-value="4">Excelente</button>
-                        </div>
+                        <input type="number" id="input-sleep" min="1" max="10" placeholder="Ej: 8" class="adp-range" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px;">
                     </div>
 
                     <!-- Estrés -->
@@ -457,24 +454,14 @@
                     <!-- Escala Hooper -->
                     <div class="adp-param-block">
                         <div class="adp-param-header">
-                            <span class="adp-param-label">ESCALA HOOPER · DOLOR MUSCULAR</span>
-                            <span class="adp-param-value" id="hooper-display">2 / 7</span>
+                            <span class="adp-param-label">FATIGA / DOLOR MUSCULAR (1-7)</span>
                         </div>
-                        <div class="adp-hooper-grid" id="wellness-hooper-dots">
-                            <button class="adp-hooper-dot" data-val="1">1</button>
-                            <button class="adp-hooper-dot adp-hooper-dot--active" data-val="2">2</button>
-                            <button class="adp-hooper-dot" data-val="3">3</button>
-                            <button class="adp-hooper-dot" data-val="4">4</button>
-                            <button class="adp-hooper-dot" data-val="5">5</button>
-                            <button class="adp-hooper-dot" data-val="6">6</button>
-                            <button class="adp-hooper-dot" data-val="7">7</button>
-                        </div>
-                        <div class="adp-range-labels" style="margin-top:6px"><span>Sin dolor</span><span>Extremo</span></div>
+                        <input type="number" id="input-fatigue" min="1" max="7" placeholder="Ej: 3" class="adp-range" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px;">
                     </div>
 
-                    <button class="adp-btn-primary" onclick="window.AthleteApp.saveWellness()">
+                    <button class="adp-btn-primary" onclick="window.PlayerEngine.saveReadiness()" style="transition: all 0.3s ease;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        Guardar Reporte de Wellness
+                        Actualizar Readiness
                     </button>
                 </div>
             </div>

@@ -33,14 +33,14 @@ window.DTEngine = {
         await this.fetchTeamConfig();
 
         try {
-            const path = `training_logs?team_id=eq.${teamId}&fecha=gte.${year}-${monthStr}-01&fecha=lte.${year}-${monthStr}-${lastDayStr}`;
-            const res = await fetch(`${window.SUPABASE_URL}/rest/v1/${path}`, {
-                headers: {
-                    'apikey': window.SUPABASE_KEY,
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            const data = await res.json();
+            const startDate = `${year}-${monthStr}-01`;
+            const endDate = `${year}-${monthStr}-${lastDayStr}`;
+            const { data, error } = await window.supabase.from('training_logs')
+                .select('*')
+                .eq('team_id', teamId)
+                .gte('fecha', startDate)
+                .lte('fecha', endDate);
+            if (error) throw error;
 
             this._assignedTasks = {};
             if (data && Array.isArray(data)) {
@@ -70,7 +70,8 @@ window.DTEngine = {
         const teamId = window.CurrentTeam?.id;
         if (!teamId) return;
         try {
-            const data = await window.Supa._req('GET', `team_configs?team_id=eq.${teamId}`);
+            const { data, error } = await window.supabase.from('team_configs').select('*').eq('team_id', teamId);
+            if (error) throw error;
             if (data && data[0] && data[0].match_dates) {
                 this._matchDays = new Set(data[0].match_dates);
             }
@@ -929,16 +930,8 @@ window.DTEngine = {
         };
 
         try {
-            await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': window.SUPABASE_KEY,
-                    'Authorization': `Bearer ${token}`,
-                    'Prefer': 'resolution=merge-duplicates'
-                },
-                body: JSON.stringify(payload)
-            });
+            const { error: upsertErr } = await window.supabase.from('team_configs').upsert(payload, { onConflict: 'team_id' });
+            if (upsertErr) throw upsertErr;
             console.log("🟢 Configuración de Morfociclo persistida.");
         } catch (e) { console.error("Error al guardar morfociclo:", e); }
     },
@@ -1098,15 +1091,8 @@ window.DTEngine = {
                         p_task_id: task.id.toString()
                     };
 
-                    await fetch(`${window.SUPABASE_URL}/rest/v1/rpc/guardar_tarea_calendario`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'apikey': window.SUPABASE_KEY,
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(payload)
-                    });
+                    const { error } = await window.supabase.rpc('guardar_tarea_calendario', payload);
+                    if (error) throw error;
                 }
 
                 this._stagedTasks = [];
@@ -1146,21 +1132,14 @@ window.DTEngine = {
 
             console.log("🟡 Intentando borrar vía RPC:", task);
 
-            const response = await fetch(`${window.SUPABASE_URL}/rest/v1/rpc/borrar_tarea_calendario`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': window.SUPABASE_KEY,
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
+            const { error } = await window.supabase.rpc('borrar_tarea_calendario', {
                     p_user_id: userId,
                     p_team_id: teamId,
                     p_fecha: date,
                     p_scenario: task.block,
                     p_task_id: task.id.toString()
-                })
-            });
+                });
+                if (error) throw error;
 
             if (!response.ok) {
                 const errorData = await response.json();
@@ -1537,26 +1516,17 @@ window.DTEngine = {
             console.log('💾 Guardando cambios en perfil, equipo y ADN táctico...');
 
             // 1. Actualizar Usuario
-            const uRes = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ name, license })
-            });
+            const { error: uErr } = await window.supabase.from('users').update({ name, license }).eq('id', uid);
+            const uRes = { ok: !uErr };
 
             // 2. Actualizar Equipo
             const teamId = window.CurrentTeam?.id;
-            const tRes = await fetch(`${window.SUPABASE_URL}/rest/v1/teams?id=eq.${teamId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ name: teamName })
-            });
+            const { error: tErr } = await window.supabase.from('teams').update({ name: teamName }).eq('id', teamId);
+            const tRes = { ok: !tErr };
 
             // 3. Actualizar Config Táctica (incluyendo tactical_dna)
-            const cRes = await fetch(`${window.SUPABASE_URL}/rest/v1/team_configs?team_id=eq.${teamId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ primary_color: color, methodology, tactical_dna })
-            });
+            const { error: cErr } = await window.supabase.from('team_configs').update({ primary_color: color, methodology, tactical_dna }).eq('team_id', teamId);
+            const cRes = { ok: !cErr };
 
             if (uRes.ok && tRes.ok && cRes.ok) {
                 // Actualizar Memoria Global
@@ -1617,32 +1587,21 @@ window.DTEngine = {
 
         try {
             console.log('💾 Guardando tarea personalizada en bóveda...');
-            const res = await fetch(`${window.SUPABASE_URL}/rest/v1/custom_exercises`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': window.SUPABASE_KEY,
-                    'Authorization': `Bearer ${token}`,
-                    'Prefer': 'return=representation'
-                },
-                body: JSON.stringify({
-                    user_id: uid,
-                    title: name,
-                    morfociclo_phase: phase,
-                    description: rules,
-                    game_moment: moment,
-                    ssp_type: ssp,
-                    series: blocks,
-                    duration: totalMinutes,
-                    work_time: workTime,
-                    pause_time: pauseTime,
-                    materials: materials
-                })
-            });
+            const { data, error } = await window.supabase.from('custom_exercises').insert({
+                user_id: uid,
+                title: name,
+                morfociclo_phase: phase,
+                description: rules,
+                game_moment: moment,
+                ssp_type: ssp,
+                series: blocks,
+                duration: totalMinutes,
+                work_time: workTime,
+                pause_time: pauseTime,
+                materials: materials
+            }).select();
 
-            if (!res.ok) throw new Error('Error al guardar en Supabase.');
-
-            const data = await res.json();
+            if (error) throw new Error('Error al guardar en Supabase: ' + error.message);
             const newTask = data[0];
 
             if (!window.CustomExercises) window.CustomExercises = [];
@@ -2357,20 +2316,13 @@ window.DTEngine = {
                 return;
             }
 
-            fetch(window.SUPABASE_URL + '/rest/v1/team_configs?team_id=eq.' + teamId, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': window.SUPABASE_KEY,
-                    'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify({ periodization: per })
-            }).then(function(res) {
-                if (res.ok) {
+            window.supabase.from('team_configs').update({ periodization: per }).eq('team_id', teamId)
+            .then(function({ error }) {
+                if (!error) {
                     console.log('✅ Periodización guardada en Supabase.');
                     if (window.CurrentTeam) window.CurrentTeam.periodization = per;
                 } else {
-                    console.error('🔴 Error al guardar periodización:', res.status);
+                    console.error('🔴 Error al guardar periodización:', error.message);
                 }
             }).catch(function(err) {
                 console.error('🔴 Error de red al guardar periodización:', err);
