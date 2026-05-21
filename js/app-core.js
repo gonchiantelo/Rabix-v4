@@ -31,9 +31,13 @@ window.Wizard = {
             const oaView = document.getElementById('view-onboarding-athlete');
             if (oaView) {
                 oaView.style.display = 'flex';
-                // Trigger reflow para que la transición CSS funcione
+                // Doble rAF: primero el display, luego la transición de opacidad
                 requestAnimationFrame(() => {
-                    requestAnimationFrame(() => oaView.classList.add('oa-visible'));
+                    requestAnimationFrame(() => {
+                        oaView.classList.add('oa-visible');
+                        // Init del wizard DESPUÉS de que el DOM sea visible
+                        if (window.AthWizard) window.AthWizard.init();
+                    });
                 });
             }
         } else {
@@ -616,7 +620,184 @@ window.App = {
     logout() { localStorage.clear(); location.reload(); }
 };
 
+/* ═══════════════════════════════════════════════
+   ATHLETE WIZARD — Dependent Dropdowns + Multi-Step
+   Scope: #athlete-onboarding-form (avoids ID collisions
+   with legacy DT wizard that shares ath-sport / ath-pos)
+═══════════════════════════════════════════════ */
+window.AthWizard = (function () {
+
+    // ── Diccionario de posiciones por deporte ──────────────────────────
+    const POSITIONS = {
+        'Futbol': [
+            'Arquero', 'Defensor Central', 'Defensor Lateral Derecho',
+            'Defensor Lateral Izquierdo', 'Pivote / MCD', 'Volante Mixto',
+            'Volante Ofensivo / Mediapunta', 'Extremo Derecho',
+            'Extremo Izquierdo', 'Delantero Centro', 'Segundo Delantero'
+        ],
+        'Basquetbol': ['Base (Point Guard)', 'Escolta (Shooting Guard)', 'Alero (Small Forward)', 'Ala-Pivot (Power Forward)', 'Pivot (Center)'],
+        'Rugby': [
+            'Pilar Izquierdo (1)', 'Hooker (2)', 'Pilar Derecho (3)',
+            'Segunda Linea (4)', 'Segunda Linea (5)', 'Ala Flanker (6)',
+            'Ala Flanker N8 (7-8)', 'Medio Scrum (9)', 'Apertura (10)',
+            'Centro Izquierdo (12)', 'Centro Derecho (13)',
+            'Wing Izquierdo (11)', 'Wing Derecho (14)', 'Fullback (15)'
+        ],
+        'Natacion': [
+            '50m Libre', '100m Libre', '200m Libre', '400m Libre', '800m Libre', '1500m Libre',
+            '100m Espalda', '200m Espalda',
+            '100m Pecho', '200m Pecho',
+            '100m Mariposa', '200m Mariposa',
+            '200m Combinado Individual', '400m Combinado Individual',
+            'Relevos 4x100m', 'Aguas Abiertas'
+        ],
+        'Atletismo': [
+            'Velocidad 100m', 'Velocidad 200m', 'Velocidad 400m',
+            'Medio Fondo 800m', 'Medio Fondo 1500m',
+            'Fondo 5000m', 'Fondo 10000m', 'Maraton',
+            'Marcha 20km', 'Marcha 50km',
+            'Salto en Alto', 'Salto con Garrocha', 'Salto en Largo', 'Triple Salto',
+            'Lanzamiento de Peso', 'Lanzamiento de Disco',
+            'Lanzamiento de Martillo', 'Lanzamiento de Jabalina',
+            'Decatlon / Heptatlon'
+        ],
+        'Judo': [
+            '-48kg (F)', '-52kg (F)', '-57kg (F)', '-63kg (F)', '-70kg (F)', '-78kg (F)', '+78kg (F)',
+            '-60kg (M)', '-66kg (M)', '-73kg (M)', '-81kg (M)', '-90kg (M)', '-100kg (M)', '+100kg (M)'
+        ],
+        'Tenis': ['Singles', 'Dobles', 'Singles + Dobles', 'Tenis de Mesa — Singles', 'Tenis de Mesa — Dobles'],
+        'Fitness': [
+            'Powerlifting', 'Halterofilia', 'CrossFit / Functional Fitness',
+            'Culturismo / Bodybuilding', 'Fitness Estetico',
+            'Perdida de Peso / Recomposicion', 'Rendimiento General'
+        ],
+        'Otro': ['General / Polideportivo', 'Rehabilitacion Deportiva', 'Preparacion Fisica Base']
+    };
+
+    // ── Helpers de DOM scoped al formulario ───────────────────────────
+    function getForm()  { return document.getElementById('athlete-onboarding-form'); }
+    function q(id)      { const f = getForm(); return f ? f.querySelector('#' + id) : document.getElementById(id); }
+
+    // ── Actualiza el select de posición con micro-animación ───────────
+    function updatePositions(sport) {
+        const posSelect = q('ath-pos');
+        if (!posSelect) return;
+
+        const positions = POSITIONS[sport] || null;
+
+        if (!positions) {
+            // Sin deporte seleccionado: deshabilitar y dejar placeholder
+            posSelect.innerHTML = '<option value="" disabled selected>Primero elige un deporte</option>';
+            posSelect.disabled = true;
+            posSelect.style.opacity = '0.45';
+            posSelect.style.cursor  = 'not-allowed';
+            return;
+        }
+
+        // Fade out → actualizar → fade in
+        posSelect.style.transition = 'opacity 0.18s ease';
+        posSelect.style.opacity = '0';
+
+        setTimeout(() => {
+            posSelect.innerHTML = '<option value="" disabled selected>Selecciona posicion...</option>'
+                + positions.map(p => `<option value="${p}">${p}</option>`).join('');
+            posSelect.disabled = false;
+            posSelect.style.cursor  = '';
+            posSelect.value = ''; // reset selección anterior
+            // Fade in
+            requestAnimationFrame(() => { posSelect.style.opacity = '1'; });
+        }, 180);
+    }
+
+    // ── Actualiza UI del stepper y barra de progreso ──────────────────
+    let currentStep = 1;
+    const TOTAL = 3;
+
+    function updateUI() {
+        const form = getForm();
+        if (!form) return;
+
+        for (let i = 1; i <= TOTAL; i++) {
+            const fs   = form.querySelector('#oa-step-' + i);
+            const snav = document.getElementById('snav-' + i);
+            if (fs)   { fs.classList.toggle('active', i === currentStep); }
+            if (snav) {
+                snav.classList.toggle('active', i === currentStep);
+                snav.classList.toggle('done',   i < currentStep);
+            }
+        }
+
+        const pct = Math.round((currentStep / TOTAL) * 100);
+        const bar = document.getElementById('oa-progress');
+        if (bar) bar.style.width = pct + '%';
+
+        const lbl = document.getElementById('oa-step-label');
+        if (lbl) lbl.textContent = `Paso ${currentStep} de ${TOTAL}`;
+    }
+
+    // ── Validación por paso ────────────────────────────────────────────
+    function validateStep(step) {
+        if (step === 1) {
+            const name  = q('ath-name')?.value?.trim();
+            const sport = q('ath-sport')?.value;
+            const pos   = q('ath-pos')?.value;
+            if (!name)  { q('ath-name')?.focus();  alert('Ingresa tu nombre completo.'); return false; }
+            if (!sport) { q('ath-sport')?.focus(); alert('Selecciona tu deporte.'); return false; }
+            if (!pos)   { q('ath-pos')?.focus();   alert('Selecciona tu posicion o especialidad.'); return false; }
+        }
+        return true;
+    }
+
+    // ── Init: bind eventos una sola vez ───────────────────────────────
+    function init() {
+        const sportSel = q('ath-sport');
+        const posSel   = q('ath-pos');
+
+        if (!sportSel || !posSel) return; // form no está en DOM todavía
+
+        // Estado inicial: posición deshabilitada
+        posSel.innerHTML = '<option value="" disabled selected>Primero elige un deporte</option>';
+        posSel.disabled = true;
+        posSel.style.opacity = '0.45';
+        posSel.style.cursor  = 'not-allowed';
+
+        // Evento deporte → posiciones
+        sportSel.addEventListener('change', function () {
+            updatePositions(this.value);
+        });
+
+        // Reset step
+        currentStep = 1;
+        updateUI();
+    }
+
+    // ── API pública ────────────────────────────────────────────────────
+    return {
+        init,
+        onSportChange() { // compatibilidad con cualquier onchange inline residual
+            const sport = q('ath-sport')?.value;
+            if (sport) updatePositions(sport);
+        },
+        next() {
+            if (!validateStep(currentStep)) return;
+            if (currentStep < TOTAL) { currentStep++; updateUI(); }
+        },
+        prev() {
+            if (currentStep > 1) { currentStep--; updateUI(); }
+        }
+    };
+
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Si el onboarding atleta ya estuviera visible al cargar (edge case), iniciarlo
+    if (document.getElementById('athlete-onboarding-form')) {
+        const oaView = document.getElementById('view-onboarding-athlete');
+        if (oaView && oaView.style.display !== 'none' && oaView.style.display !== '') {
+            if (window.AthWizard) window.AthWizard.init();
+        }
+    }
+
     // Login Form
     const loginForm = document.getElementById('login-form');
     if (loginForm) {

@@ -485,7 +485,7 @@
                         <div class="oa-group">
                             <label class="oa-lbl" for="ath-sport">Deporte <span class="oa-req">*</span></label>
                             <div class="oa-sel-wrap">
-                                <select id="ath-sport" class="oa-inp" required onchange="window.AthWizard.onSportChange()">
+                                <select id="ath-sport" class="oa-inp" required>
                                     <option value="" disabled selected>Selecciona...</option>
                                     <option value="Futbol">Futbol</option>
                                     <option value="Basquetbol">Basquetbol</option>
@@ -626,57 +626,6 @@
             </form>
         </main>
     </section>
-    <script>
-    window.AthWizard = {
-        step: 1,
-        total: 3,
-        POSITIONS: {
-            'Futbol':      ['Arquero','Defensor Central','Lateral Derecho','Lateral Izquierdo','Pivote / MCD','Volante Mixto','Extremo Derecho','Extremo Izquierdo','Mediapunta','Delantero Centro','Segundo Delantero'],
-            'Basquetbol':  ['Base','Escolta','Alero','Ala-Pivot','Pivot'],
-            'Rugby':       ['Pilar Izquierdo','Hooker','Pilar Derecho','Segunda Linea','Ala Izquierdo','Ala Derecho / N8','Medio Scrum','Apertura','Centro Izquierdo','Centro Derecho','Wing Izquierdo','Wing Derecho','Fullback'],
-            'Natacion':    ['100m Libre','200m Libre','400m Libre','800m Libre','100m Espalda','200m Espalda','100m Pecho','200m Pecho','100m Mariposa','200m Mariposa','200m Combinado','400m Combinado'],
-            'Atletismo':   ['Velocidad (100m/200m)','Medio Fondo (400m/800m)','Fondo (1500m+)','Salto en Alto','Salto en Largo','Triple Salto','Lanzamiento de Peso','Lanzamiento de Disco','Marcha'],
-            'Judo':        ['Categoria -60kg','-66kg','-73kg','-81kg','-90kg','-100kg','+100kg','Categoria Abierta'],
-            'Tenis':       ['Individual','Dobles','Singles Profesional'],
-            'Fitness':     ['Powerlifting','Halterofilia','CrossFit','Culturismo','Fitness General','Perdida de Peso'],
-            'Otro':        ['General']
-        },
-        onSportChange() {
-            const sport = document.getElementById('ath-sport').value;
-            const sel   = document.getElementById('ath-pos');
-            const positions = this.POSITIONS[sport] || ['General'];
-            sel.innerHTML = positions.map(p => `<option value="${p}">${p}</option>`).join('');
-        },
-        updateUI() {
-            for (let i = 1; i <= this.total; i++) {
-                const fs   = document.getElementById('oa-step-' + i);
-                const snav = document.getElementById('snav-' + i);
-                if (fs) { fs.classList.toggle('active', i === this.step); }
-                if (snav) {
-                    snav.classList.toggle('active', i === this.step);
-                    snav.classList.toggle('done', i < this.step);
-                }
-            }
-            const pct = Math.round((this.step / this.total) * 100);
-            const bar = document.getElementById('oa-progress');
-            if (bar) bar.style.width = pct + '%';
-            const lbl = document.getElementById('oa-step-label');
-            if (lbl) lbl.textContent = 'Paso ' + this.step + ' de ' + this.total;
-        },
-        next() {
-            if (this.step === 1) {
-                const name  = document.getElementById('ath-name').value.trim();
-                const sport = document.getElementById('ath-sport').value;
-                const pos   = document.getElementById('ath-pos').value;
-                if (!name || !sport || !pos) { alert('Completa Nombre, Deporte y Posicion para continuar.'); return; }
-            }
-            if (this.step < this.total) { this.step++; this.updateUI(); }
-        },
-        prev() {
-            if (this.step > 1) { this.step--; this.updateUI(); }
-        }
-    };
-    </script>
 
     <script src="./js/app-core.js"></script>
     <script src="./js/app-player.js"></script>
