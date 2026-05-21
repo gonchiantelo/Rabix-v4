@@ -582,15 +582,27 @@ window.App = {
 
         if (isAthlete) {
             // ── MUNDO ATLETA ──
-            const cssLink = document.createElement('link');
-            cssLink.rel = 'stylesheet';
-            cssLink.href = 'css/styles-athletes.css';
-            document.head.appendChild(cssLink);
+            // Guard: evitar doble inyección de CSS
+            if (!document.querySelector('link[href="css/styles-player.css"]')) {
+                const cssLink = document.createElement('link');
+                cssLink.rel = 'stylesheet';
+                cssLink.href = 'css/styles-player.css';
+                document.head.appendChild(cssLink);
+            }
+
+            // Guard: evitar doble inyección de JS
+            if (window.AthleteApp) {
+                // Ya cargado — lanzar directamente
+                window.AthleteApp.init();
+                return;
+            }
 
             const script = document.createElement('script');
             script.src = 'js/app-player.js';
             script.onload = () => {
-                if (window.PlayerEngine) {
+                if (window.AthleteApp) {
+                    window.AthleteApp.init();
+                } else if (window.PlayerEngine) {
                     window.PlayerEngine.init();
                 }
             };
