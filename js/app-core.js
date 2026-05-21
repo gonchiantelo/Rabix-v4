@@ -192,16 +192,54 @@ window.App = {
     isProcessingAuth: false, // Candado anti-race-condition
 
     async init() {
-        const uid = localStorage.getItem('ravix_v5_uid');
+        const uid   = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
+        const role  = localStorage.getItem('ravix_active_role') || 'dt';
+
+        console.log(`[ROUTER] init() — uid=${uid ? uid.slice(0,8)+'...' : 'null'} role=${role}`);
+
         if (uid && token) {
-            // Sesion activa: saltar el portal y restaurar directo
-            this.checkSession(uid, token);
+            // Sesión activa: ocultar TODO inmediatamente para evitar flash del portal
+            this._hideAllViews();
+            this.currentRole = role;
+
+            // Mostrar un loader mínimo mientras se verifica
+            const portal = document.getElementById('view-portal');
+            if (portal) {
+                portal.style.display    = 'flex';
+                portal.style.opacity    = '0';
+                portal.style.pointerEvents = 'none';
+            }
+
+            console.log('[ROUTER] Token encontrado. Verificando sesión...');
+            await this.checkSession(uid, token);
             window.addEventListener('hashchange', () => this.handleRouting());
         } else {
-            // Sin sesión: mostrar Portal de Entrada
+            console.log('[ROUTER] Sin sesión. Mostrando portal de entrada.');
             document.getElementById('view-portal').style.display = 'flex';
         }
+    },
+
+    // Oculta todas las vistas para evitar flash visual
+    _hideAllViews() {
+        const ids = ['view-portal','view-login','view-onboarding','view-onboarding-athlete','app-shell'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+    },
+
+    // Muestra el portal solo en caso de error catastrófico real
+    _showPortalWithError(msg) {
+        console.error('[ROUTER] ❌ Error catastrófico:', msg);
+        this._hideAllViews();
+        const portal = document.getElementById('view-portal');
+        if (portal) {
+            portal.style.display    = 'flex';
+            portal.style.opacity    = '';
+            portal.style.pointerEvents = '';
+        }
+        if (msg) alert('Sesión interrumpida: ' + msg + '\nPor favor, inicia sesión nuevamente.');
     },
 
     selectRole: function(role) {
@@ -366,121 +404,141 @@ window.App = {
     },
 
     async checkSession(uid, token) {
+        const LOG = tag => s => console.log(`[ROUTER:${tag}] ${s}`);
+
         try {
-            // Restaurar el rol del portal (persiste incluso tras reload)
+            // ── 1. Recuperar rol persistido ──────────────────────────────
             const savedRole = localStorage.getItem('ravix_active_role');
-            if (savedRole) {
-                this.currentRole = savedRole;
-                window.App.currentRole = savedRole;
+            if (savedRole) { this.currentRole = savedRole; }
+            const role = this.currentRole || 'dt';
+            LOG('INIT')(`uid=${uid.slice(0,8)}... | role="${role}"`);
+
+            // ── 2. Verificar que el token sigue siendo válido ─────────────
+            LOG('AUTH')('Verificando token con /auth/v1/user...');
+            const userRes = await fetch(`${window.SUPA_URL}/auth/v1/user`, {
+                headers: { 'apikey': window.SUPA_KEY, 'Authorization': `Bearer ${token}` }
+            });
+            if (!userRes.ok) {
+                const errData = await userRes.json().catch(() => ({}));
+                throw new Error(`Token inválido o expirado (${userRes.status}): ${errData.message || 'unauthorized'}`);
             }
-            const activeRole = this.currentRole || 'dt';
+            const authUser = await userRes.json();
+            LOG('AUTH')(`Token válido. Email verificado: ${authUser.email}`);
 
-            console.log(`[RAVIX checkSession] uid=${uid} role=${activeRole}`);
-
-            // ── BIFURCACIÓN POR ROL ────────────────────────────────────
-            if (activeRole === 'athlete') {
-                document.body.classList.add('testing-athlete', 'mode-athlete');
+            // ── 3. Bifurcación estricta por rol ──────────────────────────
+            if (role === 'athlete') {
+                document.body.classList.add('mode-athlete', 'testing-athlete');
                 document.body.classList.remove('mode-dt');
 
+                LOG('ATHLETE')(`Buscando perfil en profiles_athlete... user_id=${uid.slice(0,8)}...`);
                 const athRes = await fetch(
-                    `${window.SUPABASE_URL}/rest/v1/profiles_athlete?user_id=eq.${uid}`,
-                    { headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` } }
+                    `${window.SUPA_URL}/rest/v1/profiles_athlete?user_id=eq.${uid}&select=*`,
+                    { headers: { 'apikey': window.SUPA_KEY, 'Authorization': `Bearer ${token}` } }
                 );
+                if (!athRes.ok) throw new Error(`Error HTTP ${athRes.status} al leer profiles_athlete`);
                 const athData = await athRes.json();
+                LOG('ATHLETE')(`Filas encontradas: ${athData.length}. full_name="${athData[0]?.full_name || 'vacío'}"`);
 
-                if (!athData || athData.length === 0 || !athData[0].full_name) {
-                    // Atleta sin perfil → Onboarding
-                    console.log('[RAVIX] Atleta sin perfil → Wizard');
-                    document.getElementById('view-login').style.display  = 'none';
-                    document.getElementById('view-portal').style.display = 'none';
-                    const shell = document.getElementById('app-shell');
-                    if (shell) shell.style.display = 'none';
+                if (!athData.length || !athData[0].full_name) {
+                    LOG('ATHLETE')('Perfil incompleto → redirigiendo a Onboarding Atleta');
+                    this._hideAllViews();
                     window.Wizard.startFor('athlete');
                     return;
                 }
 
-                // Atleta con perfil → Mundo Atleta
-                console.log('✅ Atleta con perfil. Cargando Mundo Atleta...');
+                LOG('ATHLETE')('✅ Perfil completo → cargando Mundo Atleta');
                 window.CurrentUser = athData[0];
-                document.getElementById('view-login').style.display  = 'none';
-                document.getElementById('view-portal').style.display = 'none';
-                document.getElementById('app-shell').style.display   = 'block';
+                this._hideAllViews();
+                document.getElementById('app-shell').style.display = 'block';
                 this.injectRoleAssets('athlete');
                 this.handleRouting();
                 return;
             }
 
-            // ── PATH DT ───────────────────────────────────────────────
+            // ── PATH DT ──────────────────────────────────────────────────
             document.body.classList.add('mode-dt');
             document.body.classList.remove('mode-athlete', 'testing-athlete');
 
-            const r = await fetch(`${window.SUPABASE_URL}/rest/v1/users?id=eq.${uid}`, {
-                headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
-            });
-            const users = await r.json();
+            LOG('DT')(`Buscando perfil en users... id=${uid.slice(0,8)}...`);
+            const dtRes = await fetch(
+                `${window.SUPA_URL}/rest/v1/users?id=eq.${uid}&select=*`,
+                { headers: { 'apikey': window.SUPA_KEY, 'Authorization': `Bearer ${token}` } }
+            );
+            if (!dtRes.ok) throw new Error(`Error HTTP ${dtRes.status} al leer tabla users`);
+            const users = await dtRes.json();
+            LOG('DT')(`Filas encontradas: ${users.length}. name="${users[0]?.name || 'vacío'}" team_id="${users[0]?.team_id || 'null'}"`);
 
-            if (users && users[0]) {
-                const userData = users[0];
-
-                if (!userData.name || !userData.team_id) {
-                    // DT sin perfil completo → Wizard DT
-                    console.log('[RAVIX] DT sin perfil → Wizard');
-                    document.getElementById('view-login').style.display  = 'none';
-                    document.getElementById('app-shell').style.display   = 'none';
-                    window.Wizard.startFor('dt');
-                    return;
-                }
-
-                // Cargar config del equipo
-                const [cRes, tRes] = await Promise.all([
-                    fetch(`${window.SUPABASE_URL}/rest/v1/team_configs?team_id=eq.${userData.team_id}`, {
-                        headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
-                    }),
-                    fetch(`${window.SUPABASE_URL}/rest/v1/teams?id=eq.${userData.team_id}`, {
-                        headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
-                    })
-                ]);
-                const configs = await cRes.json();
-                const teams   = await tRes.json();
-                window.CurrentTeam = teams ? teams[0] : null;
-
-                if (configs && configs[0]) {
-                    const cfg = configs[0];
-                    if (cfg.primary_color) {
-                        document.documentElement.style.setProperty('--primary', cfg.primary_color);
-                        document.documentElement.style.setProperty('--primary-color', cfg.primary_color);
-                    }
-                    if (window.CurrentTeam) {
-                        window.CurrentTeam.match_dates  = cfg.match_dates  || [];
-                        window.CurrentTeam.methodology  = cfg.methodology  || 'No definida';
-                        window.CurrentTeam.primary_color = cfg.primary_color || null;
-                        window.CurrentTeam.tactical_dna  = cfg.tactical_dna  || {};
-                        window.CurrentTeam.periodization = cfg.periodization || null;
-                    }
-                }
-
-                await this.fetchExercisesLibrary();
-                await this.fetchCustomExercises();
-
-                window.CurrentUser = userData;
-                document.getElementById('view-login').style.display  = 'none';
-                document.getElementById('view-portal').style.display = 'none';
-                document.getElementById('app-shell').style.display   = 'block';
-                this.injectRoleAssets('dt');
-                this.handleRouting();
-
-            } else {
-                // No hay fila en users para este uid — podría ser un atleta logueado como DT
-                console.warn('[RAVIX] No se encontró fila en users para este UID. ¿Rol incorrecto seleccionado?');
-                alert('No se encontró tu perfil en el sistema. Verifica que seleccionaste el rol correcto al ingresar.');
-                this.logout();
+            if (!users.length) {
+                // El uid no tiene fila en users — probablemente es un atleta usando el portal DT
+                LOG('DT')('❌ Sin fila en users. Posible rol incorrecto seleccionado en el portal.');
+                this._hideAllViews();
+                document.getElementById('view-portal').style.display = 'flex';
+                document.getElementById('view-portal').style.opacity = '';
+                document.getElementById('view-portal').style.pointerEvents = '';
+                alert('No se encontró tu perfil de Staff. Si eres Atleta, vuelve al portal y selecciona "Mundo Atleta".');
+                localStorage.removeItem('ravix_active_role'); // limpiar rol incorrecto
+                return;
             }
 
+            const userData = users[0];
+
+            if (!userData.name || !userData.team_id) {
+                LOG('DT')('Perfil incompleto (sin nombre o equipo) → redirigiendo a Wizard DT');
+                this._hideAllViews();
+                window.Wizard.startFor('dt');
+                return;
+            }
+
+            LOG('DT')('Perfil completo. Cargando config de equipo...');
+            const [cRes, tRes] = await Promise.all([
+                fetch(`${window.SUPA_URL}/rest/v1/team_configs?team_id=eq.${userData.team_id}`,
+                    { headers: { 'apikey': window.SUPA_KEY, 'Authorization': `Bearer ${token}` } }),
+                fetch(`${window.SUPA_URL}/rest/v1/teams?id=eq.${userData.team_id}`,
+                    { headers: { 'apikey': window.SUPA_KEY, 'Authorization': `Bearer ${token}` } })
+            ]);
+            const configs = await cRes.json();
+            const teams   = await tRes.json();
+            window.CurrentTeam = teams?.[0] || null;
+            LOG('DT')(`Team: "${window.CurrentTeam?.name || 'N/A'}" | Config: ${configs.length} registros`);
+
+            if (configs?.[0]) {
+                const cfg = configs[0];
+                if (cfg.primary_color) {
+                    document.documentElement.style.setProperty('--primary', cfg.primary_color);
+                    document.documentElement.style.setProperty('--primary-color', cfg.primary_color);
+                    LOG('DT')(`🎨 Branding aplicado: ${cfg.primary_color}`);
+                }
+                if (window.CurrentTeam) {
+                    Object.assign(window.CurrentTeam, {
+                        match_dates:  cfg.match_dates  || [],
+                        methodology:  cfg.methodology  || 'No definida',
+                        primary_color: cfg.primary_color || null,
+                        tactical_dna: cfg.tactical_dna  || {},
+                        periodization: cfg.periodization || null,
+                    });
+                }
+            }
+
+            await this.fetchExercisesLibrary();
+            await this.fetchCustomExercises();
+
+            window.CurrentUser = userData;
+            LOG('DT')('✅ Estado global listo. Activando app-shell...');
+            this._hideAllViews();
+            document.getElementById('app-shell').style.display = 'block';
+            this.injectRoleAssets('dt');
+            this.handleRouting();
+
         } catch (e) {
-            console.error('🔴 Error checkSession:', e);
-            this.logout();
+            console.error('[ROUTER] ❌ Error no manejado en checkSession:', e);
+            // No logout silencioso: limpiar sesión y mostrar portal con explicación
+            localStorage.removeItem('ravix_token');
+            localStorage.removeItem('ravix_v5_uid');
+            localStorage.removeItem('ravix_active_role');
+            this._showPortalWithError(e.message);
         }
     },
+
 
 
     async fetchExercisesLibrary() {
