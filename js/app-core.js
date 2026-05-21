@@ -158,7 +158,7 @@ window.Wizard = {
         try {
             // Verificar si ya existe un perfil atleta para este uid
             const check = await fetch(
-                `${window.SUPABASE_URL}/rest/v1/profiles_athlete?user_id=eq.${uid}`,
+                `${window.SUPABASE_URL}/rest/v1/profiles_athlete?id=eq.${uid}`,
                 { headers: { 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` } }
             );
             const existing = await check.json();
@@ -166,7 +166,7 @@ window.Wizard = {
             let res;
             if (existing && existing.length > 0) {
                 // Ya existe — actualizar
-                res = await fetch(`${window.SUPABASE_URL}/rest/v1/profiles_athlete?user_id=eq.${uid}`, {
+                res = await fetch(`${window.SUPABASE_URL}/rest/v1/profiles_athlete?id=eq.${uid}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ full_name: fullName, sport, position, birth_date: birthDate, weight_kg: weight, height_cm: height, wingspan_cm: wingspan, goal })
@@ -430,9 +430,9 @@ window.App = {
                 document.body.classList.add('mode-athlete', 'testing-athlete');
                 document.body.classList.remove('mode-dt');
 
-                LOG('ATHLETE')(`Buscando perfil en profiles_athlete... user_id=${uid.slice(0,8)}...`);
+                LOG('ATHLETE')(`Buscando perfil en profiles_athlete... id=${uid.slice(0,8)}...`);
                 const athRes = await fetch(
-                    `${window.SUPA_URL}/rest/v1/profiles_athlete?user_id=eq.${uid}&select=*`,
+                    `${window.SUPA_URL}/rest/v1/profiles_athlete?id=eq.${uid}&select=*`,
                     { headers: { 'apikey': window.SUPA_KEY, 'Authorization': `Bearer ${token}` } }
                 );
                 if (!athRes.ok) throw new Error(`Error HTTP ${athRes.status} al leer profiles_athlete`);
