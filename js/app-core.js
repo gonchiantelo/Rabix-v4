@@ -34,14 +34,24 @@ window.Wizard = {
             const oaView = document.getElementById('view-onboarding-athlete');
             if (oaView) {
                 oaView.style.display = 'flex';
+                oaView.style.opacity = '0'; // asegurar estado inicial limpio
                 // Doble rAF: primero el display, luego la transición de opacidad
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
                         oaView.classList.add('oa-visible');
+                        oaView.style.opacity = ''; // dejar al CSS la transición
                         // Init del wizard DESPUÉS de que el DOM sea visible
-                        if (window.AthWizard) window.AthWizard.init();
+                        try {
+                            if (window.AthWizard) window.AthWizard.init();
+                        } catch(wizErr) {
+                            console.warn('[WIZARD] Error al iniciar AthWizard:', wizErr);
+                        }
                     });
                 });
+            } else {
+                // Fallback: el view no existe en el DOM
+                console.error('[WIZARD] #view-onboarding-athlete no encontrado en el DOM');
+                window.App._showPortalWithError('Error de configuración: pantalla de onboarding no disponible.');
             }
         } else {
             // ── WIZARD DT (original) ──
@@ -424,7 +434,20 @@ window.App = {
 
                 if (!athData.length || !athData[0].full_name) {
                     LOG('ATHLETE')('Perfil incompleto → redirigiendo a Onboarding Atleta');
-                    this._hideAllViews();
+                    // IMPORTANTE: _hideAllViews() se llama DENTRO de startFor para evitar
+                    // que oculte el view justo antes de mostrarlo (race condition de opacity).
+                    // No llamar _hideAllViews() aquí — startFor lo gestiona internamente.
+                    const oaView = document.getElementById('view-onboarding-athlete');
+                    if (!oaView) {
+                        console.error('[ROUTER:ATHLETE] #view-onboarding-athlete no encontrado en DOM');
+                        this._showPortalWithError('Pantalla de registro no disponible.');
+                        return;
+                    }
+                    // Ocultar todo EXCEPTO el view de onboarding que vamos a mostrar
+                    ['view-portal','view-login','view-onboarding','app-shell'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.style.display = 'none';
+                    });
                     window.Wizard.startFor('athlete');
                     return;
                 }
