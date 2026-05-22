@@ -22,43 +22,56 @@ window.Wizard = {
         this.mode = role;
         this.step = 1;
 
-        if (role === 'athlete') {
-            // ── NUEVO ONBOARDING ATLETA ──
-            // Ocultamos todo lo demás
-            document.getElementById('view-login').style.display = 'none';
-            document.getElementById('view-portal').style.display = 'none';
-            const shell = document.getElementById('app-shell');
-            if (shell) shell.style.display = 'none';
+        // ── ATOMIC VIEW SWAP ──────────────────────────────────────────────
+        // Strategy: SHOW the target FIRST, then HIDE everything else.
+        // This prevents any black-screen gap regardless of CSS transitions.
 
-            // Mostramos la nueva pantalla premium con fade-in
+        if (role === 'athlete') {
+            // ══ NUEVO ONBOARDING ATLETA ══
             const oaView = document.getElementById('view-onboarding-athlete');
-            if (oaView) {
-                oaView.style.display = 'flex';
-                oaView.style.opacity = '0'; // asegurar estado inicial limpio
-                // Doble rAF: primero el display, luego la transición de opacidad
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        oaView.classList.add('oa-visible');
-                        oaView.style.opacity = ''; // dejar al CSS la transición
-                        // Init del wizard DESPUÉS de que el DOM sea visible
-                        try {
-                            if (window.AthWizard) window.AthWizard.init();
-                        } catch(wizErr) {
-                            console.warn('[WIZARD] Error al iniciar AthWizard:', wizErr);
-                        }
-                    });
-                });
-            } else {
-                // Fallback: el view no existe en el DOM
+            if (!oaView) {
                 console.error('[WIZARD] #view-onboarding-athlete no encontrado en el DOM');
                 window.App._showPortalWithError('Error de configuración: pantalla de onboarding no disponible.');
+                return;
             }
+
+            // 1. Show onboarding FIRST (no gap, no black screen)
+            oaView.style.display = 'flex';
+            oaView.classList.remove('oa-visible');
+
+            // 2. Now hide all other views
+            ['view-login','view-portal','app-shell','view-onboarding'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.style.display = 'none'; el.style.opacity = ''; }
+            });
+
+            // 3. Fade-in animation after one frame
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    oaView.classList.add('oa-visible');
+                    try {
+                        if (window.AthWizard) window.AthWizard.init();
+                    } catch(wizErr) {
+                        console.warn('[WIZARD] Error al iniciar AthWizard:', wizErr);
+                    }
+                });
+            });
+
         } else {
-            // ── WIZARD DT (original) ──
+            // ══ WIZARD DT (original) ══
             const onboarding = document.getElementById('view-onboarding');
             if (onboarding) onboarding.style.display = 'flex';
-            document.getElementById('wizard-dt').style.display  = 'block';
-            document.getElementById('wizard-athlete').style.display = 'none';
+
+            // Hide others after showing onboarding
+            ['view-login','view-portal','app-shell','view-onboarding-athlete'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.style.display = 'none'; el.style.opacity = ''; }
+            });
+
+            const wizDT = document.getElementById('wizard-dt');
+            if (wizDT) wizDT.style.display = 'flex';
+            const wizAth = document.getElementById('wizard-athlete');
+            if (wizAth) wizAth.style.display = 'none';
         }
     },
 
@@ -214,7 +227,11 @@ window.App = {
         const ids = ['view-portal','view-login','view-onboarding','view-onboarding-athlete','app-shell'];
         ids.forEach(id => {
             const el = document.getElementById(id);
-            if (el) el.style.display = 'none';
+            if (el) {
+                el.style.display = 'none';
+                el.style.opacity = '';
+                el.style.pointerEvents = '';
+            }
         });
     },
 
@@ -436,22 +453,16 @@ window.App = {
                 if (athErr) throw new Error(`Error al leer profiles_athlete: ${athErr.message}`);
                 LOG('ATHLETE')(`Filas encontradas: ${athData.length}. full_name="${athData[0]?.full_name || 'vacío'}"`);
 
-                if (!athData.length || !athData[0].full_name) {
+                if (!athData.length || !athData[0].full_name || athData[0].full_name === 'vacío' || !athData[0].sport || !athData[0].position) {
                     LOG('ATHLETE')('Perfil incompleto → redirigiendo a Onboarding Atleta');
-                    // IMPORTANTE: _hideAllViews() se llama DENTRO de startFor para evitar
-                    // que oculte el view justo antes de mostrarlo (race condition de opacity).
-                    // No llamar _hideAllViews() aquí — startFor lo gestiona internamente.
                     const oaView = document.getElementById('view-onboarding-athlete');
                     if (!oaView) {
                         console.error('[ROUTER:ATHLETE] #view-onboarding-athlete no encontrado en DOM');
                         this._showPortalWithError('Pantalla de registro no disponible.');
                         return;
                     }
-                    // Ocultar todo EXCEPTO el view de onboarding que vamos a mostrar
-                    ['view-portal','view-login','view-onboarding','app-shell'].forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el) el.style.display = 'none';
-                    });
+                    // _hideAllViews primero (incluyendo login), luego startFor muestra onboarding
+                    this._hideAllViews();
                     window.Wizard.startFor('athlete');
                     return;
                 }
@@ -602,7 +613,14 @@ window.App = {
                     window.AthleteApp.init();
                 } else if (window.PlayerEngine) {
                     window.PlayerEngine.init();
+                } else {
+                    console.error('[ATHLETE] app-player.js cargó pero no expone AthleteApp ni PlayerEngine');
+                    this._showPortalWithError('Error al iniciar el panel del atleta. Por favor recargá la página.');
                 }
+            };
+            script.onerror = (err) => {
+                console.error('[ATHLETE] Error cargando app-player.js:', err);
+                this._showPortalWithError('No se pudo cargar el panel del atleta. Verificá tu conexión.');
             };
             document.body.appendChild(script);
         } else {
@@ -621,7 +639,14 @@ window.App = {
                             window.App.handleRouting();
                         }
                     });
+                } else {
+                    console.error('[DT] app-dt.js cargó pero no expone DTEngine');
+                    this._showPortalWithError('Error al iniciar el panel de Staff. Por favor recargá la página.');
                 }
+            };
+            script.onerror = (err) => {
+                console.error('[DT] Error cargando app-dt.js:', err);
+                this._showPortalWithError('No se pudo cargar el panel de Staff. Verificá tu conexión.');
             };
             document.body.appendChild(script);
         }
