@@ -385,50 +385,109 @@ window.App = {
             }
         };
 
-        // BIFURCACIÓN ESTRICTA: el Atleta jamás toca la tabla users
+        // ══ BIFURCACIÓN ESTRICTA: el Atleta jamás toca la tabla users ══
         if (role === 'athlete') {
-            const g = id => document.getElementById(id)?.value?.trim() || null;
-            const gn = id => parseFloat(document.getElementById(id)?.value) || null;
 
-            const fullName   = g('ath-name');
-            const sport      = g('ath-sport');
-            const position   = document.getElementById('ath-pos')?.value || null;
+            // ── Helpers seguros ───────────────────────────────────────────
+            // gStr: string trimmed o null
+            const gStr  = id => document.getElementById(id)?.value?.trim() || null;
+            // gInt: entero con fallback 0 (nunca NaN/undefined → no rompe Supabase)
+            const gInt  = id => parseInt(document.getElementById(id)?.value)  || 0;
+            // gFlt: float con fallback 0
+            const gFlt  = id => parseFloat(document.getElementById(id)?.value) || 0;
+            // gFltN: float o null (campos opcionales que admiten null en DB)
+            const gFltN = id => { const v = parseFloat(document.getElementById(id)?.value); return isNaN(v) ? null : v; };
 
-            if (!fullName || !sport || !position) {
+            // ── Captura de campos ──────────────────────────────────────────
+            // Paso 1 — Identidad
+            const fullName   = gStr('ath-name');
+            const sport      = gStr('ath-sport');
+            const position   = document.getElementById('ath-pos')?.value   || null;
+            const phone      = gStr('ath-phone');
+            const domSide    = document.getElementById('ath-side')?.value  || null;
+
+            // Paso 2 — Biometría
+            const birthDate  = document.getElementById('ath-birth')?.value || null;
+            const weightKg   = gFltN('ath-weight');
+            const heightCm   = gFltN('ath-height');
+            const bodyFat    = gFltN('ath-fat');
+
+            // Paso 3 — Carga Cometti
+            const trainingYears = gInt('ath-training-years');   // años de fuerza
+            const clubHours     = gFlt('ath-club-hours');       // h/semana en club
+            const gymHours      = gFlt('ath-gym-hours');        // h/semana en gimnasio
+            const goal          = gStr('ath-goal');             // objetivo neuromuscular
+            const commitment    = document.getElementById('ath-commitment')?.value || null;
+
+            // ── Validación de campos obligatorios ────────────────────────
+            if (!fullName) {
                 restoreBtn();
-                return alert('Por favor, completa los campos obligatorios (Nombre, Deporte y Posicion).');
+                return alert('Por favor, ingresa tu nombre completo (Paso 1).');
+            }
+            if (!sport) {
+                restoreBtn();
+                return alert('Por favor, selecciona tu deporte (Paso 1).');
+            }
+            if (!position) {
+                restoreBtn();
+                return alert('Por favor, selecciona tu posición o especialidad (Paso 1).');
+            }
+            if (!goal) {
+                restoreBtn();
+                return alert('Por favor, selecciona tu objetivo neuromuscular (Paso 3).');
+            }
+            if (!commitment) {
+                restoreBtn();
+                return alert('Por favor, selecciona tu nivel de compromiso (Paso 3).');
             }
 
+            // ── Payload completo — alineado con columnas de profiles_athlete ──
             const payload = {
-                id:                         uid,
-                full_name:                  fullName,
-                sport:                      sport,
-                position:                   position,
-                phone:                      g('ath-phone'),
-                dominant_side:              document.getElementById('ath-side')?.value || null,
-                birth_date:                 document.getElementById('ath-birth')?.value || null,
-                weight_kg:                  gn('ath-weight'),
-                height_cm:                  gn('ath-height'),
-                body_fat:                   gn('ath-fat'),
-                training_experience_years:  gn('ath-exp'),
-                days_per_week:              gn('ath-days'),
-                hours_per_day:              gn('ath-hours'),
-                commitment_level:           document.getElementById('ath-commitment')?.value || null,
+                id:                        uid,
+                full_name:                 fullName,
+                sport:                     sport,
+                position:                  position,
+                phone:                     phone,
+                dominant_side:             domSide,
+                birth_date:                birthDate,
+                weight_kg:                 weightKg,
+                height_cm:                 heightCm,
+                body_fat:                  bodyFat,
+                // ── Campos Cometti (nuevos) ──────────────────────────────
+                training_years:            trainingYears,
+                club_hours_week:           clubHours,
+                gym_hours_week:            gymHours,
+                // ── Campos legacy compatibles ────────────────────────────
+                goal:                      goal,
+                commitment_level:          commitment,
+                updated_at:                new Date().toISOString(),
             };
 
+            console.log('[WIZARD ATLETA] Payload a enviar a Supabase:', payload);
+
+            // ── Upsert anti-congelamiento ─────────────────────────────────
             try {
-                const { error: upsertErr } = await window.supabase.from('profiles_athlete').upsert(payload, { onConflict: 'id' });
+                const { error: upsertErr } = await window.supabase
+                    .from('profiles_athlete')
+                    .upsert(payload, { onConflict: 'id' });
+
                 if (upsertErr) {
-                    console.error("Supa Error:", upsertErr.message, upsertErr.details, upsertErr.hint);
+                    console.error('[SUPABASE] Error en upsert profiles_athlete:',
+                        upsertErr.message, '|', upsertErr.details, '|', upsertErr.hint);
                     restoreBtn();
-                    return alert("Faltan datos requeridos o hubo un error al guardar.");
+                    return alert(
+                        '❌ Error al guardar el perfil:\n' + upsertErr.message +
+                        '\n\nVerifica que todos los campos sean válidos e intentá de nuevo.'
+                    );
                 }
-                console.log('✅ Perfil de atleta guardado en profiles_athlete.');
+
+                console.log('✅ Perfil de atleta guardado correctamente en profiles_athlete.');
                 location.reload();
+
             } catch (err) {
-                console.error('🔴 Error de Sincronización Atleta:', err);
+                console.error('🔴 Error de red / sincronización en saveProfile (atleta):', err);
                 restoreBtn();
-                alert('Hubo un problema al guardar tus datos: ' + err.message);
+                alert('Hubo un problema de red al guardar tus datos:\n' + err.message);
             }
 
         } else {
@@ -1092,6 +1151,26 @@ window.AthWizard = (function () {
             if (!name)  { q('ath-name')?.focus();  alert('Ingresa tu nombre completo.'); return false; }
             if (!sport) { q('ath-sport')?.focus(); alert('Selecciona tu deporte.'); return false; }
             if (!pos)   { q('ath-pos')?.focus();   alert('Selecciona tu posicion o especialidad.'); return false; }
+        }
+        if (step === 2) {
+            // Paso 2: biometría — sin campos obligatorios, pero validamos rangos si se ingresaron
+            const weight = parseFloat(q('ath-weight')?.value);
+            const height = parseFloat(q('ath-height')?.value);
+            if (!isNaN(weight) && (weight < 20 || weight > 300)) {
+                alert('El peso ingresado parece incorrecto. Verifica el valor (kg).');
+                return false;
+            }
+            if (!isNaN(height) && (height < 100 || height > 250)) {
+                alert('La altura ingresada parece incorrecta. Verifica el valor (cm).');
+                return false;
+            }
+        }
+        if (step === 3) {
+            // Paso 3: goal y commitment son obligatorios para poder guardar
+            const goal       = q('ath-goal')?.value;
+            const commitment = q('ath-commitment')?.value;
+            if (!goal)       { q('ath-goal')?.focus();       alert('Selecciona tu objetivo neuromuscular.'); return false; }
+            if (!commitment) { q('ath-commitment')?.focus(); alert('Selecciona tu nivel de compromiso.'); return false; }
         }
         return true;
     }

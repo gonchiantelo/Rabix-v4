@@ -1051,44 +1051,59 @@
                     </div>
                 </div>
 
-                <!-- PASO 3 -->
+                <!-- PASO 3 — Carga Cometti -->
                 <div class="oa-fieldset" id="oa-step-3">
-                    <p class="oa-ftitle">Logistica &amp; Compromiso</p>
-                    <p class="oa-fsub">Disenaremos tu plan segun tu disponibilidad real.</p>
+                    <p class="oa-ftitle">Carga &amp; Compromiso</p>
+                    <p class="oa-fsub">Protocolo Cometti — mapeamos tu volumen real de entrenamiento.</p>
+
+                    <!-- Años de entrenamiento de fuerza -->
+                    <div class="oa-group">
+                        <label class="oa-lbl" for="ath-training-years">
+                            Años de Entrenamiento (Fuerza)
+                            <span style="font-weight:400;color:#ccc;letter-spacing:0"> (0 = sin exp. en gimnasio)</span>
+                        </label>
+                        <div class="oa-unit-wrap">
+                            <input type="number" id="ath-training-years" class="oa-inp" placeholder="Ej: 3" min="0" max="40" step="1">
+                            <span class="oa-unit">años</span>
+                        </div>
+                    </div>
+
+                    <!-- Horas de carga semanal -->
                     <div class="oa-row">
                         <div class="oa-group">
-                            <label class="oa-lbl" for="ath-exp">Anos de experiencia</label>
-                            <input type="number" id="ath-exp" class="oa-inp" placeholder="3" min="0" max="40">
+                            <label class="oa-lbl" for="ath-club-hours">Horas de Club <span style="font-weight:400;color:#ccc">/semana</span></label>
+                            <div class="oa-unit-wrap">
+                                <input type="number" id="ath-club-hours" class="oa-inp" placeholder="Ej: 8" min="0" max="40" step="0.5">
+                                <span class="oa-unit">h</span>
+                            </div>
                         </div>
                         <div class="oa-group">
-                            <label class="oa-lbl" for="ath-days">Dias por semana</label>
-                            <div class="oa-sel-wrap">
-                                <select id="ath-days" class="oa-inp">
-                                    <option value="">Elegir...</option>
-                                    <option value="2">2 dias</option>
-                                    <option value="3">3 dias</option>
-                                    <option value="4">4 dias</option>
-                                    <option value="5">5 dias</option>
-                                    <option value="6">6 dias</option>
-                                    <option value="7">7 dias</option>
-                                </select>
-                                <span class="oa-chevron">&#8250;</span>
+                            <label class="oa-lbl" for="ath-gym-hours">Horas Gimnasio/Extra <span style="font-weight:400;color:#ccc">/semana</span></label>
+                            <div class="oa-unit-wrap">
+                                <input type="number" id="ath-gym-hours" class="oa-inp" placeholder="Ej: 4" min="0" max="30" step="0.5">
+                                <span class="oa-unit">h</span>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Objetivo neuromuscular -->
                     <div class="oa-group">
-                        <label class="oa-lbl" for="ath-hours">Horas por sesion</label>
+                        <label class="oa-lbl" for="ath-goal">Objetivo Neuromuscular <span class="oa-req">*</span></label>
                         <div class="oa-sel-wrap">
-                            <select id="ath-hours" class="oa-inp">
-                                <option value="">Elegir...</option>
-                                <option value="1">1 hora</option>
-                                <option value="1.5">1.5 horas</option>
-                                <option value="2">2 horas</option>
-                                <option value="2.5">2.5 horas o mas</option>
+                            <select id="ath-goal" class="oa-inp" required>
+                                <option value="" disabled selected>Selecciona tu foco...</option>
+                                <option value="Fuerza Explosiva">Fuerza Explosiva</option>
+                                <option value="Resistencia">Resistencia Aerobica</option>
+                                <option value="Pliometria">Pliometria / Salto</option>
+                                <option value="Hipertrofia">Hipertrofia Funcional</option>
+                                <option value="Recuperacion">Recuperacion / Prevencion</option>
+                                <option value="Rendimiento General">Rendimiento General</option>
                             </select>
                             <span class="oa-chevron">&#8250;</span>
                         </div>
                     </div>
+
+                    <!-- Nivel de compromiso -->
                     <div class="oa-group">
                         <label class="oa-lbl" for="ath-commitment">Nivel de Compromiso <span class="oa-req">*</span></label>
                         <div class="oa-sel-wrap">
@@ -1101,6 +1116,7 @@
                             <span class="oa-chevron">&#8250;</span>
                         </div>
                     </div>
+
                     <div class="oa-nav">
                         <button type="button" class="oa-btn-back" onclick="window.AthWizard.prev()">&#8592; Atras</button>
                         <button type="submit" id="oa-submit-btn">
@@ -1108,7 +1124,7 @@
                             <span class="oa-arr">&#8594;</span>
                         </button>
                     </div>
-                    <p class="oa-terms">Datos privados y cifrados bajo protocolo RAVIX.</p>
+                    <p class="oa-terms">Datos privados y cifrados bajo protocolo RAVIX — Cometti &copy; V5.</p>
                 </div>
             </form>
         </main>
