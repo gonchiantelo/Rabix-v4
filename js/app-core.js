@@ -165,7 +165,7 @@ window.Wizard = {
                 if (resErr) throw new Error(resErr.message);
             } else {
                 // Crear nuevo perfil atleta
-                const { error: resErr } = await window.supabase.from('profiles_athlete').insert({ user_id: uid, full_name: fullName, sport, position, birth_date: birthDate, weight_kg: weight, height_cm: height, wingspan_cm: wingspan, goal });
+                const { error: resErr } = await window.supabase.from('profiles_athlete').insert({ id: uid, full_name: fullName, sport, position, birth_date: birthDate, weight_kg: weight, height_cm: height, wingspan_cm: wingspan, goal });
                 if (resErr) throw new Error(resErr.message);
             }
 
@@ -344,7 +344,7 @@ window.App = {
             }
 
             const payload = {
-                user_id:                    uid,
+                id:                         uid,
                 full_name:                  fullName,
                 sport:                      sport,
                 position:                   position,
@@ -361,7 +361,7 @@ window.App = {
             };
 
             try {
-                const { error: upsertErr } = await window.supabase.from('profiles_athlete').upsert(payload, { onConflict: 'user_id' });
+                const { error: upsertErr } = await window.supabase.from('profiles_athlete').upsert(payload, { onConflict: 'id' });
                 if (upsertErr) {
                     console.error("Supa Error:", upsertErr.message, upsertErr.details, upsertErr.hint);
                     restoreBtn();
