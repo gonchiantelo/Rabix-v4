@@ -150,42 +150,53 @@ window.Wizard = {
         } catch (err) { alert(err.message); }
     },
 
-    // ── FINISH PATH ATLETA ──
+    // ── FINISH PATH ATLETA (legacy — invocado desde wizard-athlete) ──
     async finishAthlete() {
-        const uid   = localStorage.getItem('ravix_v5_uid');
-        const token = localStorage.getItem('ravix_token');
+        const uid = localStorage.getItem('ravix_v5_uid');
+        if (!uid) return alert('Sesión expirada. Por favor, iniciá sesión nuevamente.');
 
-        const fullName  = document.getElementById('ath-name').value;
-        const sport     = document.getElementById('ath-sport').value;
-        const position  = document.getElementById('ath-position').value;
-        const birthDate = document.getElementById('ath-birth').value;
-        const weight    = document.getElementById('ath-weight').value;
-        const height    = document.getElementById('ath-height').value;
-        const wingspan  = document.getElementById('ath-wingspan').value;
-        const goal      = document.getElementById('ath-goal').value;
+        // Scope al formulario activo del atleta para evitar colisiones de ID
+        const form = document.getElementById('athlete-onboarding-form')
+                  || document.getElementById('view-onboarding-athlete');
+        const qf = id => (form ? form.querySelector('#' + id) : null)
+                      || document.getElementById(id);
 
-        if (!fullName || !sport) return alert('Por favor, completa los campos obligatorios.');
+        const fullName  = qf('ath-name')?.value?.trim() || 'Atleta Anónimo';
+        const sport     = qf('ath-sport')?.value;
+        const position  = qf('ath-pos')?.value;        // ← 'ath-pos', no 'ath-position'
+        const birthDate = qf('ath-birth')?.value || null;
+        const weight    = parseFloat(qf('ath-weight')?.value) || null;
+        const height    = parseFloat(qf('ath-height')?.value) || null;
+        const wingspan  = parseFloat(qf('ath-wingspan')?.value) || null;
+        const goal      = qf('ath-goal')?.value || null;
+
+        if (!sport)    return alert('Por favor, selecciona tu deporte.');
+        if (!position) return alert('Por favor, selecciona tu posición o especialidad.');
 
         try {
-            // Verificar si ya existe un perfil atleta para este uid
-            const { data: existing, error: checkErr } = await window.supabase.from('profiles_athlete').select('*').eq('id', uid);
-            if (checkErr) throw new Error(checkErr.message);
+            const payload = {
+                id: uid, full_name: fullName, sport, position,
+                birth_date: birthDate, weight_kg: weight,
+                height_cm: height, wingspan_cm: wingspan, goal,
+                updated_at: new Date().toISOString()
+            };
+            console.log('[finishAthlete] Payload →', JSON.stringify(payload, null, 2));
 
-            let res;
-            if (existing && existing.length > 0) {
-                // Ya existe — actualizar
-                const { error: resErr } = await window.supabase.from('profiles_athlete').update({ full_name: fullName, sport, position, birth_date: birthDate, weight_kg: weight, height_cm: height, wingspan_cm: wingspan, goal }).eq('id', uid);
-                if (resErr) throw new Error(resErr.message);
-            } else {
-                // Crear nuevo perfil atleta
-                const { error: resErr } = await window.supabase.from('profiles_athlete').insert({ id: uid, full_name: fullName, sport, position, birth_date: birthDate, weight_kg: weight, height_cm: height, wingspan_cm: wingspan, goal });
-                if (resErr) throw new Error(resErr.message);
+            const { error: resErr } = await window.supabase
+                .from('profiles_athlete')
+                .upsert(payload, { onConflict: 'id' });
+
+            if (resErr) {
+                const msg = resErr.message || JSON.stringify(resErr);
+                console.error('[SUPABASE] finishAthlete error:', msg, resErr.hint);
+                return alert('❌ Error al guardar:\n' + msg + (resErr.hint ? '\nHint: ' + resErr.hint : ''));
             }
 
-            // Error checks already handled
             console.log('✅ Perfil atleta guardado.');
             location.reload();
-        } catch (err) { alert(err.message); }
+        } catch (err) {
+            alert('Error de red: ' + err.message);
+        }
     }
 };
 
@@ -388,42 +399,44 @@ window.App = {
         // ══ BIFURCACIÓN ESTRICTA: el Atleta jamás toca la tabla users ══
         if (role === 'athlete') {
 
-            // ── Helpers seguros ───────────────────────────────────────────
-            // gStr: string trimmed o null
-            const gStr  = id => document.getElementById(id)?.value?.trim() || null;
-            // gInt: entero con fallback 0 (nunca NaN/undefined → no rompe Supabase)
-            const gInt  = id => parseInt(document.getElementById(id)?.value)  || 0;
-            // gFlt: float con fallback 0
-            const gFlt  = id => parseFloat(document.getElementById(id)?.value) || 0;
-            // gFltN: float o null (campos opcionales que admiten null en DB)
-            const gFltN = id => { const v = parseFloat(document.getElementById(id)?.value); return isNaN(v) ? null : v; };
+            // ── Scope al formulario del atleta ─────────────────────────────
+            // CRÍTICO: usar el formulario como raíz evita que getElementById()
+            // tome el primer elemento con ese ID en el DOM (que puede ser el
+            // wizard legacy oculto), garantizando la lectura de los campos reales.
+            const form = document.getElementById('athlete-onboarding-form')
+                      || document.getElementById('view-onboarding-athlete');
 
-            // ── Captura de campos ──────────────────────────────────────────
+            const qf = id => (form ? form.querySelector('#' + id) : null)
+                          || document.getElementById(id);
+
+            // ── Helpers seguros con scope de formulario ───────────────────
+            const gStr  = id => qf(id)?.value?.trim() || null;
+            const gInt  = id => parseInt(qf(id)?.value) || 0;
+            const gFlt  = id => parseFloat(qf(id)?.value) || 0;
+            const gFltN = id => { const v = parseFloat(qf(id)?.value); return isNaN(v) ? null : v; };
+
+            // ── Captura de campos ─────────────────────────────────────────
             // Paso 1 — Identidad
-            const fullName   = gStr('ath-name');
-            const sport      = gStr('ath-sport');
-            const position   = document.getElementById('ath-pos')?.value   || null;
-            const phone      = gStr('ath-phone');
-            const domSide    = document.getElementById('ath-side')?.value  || null;
+            const fullName = gStr('ath-name') || 'Atleta Anónimo';
+            const sport    = gStr('ath-sport');
+            const position = qf('ath-pos')?.value || null;
+            const phone    = gStr('ath-phone');
+            const domSide  = qf('ath-side')?.value || null;
 
             // Paso 2 — Biometría
-            const birthDate  = document.getElementById('ath-birth')?.value || null;
-            const weightKg   = gFltN('ath-weight');
-            const heightCm   = gFltN('ath-height');
-            const bodyFat    = gFltN('ath-fat');
+            const birthDate = qf('ath-birth')?.value || null;
+            const weightKg  = gFltN('ath-weight');
+            const heightCm  = gFltN('ath-height');
+            const bodyFat   = gFltN('ath-fat');
 
             // Paso 3 — Carga Cometti
-            const trainingYears = gInt('ath-training-years');   // años de fuerza
-            const clubHours     = gFlt('ath-club-hours');       // h/semana en club
-            const gymHours      = gFlt('ath-gym-hours');        // h/semana en gimnasio
-            const goal          = gStr('ath-goal');             // objetivo neuromuscular
-            const commitment    = document.getElementById('ath-commitment')?.value || null;
+            const trainingYears = gInt('ath-training-years');
+            const clubHours     = gFlt('ath-club-hours');
+            const gymHours      = gFlt('ath-gym-hours');
+            const goal          = gStr('ath-goal');
+            const commitment    = qf('ath-commitment')?.value || null;
 
-            // ── Validación de campos obligatorios ────────────────────────
-            if (!fullName) {
-                restoreBtn();
-                return alert('Por favor, ingresa tu nombre completo (Paso 1).');
-            }
+            // ── Validación explícita campo a campo ────────────────────────
             if (!sport) {
                 restoreBtn();
                 return alert('Por favor, selecciona tu deporte (Paso 1).');
@@ -443,27 +456,25 @@ window.App = {
 
             // ── Payload completo — alineado con columnas de profiles_athlete ──
             const payload = {
-                id:                        uid,
-                full_name:                 fullName,
-                sport:                     sport,
-                position:                  position,
-                phone:                     phone,
-                dominant_side:             domSide,
-                birth_date:                birthDate,
-                weight_kg:                 weightKg,
-                height_cm:                 heightCm,
-                body_fat:                  bodyFat,
-                // ── Campos Cometti (nuevos) ──────────────────────────────
-                training_years:            trainingYears,
-                club_hours_week:           clubHours,
-                gym_hours_week:            gymHours,
-                // ── Campos legacy compatibles ────────────────────────────
-                goal:                      goal,
-                commitment_level:          commitment,
-                updated_at:                new Date().toISOString(),
+                id:               uid,
+                full_name:        fullName,           // ← SIEMPRE full_name, nunca name
+                sport:            sport,
+                position:         position,
+                phone:            phone,
+                dominant_side:    domSide,
+                birth_date:       birthDate,
+                weight_kg:        weightKg,
+                height_cm:        heightCm,
+                body_fat:         bodyFat,
+                training_years:   trainingYears,
+                club_hours_week:  clubHours,
+                gym_hours_week:   gymHours,
+                goal:             goal,
+                commitment_level: commitment,
+                updated_at:       new Date().toISOString(),
             };
 
-            console.log('[WIZARD ATLETA] Payload a enviar a Supabase:', payload);
+            console.log('[WIZARD ATLETA] Payload →', JSON.stringify(payload, null, 2));
 
             // ── Upsert anti-congelamiento ─────────────────────────────────
             try {
@@ -472,22 +483,25 @@ window.App = {
                     .upsert(payload, { onConflict: 'id' });
 
                 if (upsertErr) {
-                    console.error('[SUPABASE] Error en upsert profiles_athlete:',
-                        upsertErr.message, '|', upsertErr.details, '|', upsertErr.hint);
+                    // Superficie el mensaje EXACTO de Supabase para diagnóstico
+                    const msg = upsertErr.message || JSON.stringify(upsertErr);
+                    console.error('[SUPABASE] Error en upsert profiles_athlete:', msg,
+                        '| details:', upsertErr.details, '| hint:', upsertErr.hint);
                     restoreBtn();
                     return alert(
-                        '❌ Error al guardar el perfil:\n' + upsertErr.message +
-                        '\n\nVerifica que todos los campos sean válidos e intentá de nuevo.'
+                        '❌ Error al guardar el perfil (Supabase):\n\n' + msg +
+                        (upsertErr.hint ? '\n\nHint: ' + upsertErr.hint : '') +
+                        '\n\nVerificá que todos los campos sean válidos e intentá de nuevo.'
                     );
                 }
 
-                console.log('✅ Perfil de atleta guardado correctamente en profiles_athlete.');
+                console.log('✅ Perfil atleta guardado en profiles_athlete. Recargando...');
                 location.reload();
 
             } catch (err) {
-                console.error('🔴 Error de red / sincronización en saveProfile (atleta):', err);
+                console.error('🔴 Error de red en saveProfile (atleta):', err);
                 restoreBtn();
-                alert('Hubo un problema de red al guardar tus datos:\n' + err.message);
+                alert('Problema de red al guardar:\n' + err.message);
             }
 
         } else {
@@ -805,14 +819,22 @@ window.App = {
                 localStorage.setItem('ravix_active_role', role);
 
                 const table = role === 'athlete' ? 'profiles_athlete' : 'users';
-                let profilePayload = role === 'athlete'
-                    ? { id: uid, email }
+                // Para el atleta solo insertamos el ID mínimo — el resto lo
+                // completa el Wizard mediante upsert. Evita columna-mismatch.
+                const profilePayload = role === 'athlete'
+                    ? { id: uid }
                     : { id: uid, name: 'Staff RAVIX', email, role: 'dt', objetivo: 'ALTO_RENDIMIENTO', dt_configured: false };
 
                 const { error: insertErr } = await window.supabase.from(table).insert(profilePayload);
-                if (insertErr) throw new Error(insertErr.message);
+                if (insertErr) {
+                    // Si el row ya existe (registro duplicado) lo ignoramos — el Wizard hará upsert
+                    if (!insertErr.message?.includes('duplicate') && !insertErr.code?.includes('23505')) {
+                        throw new Error('Error al crear perfil inicial: ' + insertErr.message);
+                    }
+                    console.warn('[SIGNUP] Fila ya existente en', table, '— continuando al Wizard.');
+                }
 
-                console.log(`✅ Perfil inyectado en ${table}`);
+                console.log(`✅ Perfil inicial en ${table}`);
                 window.Wizard.startFor(role);
             } else {
                 window.LoginUI?.showSuccess('¡Revisa tu correo para confirmar tu cuenta!');
@@ -1350,18 +1372,25 @@ window.App.signUp = async function(email, pass, event) {
             localStorage.setItem('ravix_v5_uid', uid);
         }
 
-        // Inserción en tabla correspondiente usando el ORM
+        // Inserción mínima en tabla correspondiente
+        // Para atletas: solo {id} — el Wizard completa el resto con upsert
         const table = role === 'athlete' ? 'profiles_athlete' : 'users';
-        let profilePayload = role === 'athlete' 
-            ? { id: uid, email: email } 
+        const profilePayload = role === 'athlete'
+            ? { id: uid }
             : { id: uid, email: email, name: 'Staff RAVIX', role: 'dt' };
 
         const { error: dbError } = await window.supabase.from(table).insert([profilePayload]);
-        if (dbError) throw dbError;
+        if (dbError) {
+            // Duplicate key = el atleta ya existe, ignorar y avanzar al Wizard
+            if (!dbError.message?.includes('duplicate') && !dbError.code?.includes('23505')) {
+                throw dbError;
+            }
+            console.warn('[SIGNUP] Perfil ya existente en', table, '— redirigiendo al Wizard.');
+        }
 
         // Transición al Wizard
         if (window.Wizard) window.Wizard.startFor(role);
-        else console.error("Wizard no definido");
+        else console.error('Wizard no definido');
 
     } catch (err) {
         console.error("🔴 Error en Registro:", err);
