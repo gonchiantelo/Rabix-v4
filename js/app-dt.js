@@ -5,6 +5,33 @@
    Phase 3.8: Navegación Anual & Bloques Ocultos (Completo)
    ============================================================ */
 
+window.CalendarEngine = window.CalendarEngine || {};
+window.CalendarEngine.saveSeasonPlanning = async function() {
+    const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id');
+    if (!teamId) return;
+
+    const planningPayload = {
+        temporada: document.getElementById('plan-temporada')?.textContent.trim(),
+        macrociclo: document.getElementById('plan-macrociclo')?.textContent.trim(),
+        mesociclo: document.getElementById('plan-mesociclo')?.textContent.trim(),
+        microciclo: document.getElementById('plan-microciclo')?.textContent.trim()
+    };
+    
+    window.CalendarEngine.planningData = planningPayload;
+
+    console.log("💾 Guardando Planificación de Temporada:", planningPayload);
+
+    const { error } = await window.supabase
+        .from('team_configs')
+        .update({ season_planning: planningPayload })
+        .eq('team_id', teamId);
+
+    if (error) {
+        console.error("Error al persistir temporada:", error.message);
+    }
+};
+
+
 window.DTEngine = {
     _currentDate: new Date(), // Inicialización dinámica
     _matchDays: new Set(),
@@ -60,20 +87,26 @@ window.DTEngine = {
     },
 
     async fetchTeamConfig() {
-        // Priorizar memoria de App Core (window.CurrentTeam)
+        const teamId = window.CurrentTeam?.id;
+        if (!teamId) return;
+
+        // Priorizar memoria de App Core (window.CurrentTeam) para match_dates
         if (window.CurrentTeam && window.CurrentTeam.match_dates) {
             this._matchDays = new Set(window.CurrentTeam.match_dates);
             console.log("📍 Morfociclo cargado desde Memoria Core");
-            return;
         }
 
-        const teamId = window.CurrentTeam?.id;
-        if (!teamId) return;
         try {
             const { data, error } = await window.supabase.from('team_configs').select('*').eq('team_id', teamId);
             if (error) throw error;
-            if (data && data[0] && data[0].match_dates) {
-                this._matchDays = new Set(data[0].match_dates);
+            if (data && data[0]) {
+                if (data[0].match_dates) {
+                    this._matchDays = new Set(data[0].match_dates);
+                }
+                if (data[0].season_planning) {
+                    window.CalendarEngine = window.CalendarEngine || {};
+                    window.CalendarEngine.planningData = data[0].season_planning;
+                }
             }
             // Sincronizar estado global para que applyMethodologyLabels() lea la verdad fresca
             if (window.CurrentTeam) {
@@ -2219,14 +2252,20 @@ window.DTEngine = {
                 var weeksLeft = Math.max(0, Math.round((phaseEnd - today2) / (7 * 86400000)));
                 var phaseColor = currentFase.color || '#00F2FE';
 
+                var pData = (window.CalendarEngine && window.CalendarEngine.planningData) ? window.CalendarEngine.planningData : {};
+                var textTemporada = pData.temporada || 'TEMPORADA';
+                var textMacrociclo = pData.macrociclo || ('MACROCICLO ' + (fasesDone + 1));
+                var textMesociclo = pData.mesociclo || currentFase.name;
+                var textMicrociclo = pData.microciclo || ('Microciclo ' + (currentIdx + 1));
+
                 roadmapEl.innerHTML = '<div style="background:linear-gradient(90deg,#111827 0%,#1a2235 100%);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px;">'
                     + '<div style="display:flex;flex-direction:column;gap:5px;">'
                     + '<div style="display:flex;gap:10px;align-items:center;">'
-                    + '<span style="background:rgba(0,242,254,0.1);color:#00F2FE;padding:4px 10px;border-radius:4px;font-size:0.65rem;font-weight:800;border:1px solid rgba(0,242,254,0.3);font-family:Outfit,sans-serif;letter-spacing:1px;">MACROCICLO ' + (fasesDone + 1) + '</span>'
-                    + '<span style="color:#9ca3af;font-size:0.8rem;font-weight:600;font-family:Outfit,sans-serif;">' + per.macrociclo + '</span>'
+                    + '<span id="plan-temporada" class="editable-cycle-banner" contenteditable="true" style="background:rgba(0,242,254,0.1);color:#00F2FE;padding:4px 10px;border-radius:4px;font-size:0.65rem;font-weight:800;border:1px solid rgba(0,242,254,0.3);font-family:Outfit,sans-serif;letter-spacing:1px;min-width:30px;">' + textTemporada + '</span>'
+                    + '<span id="plan-macrociclo" class="editable-cycle-banner" contenteditable="true" style="color:#9ca3af;font-size:0.8rem;font-weight:600;font-family:Outfit,sans-serif;min-width:30px;">' + textMacrociclo + '</span>'
                     + '</div>'
-                    + '<h2 style="margin:4px 0 0 0;color:#fff;font-family:Outfit,sans-serif;font-size:1.5rem;letter-spacing:-0.5px;font-weight:800;">' + currentFase.name + ' <span style="color:#6b7280;font-size:1rem;font-weight:500;">/ Mesociclo ' + (currentIdx + 1) + '</span></h2>'
-                    + '<p style="margin:2px 0 0 0;color:#6b7280;font-size:0.8rem;font-family:Outfit,sans-serif;">Microciclo actual — Progreso de fase</p>'
+                    + '<h2 style="margin:4px 0 0 0;color:#fff;font-family:Outfit,sans-serif;font-size:1.5rem;letter-spacing:-0.5px;font-weight:800;"><span id="plan-mesociclo" class="editable-cycle-banner" contenteditable="true" style="min-width:30px;display:inline-block;">' + textMesociclo + '</span> <span style="color:#6b7280;font-size:1rem;font-weight:500;">/</span> <span id="plan-microciclo" class="editable-cycle-banner" contenteditable="true" style="color:#6b7280;font-size:1rem;font-weight:500;min-width:30px;display:inline-block;">' + textMicrociclo + '</span></h2>'
+                    + '<p style="margin:2px 0 0 0;color:#6b7280;font-size:0.8rem;font-family:Outfit,sans-serif;">Progreso de fase</p>'
                     + '</div>'
                     + '<div style="text-align:right;min-width:180px;">'
                     + '<div style="display:flex;justify-content:space-between;margin-bottom:5px;">'
@@ -2239,6 +2278,26 @@ window.DTEngine = {
                     + '<p style="margin:5px 0 0 0;color:#6b7280;font-size:0.68rem;font-family:Outfit,sans-serif;">Restan ' + weeksLeft + ' microciclo' + (weeksLeft !== 1 ? 's' : '') + '</p>'
                     + '</div>'
                     + '</div>';
+
+                // Assign listeners
+                setTimeout(() => {
+                    ['plan-temporada', 'plan-macrociclo', 'plan-mesociclo', 'plan-microciclo'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            el.addEventListener('blur', () => {
+                                if(window.CalendarEngine && window.CalendarEngine.saveSeasonPlanning) {
+                                    window.CalendarEngine.saveSeasonPlanning();
+                                }
+                            });
+                            el.addEventListener('keydown', (e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    el.blur();
+                                }
+                            });
+                        }
+                    });
+                }, 0);
             }
         },
 

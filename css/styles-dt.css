@@ -1415,3 +1415,19 @@ body { background: #121212 !important; }
     z-index: 5;
     box-shadow: 0 2px 6px rgba(0,0,0,0.5);
 }
+
+/* Editable Cycle Banner (Planificación Anual) */
+.editable-cycle-banner {
+    transition: all 0.2s ease-in-out;
+    border-bottom: 1px solid transparent;
+    cursor: text;
+}
+.editable-cycle-banner:hover {
+    border-bottom: 1px solid rgba(0, 242, 254, 0.5);
+    opacity: 0.9;
+}
+.editable-cycle-banner:focus {
+    outline: none;
+    border-bottom: 1px solid #00F2FE;
+    background: rgba(0, 242, 254, 0.05);
+}
