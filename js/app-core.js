@@ -40,7 +40,7 @@ window.Wizard = {
             oaView.classList.remove('oa-visible');
 
             // 2. Now hide all other views
-            ['view-login','view-portal','app-shell','view-onboarding'].forEach(id => {
+            ['view-login', 'view-portal', 'app-shell', 'view-onboarding'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) { el.style.display = 'none'; el.style.opacity = ''; }
             });
@@ -51,7 +51,7 @@ window.Wizard = {
                     oaView.classList.add('oa-visible');
                     try {
                         if (window.AthWizard) window.AthWizard.init();
-                    } catch(wizErr) {
+                    } catch (wizErr) {
                         console.warn('[WIZARD] Error al iniciar AthWizard:', wizErr);
                     }
                 });
@@ -63,7 +63,7 @@ window.Wizard = {
             if (onboarding) onboarding.style.display = 'flex';
 
             // Hide others after showing onboarding
-            ['view-login','view-portal','app-shell','view-onboarding-athlete'].forEach(id => {
+            ['view-login', 'view-portal', 'app-shell', 'view-onboarding-athlete'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) { el.style.display = 'none'; el.style.opacity = ''; }
             });
@@ -81,7 +81,7 @@ window.Wizard = {
         document.querySelectorAll('.path-card').forEach(c => c.classList.remove('active'));
         document.getElementById(`path-card-${p}`)?.classList.add('active');
         document.getElementById('ob-ui-create').style.display = p === 'create' ? 'block' : 'none';
-        document.getElementById('ob-ui-join').style.display   = p === 'join'   ? 'block' : 'none';
+        document.getElementById('ob-ui-join').style.display = p === 'join' ? 'block' : 'none';
     },
 
     nextStep() {
@@ -115,21 +115,21 @@ window.Wizard = {
 
     // ── FINISH PATH DT ──
     async finish() {
-        const uid   = localStorage.getItem('ravix_v5_uid');
+        const uid = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
-        const name  = document.getElementById('ob-name').value;
-        const role  = document.getElementById('ob-role').value;
+        const name = document.getElementById('ob-name').value;
+        const role = document.getElementById('ob-role').value;
         const license = document.getElementById('ob-license').value;
         if (!name) return alert('Por favor, ingresa tu nombre.');
 
         try {
             let teamId = null;
             if (this.path === 'create') {
-                const tName  = document.getElementById('ob-team-name').value || 'Mi Club';
+                const tName = document.getElementById('ob-team-name').value || 'Mi Club';
                 const tColor = document.getElementById('ob-team-color').value;
                 const tMethodology = document.getElementById('ob-methodology').value;
                 const tSystems = document.getElementById('ob-systems-input').value;
-                const tCode  = 'CU-' + Math.floor(1000 + Math.random() * 9000);
+                const tCode = 'CU-' + Math.floor(1000 + Math.random() * 9000);
 
                 const { data: teams, error: tErr } = await window.supabase.from('teams').insert({ name: tName, code: tCode, owner_id: uid }).select();
                 if (tErr || !teams || !teams[0]) throw new Error('Error al fundar equipo: ' + (tErr?.message || ''));
@@ -157,20 +157,20 @@ window.Wizard = {
 
         // Scope al formulario activo del atleta para evitar colisiones de ID
         const form = document.getElementById('athlete-onboarding-form')
-                  || document.getElementById('view-onboarding-athlete');
+            || document.getElementById('view-onboarding-athlete');
         const qf = id => (form ? form.querySelector('#' + id) : null)
-                      || document.getElementById(id);
+            || document.getElementById(id);
 
-        const fullName  = qf('ath-name')?.value?.trim() || 'Atleta Anónimo';
-        const sport     = qf('ath-sport')?.value;
-        const position  = qf('ath-pos')?.value;        // ← 'ath-pos', no 'ath-position'
+        const fullName = qf('ath-name')?.value?.trim() || 'Atleta Anónimo';
+        const sport = qf('ath-sport')?.value;
+        const position = qf('ath-pos')?.value;        // ← 'ath-pos', no 'ath-position'
         const birthDate = qf('ath-birth')?.value || null;
-        const weight    = parseFloat(qf('ath-weight')?.value) || null;
-        const height    = parseFloat(qf('ath-height')?.value) || null;
-        const wingspan  = parseFloat(qf('ath-wingspan')?.value) || null;
-        const goal      = qf('ath-goal')?.value || null;
+        const weight = parseFloat(qf('ath-weight')?.value) || null;
+        const height = parseFloat(qf('ath-height')?.value) || null;
+        const wingspan = parseFloat(qf('ath-wingspan')?.value) || null;
+        const goal = qf('ath-goal')?.value || null;
 
-        if (!sport)    return alert('Por favor, selecciona tu deporte.');
+        if (!sport) return alert('Por favor, selecciona tu deporte.');
         if (!position) return alert('Por favor, selecciona tu posición o especialidad.');
 
         try {
@@ -205,11 +205,11 @@ window.App = {
     isProcessingAuth: false, // Candado anti-race-condition
 
     async init() {
-        const uid   = localStorage.getItem('ravix_v5_uid');
+        const uid = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
-        const role  = localStorage.getItem('ravix_active_role') || 'dt';
+        const role = localStorage.getItem('ravix_active_role') || 'dt';
 
-        console.log(`[ROUTER] init() — uid=${uid ? uid.slice(0,8)+'...' : 'null'} role=${role}`);
+        console.log(`[ROUTER] init() — uid=${uid ? uid.slice(0, 8) + '...' : 'null'} role=${role}`);
 
         if (uid && token) {
             // Sesión activa: ocultar TODO inmediatamente para evitar flash del portal
@@ -219,8 +219,8 @@ window.App = {
             // Mostrar un loader mínimo mientras se verifica
             const portal = document.getElementById('view-portal');
             if (portal) {
-                portal.style.display    = 'flex';
-                portal.style.opacity    = '0';
+                portal.style.display = 'flex';
+                portal.style.opacity = '0';
                 portal.style.pointerEvents = 'none';
             }
 
@@ -274,14 +274,14 @@ window.App = {
         this._hideAllViews();
         const portal = document.getElementById('view-portal');
         if (portal) {
-            portal.style.display    = 'flex';
-            portal.style.opacity    = '';
+            portal.style.display = 'flex';
+            portal.style.opacity = '';
             portal.style.pointerEvents = '';
         }
         if (msg) alert('Sesión interrumpida: ' + msg + '\nPor favor, inicia sesión nuevamente.');
     },
 
-    selectRole: function(role) {
+    selectRole: function (role) {
         this.currentRole = role;
 
         // ── PERSISTIR ROL EN LOCALSTORAGE ──────────────────────────
@@ -304,7 +304,7 @@ window.App = {
 
         // Smooth portal → login transition
         const portal = document.getElementById('view-portal');
-        const login  = document.getElementById('view-login');
+        const login = document.getElementById('view-login');
 
         // ── FAILSAFE: verificar que login existe antes de ocultar portal ──
         if (!login) {
@@ -327,15 +327,15 @@ window.App = {
         }
     },
 
-    goBackToPortal: function() {
+    goBackToPortal: function () {
         const portal = document.getElementById('view-portal');
-        const login  = document.getElementById('view-login');
+        const login = document.getElementById('view-login');
 
         // Reset mode classes
         document.body.classList.remove('mode-athlete', 'mode-dt', 'testing-athlete');
         this.currentRole = 'dt';
 
-        if (login)  { login.style.opacity = '0'; setTimeout(() => { login.style.display = 'none'; login.style.opacity = ''; }, 360); }
+        if (login) { login.style.opacity = '0'; setTimeout(() => { login.style.display = 'none'; login.style.opacity = ''; }, 360); }
         if (portal) { setTimeout(() => { portal.style.display = 'flex'; }, 200); }
     },
 
@@ -364,7 +364,7 @@ window.App = {
 
     loadProfile() {
         if (!window.CurrentUser || !window.CurrentTeam) return;
-        
+
         document.getElementById('prof-name').value = window.CurrentUser.name || '';
         document.getElementById('prof-license').value = window.CurrentUser.license || 'UEFA PRO';
         document.getElementById('prof-team-name').value = window.CurrentTeam.name || '';
@@ -372,10 +372,10 @@ window.App = {
         document.getElementById('prof-methodology').value = window.CurrentTeam.methodology || 'Periodización Táctica';
     },
 
-    saveProfile: async function(e) {
-        if(e) e.preventDefault();
+    saveProfile: async function (e) {
+        if (e) e.preventDefault();
         const role = this.currentRole || 'dt';
-        const uid   = localStorage.getItem('ravix_v5_uid');
+        const uid = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
 
         // Capturar botón para feedback visual
@@ -406,7 +406,7 @@ window.App = {
             // Busca DENTRO de #athlete-onboarding-form para evitar colisiones
             // con cualquier otro elemento del DOM que comparta el mismo ID.
             const form = document.getElementById('athlete-onboarding-form')
-                      || document.getElementById('view-onboarding-athlete');
+                || document.getElementById('view-onboarding-athlete');
 
             const qf = (id) => {
                 const scoped = form ? form.querySelector('#' + id) : null;
@@ -417,30 +417,30 @@ window.App = {
             //    Ningún campo puede ser undefined → Supabase rechaza undefined.
 
             // PASO 1 — Identidad
-            const full_name      = qf('ath-name')?.value?.trim()   || 'Atleta Anónimo';
-            const sport           = qf('ath-sport')?.value          || null;
-            const position        = qf('ath-pos')?.value            || null;
-            const phone           = qf('ath-phone')?.value?.trim()  || null;
-            const dominant_side   = qf('ath-side')?.value           || null;
+            const full_name = qf('ath-name')?.value?.trim() || 'Atleta Anónimo';
+            const sport = qf('ath-sport')?.value || null;
+            const position = qf('ath-pos')?.value || null;
+            const phone = qf('ath-phone')?.value?.trim() || null;
+            const dominant_side = qf('ath-side')?.value || null;
 
             // PASO 2 — Biometría
-            const birth_date      = qf('ath-birth')?.value          || null;
-            const _w              = parseFloat(qf('ath-weight')?.value);
-            const _h              = parseFloat(qf('ath-height')?.value);
-            const _bf             = parseFloat(qf('ath-fat')?.value);
-            const weight_kg       = isNaN(_w)  ? null : _w;
-            const height_cm       = isNaN(_h)  ? null : _h;
-            const body_fat        = isNaN(_bf) ? null : _bf;
+            const birth_date = qf('ath-birth')?.value || null;
+            const _w = parseFloat(qf('ath-weight')?.value);
+            const _h = parseFloat(qf('ath-height')?.value);
+            const _bf = parseFloat(qf('ath-fat')?.value);
+            const weight_kg = isNaN(_w) ? null : _w;
+            const height_cm = isNaN(_h) ? null : _h;
+            const body_fat = isNaN(_bf) ? null : _bf;
 
             // PASO 3 — Carga Cometti
-            const _ty             = parseInt(parseFloat(qf('ath-training-years')?.value));
-            const _ch             = parseFloat(qf('ath-club-hours')?.value);
-            const _gh             = parseFloat(qf('ath-gym-hours')?.value);
-            const training_years  = isNaN(_ty) ? 0 : _ty;
+            const _ty = parseInt(parseFloat(qf('ath-training-years')?.value));
+            const _ch = parseFloat(qf('ath-club-hours')?.value);
+            const _gh = parseFloat(qf('ath-gym-hours')?.value);
+            const training_years = isNaN(_ty) ? 0 : _ty;
             const club_hours_week = isNaN(_ch) ? 0 : _ch;
-            const gym_hours_week  = isNaN(_gh) ? 0 : _gh;
-            const goal            = qf('ath-goal')?.value           || null;
-            const commitment_level= qf('ath-commitment')?.value     || null;
+            const gym_hours_week = isNaN(_gh) ? 0 : _gh;
+            const goal = qf('ath-goal')?.value || null;
+            const commitment_level = qf('ath-commitment')?.value || null;
 
             // ── 3. Validación de campos obligatorios ───────────────────────
             if (!sport) {
@@ -463,31 +463,20 @@ window.App = {
             // ── 4. Payload maestro — cada clave mapeada explícitamente ──────
             //    Columnas de profiles_athlete verificadas contra el esquema.
             const payload = {
-                id:               uid,
-                // ─ Identidad ─────────────────────────────────────────────
-                full_name,        // ← SIEMPRE full_name (NO name)
-                sport,
-                position,
-                phone,
-                dominant_side,
-                // ─ Biometría ─────────────────────────────────────────────
-                birth_date,
-                weight_kg,
-                height_cm,
-                body_fat,
-                // ─ Carga Cometti (nuevos campos) ──────────────────────────
-                training_years,
-                club_hours_week,
-                gym_hours_week,
-                // ─ Objetivo & Compromiso ──────────────────────────────────
-                goal,
-                commitment_level,
-                // ─ Auditoría ─────────────────────────────────────────────
-                updated_at:       new Date().toISOString(),
+                id: uid, 
+                full_name: document.getElementById('ath-full-name')?.value || document.getElementById('lgc-name')?.value || 'Atleta Anónimo',
+                sport: document.getElementById('ath-sport')?.value || document.getElementById('lgc-sport')?.value || 'No especificado',
+                position: document.getElementById('ath-pos')?.value || document.getElementById('lgc-pos')?.value || 'No especificada',
+                height: parseFloat(document.getElementById('ath-height')?.value) || parseFloat(document.getElementById('lgc-height')?.value) || 0,
+                weight: parseFloat(document.getElementById('ath-weight')?.value) || parseFloat(document.getElementById('lgc-weight')?.value) || 0,
+                goal: document.getElementById('ath-goal')?.value || document.getElementById('lgc-goal')?.value || 'Mejorar',
+                training_years: parseInt(document.getElementById('ath-training-years')?.value) || 0,
+                club_hours_week: parseFloat(document.getElementById('ath-club-hours')?.value) || 0,
+                gym_hours_week: parseFloat(document.getElementById('ath-gym-hours')?.value) || 0,
+                updated_at: new Date().toISOString()
             };
 
-            console.log('[WIZARD ATLETA] ▶ Payload maestro enviado a Supabase:');
-            console.table(payload);
+            console.log("📦 Payload blindado a punto de enviarse:", payload);
 
             // ── 5. Upsert con finally incondicionable ──────────────────────
             try {
@@ -507,14 +496,14 @@ window.App = {
                 const msg = err.message || JSON.stringify(err);
                 console.error('🔴 [UPSERT ERROR] profiles_athlete rechazó el payload:');
                 console.error('   Mensaje:', msg);
-                console.error('   Details:', err.details  || '—');
-                console.error('   Hint:',    err.hint     || '—');
+                console.error('   Details:', err.details || '—');
+                console.error('   Hint:', err.hint || '—');
                 console.error('   Payload enviado:', payload);
 
                 alert(
                     '❌ Error al guardar el perfil.\n\n' +
                     'Mensaje Supabase:\n' + msg +
-                    (err.hint    ? '\n\nHint: '    + err.hint    : '') +
+                    (err.hint ? '\n\nHint: ' + err.hint : '') +
                     (err.details ? '\n\nDetails: ' + err.details : '') +
                     '\n\n(El payload fue impreso en consola para diagnóstico.)'
                 );
@@ -526,9 +515,9 @@ window.App = {
         } else {
             // PATH DT: apunta exclusivamente a la tabla users histórica
             // Solo se envían columnas que existen en users
-            const name     = document.getElementById('ob-name')?.value   || null;
-            const staffRole = document.getElementById('ob-role')?.value  || null;
-            const license  = document.getElementById('ob-license')?.value || null;
+            const name = document.getElementById('ob-name')?.value || null;
+            const staffRole = document.getElementById('ob-role')?.value || null;
+            const license = document.getElementById('ob-license')?.value || null;
 
             if (!name) {
                 restoreBtn();
@@ -560,7 +549,7 @@ window.App = {
             const savedRole = localStorage.getItem('ravix_active_role');
             if (savedRole) { this.currentRole = savedRole; }
             const role = this.currentRole || 'dt';
-            LOG('INIT')(`uid=${uid.slice(0,8)}... | role="${role}"`);
+            LOG('INIT')(`uid=${uid.slice(0, 8)}... | role="${role}"`);
 
             // ── 2. Verificar que el token sigue siendo válido ─────────────
             LOG('AUTH')('Verificando token con supabase.auth.getUser...');
@@ -575,7 +564,7 @@ window.App = {
                 document.body.classList.add('mode-athlete', 'testing-athlete');
                 document.body.classList.remove('mode-dt');
 
-                LOG('ATHLETE')(`Buscando perfil en profiles_athlete... id=${uid.slice(0,8)}...`);
+                LOG('ATHLETE')(`Buscando perfil en profiles_athlete... id=${uid.slice(0, 8)}...`);
                 const { data: athData, error: athErr } = await window.supabase.from('profiles_athlete').select('*').eq('id', uid);
                 if (athErr) throw new Error(`Error al leer profiles_athlete: ${athErr.message}`);
                 LOG('ATHLETE')(`Filas encontradas: ${athData.length}. full_name="${athData[0]?.full_name || 'vacío'}"`);
@@ -603,7 +592,7 @@ window.App = {
             document.body.classList.add('mode-dt');
             document.body.classList.remove('mode-athlete', 'testing-athlete');
 
-            LOG('DT')(`Buscando perfil en users... id=${uid.slice(0,8)}...`);
+            LOG('DT')(`Buscando perfil en users... id=${uid.slice(0, 8)}...`);
             const { data: users, error: dtErr } = await window.supabase.from('users').select('*').eq('id', uid);
             if (dtErr) throw new Error(`Error al leer tabla users: ${dtErr.message}`);
             LOG('DT')(`Filas encontradas: ${users.length}. name="${users[0]?.name || 'vacío'}" team_id="${users[0]?.team_id || 'null'}"`);
@@ -630,7 +619,7 @@ window.App = {
             }
 
             LOG('DT')('Perfil completo. Cargando config de equipo...');
-            const [ { data: configs }, { data: teams } ] = await Promise.all([
+            const [{ data: configs }, { data: teams }] = await Promise.all([
                 window.supabase.from('team_configs').select('*').eq('team_id', userData.team_id),
                 window.supabase.from('teams').select('*').eq('id', userData.team_id)
             ]);
@@ -646,10 +635,10 @@ window.App = {
                 }
                 if (window.CurrentTeam) {
                     Object.assign(window.CurrentTeam, {
-                        match_dates:  cfg.match_dates  || [],
-                        methodology:  cfg.methodology  || 'No definida',
+                        match_dates: cfg.match_dates || [],
+                        methodology: cfg.methodology || 'No definida',
                         primary_color: cfg.primary_color || null,
-                        tactical_dna: cfg.tactical_dna  || {},
+                        tactical_dna: cfg.tactical_dna || {},
                         periodization: cfg.periodization || null,
                     });
                 }
@@ -694,7 +683,7 @@ window.App = {
 
     async fetchCustomExercises() {
         try {
-            const uid   = localStorage.getItem('ravix_v5_uid');
+            const uid = localStorage.getItem('ravix_v5_uid');
             const token = localStorage.getItem('ravix_token');
             const { data, error } = await window.supabase.from('custom_exercises').select('*').eq('user_id', uid).order('created_at', { ascending: false });
             if (error) throw error;
@@ -778,25 +767,25 @@ window.App = {
 
     toggleAuth(mode) {
         const loginForm = document.getElementById('login-form');
-        const regForm   = document.getElementById('register-form');
-        const tabLogin  = document.getElementById('tab-login');
-        const tabReg    = document.getElementById('tab-register');
-        const slider    = document.getElementById('lv-tab-slider');
+        const regForm = document.getElementById('register-form');
+        const tabLogin = document.getElementById('tab-login');
+        const tabReg = document.getElementById('tab-register');
+        const slider = document.getElementById('lv-tab-slider');
         const submitBtn = document.getElementById('login-submit-btn');
-        const role      = this.currentRole || 'dt';
+        const role = this.currentRole || 'dt';
 
         if (mode === 'register') {
             if (loginForm) loginForm.style.display = 'none';
-            if (regForm)   regForm.style.display = 'flex';
-            if (tabLogin)  { tabLogin.classList.remove('lv-tab--active'); tabLogin.setAttribute('aria-selected','false'); }
-            if (tabReg)    { tabReg.classList.add('lv-tab--active');    tabReg.setAttribute('aria-selected','true'); }
-            if (slider)    slider.classList.add('lv-tab-slider--right');
+            if (regForm) regForm.style.display = 'flex';
+            if (tabLogin) { tabLogin.classList.remove('lv-tab--active'); tabLogin.setAttribute('aria-selected', 'false'); }
+            if (tabReg) { tabReg.classList.add('lv-tab--active'); tabReg.setAttribute('aria-selected', 'true'); }
+            if (slider) slider.classList.add('lv-tab-slider--right');
         } else {
             if (loginForm) loginForm.style.display = 'flex';
-            if (regForm)   regForm.style.display   = 'none';
-            if (tabLogin)  { tabLogin.classList.add('lv-tab--active');  tabLogin.setAttribute('aria-selected','true'); }
-            if (tabReg)    { tabReg.classList.remove('lv-tab--active'); tabReg.setAttribute('aria-selected','false'); }
-            if (slider)    slider.classList.remove('lv-tab-slider--right');
+            if (regForm) regForm.style.display = 'none';
+            if (tabLogin) { tabLogin.classList.add('lv-tab--active'); tabLogin.setAttribute('aria-selected', 'true'); }
+            if (tabReg) { tabReg.classList.remove('lv-tab--active'); tabReg.setAttribute('aria-selected', 'false'); }
+            if (slider) slider.classList.remove('lv-tab-slider--right');
             // Reset submit btn text
             const textSpan = submitBtn?.querySelector('.lv-btn-text');
             if (textSpan) textSpan.textContent = role === 'athlete' ? 'ACCEDER AL LABORATORIO' : 'ENTRAR AL SISTEMA';
@@ -807,7 +796,7 @@ window.App = {
     },
 
     // --- SIGNUP CON ENRUTAMIENTO MANUAL + CANDADO ANTI-DOBLE-ENVÍO ---
-    signUp: async function(email, pass) {
+    signUp: async function (email, pass) {
         if (this.isProcessingAuth) {
             console.log('⏳ Autenticación en proceso, ignorando doble clic...');
             return;
@@ -830,7 +819,7 @@ window.App = {
             }
 
             if (authData.session && authData.user) {
-                const uid   = authData.user.id;
+                const uid = authData.user.id;
                 const token = authData.session.access_token;
                 localStorage.setItem('ravix_token', token);
                 localStorage.setItem('ravix_v5_uid', uid);
@@ -903,7 +892,7 @@ window.LoginUI = (() => {
         particleCanvas = canvas;
         const panel = document.querySelector('.lv-panel--left');
         if (panel) {
-            canvas.width  = panel.offsetWidth;
+            canvas.width = panel.offsetWidth;
             canvas.height = panel.offsetHeight;
         }
         particleCtx = canvas.getContext('2d');
@@ -932,7 +921,7 @@ window.LoginUI = (() => {
     function startPortalParticles() {
         const canvas = document.getElementById('portal-particles');
         if (!canvas) return;
-        canvas.width  = window.innerWidth;
+        canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         const ctx = canvas.getContext('2d');
         const pts = [];
@@ -969,23 +958,23 @@ window.LoginUI = (() => {
     function setRole(role) {
         const isAthlete = role === 'athlete';
         // Left panel text
-        const eyebrow    = document.getElementById('lv-eyebrow');
-        const headline   = document.getElementById('lv-headline');
-        const sub        = document.getElementById('lv-subheadline');
-        const stat1      = document.getElementById('lv-stat-1');
-        const stat2      = document.getElementById('lv-stat-2');
-        const stat3      = document.getElementById('lv-stat-3');
-        const rolePill   = document.getElementById('lv-role-label');
+        const eyebrow = document.getElementById('lv-eyebrow');
+        const headline = document.getElementById('lv-headline');
+        const sub = document.getElementById('lv-subheadline');
+        const stat1 = document.getElementById('lv-stat-1');
+        const stat2 = document.getElementById('lv-stat-2');
+        const stat3 = document.getElementById('lv-stat-3');
+        const rolePill = document.getElementById('lv-role-label');
         const submitText = document.querySelector('#login-submit-btn .lv-btn-text');
 
-        if (eyebrow)  eyebrow.textContent  = isAthlete ? 'PORTAL ATLETA'   : 'PORTAL STAFF';
-        if (headline) headline.innerHTML   = isAthlete ? 'Laboratorio<br>de Elite'   : 'Sistema Táctico<br>de Elite';
-        if (sub)      sub.textContent      = isAthlete
+        if (eyebrow) eyebrow.textContent = isAthlete ? 'PORTAL ATLETA' : 'PORTAL STAFF';
+        if (headline) headline.innerHTML = isAthlete ? 'Laboratorio<br>de Elite' : 'Sistema Táctico<br>de Elite';
+        if (sub) sub.textContent = isAthlete
             ? 'Monitorea tu rendimiento, analiza tu progreso y accede a tus planes de entrenamiento personalizados.'
             : 'El ecosistema de rendimiento deportivo más avanzado. Análisis, planificación y control en tiempo real.';
-        if (stat1)    stat1.textContent    = isAthlete ? '12K+'  : '48K+';
-        if (stat2)    stat2.textContent    = isAthlete ? '850+'  : '320+';
-        if (stat3)    stat3.textContent    = isAthlete ? '4.9★'  : '99.9%';
+        if (stat1) stat1.textContent = isAthlete ? '12K+' : '48K+';
+        if (stat2) stat2.textContent = isAthlete ? '850+' : '320+';
+        if (stat3) stat3.textContent = isAthlete ? '4.9★' : '99.9%';
         if (rolePill) rolePill.textContent = isAthlete ? 'Modo Atleta' : 'Modo Staff';
         if (submitText) submitText.textContent = isAthlete ? 'ACCEDER AL LABORATORIO' : 'ENTRAR AL SISTEMA';
 
@@ -996,34 +985,34 @@ window.LoginUI = (() => {
 
     // ── BANNERS ───────────────────────────────────────────────────
     function showError(msg) {
-        const el  = document.getElementById('lv-error');
+        const el = document.getElementById('lv-error');
         const txt = document.getElementById('lv-error-msg');
-        const ok  = document.getElementById('lv-success');
-        if (ok)  ok.style.display = 'none';
+        const ok = document.getElementById('lv-success');
+        if (ok) ok.style.display = 'none';
         if (txt) txt.textContent = msg;
-        if (el)  { el.style.display = 'flex'; el.style.animation = 'none'; requestAnimationFrame(() => { el.style.animation = ''; }); }
+        if (el) { el.style.display = 'flex'; el.style.animation = 'none'; requestAnimationFrame(() => { el.style.animation = ''; }); }
     }
 
     function showSuccess(msg) {
-        const el  = document.getElementById('lv-success');
+        const el = document.getElementById('lv-success');
         const txt = document.getElementById('lv-success-msg');
         const err = document.getElementById('lv-error');
         if (err) err.style.display = 'none';
         if (txt) txt.textContent = msg;
-        if (el)  { el.style.display = 'flex'; el.style.animation = 'none'; requestAnimationFrame(() => { el.style.animation = ''; }); }
+        if (el) { el.style.display = 'flex'; el.style.animation = 'none'; requestAnimationFrame(() => { el.style.animation = ''; }); }
     }
 
     function clearBanners() {
         const err = document.getElementById('lv-error');
-        const ok  = document.getElementById('lv-success');
+        const ok = document.getElementById('lv-success');
         if (err) err.style.display = 'none';
-        if (ok)  ok.style.display  = 'none';
+        if (ok) ok.style.display = 'none';
     }
 
     // ── PASSWORD TOGGLE ───────────────────────────────────────────
     function togglePass(inputId, btnId) {
         const input = document.getElementById(inputId);
-        const btn   = document.getElementById(btnId);
+        const btn = document.getElementById(btnId);
         if (!input) return;
         const isText = input.type === 'text';
         input.type = isText ? 'password' : 'text';
@@ -1039,25 +1028,25 @@ window.LoginUI = (() => {
     // ── PASSWORD STRENGTH ─────────────────────────────────────────
     function checkStrength(pass) {
         let score = 0;
-        if (pass.length >= 8)  score++;
+        if (pass.length >= 8) score++;
         if (pass.length >= 12) score++;
-        if (/[A-Z]/.test(pass))    score++;
-        if (/[0-9]/.test(pass))    score++;
+        if (/[A-Z]/.test(pass)) score++;
+        if (/[0-9]/.test(pass)) score++;
         if (/[^A-Za-z0-9]/.test(pass)) score++;
         return score;
     }
 
     function updateStrength(pass) {
-        const fill  = document.getElementById('lv-strength-fill');
+        const fill = document.getElementById('lv-strength-fill');
         const label = document.getElementById('lv-strength-label');
         if (!fill || !label) return;
         if (!pass) { fill.style.width = '0%'; label.textContent = ''; return; }
         const score = checkStrength(pass);
         const levels = [
-            { pct: 15,  color: '#ef4444', text: 'Muy débil' },
-            { pct: 35,  color: '#f97316', text: 'Débil' },
-            { pct: 58,  color: '#eab308', text: 'Regular' },
-            { pct: 80,  color: '#22c55e', text: 'Fuerte' },
+            { pct: 15, color: '#ef4444', text: 'Muy débil' },
+            { pct: 35, color: '#f97316', text: 'Débil' },
+            { pct: 58, color: '#eab308', text: 'Regular' },
+            { pct: 80, color: '#22c55e', text: 'Fuerte' },
             { pct: 100, color: '#10b981', text: 'Muy fuerte' },
         ];
         const lvl = levels[Math.min(score, levels.length - 1)];
@@ -1069,9 +1058,9 @@ window.LoginUI = (() => {
 
     // ── LOADING STATE ─────────────────────────────────────────────
     function setLoading(formType, loading) {
-        const btn     = document.getElementById(formType === 'login' ? 'login-submit-btn' : 'register-submit-btn');
+        const btn = document.getElementById(formType === 'login' ? 'login-submit-btn' : 'register-submit-btn');
         const spinner = document.getElementById(formType === 'login' ? 'login-spinner' : 'register-spinner');
-        const text    = btn?.querySelector('.lv-btn-text');
+        const text = btn?.querySelector('.lv-btn-text');
         if (btn) btn.disabled = loading;
         if (spinner) spinner.style.display = loading ? 'block' : 'none';
         if (text && loading) text.style.opacity = '0.7';
@@ -1136,8 +1125,8 @@ window.AthWizard = (function () {
         'Otro': ['General / Polideportivo', 'Rehabilitacion Deportiva', 'Preparacion Fisica Base']
     };
 
-    function getForm()  { return document.getElementById('athlete-onboarding-form'); }
-    function q(id)      { const f = getForm(); return f ? f.querySelector('#' + id) : document.getElementById(id); }
+    function getForm() { return document.getElementById('athlete-onboarding-form'); }
+    function q(id) { const f = getForm(); return f ? f.querySelector('#' + id) : document.getElementById(id); }
 
     function updatePositions(sport) {
         const posSelect = q('ath-pos');
@@ -1147,7 +1136,7 @@ window.AthWizard = (function () {
             posSelect.innerHTML = '<option value="" disabled selected>Primero elige un deporte</option>';
             posSelect.disabled = true;
             posSelect.style.opacity = '0.45';
-            posSelect.style.cursor  = 'not-allowed';
+            posSelect.style.cursor = 'not-allowed';
             return;
         }
         posSelect.style.transition = 'opacity 0.18s ease';
@@ -1156,7 +1145,7 @@ window.AthWizard = (function () {
             posSelect.innerHTML = '<option value="" disabled selected>Selecciona posicion...</option>'
                 + positions.map(p => `<option value="${p}">${p}</option>`).join('');
             posSelect.disabled = false;
-            posSelect.style.cursor  = '';
+            posSelect.style.cursor = '';
             posSelect.value = '';
             requestAnimationFrame(() => { posSelect.style.opacity = '1'; });
         }, 180);
@@ -1169,12 +1158,12 @@ window.AthWizard = (function () {
         const form = getForm();
         if (!form) return;
         for (let i = 1; i <= TOTAL; i++) {
-            const fs   = form.querySelector('#oa-step-' + i);
+            const fs = form.querySelector('#oa-step-' + i);
             const snav = document.getElementById('snav-' + i);
-            if (fs)   { fs.classList.toggle('active', i === currentStep); }
+            if (fs) { fs.classList.toggle('active', i === currentStep); }
             if (snav) {
                 snav.classList.toggle('active', i === currentStep);
-                snav.classList.toggle('done',   i < currentStep);
+                snav.classList.toggle('done', i < currentStep);
             }
         }
         const pct = Math.round((currentStep / TOTAL) * 100);
@@ -1186,12 +1175,12 @@ window.AthWizard = (function () {
 
     function validateStep(step) {
         if (step === 1) {
-            const name  = q('ath-name')?.value?.trim();
+            const name = q('ath-name')?.value?.trim();
             const sport = q('ath-sport')?.value;
-            const pos   = q('ath-pos')?.value;
-            if (!name)  { q('ath-name')?.focus();  alert('Ingresa tu nombre completo.'); return false; }
+            const pos = q('ath-pos')?.value;
+            if (!name) { q('ath-name')?.focus(); alert('Ingresa tu nombre completo.'); return false; }
             if (!sport) { q('ath-sport')?.focus(); alert('Selecciona tu deporte.'); return false; }
-            if (!pos)   { q('ath-pos')?.focus();   alert('Selecciona tu posicion o especialidad.'); return false; }
+            if (!pos) { q('ath-pos')?.focus(); alert('Selecciona tu posicion o especialidad.'); return false; }
         }
         if (step === 2) {
             // Paso 2: biometría — sin campos obligatorios, pero validamos rangos si se ingresaron
@@ -1208,9 +1197,9 @@ window.AthWizard = (function () {
         }
         if (step === 3) {
             // Paso 3: goal y commitment son obligatorios para poder guardar
-            const goal       = q('ath-goal')?.value;
+            const goal = q('ath-goal')?.value;
             const commitment = q('ath-commitment')?.value;
-            if (!goal)       { q('ath-goal')?.focus();       alert('Selecciona tu objetivo neuromuscular.'); return false; }
+            if (!goal) { q('ath-goal')?.focus(); alert('Selecciona tu objetivo neuromuscular.'); return false; }
             if (!commitment) { q('ath-commitment')?.focus(); alert('Selecciona tu nivel de compromiso.'); return false; }
         }
         return true;
@@ -1218,12 +1207,12 @@ window.AthWizard = (function () {
 
     function init() {
         const sportSel = q('ath-sport');
-        const posSel   = q('ath-pos');
+        const posSel = q('ath-pos');
         if (!sportSel || !posSel) return;
         posSel.innerHTML = '<option value="" disabled selected>Primero elige un deporte</option>';
         posSel.disabled = true;
         posSel.style.opacity = '0.45';
-        posSel.style.cursor  = 'not-allowed';
+        posSel.style.cursor = 'not-allowed';
         sportSel.addEventListener('change', function () { updatePositions(this.value); });
         currentStep = 1;
         updateUI();
@@ -1265,15 +1254,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.style.display = 'flex'; // ensure flex layout
-        loginForm.onsubmit = async function(e) {
+        loginForm.onsubmit = async function (e) {
             e.preventDefault();
             e.stopImmediatePropagation();
 
             window.LoginUI?.clearBanners();
 
             const email = document.getElementById('login-username').value.trim();
-            const pass  = document.getElementById('login-password').value;
-            const role  = window.App.currentRole || 'dt';
+            const pass = document.getElementById('login-password').value;
+            const role = window.App.currentRole || 'dt';
 
             if (!email || !pass) {
                 window.LoginUI?.showError('Por favor, completá todos los campos.');
@@ -1287,15 +1276,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── REGISTER FORM ───────────────────────────────────────────
     const regForm = document.getElementById('register-form');
     if (regForm) {
-        regForm.onsubmit = async function(e) {
+        regForm.onsubmit = async function (e) {
             e.preventDefault();
             e.stopImmediatePropagation();
 
             window.LoginUI?.clearBanners();
 
             const email = document.getElementById('register-email').value.trim();
-            const pass  = document.getElementById('register-password').value;
-            const conf  = document.getElementById('register-confirm-password').value;
+            const pass = document.getElementById('register-password').value;
+            const conf = document.getElementById('register-confirm-password').value;
 
             if (!email || !pass || !conf) {
                 window.LoginUI?.showError('Por favor, completá todos los campos.');
@@ -1323,7 +1312,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.onload = () => App.init();
 
-window.App.login = async function(email, pass, event) {
+window.App.login = async function (email, pass, event) {
     if (event) event.preventDefault();
     const btn = event?.target ? event.target.querySelector('button[type="submit"]') : document.getElementById('login-btn-submit');
     const originalText = btn ? btn.textContent : 'Ingresar';
@@ -1353,7 +1342,7 @@ window.App.login = async function(email, pass, event) {
     }
 };
 
-window.App.signUp = async function(email, pass, event) {
+window.App.signUp = async function (email, pass, event) {
     if (event) event.preventDefault();
     const btn = event?.target ? event.target.querySelector('button[type="submit"]') : document.getElementById('signup-btn-submit');
     const originalText = btn ? btn.textContent : 'Crear Cuenta';
