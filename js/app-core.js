@@ -411,47 +411,15 @@ window.App = {
         // ══════════════════════════════════════════════════════════════
         if (role === 'athlete') {
 
-            // ── 1. Resolver elementos con scope al formulario activo ────────
-            // Busca DENTRO de #athlete-onboarding-form para evitar colisiones
-            // con cualquier otro elemento del DOM que comparta el mismo ID.
-            const form = document.getElementById('athlete-onboarding-form')
-                || document.getElementById('view-onboarding-athlete');
+            // ── Lectura directa con document.getElementById (sin scope)
+            // Fuente única de verdad para validaciones Y payload.
+            // IDs verificados contra index.html líneas 963-1118.
+            const sport         = document.getElementById('ath-sport')?.value      || '';
+            const position      = document.getElementById('ath-pos')?.value        || '';
+            const goal          = document.getElementById('ath-goal')?.value        || '';
+            const commitment_level = document.getElementById('ath-commitment')?.value || '';
 
-            const qf = (id) => {
-                const scoped = form ? form.querySelector('#' + id) : null;
-                return scoped || document.getElementById(id);
-            };
-
-            // ── 2. Lectura de valores con Optional Chaining + fallbacks ─────
-            //    Ningún campo puede ser undefined → Supabase rechaza undefined.
-
-            // PASO 1 — Identidad
-            const full_name = qf('ath-name')?.value?.trim() || 'Atleta Anónimo';
-            const sport = qf('ath-sport')?.value || null;
-            const position = qf('ath-pos')?.value || null;
-            const phone = qf('ath-phone')?.value?.trim() || null;
-            const dominant_side = qf('ath-side')?.value || null;
-
-            // PASO 2 — Biometría
-            const birth_date = qf('ath-birth')?.value || null;
-            const _w = parseFloat(qf('ath-weight')?.value);
-            const _h = parseFloat(qf('ath-height')?.value);
-            const _bf = parseFloat(qf('ath-fat')?.value);
-            const weight_kg = isNaN(_w) ? null : _w;
-            const height_cm = isNaN(_h) ? null : _h;
-            const body_fat = isNaN(_bf) ? null : _bf;
-
-            // PASO 3 — Carga Cometti
-            const _ty = parseInt(parseFloat(qf('ath-training-years')?.value));
-            const _ch = parseFloat(qf('ath-club-hours')?.value);
-            const _gh = parseFloat(qf('ath-gym-hours')?.value);
-            const training_years = isNaN(_ty) ? 0 : _ty;
-            const club_hours_week = isNaN(_ch) ? 0 : _ch;
-            const gym_hours_week = isNaN(_gh) ? 0 : _gh;
-            const goal = qf('ath-goal')?.value || null;
-            const commitment_level = qf('ath-commitment')?.value || null;
-
-            // ── 3. Validación de campos obligatorios ───────────────────────
+            // ── Validación de campos obligatorios ──────────────────────────
             if (!sport) {
                 restoreBtn();
                 return alert('⚠️ Deporte requerido.\nVolvé al Paso 1 y seleccioná tu deporte.');
@@ -469,55 +437,62 @@ window.App = {
                 return alert('⚠️ Nivel de compromiso requerido.\nSeleccioná tu nivel en el Paso 3.');
             }
 
-            // ── 4. Payload maestro — IDs verificados contra el DOM real ──────
+            // ── Resto de los campos ─────────────────────────────────────────
+            const full_name    = document.getElementById('ath-name')?.value?.trim() || 'Atleta Anónimo';
+            const phone        = document.getElementById('ath-phone')?.value?.trim() || null;
+            const dominant_side = document.getElementById('ath-side')?.value         || null;
+            const birth_date   = document.getElementById('ath-birth')?.value         || null;
+            const body_fat     = parseFloat(document.getElementById('ath-fat')?.value) || null;
+
+            const _w = parseFloat(document.getElementById('ath-weight')?.value);
+            const _h = parseFloat(document.getElementById('ath-height')?.value);
+            const _ty = parseInt(document.getElementById('ath-training-years')?.value);
+            const _ch = parseFloat(document.getElementById('ath-club-hours')?.value);
+            const _gh = parseFloat(document.getElementById('ath-gym-hours')?.value);
+
+            // ── Payload final — IDs verificados contra el DOM real ──────────
             const payload = {
                 id: uid,
-                full_name: document.getElementById('ath-name')?.value?.trim() || 'Atleta Anónimo',
-                sport: document.getElementById('ath-sport')?.value || 'No especificado',
-                position: document.getElementById('ath-pos')?.value || 'No especificada',
-                height: parseFloat(document.getElementById('ath-height')?.value) || 0,
-                weight: parseFloat(document.getElementById('ath-weight')?.value) || 0,
-                goal: document.getElementById('ath-goal')?.value || 'Mejorar',
-                commitment_level: document.getElementById('ath-commitment')?.value || null,
-                training_years: parseInt(document.getElementById('ath-training-years')?.value) || 0,
-                club_hours_week: parseFloat(document.getElementById('ath-club-hours')?.value) || 0,
-                gym_hours_week: parseFloat(document.getElementById('ath-gym-hours')?.value) || 0,
+                full_name,
+                sport,
+                position,
+                phone,
+                dominant_side,
+                birth_date,
+                weight: isNaN(_w) ? null : _w,
+                height: isNaN(_h) ? null : _h,
+                body_fat: isNaN(body_fat) ? null : body_fat,
+                goal,
+                commitment_level,
+                training_years:  isNaN(_ty) ? 0 : _ty,
+                club_hours_week: isNaN(_ch) ? 0 : _ch,
+                gym_hours_week:  isNaN(_gh) ? 0 : _gh,
                 updated_at: new Date().toISOString()
             };
 
-            console.log("📦 Payload blindado a punto de enviarse:", payload);
+            console.log('📦 Payload blindado enviado a Supabase:');
+            console.table(payload);
 
-            // ── 5. Upsert con finally incondicionable ──────────────────────
+            // ── Upsert ─────────────────────────────────────────────────────
             try {
                 const { error: upsertErr } = await window.supabase
                     .from('profiles_athlete')
                     .upsert(payload, { onConflict: 'id' });
 
-                if (upsertErr) {
-                    throw upsertErr; // lo captura el catch para diagnóstico unificado
-                }
+                if (upsertErr) throw upsertErr;
 
-                console.log('✅ profiles_athlete actualizado. Recargando sesión...');
-                location.reload(); // checkSession tomará el control al recargar
+                console.log('✅ profiles_athlete guardado. Recargando...');
+                location.reload();
 
             } catch (err) {
-                // Diagnóstico completo: mensaje exacto de Supabase + payload que rebotó
                 const msg = err.message || JSON.stringify(err);
-                console.error('🔴 [UPSERT ERROR] profiles_athlete rechazó el payload:');
-                console.error('   Mensaje:', msg);
-                console.error('   Details:', err.details || '—');
-                console.error('   Hint:', err.hint || '—');
-                console.error('   Payload enviado:', payload);
-
+                console.error('🔴 [UPSERT ERROR]', msg, err);
                 alert(
-                    '❌ Error al guardar el perfil.\n\n' +
-                    'Mensaje Supabase:\n' + msg +
-                    (err.hint ? '\n\nHint: ' + err.hint : '') +
-                    (err.details ? '\n\nDetails: ' + err.details : '') +
-                    '\n\n(El payload fue impreso en consola para diagnóstico.)'
+                    '❌ Error al guardar el perfil.\n\nMensaje: ' + msg +
+                    (err.hint    ? '\nHint: '    + err.hint    : '') +
+                    (err.details ? '\nDetails: ' + err.details : '')
                 );
             } finally {
-                // SIEMPRE restaurar el botón, sin importar qué pasó arriba
                 restoreBtn();
             }
 
