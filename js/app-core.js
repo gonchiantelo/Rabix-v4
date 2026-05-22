@@ -175,13 +175,14 @@ window.Wizard = {
 
         try {
             const payload = {
-                id: uid, 
-                full_name: document.getElementById('ath-full-name')?.value || document.getElementById('lgc-name')?.value || 'Atleta Anónimo',
-                sport: document.getElementById('ath-sport')?.value || document.getElementById('lgc-sport')?.value || 'No especificado',
-                position: document.getElementById('ath-pos')?.value || document.getElementById('lgc-pos')?.value || 'No especificada',
-                height: parseFloat(document.getElementById('ath-height')?.value) || parseFloat(document.getElementById('lgc-height')?.value) || 0,
-                weight: parseFloat(document.getElementById('ath-weight')?.value) || parseFloat(document.getElementById('lgc-weight')?.value) || 0,
-                goal: document.getElementById('ath-goal')?.value || document.getElementById('lgc-goal')?.value || 'Mejorar',
+                id: uid,
+                full_name: document.getElementById('ath-name')?.value?.trim() || 'Atleta Anónimo',
+                sport: document.getElementById('ath-sport')?.value || 'No especificado',
+                position: document.getElementById('ath-pos')?.value || 'No especificada',
+                height: parseFloat(document.getElementById('ath-height')?.value) || 0,
+                weight: parseFloat(document.getElementById('ath-weight')?.value) || 0,
+                goal: document.getElementById('ath-goal')?.value || 'Mejorar',
+                commitment_level: document.getElementById('ath-commitment')?.value || null,
                 training_years: parseInt(document.getElementById('ath-training-years')?.value) || 0,
                 club_hours_week: parseFloat(document.getElementById('ath-club-hours')?.value) || 0,
                 gym_hours_week: parseFloat(document.getElementById('ath-gym-hours')?.value) || 0,
@@ -468,16 +469,16 @@ window.App = {
                 return alert('⚠️ Nivel de compromiso requerido.\nSeleccioná tu nivel en el Paso 3.');
             }
 
-            // ── 4. Payload maestro — cada clave mapeada explícitamente ──────
-            //    Columnas de profiles_athlete verificadas contra el esquema.
+            // ── 4. Payload maestro — IDs verificados contra el DOM real ──────
             const payload = {
-                id: uid, 
-                full_name: document.getElementById('ath-full-name')?.value || document.getElementById('lgc-name')?.value || 'Atleta Anónimo',
-                sport: document.getElementById('ath-sport')?.value || document.getElementById('lgc-sport')?.value || 'No especificado',
-                position: document.getElementById('ath-pos')?.value || document.getElementById('lgc-pos')?.value || 'No especificada',
-                height: parseFloat(document.getElementById('ath-height')?.value) || parseFloat(document.getElementById('lgc-height')?.value) || 0,
-                weight: parseFloat(document.getElementById('ath-weight')?.value) || parseFloat(document.getElementById('lgc-weight')?.value) || 0,
-                goal: document.getElementById('ath-goal')?.value || document.getElementById('lgc-goal')?.value || 'Mejorar',
+                id: uid,
+                full_name: document.getElementById('ath-name')?.value?.trim() || 'Atleta Anónimo',
+                sport: document.getElementById('ath-sport')?.value || 'No especificado',
+                position: document.getElementById('ath-pos')?.value || 'No especificada',
+                height: parseFloat(document.getElementById('ath-height')?.value) || 0,
+                weight: parseFloat(document.getElementById('ath-weight')?.value) || 0,
+                goal: document.getElementById('ath-goal')?.value || 'Mejorar',
+                commitment_level: document.getElementById('ath-commitment')?.value || null,
                 training_years: parseInt(document.getElementById('ath-training-years')?.value) || 0,
                 club_hours_week: parseFloat(document.getElementById('ath-club-hours')?.value) || 0,
                 gym_hours_week: parseFloat(document.getElementById('ath-gym-hours')?.value) || 0,
