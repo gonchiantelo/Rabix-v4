@@ -175,12 +175,20 @@ window.Wizard = {
 
         try {
             const payload = {
-                id: uid, full_name: fullName, sport, position,
-                birth_date: birthDate, weight_kg: weight,
-                height_cm: height, wingspan_cm: wingspan, goal,
+                id: uid, 
+                full_name: document.getElementById('ath-full-name')?.value || document.getElementById('lgc-name')?.value || 'Atleta Anónimo',
+                sport: document.getElementById('ath-sport')?.value || document.getElementById('lgc-sport')?.value || 'No especificado',
+                position: document.getElementById('ath-pos')?.value || document.getElementById('lgc-pos')?.value || 'No especificada',
+                height: parseFloat(document.getElementById('ath-height')?.value) || parseFloat(document.getElementById('lgc-height')?.value) || 0,
+                weight: parseFloat(document.getElementById('ath-weight')?.value) || parseFloat(document.getElementById('lgc-weight')?.value) || 0,
+                goal: document.getElementById('ath-goal')?.value || document.getElementById('lgc-goal')?.value || 'Mejorar',
+                training_years: parseInt(document.getElementById('ath-training-years')?.value) || 0,
+                club_hours_week: parseFloat(document.getElementById('ath-club-hours')?.value) || 0,
+                gym_hours_week: parseFloat(document.getElementById('ath-gym-hours')?.value) || 0,
                 updated_at: new Date().toISOString()
             };
-            console.log('[finishAthlete] Payload →', JSON.stringify(payload, null, 2));
+
+            console.log("📦 Payload blindado a punto de enviarse:", payload);
 
             const { error: resErr } = await window.supabase
                 .from('profiles_athlete')
