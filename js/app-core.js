@@ -224,7 +224,11 @@ window.App = {
 
     // Oculta todas las vistas para evitar flash visual
     _hideAllViews() {
-        const ids = ['view-portal','view-login','view-onboarding','view-onboarding-athlete','app-shell'];
+        const ids = [
+            'view-portal', 'view-login', 'view-onboarding',
+            'view-onboarding-athlete', 'app-shell',
+            'view-athlete-dashboard', 'view-athletes'
+        ];
         ids.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
@@ -233,6 +237,24 @@ window.App = {
                 el.style.pointerEvents = '';
             }
         });
+    },
+
+    // ── ROUTER FAILSAFE ────────────────────────────────────────────
+    // Muestra una vista SOLO si el elemento existe. Si no, aborta la
+    // transición, mantiene al usuario donde estaba y lanza un error.
+    _safeShowView(targetId, displayMode) {
+        const el = document.getElementById(targetId);
+        if (!el) {
+            console.error('[ROUTER ERROR] No se encontró la vista: #' + targetId);
+            alert(
+                '[RAVIX ROUTER] Error de configuración:\n' +
+                'La vista "#' + targetId + '" no existe en el DOM.\n' +
+                'La pantalla no se ocultará para no dejar la interfaz en blanco.'
+            );
+            return false;
+        }
+        el.style.display = displayMode || 'flex';
+        return true;
     },
 
     // Muestra el portal solo en caso de error catastrófico real
@@ -251,6 +273,12 @@ window.App = {
     selectRole: function(role) {
         this.currentRole = role;
 
+        // ── PERSISTIR ROL EN LOCALSTORAGE ──────────────────────────
+        // Crítico: sin esto, checkSession() no sabe qué rol usar
+        // después del login/registro y se pierde el enrutamiento.
+        localStorage.setItem('ravix_active_role', role);
+        console.log('[ROUTER] Rol seleccionado y persistido:', role);
+
         const body = document.body;
         if (role === 'athlete') {
             body.classList.add('mode-athlete', 'testing-athlete');
@@ -266,6 +294,13 @@ window.App = {
         // Smooth portal → login transition
         const portal = document.getElementById('view-portal');
         const login  = document.getElementById('view-login');
+
+        // ── FAILSAFE: verificar que login existe antes de ocultar portal ──
+        if (!login) {
+            console.error('[ROUTER ERROR] No se encontró la vista: #view-login');
+            return;
+        }
+
         if (portal) {
             portal.style.opacity = '0';
             portal.style.pointerEvents = 'none';
@@ -455,24 +490,20 @@ window.App = {
 
                 if (!athData.length || !athData[0].full_name || athData[0].full_name === 'vacío' || !athData[0].sport || !athData[0].position) {
                     LOG('ATHLETE')('Perfil incompleto → redirigiendo a Onboarding Atleta');
-                    const oaView = document.getElementById('view-onboarding-athlete');
-                    if (!oaView) {
-                        console.error('[ROUTER:ATHLETE] #view-onboarding-athlete no encontrado en DOM');
-                        this._showPortalWithError('Pantalla de registro no disponible.');
-                        return;
-                    }
-                    // _hideAllViews primero (incluyendo login), luego startFor muestra onboarding
+                    // FAILSAFE: verificar existencia antes de ocultar todo
+                    if (!this._safeShowView('view-onboarding-athlete', 'flex')) return;
                     this._hideAllViews();
                     window.Wizard.startFor('athlete');
                     return;
                 }
 
-                LOG('ATHLETE')('✅ Perfil completo → cargando Mundo Atleta');
+                LOG('ATHLETE')('✅ Perfil completo → cargando Dashboard Atleta');
                 window.CurrentUser = athData[0];
                 this._hideAllViews();
-                document.getElementById('app-shell').style.display = 'block';
+                // ── NOTA: El atleta tiene su propio section (#view-athlete-dashboard),
+                // NO usa app-shell. injectRoleAssets cargará app-player.js que llama
+                // AthleteApp.init() el cual mostrará #view-athlete-dashboard.
                 this.injectRoleAssets('athlete');
-                this.handleRouting();
                 return;
             }
 
@@ -711,6 +742,8 @@ window.App = {
                 const token = authData.session.access_token;
                 localStorage.setItem('ravix_token', token);
                 localStorage.setItem('ravix_v5_uid', uid);
+                // ── PERSISTIR ROL (crítico para checkSession tras reload) ──
+                localStorage.setItem('ravix_active_role', role);
 
                 const table = role === 'athlete' ? 'profiles_athlete' : 'users';
                 let profilePayload = role === 'athlete'
@@ -1222,9 +1255,22 @@ window.App.signUp = async function(email, pass, event) {
             throw error;
         }
 
-        const uid = data.user.id;
+        const uid = data.user?.id;
         const role = window.App.currentRole || 'dt';
-        
+
+        if (!uid) {
+            // Supabase requiere confirmación por email
+            window.LoginUI?.showSuccess('¡Revisa tu correo para confirmar tu cuenta!');
+            return;
+        }
+
+        // ── PERSISTIR ROL (crítico para enrutamiento post-wizard) ──
+        localStorage.setItem('ravix_active_role', role);
+        if (data.session) {
+            localStorage.setItem('ravix_token', data.session.access_token);
+            localStorage.setItem('ravix_v5_uid', uid);
+        }
+
         // Inserción en tabla correspondiente usando el ORM
         const table = role === 'athlete' ? 'profiles_athlete' : 'users';
         let profilePayload = role === 'athlete' 

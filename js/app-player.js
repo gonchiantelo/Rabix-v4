@@ -10,15 +10,23 @@
 window.PlayerEngine = {
     init: function() {
         if (window.App && window.App.currentRole === 'athlete') {
+            // El path de atleta es manejado por AthleteApp, no PlayerEngine
             if (window.AthleteApp) window.AthleteApp.init();
             return;
         }
-        document.querySelectorAll('.view-section').forEach(s => s.style.display = 'none');
-        const view = document.getElementById('view-athletes');
-        if (view) {
-            view.style.display = 'block';
-            this.loadAthletes();
+        // Ocultar solo las secciones que no son el destino
+        const targetId = 'view-athletes';
+        const target = document.getElementById(targetId);
+        if (!target) {
+            console.error('[ROUTER ERROR] No se encontró la vista: #' + targetId);
+            alert('[RAVIX ROUTER] La vista #' + targetId + ' no existe en el DOM.');
+            return;
         }
+        document.querySelectorAll('.view-section').forEach(s => {
+            if (s.id !== targetId) s.style.display = 'none';
+        });
+        target.style.display = 'block';
+        this.loadAthletes();
     },
 
     saveReadiness: async function() {
@@ -154,9 +162,24 @@ window.AthleteApp = {
        INICIALIZACIÓN
     ═══════════════════ */
     init: function() {
-        document.querySelectorAll('.view-section').forEach(s => s.style.display = 'none');
-        const view = document.getElementById('view-athlete-dashboard');
-        if (!view) return;
+        // ── FAILSAFE: verificar vista destino ANTES de ocultar nada ──
+        const targetId = 'view-athlete-dashboard';
+        const view = document.getElementById(targetId);
+        if (!view) {
+            console.error('[ROUTER ERROR] No se encontró la vista: #' + targetId);
+            alert(
+                '[RAVIX ROUTER] La vista #' + targetId + ' no existe en el DOM.\n' +
+                'La transición fue abortada para no dejar pantalla en blanco.'
+            );
+            return;
+        }
+
+        // Ocultar el resto de secciones (sin tocar la destino)
+        document.querySelectorAll('.view-section').forEach(s => {
+            if (s.id !== targetId) s.style.display = 'none';
+        });
+
+        // Mostrar dashboard del atleta
         view.style.display = 'flex'; // usa flex para el layout columna
 
         this.setupDate();
