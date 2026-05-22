@@ -235,41 +235,45 @@ window.App = {
         this.currentRole = role;
 
         const body = document.body;
-        const subtitle = document.getElementById('login-subtitle');
-        const emailInput = document.getElementById('login-username');
-        const submitBtn = document.getElementById('login-submit-btn');
-
         if (role === 'athlete') {
             body.classList.add('mode-athlete', 'testing-athlete');
             body.classList.remove('mode-dt');
-            if (subtitle) subtitle.textContent = 'LABORATORIO DE RENDIMIENTO';
-            if (emailInput) emailInput.placeholder = 'ID de Atleta o Email';
-            if (submitBtn) submitBtn.textContent = 'ACCEDER AL LABORATORIO';
         } else {
             body.classList.add('mode-dt');
             body.classList.remove('mode-athlete', 'testing-athlete');
-            if (subtitle) subtitle.textContent = 'ALTO RENDIMIENTO — STAFF';
-            if (emailInput) emailInput.placeholder = 'Email de Staff';
-            if (submitBtn) submitBtn.textContent = 'ENTRAR AL SISTEMA';
         }
 
-        // Transición suave portal → login
+        // Update new split-panel login UI
+        if (window.LoginUI) window.LoginUI.setRole(role);
+
+        // Smooth portal → login transition
         const portal = document.getElementById('view-portal');
         const login  = document.getElementById('view-login');
-        if (portal) { portal.style.opacity = '0'; portal.style.pointerEvents = 'none'; setTimeout(() => { portal.style.display = 'none'; portal.style.opacity = ''; portal.style.pointerEvents = ''; }, 380); }
-        if (login)  { login.style.display = 'flex'; requestAnimationFrame(() => { login.style.opacity = '1'; }); }
+        if (portal) {
+            portal.style.opacity = '0';
+            portal.style.pointerEvents = 'none';
+            setTimeout(() => { portal.style.display = 'none'; portal.style.opacity = ''; portal.style.pointerEvents = ''; }, 420);
+        }
+        if (login) {
+            login.style.display = 'flex';
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => { login.style.opacity = '1'; });
+            });
+            // Start particle animation
+            if (window.LoginUI) window.LoginUI.startParticles();
+        }
     },
 
     goBackToPortal: function() {
         const portal = document.getElementById('view-portal');
         const login  = document.getElementById('view-login');
 
-        // Resetear clases de modo
+        // Reset mode classes
         document.body.classList.remove('mode-athlete', 'mode-dt', 'testing-athlete');
         this.currentRole = 'dt';
 
-        if (login)  { login.style.display = 'none'; }
-        if (portal) { portal.style.display = 'flex'; }
+        if (login)  { login.style.opacity = '0'; setTimeout(() => { login.style.display = 'none'; login.style.opacity = ''; }, 360); }
+        if (portal) { setTimeout(() => { portal.style.display = 'flex'; }, 200); }
     },
 
     handleRouting() {
@@ -625,14 +629,39 @@ window.App = {
 
 
     toggleAuth(mode) {
-        document.getElementById('login-form').style.display = mode === 'login' ? 'block' : 'none';
-        document.getElementById('register-form').style.display = mode === 'register' ? 'block' : 'none';
+        const loginForm = document.getElementById('login-form');
+        const regForm   = document.getElementById('register-form');
+        const tabLogin  = document.getElementById('tab-login');
+        const tabReg    = document.getElementById('tab-register');
+        const slider    = document.getElementById('lv-tab-slider');
+        const submitBtn = document.getElementById('login-submit-btn');
+        const role      = this.currentRole || 'dt';
+
+        if (mode === 'register') {
+            if (loginForm) loginForm.style.display = 'none';
+            if (regForm)   regForm.style.display = 'flex';
+            if (tabLogin)  { tabLogin.classList.remove('lv-tab--active'); tabLogin.setAttribute('aria-selected','false'); }
+            if (tabReg)    { tabReg.classList.add('lv-tab--active');    tabReg.setAttribute('aria-selected','true'); }
+            if (slider)    slider.classList.add('lv-tab-slider--right');
+        } else {
+            if (loginForm) loginForm.style.display = 'flex';
+            if (regForm)   regForm.style.display   = 'none';
+            if (tabLogin)  { tabLogin.classList.add('lv-tab--active');  tabLogin.setAttribute('aria-selected','true'); }
+            if (tabReg)    { tabReg.classList.remove('lv-tab--active'); tabReg.setAttribute('aria-selected','false'); }
+            if (slider)    slider.classList.remove('lv-tab-slider--right');
+            // Reset submit btn text
+            const textSpan = submitBtn?.querySelector('.lv-btn-text');
+            if (textSpan) textSpan.textContent = role === 'athlete' ? 'ACCEDER AL LABORATORIO' : 'ENTRAR AL SISTEMA';
+        }
+
+        // Clear banners on tab switch
+        if (window.LoginUI) window.LoginUI.clearBanners();
     },
 
     // --- SIGNUP CON ENRUTAMIENTO MANUAL + CANDADO ANTI-DOBLE-ENVÍO ---
     signUp: async function(email, pass) {
         if (this.isProcessingAuth) {
-            console.log("⏳ Autenticación en proceso, ignorando doble clic...");
+            console.log('⏳ Autenticación en proceso, ignorando doble clic...');
             return;
         }
 
@@ -641,71 +670,258 @@ window.App = {
         console.log(`[RAVIX AUTH] Iniciando registro manual para: ${email} como ${role}`);
 
         try {
-            // 1. Crear el usuario en el sistema de Auth
-            const { data: authData, error: authError } = await window.supabase.auth.signUp({
-                email: email,
-                password: pass
-            });
+            const { data: authData, error: authError } = await window.supabase.auth.signUp({ email, password: pass });
 
             if (authError) {
                 if (authError.message?.includes('already registered')) {
-                    alert("El email ya existe. Por favor, inicia sesión.");
+                    window.LoginUI?.showError('Este email ya está registrado. Iniciá sesión.');
                     window.App.toggleAuth('login');
                     return;
                 }
                 throw new Error(authError.message);
             }
 
-            // 2. Si el registro fue exitoso y nos devolvió token
             if (authData.session && authData.user) {
-                const uid = authData.user.id;
+                const uid   = authData.user.id;
                 const token = authData.session.access_token;
-
-                // Guardamos la sesión
                 localStorage.setItem('ravix_token', token);
                 localStorage.setItem('ravix_v5_uid', uid);
 
-                // 3. ENRUTAMIENTO MANUAL HACIA LA TABLA CORRECTA
                 const table = role === 'athlete' ? 'profiles_athlete' : 'users';
+                let profilePayload = role === 'athlete'
+                    ? { id: uid, email }
+                    : { id: uid, name: 'Staff RAVIX', email, role: 'dt', objetivo: 'ALTO_RENDIMIENTO', dt_configured: false };
 
-                // Preparamos el esqueleto inicial según el rol
-                let profilePayload = { id: uid };
-                if (role === 'athlete') {
-                    profilePayload = { id: uid, email: email }; // email explícito para profiles_athlete
-                } else if (role === 'dt') {
-                    profilePayload = {
-                        id: uid,
-                        name: 'Staff RAVIX',
-                        email: email,
-                        role: 'dt',
-                        objetivo: 'ALTO_RENDIMIENTO',
-                        dt_configured: false
-                    };
-                }
-
-                // Inyectamos el esqueleto en la base de datos
                 const { error: insertErr } = await window.supabase.from(table).insert(profilePayload);
                 if (insertErr) throw new Error(insertErr.message);
 
-                console.log(`✅ Perfil inyectado exitosamente en ${table}`);
-
-                // 4. Lanzamos el Wizard correspondiente para rellenar los datos
+                console.log(`✅ Perfil inyectado en ${table}`);
                 window.Wizard.startFor(role);
             } else {
-                throw new Error("No se pudo iniciar sesión automáticamente tras el registro.");
+                window.LoginUI?.showSuccess('¡Revisa tu correo para confirmar tu cuenta!');
             }
-
         } catch (err) {
-            console.error("🔴 Error Crítico en Registro:", err);
-            alert("Hubo un error: " + err.message);
+            console.error('🔴 Error Crítico en Registro:', err);
+            window.LoginUI?.showError('Error al crear cuenta: ' + err.message);
         } finally {
-            // SIEMPRE liberar el candado al terminar, haya éxito o error
             this.isProcessingAuth = false;
         }
     },
 
     logout() { localStorage.clear(); location.reload(); }
 };
+
+/* ═══════════════════════════════════════════════════════════
+   LOGIN UI — Premium UI Controller
+   Manages: particles, role theming, inline errors, password
+   strength, tab slider, show-password toggle
+═══════════════════════════════════════════════════════════ */
+window.LoginUI = (() => {
+    let particleCtx, particleCanvas, animId;
+    const particles = [];
+
+    // ── PARTICLE SYSTEM ──────────────────────────────────────────
+    function makeParticle(canvas, isAthlete) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 0.15 + Math.random() * 0.25;
+        const alpha = 0.1 + Math.random() * 0.35;
+        return {
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: 0.8 + Math.random() * 1.8,
+            alpha,
+            color: isAthlete
+                ? `rgba(191,149,63,${alpha})`
+                : (Math.random() > 0.5 ? `rgba(0,242,254,${alpha})` : `rgba(0,114,255,${alpha})`)
+        };
+    }
+
+    function startParticles() {
+        const canvas = document.getElementById('login-particles');
+        if (!canvas) return;
+        const isAthlete = document.body.classList.contains('mode-athlete');
+        particleCanvas = canvas;
+        const panel = document.querySelector('.lv-panel--left');
+        if (panel) {
+            canvas.width  = panel.offsetWidth;
+            canvas.height = panel.offsetHeight;
+        }
+        particleCtx = canvas.getContext('2d');
+        particles.length = 0;
+        for (let i = 0; i < 55; i++) particles.push(makeParticle(canvas, isAthlete));
+        if (animId) cancelAnimationFrame(animId);
+        (function tick() {
+            particleCtx.clearRect(0, 0, canvas.width, canvas.height);
+            const a = isAthlete;
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
+                particleCtx.beginPath();
+                particleCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                particleCtx.fillStyle = p.color;
+                particleCtx.fill();
+            });
+            animId = requestAnimationFrame(tick);
+        })();
+    }
+
+    // ── PORTAL PARTICLES ──────────────────────────────────────────
+    function startPortalParticles() {
+        const canvas = document.getElementById('portal-particles');
+        if (!canvas) return;
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const ctx = canvas.getContext('2d');
+        const pts = [];
+        for (let i = 0; i < 80; i++) {
+            const a = Math.random() * Math.PI * 2;
+            const s = 0.12 + Math.random() * 0.22;
+            const al = 0.06 + Math.random() * 0.25;
+            pts.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: Math.cos(a) * s, vy: Math.sin(a) * s,
+                size: 0.6 + Math.random() * 1.5,
+                color: Math.random() > 0.5 ? `rgba(0,242,254,${al})` : `rgba(0,114,255,${al})`
+            });
+        }
+        (function tick() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            pts.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+            });
+            requestAnimationFrame(tick);
+        })();
+    }
+
+    // ── ROLE THEME ────────────────────────────────────────────────
+    function setRole(role) {
+        const isAthlete = role === 'athlete';
+        // Left panel text
+        const eyebrow    = document.getElementById('lv-eyebrow');
+        const headline   = document.getElementById('lv-headline');
+        const sub        = document.getElementById('lv-subheadline');
+        const stat1      = document.getElementById('lv-stat-1');
+        const stat2      = document.getElementById('lv-stat-2');
+        const stat3      = document.getElementById('lv-stat-3');
+        const rolePill   = document.getElementById('lv-role-label');
+        const submitText = document.querySelector('#login-submit-btn .lv-btn-text');
+
+        if (eyebrow)  eyebrow.textContent  = isAthlete ? 'PORTAL ATLETA'   : 'PORTAL STAFF';
+        if (headline) headline.innerHTML   = isAthlete ? 'Laboratorio<br>de Elite'   : 'Sistema Táctico<br>de Elite';
+        if (sub)      sub.textContent      = isAthlete
+            ? 'Monitorea tu rendimiento, analiza tu progreso y accede a tus planes de entrenamiento personalizados.'
+            : 'El ecosistema de rendimiento deportivo más avanzado. Análisis, planificación y control en tiempo real.';
+        if (stat1)    stat1.textContent    = isAthlete ? '12K+'  : '48K+';
+        if (stat2)    stat2.textContent    = isAthlete ? '850+'  : '320+';
+        if (stat3)    stat3.textContent    = isAthlete ? '4.9★'  : '99.9%';
+        if (rolePill) rolePill.textContent = isAthlete ? 'Modo Atleta' : 'Modo Staff';
+        if (submitText) submitText.textContent = isAthlete ? 'ACCEDER AL LABORATORIO' : 'ENTRAR AL SISTEMA';
+
+        // Register btn text
+        const regText = document.querySelector('#register-submit-btn .lv-btn-text');
+        if (regText) regText.textContent = isAthlete ? 'CREAR PERFIL DE ATLETA' : 'CREAR CUENTA ELITE';
+    }
+
+    // ── BANNERS ───────────────────────────────────────────────────
+    function showError(msg) {
+        const el  = document.getElementById('lv-error');
+        const txt = document.getElementById('lv-error-msg');
+        const ok  = document.getElementById('lv-success');
+        if (ok)  ok.style.display = 'none';
+        if (txt) txt.textContent = msg;
+        if (el)  { el.style.display = 'flex'; el.style.animation = 'none'; requestAnimationFrame(() => { el.style.animation = ''; }); }
+    }
+
+    function showSuccess(msg) {
+        const el  = document.getElementById('lv-success');
+        const txt = document.getElementById('lv-success-msg');
+        const err = document.getElementById('lv-error');
+        if (err) err.style.display = 'none';
+        if (txt) txt.textContent = msg;
+        if (el)  { el.style.display = 'flex'; el.style.animation = 'none'; requestAnimationFrame(() => { el.style.animation = ''; }); }
+    }
+
+    function clearBanners() {
+        const err = document.getElementById('lv-error');
+        const ok  = document.getElementById('lv-success');
+        if (err) err.style.display = 'none';
+        if (ok)  ok.style.display  = 'none';
+    }
+
+    // ── PASSWORD TOGGLE ───────────────────────────────────────────
+    function togglePass(inputId, btnId) {
+        const input = document.getElementById(inputId);
+        const btn   = document.getElementById(btnId);
+        if (!input) return;
+        const isText = input.type === 'text';
+        input.type = isText ? 'password' : 'text';
+        // Swap icon
+        const icon = btn?.querySelector('svg');
+        if (icon) {
+            icon.innerHTML = isText
+                ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+                : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+        }
+    }
+
+    // ── PASSWORD STRENGTH ─────────────────────────────────────────
+    function checkStrength(pass) {
+        let score = 0;
+        if (pass.length >= 8)  score++;
+        if (pass.length >= 12) score++;
+        if (/[A-Z]/.test(pass))    score++;
+        if (/[0-9]/.test(pass))    score++;
+        if (/[^A-Za-z0-9]/.test(pass)) score++;
+        return score;
+    }
+
+    function updateStrength(pass) {
+        const fill  = document.getElementById('lv-strength-fill');
+        const label = document.getElementById('lv-strength-label');
+        if (!fill || !label) return;
+        if (!pass) { fill.style.width = '0%'; label.textContent = ''; return; }
+        const score = checkStrength(pass);
+        const levels = [
+            { pct: 15,  color: '#ef4444', text: 'Muy débil' },
+            { pct: 35,  color: '#f97316', text: 'Débil' },
+            { pct: 58,  color: '#eab308', text: 'Regular' },
+            { pct: 80,  color: '#22c55e', text: 'Fuerte' },
+            { pct: 100, color: '#10b981', text: 'Muy fuerte' },
+        ];
+        const lvl = levels[Math.min(score, levels.length - 1)];
+        fill.style.width = lvl.pct + '%';
+        fill.style.background = lvl.color;
+        label.textContent = lvl.text;
+        label.style.color = lvl.color;
+    }
+
+    // ── LOADING STATE ─────────────────────────────────────────────
+    function setLoading(formType, loading) {
+        const btn     = document.getElementById(formType === 'login' ? 'login-submit-btn' : 'register-submit-btn');
+        const spinner = document.getElementById(formType === 'login' ? 'login-spinner' : 'register-spinner');
+        const text    = btn?.querySelector('.lv-btn-text');
+        if (btn) btn.disabled = loading;
+        if (spinner) spinner.style.display = loading ? 'block' : 'none';
+        if (text && loading) text.style.opacity = '0.7';
+        if (text && !loading) text.style.opacity = '';
+    }
+
+    return { startParticles, startPortalParticles, setRole, showError, showSuccess, clearBanners, togglePass, updateStrength, setLoading };
+})();
 
 /* ═══════════════════════════════════════════════
    ATHLETE WIZARD — Dependent Dropdowns + Multi-Step
@@ -762,49 +978,38 @@ window.AthWizard = (function () {
         'Otro': ['General / Polideportivo', 'Rehabilitacion Deportiva', 'Preparacion Fisica Base']
     };
 
-    // ── Helpers de DOM scoped al formulario ───────────────────────────
     function getForm()  { return document.getElementById('athlete-onboarding-form'); }
     function q(id)      { const f = getForm(); return f ? f.querySelector('#' + id) : document.getElementById(id); }
 
-    // ── Actualiza el select de posición con micro-animación ───────────
     function updatePositions(sport) {
         const posSelect = q('ath-pos');
         if (!posSelect) return;
-
         const positions = POSITIONS[sport] || null;
-
         if (!positions) {
-            // Sin deporte seleccionado: deshabilitar y dejar placeholder
             posSelect.innerHTML = '<option value="" disabled selected>Primero elige un deporte</option>';
             posSelect.disabled = true;
             posSelect.style.opacity = '0.45';
             posSelect.style.cursor  = 'not-allowed';
             return;
         }
-
-        // Fade out → actualizar → fade in
         posSelect.style.transition = 'opacity 0.18s ease';
         posSelect.style.opacity = '0';
-
         setTimeout(() => {
             posSelect.innerHTML = '<option value="" disabled selected>Selecciona posicion...</option>'
                 + positions.map(p => `<option value="${p}">${p}</option>`).join('');
             posSelect.disabled = false;
             posSelect.style.cursor  = '';
-            posSelect.value = ''; // reset selección anterior
-            // Fade in
+            posSelect.value = '';
             requestAnimationFrame(() => { posSelect.style.opacity = '1'; });
         }, 180);
     }
 
-    // ── Actualiza UI del stepper y barra de progreso ──────────────────
     let currentStep = 1;
     const TOTAL = 3;
 
     function updateUI() {
         const form = getForm();
         if (!form) return;
-
         for (let i = 1; i <= TOTAL; i++) {
             const fs   = form.querySelector('#oa-step-' + i);
             const snav = document.getElementById('snav-' + i);
@@ -814,16 +1019,13 @@ window.AthWizard = (function () {
                 snav.classList.toggle('done',   i < currentStep);
             }
         }
-
         const pct = Math.round((currentStep / TOTAL) * 100);
         const bar = document.getElementById('oa-progress');
         if (bar) bar.style.width = pct + '%';
-
         const lbl = document.getElementById('oa-step-label');
         if (lbl) lbl.textContent = `Paso ${currentStep} de ${TOTAL}`;
     }
 
-    // ── Validación por paso ────────────────────────────────────────────
     function validateStep(step) {
         if (step === 1) {
             const name  = q('ath-name')?.value?.trim();
@@ -836,49 +1038,38 @@ window.AthWizard = (function () {
         return true;
     }
 
-    // ── Init: bind eventos una sola vez ───────────────────────────────
     function init() {
         const sportSel = q('ath-sport');
         const posSel   = q('ath-pos');
-
-        if (!sportSel || !posSel) return; // form no está en DOM todavía
-
-        // Estado inicial: posición deshabilitada
+        if (!sportSel || !posSel) return;
         posSel.innerHTML = '<option value="" disabled selected>Primero elige un deporte</option>';
         posSel.disabled = true;
         posSel.style.opacity = '0.45';
         posSel.style.cursor  = 'not-allowed';
-
-        // Evento deporte → posiciones
-        sportSel.addEventListener('change', function () {
-            updatePositions(this.value);
-        });
-
-        // Reset step
+        sportSel.addEventListener('change', function () { updatePositions(this.value); });
         currentStep = 1;
         updateUI();
     }
 
-    // ── API pública ────────────────────────────────────────────────────
     return {
         init,
-        onSportChange() { // compatibilidad con cualquier onchange inline residual
-            const sport = q('ath-sport')?.value;
-            if (sport) updatePositions(sport);
-        },
-        next() {
-            if (!validateStep(currentStep)) return;
-            if (currentStep < TOTAL) { currentStep++; updateUI(); }
-        },
-        prev() {
-            if (currentStep > 1) { currentStep--; updateUI(); }
-        }
+        onSportChange() { const sport = q('ath-sport')?.value; if (sport) updatePositions(sport); },
+        next() { if (!validateStep(currentStep)) return; if (currentStep < TOTAL) { currentStep++; updateUI(); } },
+        prev() { if (currentStep > 1) { currentStep--; updateUI(); } }
     };
 
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Si el onboarding atleta ya estuviera visible al cargar (edge case), iniciarlo
+    // Init portal particles
+    if (window.LoginUI) window.LoginUI.startPortalParticles();
+
+    // Keyboard nav on portal cards
+    document.querySelectorAll('.portal-card').forEach(card => {
+        card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); } });
+    });
+
+    // If onboarding athlete already visible at load (edge case)
     if (document.getElementById('athlete-onboarding-form')) {
         const oaView = document.getElementById('view-onboarding-athlete');
         if (oaView && oaView.style.display !== 'none' && oaView.style.display !== '') {
@@ -886,72 +1077,99 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Login Form
+    // Password strength watcher
+    const regPass = document.getElementById('register-password');
+    if (regPass) {
+        regPass.addEventListener('input', () => window.LoginUI?.updateStrength(regPass.value));
+    }
+
+    // ── LOGIN FORM ──────────────────────────────────────────────
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
+        loginForm.style.display = 'flex'; // ensure flex layout
         loginForm.onsubmit = async function(e) {
             e.preventDefault();
             e.stopImmediatePropagation();
+
+            window.LoginUI?.clearBanners();
 
             const email = document.getElementById('login-username').value.trim();
             const pass  = document.getElementById('login-password').value;
             const role  = window.App.currentRole || 'dt';
 
-            console.log(`[RAVIX AUTH] Login: ${email} como ${role}`);
+            if (!email || !pass) {
+                window.LoginUI?.showError('Por favor, completá todos los campos.');
+                return;
+            }
 
-            const btn = document.getElementById('login-submit-btn');
-            if (btn) { btn.disabled = true; btn.textContent = 'Ingresando...'; }
+            console.log(`[RAVIX AUTH] Login: ${email} como ${role}`);
+            window.LoginUI?.setLoading('login', true);
 
             try {
-                const { data, error } = await window.supabase.auth.signInWithPassword({
-                    email,
-                    password: pass
-                });
+                const { data, error } = await window.supabase.auth.signInWithPassword({ email, password: pass });
 
-                if (error) {
-                    throw new Error(error.message || 'Credenciales incorrectas.');
-                }
+                if (error) throw new Error(error.message || 'Credenciales incorrectas.');
 
                 if (data.session && data.user) {
                     console.log('✅ Token recibido. Guardando sesión...');
                     localStorage.setItem('ravix_token', data.session.access_token);
                     localStorage.setItem('ravix_v5_uid', data.user.id);
-                    // Persistir el rol elegido en el portal para que checkSession lo use
                     localStorage.setItem('ravix_active_role', role);
                     window.App.currentRole = role;
-
                     await window.App.checkSession(data.user.id, data.session.access_token);
                 } else {
                     throw new Error('No se recibió el token de autorización.');
                 }
             } catch (err) {
                 console.error('🔴 Login Error:', err);
-                alert('Error al iniciar sesión: ' + err.message);
-            } finally {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.textContent = role === 'athlete' ? 'ACCEDER AL LABORATORIO' : 'ENTRAR AL SISTEMA';
+                let msg = err.message;
+                if (msg.includes('Invalid login') || msg.includes('invalid_grant') || msg.includes('Invalid email or password')) {
+                    msg = 'Email o contraseña incorrectos. Verificá tus datos.';
+                } else if (msg.includes('Email not confirmed')) {
+                    msg = 'Confirmá tu correo electrónico antes de ingresar.';
+                } else if (msg.includes('Too many requests')) {
+                    msg = 'Demasiados intentos. Esperá unos minutos.';
                 }
+                window.LoginUI?.showError(msg);
+            } finally {
+                window.LoginUI?.setLoading('login', false);
             }
         };
     }
 
-    // Register Form — único punto de disparo, e.preventDefault() bloquea doble submit
+    // ── REGISTER FORM ───────────────────────────────────────────
     const regForm = document.getElementById('register-form');
     if (regForm) {
         regForm.onsubmit = async function(e) {
             e.preventDefault();
-            e.stopImmediatePropagation(); // Previene cualquier otro listener encadenado
-            const email = document.getElementById('register-email').value;
+            e.stopImmediatePropagation();
+
+            window.LoginUI?.clearBanners();
+
+            const email = document.getElementById('register-email').value.trim();
             const pass  = document.getElementById('register-password').value;
             const conf  = document.getElementById('register-confirm-password').value;
-            if (pass !== conf) return alert('Las contraseñas no coinciden');
 
+            if (!email || !pass || !conf) {
+                window.LoginUI?.showError('Por favor, completá todos los campos.');
+                return;
+            }
+            if (pass !== conf) {
+                window.LoginUI?.showError('Las contraseñas no coinciden. Verificalas.');
+                return;
+            }
+            if (pass.length < 6) {
+                window.LoginUI?.showError('La contraseña debe tener al menos 6 caracteres.');
+                return;
+            }
+
+            window.LoginUI?.setLoading('register', true);
             await window.App.signUp(email, pass);
+            window.LoginUI?.setLoading('register', false);
         };
     }
 
-    // Listener para el formulario de perfil
+    // ── PROFILE FORM ────────────────────────────────────────────
     const profileForm = document.getElementById('profile-form');
     if (profileForm) {
         profileForm.onsubmit = (e) => window.App.saveProfile(e);

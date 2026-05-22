@@ -1,5 +1,10 @@
+/* ═══════════════════════════════════════════════════════════
+   RAVIX V5 — CORE STYLES
+   Premium Design System | Portal + Login Redesign
+═══════════════════════════════════════════════════════════ */
+
 :root {
-    /* ── 'Elite Deep' Palette — Definitive V5 ── */
+    /* ── 'Elite Deep' Palette ── */
     --bg: #0A0B1E;
     --bg-2: #0E0F26;
     --surface: #141531;
@@ -33,28 +38,36 @@
     --login-surface: rgba(17, 24, 39, 0.85);
     --login-border: rgba(0, 242, 254, 0.25);
     --login-accent: #00F2FE;
+    --login-accent-alt: #0072FF;
     --login-text: #F0F0F8;
     --login-text-muted: #A0A0B0;
     --login-input-bg: rgba(255,255,255,0.04);
-    --login-input-border: rgba(0, 242, 254, 0.2);
+    --login-input-border: rgba(0, 242, 254, 0.18);
     --login-input-focus: #00F2FE;
     --login-btn-bg: linear-gradient(135deg, #00F2FE 0%, #0072FF 100%);
     --login-btn-glow: rgba(0, 242, 254, 0.3);
+    --lv-left-bg: linear-gradient(155deg, #040D21 0%, #020915 100%);
+    --lv-left-accent: #00F2FE;
+    --lv-left-accent-alt: #0072FF;
 }
 
 /* ── Modo Atleta: override de tokens ── */
 body.mode-athlete {
-    --login-bg: #F5F5F7;
+    --login-bg: #FAFAF8;
     --login-surface: #FFFFFF;
     --login-border: rgba(191, 149, 63, 0.3);
     --login-accent: #bf953f;
+    --login-accent-alt: #b38728;
     --login-text: #1A1A2E;
     --login-text-muted: #6B6B7B;
-    --login-input-bg: #FAFAFA;
-    --login-input-border: rgba(191, 149, 63, 0.25);
+    --login-input-bg: #F8F7F3;
+    --login-input-border: rgba(191, 149, 63, 0.22);
     --login-input-focus: #bf953f;
-    --login-btn-bg: linear-gradient(135deg, #bf953f 0%, #b38728 100%);
+    --login-btn-bg: linear-gradient(135deg, #bf953f 0%, #d4af37 50%, #b38728 100%);
     --login-btn-glow: rgba(191, 149, 63, 0.35);
+    --lv-left-bg: linear-gradient(155deg, #0D0C09 0%, #060503 100%);
+    --lv-left-accent: #bf953f;
+    --lv-left-accent-alt: #d4af37;
 }
 
 /* ── Reset ── */
@@ -149,7 +162,7 @@ body.mode-athlete .brand-name {
 .mb-10 { margin-bottom: 10px; }
 .mb-20 { margin-bottom: 20px; }
 
-.btn-logout { 
+.btn-logout {
     background: none; border: none;
     color: var(--text-3); font-size: 12px; font-weight: 800; cursor: pointer;
 }
@@ -181,9 +194,9 @@ body.mode-athlete .brand-name {
     text-shadow: 0 0 10px var(--login-accent);
 }
 
-/* ═══════════════════════════════════════
-   PORTAL DE ENTRADA
-═══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   PORTAL DE ENTRADA — PREMIUM REDESIGN
+═══════════════════════════════════════════════════════ */
 #view-portal {
     position: relative;
     display: flex;
@@ -196,14 +209,51 @@ body.mode-athlete .brand-name {
     transition: opacity var(--transition-premium);
 }
 
-/* Partículas de fondo (CSS puro) */
-.portal-bg {
+/* Animated particle canvas */
+.portal-particles-canvas {
     position: absolute;
     inset: 0;
-    background:
-        radial-gradient(ellipse 60% 50% at 20% 50%, rgba(0, 242, 254, 0.06) 0%, transparent 70%),
-        radial-gradient(ellipse 60% 50% at 80% 50%, rgba(0, 114, 255, 0.05) 0%, transparent 70%);
     pointer-events: none;
+    z-index: 0;
+}
+
+/* Ambient glows */
+.portal-glow {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(80px);
+}
+.portal-glow--1 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(0, 242, 254, 0.06) 0%, transparent 70%);
+    top: -100px; left: -100px;
+    animation: glow-drift-1 12s ease-in-out infinite alternate;
+}
+.portal-glow--2 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(0, 114, 255, 0.06) 0%, transparent 70%);
+    bottom: -80px; right: -80px;
+    animation: glow-drift-2 15s ease-in-out infinite alternate;
+}
+.portal-glow--3 {
+    width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(191, 149, 63, 0.04) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation: glow-pulse 8s ease-in-out infinite;
+}
+@keyframes glow-drift-1 {
+    from { transform: translate(0, 0); }
+    to   { transform: translate(60px, 40px); }
+}
+@keyframes glow-drift-2 {
+    from { transform: translate(0, 0); }
+    to   { transform: translate(-50px, -30px); }
+}
+@keyframes glow-pulse {
+    0%, 100% { opacity: 0.4; transform: translate(-50%,-50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%,-50%) scale(1.3); }
 }
 
 .portal-content {
@@ -212,130 +262,803 @@ body.mode-athlete .brand-name {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 0;
+    animation: portal-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes portal-enter {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-.portal-brand {
-    font-family: 'Outfit', sans-serif;
-    font-size: 3rem;
-    font-weight: 900;
-    letter-spacing: -2px;
-    line-height: 1;
-    margin-bottom: 4px;
+/* Brand logo */
+.portal-logo-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 8px;
 }
-.portal-brand-name { color: #FFFFFF; }
-.portal-brand-v {
+.portal-logo-r {
+    font-family: 'Outfit', sans-serif;
+    font-size: 4.2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #00F2FE, #0072FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -3px;
+    filter: drop-shadow(0 0 18px rgba(0, 242, 254, 0.4));
+    line-height: 1;
+}
+.portal-logo-avix {
+    font-family: 'Outfit', sans-serif;
+    font-size: 4.2rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -3px;
+    line-height: 1;
+}
+.portal-logo-badge {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 2px;
     color: #00F2FE;
-    text-shadow: 0 0 30px rgba(0, 242, 254, 0.6);
+    background: rgba(0, 242, 254, 0.1);
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    border-radius: 6px;
+    padding: 4px 8px;
+    margin-left: 4px;
+    align-self: center;
+}
+
+.portal-tagline {
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: rgba(0, 242, 254, 0.5);
+    text-transform: uppercase;
+    margin-bottom: 6px;
 }
 
 .portal-eyebrow {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: 3px;
-    color: #5A5A80;
+    letter-spacing: 2.5px;
+    color: #3A3A5A;
     text-transform: uppercase;
-    margin-bottom: 32px;
+    margin-bottom: 36px;
 }
 
+/* Portal cards */
 .portal-cards {
     display: flex;
-    gap: 18px;
+    align-items: center;
+    gap: 0;
     width: 100%;
-    max-width: 560px;
+    max-width: 580px;
     padding: 0 20px;
+}
+
+/* Divider between cards */
+.portal-divider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 0 18px;
+    flex-shrink: 0;
+}
+.portal-divider-line {
+    display: block;
+    width: 1px;
+    height: 28px;
+    background: rgba(255,255,255,0.07);
+}
+.portal-divider-or {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #3A3A5A;
+    letter-spacing: 0.5px;
 }
 
 .portal-card {
     flex: 1;
-    border-radius: 18px;
-    padding: 36px 20px;
+    border-radius: 22px;
+    padding: 36px 24px 30px;
     text-align: center;
     cursor: pointer;
-    transition: transform var(--transition-premium), box-shadow var(--transition-premium), border-color var(--transition-premium);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.35s ease,
+                border-color 0.3s;
     position: relative;
     overflow: hidden;
+    outline: none;
 }
+.portal-card:focus-visible {
+    outline: 2px solid var(--login-accent);
+    outline-offset: 3px;
+}
+.portal-card-shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.04) 50%, transparent 60%);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+    pointer-events: none;
+}
+.portal-card:hover .portal-card-shimmer { transform: translateX(100%); }
 
-/* Modo DT */
-.portal-card--dt {
-    background: rgba(17, 24, 39, 0.9);
-    border: 1px solid rgba(0, 242, 254, 0.2);
-    box-shadow: 0 0 0 0 rgba(0, 242, 254, 0);
+.portal-card-body { position: relative; z-index: 1; }
+.portal-card-border {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
 }
-.portal-card--dt:hover {
-    transform: translateY(-6px);
-    border-color: #00F2FE;
-    box-shadow: 0 12px 40px rgba(0, 242, 254, 0.15), inset 0 0 30px rgba(0, 242, 254, 0.04);
-}
-.portal-card--dt .portal-card-title { color: #00F2FE; }
+.portal-card:hover .portal-card-border { opacity: 1; }
 
-/* Modo Atleta */
-.portal-card--athlete {
-    background: rgba(255, 255, 255, 0.97);
-    border: 1px solid rgba(191, 149, 63, 0.3);
-    box-shadow: 0 0 0 0 rgba(191, 149, 63, 0);
-}
-.portal-card--athlete:hover {
-    transform: translateY(-6px);
-    border-color: #bf953f;
-    box-shadow: 0 12px 40px rgba(191, 149, 63, 0.2), inset 0 0 30px rgba(191, 149, 63, 0.04);
-}
-.portal-card--athlete .portal-card-title {
-    background: linear-gradient(135deg, #bf953f, #b38728);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-.portal-card--athlete .portal-card-desc { color: #888; }
-
-.portal-card-icon {
-    font-size: 2.2rem;
-    margin-bottom: 14px;
-    display: block;
-}
-
-.portal-card-title {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.15rem;
-    font-weight: 900;
-    margin: 0 0 8px;
-    letter-spacing: -0.3px;
-}
-
-.portal-card-desc {
-    font-size: 0.78rem;
-    color: #555;
-    line-height: 1.5;
-    font-weight: 500;
-}
-
-/* ═══════════════════════════════════════
-   LOGIN ADAPTATIVO
-═══════════════════════════════════════ */
-.login-view {
-    height: 100vh;
+/* Icon wraps */
+.portal-card-icon-wrap {
+    width: 58px; height: 58px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0 auto 18px;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.portal-card:hover .portal-card-icon-wrap { transform: scale(1.1) translateY(-3px); }
+
+/* Staff Card */
+.portal-card--dt {
+    background: rgba(8, 16, 38, 0.95);
+    border: 1px solid rgba(0, 242, 254, 0.15);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+.portal-card--dt:hover {
+    transform: translateY(-8px);
+    border-color: rgba(0, 242, 254, 0.5);
+    box-shadow: 0 20px 60px rgba(0, 242, 254, 0.12),
+                0 4px 24px rgba(0,0,0,0.5),
+                inset 0 0 40px rgba(0, 242, 254, 0.03);
+}
+.portal-card-icon-wrap--dt {
+    background: rgba(0, 242, 254, 0.08);
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    color: #00F2FE;
+}
+.portal-card-border--dt {
+    box-shadow: inset 0 0 0 1px rgba(0, 242, 254, 0.4);
+    border-radius: inherit;
+}
+.portal-card-title--dt {
+    color: #00F2FE !important;
+    text-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+}
+.portal-card-cta--dt {
+    color: rgba(0, 242, 254, 0.7);
+}
+.portal-card--dt:hover .portal-card-cta--dt { color: #00F2FE; }
+
+/* Athlete Card */
+.portal-card--athlete {
+    background: rgba(255, 255, 255, 0.97);
+    border: 1px solid rgba(191, 149, 63, 0.2);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+}
+.portal-card--athlete:hover {
+    transform: translateY(-8px);
+    border-color: rgba(191, 149, 63, 0.6);
+    box-shadow: 0 20px 60px rgba(191, 149, 63, 0.18),
+                0 4px 24px rgba(0,0,0,0.2),
+                inset 0 0 40px rgba(191, 149, 63, 0.04);
+}
+.portal-card-icon-wrap--athlete {
+    background: rgba(191, 149, 63, 0.1);
+    border: 1px solid rgba(191, 149, 63, 0.25);
+    color: #bf953f;
+}
+.portal-card-border--athlete {
+    box-shadow: inset 0 0 0 1px rgba(191, 149, 63, 0.45);
+    border-radius: inherit;
+}
+.portal-card-title--athlete {
+    background: linear-gradient(135deg, #bf953f, #b38728) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+.portal-card-desc { color: #888; }
+.portal-card--athlete .portal-card-desc { color: #6B6B6B; }
+.portal-card-cta--athlete { color: rgba(191, 149, 63, 0.7); }
+.portal-card--athlete:hover .portal-card-cta--athlete { color: #bf953f; }
+
+.portal-card-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    margin: 0 0 7px;
+    letter-spacing: -0.2px;
+}
+
+.portal-card-desc {
+    font-size: 0.76rem;
+    line-height: 1.5;
+    font-weight: 500;
+    margin-bottom: 18px;
+}
+
+.portal-card-cta {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.2s, gap 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+.portal-card-cta span {
+    display: inline-block;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.portal-card:hover .portal-card-cta span { transform: translateX(4px); }
+
+/* Footer */
+.portal-footer-note {
+    margin-top: 32px;
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: #1E1E38;
+    letter-spacing: 0.5px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   LOGIN — SPLIT PANEL PREMIUM REDESIGN
+═══════════════════════════════════════════════════════ */
+.login-view {
+    display: flex;
+    height: 100vh;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     background: var(--login-bg);
+}
+
+/* Login panels */
+.lv-panel { position: relative; display: flex; flex-direction: column; }
+
+/* LEFT: visual branding panel */
+.lv-panel--left {
+    width: 46%;
+    flex-shrink: 0;
+    background: var(--lv-left-bg);
+    overflow: hidden;
     transition: background var(--transition-premium);
 }
 
-.login-card {
-    position: relative;
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-    background: var(--login-surface) !important;
-    border: 1px solid var(--login-border) !important;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.25) !important;
-    transition:
-        background var(--transition-premium),
-        border-color var(--transition-premium),
-        box-shadow var(--transition-premium);
+/* Particle canvas in login */
+.lv-particles-canvas {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
 }
 
-/* Botón Volver */
+/* Ambient glows on left panel */
+.lv-left-glow {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(60px);
+}
+.lv-left-glow--1 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(0,242,254,0.12) 0%, transparent 70%);
+    top: -60px; right: -60px;
+    animation: glow-drift-1 10s ease-in-out infinite alternate;
+}
+.lv-left-glow--2 {
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(0,114,255,0.1) 0%, transparent 70%);
+    bottom: -40px; left: -40px;
+    animation: glow-drift-2 14s ease-in-out infinite alternate;
+}
+body.mode-athlete .lv-left-glow--1 {
+    background: radial-gradient(circle, rgba(191,149,63,0.15) 0%, transparent 70%);
+}
+body.mode-athlete .lv-left-glow--2 {
+    background: radial-gradient(circle, rgba(212,175,55,0.1) 0%, transparent 70%);
+}
+
+/* Left panel content */
+.lv-left-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 36px 48px;
+}
+
+/* Back button */
+.lv-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5);
+    font-family: var(--f-body);
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 8px 14px;
+    letter-spacing: 0.3px;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    align-self: flex-start;
+    margin-bottom: 0;
+}
+.lv-back-btn:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.85);
+}
+
+/* Brand */
+.lv-brand {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 52px;
+    margin-bottom: 40px;
+}
+.lv-brand-logo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -1.5px;
+    line-height: 1;
+}
+.lv-brand-logo span {
+    background: linear-gradient(135deg, var(--lv-left-accent), var(--lv-left-accent-alt));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    transition: background 0.4s;
+}
+.lv-brand-v {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    color: var(--lv-left-accent);
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 5px;
+    padding: 3px 7px;
+    align-self: center;
+    transition: color 0.4s;
+}
+
+/* Left body copy */
+.lv-left-body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+.lv-eyebrow {
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--lv-left-accent);
+    opacity: 0.7;
+    margin-bottom: 14px;
+    transition: color 0.4s;
+}
+
+.lv-headline {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.7rem;
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1.05;
+    color: #ffffff;
+    margin-bottom: 18px;
+}
+
+.lv-subheadline {
+    font-size: 0.83rem;
+    line-height: 1.75;
+    color: rgba(255,255,255,0.35);
+    max-width: 320px;
+    margin-bottom: 40px;
+}
+
+/* Stats row */
+.lv-stats {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+.lv-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 0 20px;
+}
+.lv-stat:first-child { padding-left: 0; }
+.lv-stat-num {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    color: #fff;
+    line-height: 1;
+}
+.lv-stat-lbl {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.3);
+    text-transform: uppercase;
+}
+.lv-stat-divider {
+    width: 1px;
+    height: 32px;
+    background: rgba(255,255,255,0.08);
+    flex-shrink: 0;
+}
+
+.lv-left-footer {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.15);
+    margin-top: auto;
+}
+
+/* RIGHT panel: the form */
+.lv-panel--right {
+    flex: 1;
+    background: var(--login-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--transition-premium);
+    overflow-y: auto;
+}
+body.mode-athlete .lv-panel--right { background: #FAFAF8; }
+
+.lv-form-wrap {
+    width: 100%;
+    max-width: 400px;
+    padding: 48px 32px;
+}
+
+/* Role pill */
+.lv-role-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 5px 14px 5px 10px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--login-text-muted);
+    margin-bottom: 28px;
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
+}
+body.mode-athlete .lv-role-pill {
+    background: rgba(191, 149, 63, 0.07);
+    border-color: rgba(191, 149, 63, 0.2);
+    color: #bf953f;
+}
+.lv-role-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--login-accent);
+    box-shadow: 0 0 6px var(--login-accent);
+    flex-shrink: 0;
+    transition: background 0.3s, box-shadow 0.3s;
+    animation: dot-pulse 2s ease-in-out infinite;
+}
+@keyframes dot-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+}
+
+/* Tabs */
+.lv-tabs {
+    display: flex;
+    position: relative;
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 28px;
+    border: 1px solid rgba(255,255,255,0.07);
+    gap: 0;
+}
+body.mode-athlete .lv-tabs {
+    background: rgba(0,0,0,0.04);
+    border-color: rgba(0,0,0,0.07);
+}
+.lv-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    border-radius: 7px;
+    padding: 9px 12px;
+    font-family: var(--f-body);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--login-text-muted);
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    transition: color 0.25s;
+}
+.lv-tab--active { color: var(--login-text); }
+body.mode-athlete .lv-tab--active { color: #1A1A2E; }
+.lv-tab-slider {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    height: calc(100% - 8px);
+    background: var(--login-surface);
+    border-radius: 7px;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                background 0.4s;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.15);
+}
+.lv-tab-slider--right { transform: translateX(100%); }
+
+/* Banners */
+.lv-error, .lv-success {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 18px;
+    animation: banner-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes banner-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.lv-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #f87171;
+}
+.lv-success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #34d399;
+}
+
+/* Form & fields */
+.lv-form { display: flex; flex-direction: column; gap: 18px; }
+
+.lv-field-group { display: flex; flex-direction: column; gap: 7px; }
+
+.lv-label-row { display: flex; justify-content: space-between; align-items: center; }
+
+.lv-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--login-text-muted);
+    text-transform: uppercase;
+    transition: color 0.3s;
+}
+
+/* Input wrapper with icon */
+.lv-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.lv-input-icon {
+    position: absolute;
+    left: 15px;
+    pointer-events: none;
+    color: var(--login-text-muted);
+    opacity: 0.5;
+    transition: color 0.25s, opacity 0.25s;
+    flex-shrink: 0;
+}
+.lv-input-wrap:focus-within .lv-input-icon {
+    color: var(--login-input-focus);
+    opacity: 1;
+}
+
+.lv-input {
+    width: 100%;
+    padding: 14px 44px 14px 46px;
+    background: var(--login-input-bg);
+    border: 1.5px solid var(--login-input-border);
+    border-radius: 12px;
+    color: var(--login-text);
+    font-family: var(--f-body);
+    font-size: 0.9rem;
+    outline: none;
+    transition:
+        border-color 0.25s,
+        background 0.25s,
+        box-shadow 0.25s,
+        color 0.4s;
+}
+.lv-input::placeholder {
+    color: var(--login-text-muted);
+    opacity: 0.5;
+}
+.lv-input:focus {
+    border-color: var(--login-input-focus);
+    background: var(--login-input-bg);
+}
+body:not(.mode-athlete) .lv-input:focus {
+    box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.1), 0 2px 10px rgba(0,0,0,0.15);
+}
+body.mode-athlete .lv-input:focus {
+    box-shadow: 0 0 0 3px rgba(191, 149, 63, 0.12), 0 2px 10px rgba(0,0,0,0.06);
+    background: #fffdf7;
+    border-color: #bf953f;
+}
+body.mode-athlete .lv-input {
+    background: var(--login-input-bg);
+    color: #1A1A2E;
+    border-color: var(--login-input-border);
+}
+body.mode-athlete .lv-input::placeholder { color: #aaa; opacity: 1; }
+
+/* Password visibility toggle */
+.lv-eye-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--login-text-muted);
+    opacity: 0.45;
+    transition: opacity 0.2s, color 0.2s;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+}
+.lv-eye-btn:hover { opacity: 1; color: var(--login-accent); }
+
+/* Password strength */
+.lv-strength-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 2px;
+}
+body.mode-athlete .lv-strength-bar { background: rgba(0,0,0,0.07); }
+.lv-strength-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.16,1,0.3,1), background 0.3s;
+}
+.lv-strength-label {
+    font-size: 0.67rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: var(--login-text-muted);
+    min-height: 14px;
+    display: block;
+}
+
+/* Submit button */
+.lv-btn-submit {
+    width: 100%;
+    padding: 15px 24px;
+    background: var(--login-btn-bg);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-family: var(--f-title);
+    font-size: 0.82rem;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 6px 24px var(--login-btn-glow);
+    transition:
+        background var(--transition-premium),
+        box-shadow var(--transition-premium),
+        transform 0.2s;
+    position: relative;
+    overflow: hidden;
+    margin-top: 4px;
+}
+.lv-btn-submit::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.12) 50%, transparent 60%);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+}
+.lv-btn-submit:hover::before { transform: translateX(100%); }
+.lv-btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px var(--login-btn-glow);
+}
+.lv-btn-submit:active { transform: translateY(0); }
+.lv-btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Spinner */
+.lv-btn-spinner {
+    width: 18px; height: 18px;
+    border: 2.5px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Terms */
+.lv-terms {
+    font-size: 0.68rem;
+    line-height: 1.6;
+    color: var(--login-text-muted);
+    opacity: 0.5;
+    text-align: center;
+    margin-top: 20px;
+}
+.lv-terms a {
+    color: var(--login-accent);
+    text-decoration: none;
+    font-weight: 600;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+.lv-terms a:hover { opacity: 1; }
+
+/* ── Helpers ── */
+.login-subtitle { display: none; } /* legacy compat — hidden in new design */
+.login-card { display: none; }     /* legacy compat — replaced by split panel */
+
+/* ── Login responsive ── */
+@media (max-width: 900px) {
+    .lv-panel--left { display: none; }
+    .lv-panel--right { width: 100%; }
+    .lv-form-wrap { max-width: 100%; padding: 40px 24px; }
+}
+@media (max-width: 560px) {
+    .portal-cards { flex-direction: column; align-items: stretch; max-width: 320px; }
+    .portal-divider { flex-direction: row; gap: 10px; padding: 10px 0; }
+    .portal-divider-line { width: 28px; height: 1px; }
+    .portal-card { padding: 26px 20px 20px; }
+    .lv-form-wrap { padding: 28px 18px; }
+    .portal-logo-r, .portal-logo-avix { font-size: 3rem; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LEGACY STYLES — Kept for compatibility
+═══════════════════════════════════════════════════════ */
 .login-back-btn {
     position: absolute;
     top: 18px;
@@ -351,25 +1074,9 @@ body.mode-athlete .brand-name {
     transition: opacity 0.2s, color 0.2s;
     padding: 4px 8px;
     border-radius: 6px;
-}
-.login-back-btn:hover {
-    opacity: 1;
-    color: var(--login-accent);
+    display: none; /* hidden; lv-back-btn handles this */
 }
 
-/* Login: title & subtitle */
-.login-title { font-size: 40px; margin-bottom: 10px; }
-.login-subtitle {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 2.5px;
-    color: var(--login-text-muted);
-    margin-bottom: 28px;
-    text-transform: uppercase;
-    transition: color var(--transition-premium);
-}
-
-/* Inputs adaptativos */
 .rform-input {
     width: 100%;
     padding: 14px 20px;
@@ -388,11 +1095,9 @@ body.mode-athlete .brand-name {
 }
 .rform-input::placeholder {
     color: var(--login-text-muted);
-    transition: color var(--transition-premium);
 }
 .rform-input:focus {
     border-color: var(--login-input-focus);
-    box-shadow: 0 0 0 3px rgba(0,0,0,0.05), 0 0 12px rgba(0,0,0,0.03);
 }
 body.mode-athlete .rform-input:focus {
     box-shadow: 0 0 0 3px rgba(191, 149, 63, 0.12);
@@ -401,14 +1106,9 @@ body:not(.mode-athlete) .rform-input:focus {
     box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.1);
 }
 
-/* Botón submit del login */
 #login-submit-btn, #register-form .btn-primary {
     background: var(--login-btn-bg);
     box-shadow: 0 8px 24px var(--login-btn-glow);
-    transition:
-        background var(--transition-premium),
-        box-shadow var(--transition-premium),
-        transform 0.2s;
     color: #fff;
     border: none;
     width: 100%;
@@ -418,7 +1118,4 @@ body:not(.mode-athlete) .rform-input:focus {
     font-size: 14px;
     letter-spacing: 0.5px;
     cursor: pointer;
-}
-#login-submit-btn:hover, #register-form .btn-primary:hover {
-    transform: translateY(-2px);
 }
