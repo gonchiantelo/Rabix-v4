@@ -1127,38 +1127,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            console.log(`[RAVIX AUTH] Login: ${email} como ${role}`);
-            window.LoginUI?.setLoading('login', true);
-
-            try {
-                const { data, error } = await window.supabase.auth.signInWithPassword({ email, password: pass });
-
-                if (error) throw new Error(error.message || 'Credenciales incorrectas.');
-
-                if (data.session && data.user) {
-                    console.log('✅ Token recibido. Guardando sesión...');
-                    localStorage.setItem('ravix_token', data.session.access_token);
-                    localStorage.setItem('ravix_v5_uid', data.user.id);
-                    localStorage.setItem('ravix_active_role', role);
-                    window.App.currentRole = role;
-                    await window.App.checkSession(data.user.id, data.session.access_token);
-                } else {
-                    throw new Error('No se recibió el token de autorización.');
-                }
-            } catch (err) {
-                console.error('🔴 Login Error:', err);
-                let msg = err.message;
-                if (msg.includes('Invalid login') || msg.includes('invalid_grant') || msg.includes('Invalid email or password')) {
-                    msg = 'Email o contraseña incorrectos. Verificá tus datos.';
-                } else if (msg.includes('Email not confirmed')) {
-                    msg = 'Confirmá tu correo electrónico antes de ingresar.';
-                } else if (msg.includes('Too many requests')) {
-                    msg = 'Demasiados intentos. Esperá unos minutos.';
-                }
-                window.LoginUI?.showError(msg);
-            } finally {
-                window.LoginUI?.setLoading('login', false);
-            }
+            await window.App.login(email, pass, e);
         };
     }
 
@@ -1188,9 +1157,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            window.LoginUI?.setLoading('register', true);
-            await window.App.signUp(email, pass);
-            window.LoginUI?.setLoading('register', false);
+            await window.App.signUp(email, pass, e);
         };
     }
 
@@ -1202,3 +1169,79 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.onload = () => App.init();
+
+window.App.login = async function(email, pass, event) {
+    if (event) event.preventDefault();
+    const btn = event?.target ? event.target.querySelector('button[type="submit"]') : document.getElementById('login-btn-submit');
+    const originalText = btn ? btn.textContent : 'Ingresar';
+    if (btn) { btn.textContent = 'Iniciando...'; btn.disabled = true; }
+
+    try {
+        const { data, error } = await window.supabase.auth.signInWithPassword({
+            email: email,
+            password: pass,
+        });
+
+        if (error) throw error;
+
+        if (data.session && data.user) {
+            console.log("✅ Login exitoso.");
+            localStorage.setItem('ravix_token', data.session.access_token);
+            localStorage.setItem('ravix_v5_uid', data.user.id);
+            await window.App.checkSession(data.user.id, data.session.access_token);
+        } else {
+            throw new Error("No se recibió sesión válida.");
+        }
+    } catch (err) {
+        console.error("🔴 Error en Login:", err);
+        alert("Error al iniciar sesión: " + (err.message || "Verifica tus credenciales."));
+    } finally {
+        if (btn) { btn.textContent = originalText; btn.disabled = false; }
+    }
+};
+
+window.App.signUp = async function(email, pass, event) {
+    if (event) event.preventDefault();
+    const btn = event?.target ? event.target.querySelector('button[type="submit"]') : document.getElementById('signup-btn-submit');
+    const originalText = btn ? btn.textContent : 'Crear Cuenta';
+    if (btn) { btn.textContent = 'Procesando...'; btn.disabled = true; }
+
+    try {
+        const { data, error } = await window.supabase.auth.signUp({
+            email: email,
+            password: pass,
+        });
+
+        // Supabase v2 devuelve error 422 como un objeto de error
+        if (error) {
+            if (error.message.toLowerCase().includes('already registered')) {
+                alert("Este email ya está registrado. Por favor, inicia sesión.");
+                window.App.toggleAuth('login');
+                return;
+            }
+            throw error;
+        }
+
+        const uid = data.user.id;
+        const role = window.App.currentRole || 'dt';
+        
+        // Inserción en tabla correspondiente usando el ORM
+        const table = role === 'athlete' ? 'profiles_athlete' : 'users';
+        let profilePayload = role === 'athlete' 
+            ? { id: uid, email: email } 
+            : { id: uid, email: email, name: 'Staff RAVIX', role: 'dt' };
+
+        const { error: dbError } = await window.supabase.from(table).insert([profilePayload]);
+        if (dbError) throw dbError;
+
+        // Transición al Wizard
+        if (window.Wizard) window.Wizard.startFor(role);
+        else console.error("Wizard no definido");
+
+    } catch (err) {
+        console.error("🔴 Error en Registro:", err);
+        alert("Error al registrar: " + (err.message || "Intenta nuevamente."));
+    } finally {
+        if (btn) { btn.textContent = originalText; btn.disabled = false; }
+    }
+};
