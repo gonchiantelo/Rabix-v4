@@ -396,112 +396,131 @@ window.App = {
             }
         };
 
-        // ══ BIFURCACIÓN ESTRICTA: el Atleta jamás toca la tabla users ══
+        // ══════════════════════════════════════════════════════════════
+        //  BIFURCACIÓN ATLETA — Tabla: profiles_athlete
+        //  Mapa DOM → Supabase verificado contra index.html líneas 954-1129
+        // ══════════════════════════════════════════════════════════════
         if (role === 'athlete') {
 
-            // ── Scope al formulario del atleta ─────────────────────────────
-            // CRÍTICO: usar el formulario como raíz evita que getElementById()
-            // tome el primer elemento con ese ID en el DOM (que puede ser el
-            // wizard legacy oculto), garantizando la lectura de los campos reales.
+            // ── 1. Resolver elementos con scope al formulario activo ────────
+            // Busca DENTRO de #athlete-onboarding-form para evitar colisiones
+            // con cualquier otro elemento del DOM que comparta el mismo ID.
             const form = document.getElementById('athlete-onboarding-form')
                       || document.getElementById('view-onboarding-athlete');
 
-            const qf = id => (form ? form.querySelector('#' + id) : null)
-                          || document.getElementById(id);
+            const qf = (id) => {
+                const scoped = form ? form.querySelector('#' + id) : null;
+                return scoped || document.getElementById(id);
+            };
 
-            // ── Helpers seguros con scope de formulario ───────────────────
-            const gStr  = id => qf(id)?.value?.trim() || null;
-            const gInt  = id => parseInt(qf(id)?.value) || 0;
-            const gFlt  = id => parseFloat(qf(id)?.value) || 0;
-            const gFltN = id => { const v = parseFloat(qf(id)?.value); return isNaN(v) ? null : v; };
+            // ── 2. Lectura de valores con Optional Chaining + fallbacks ─────
+            //    Ningún campo puede ser undefined → Supabase rechaza undefined.
 
-            // ── Captura de campos ─────────────────────────────────────────
-            // Paso 1 — Identidad
-            const fullName = gStr('ath-name') || 'Atleta Anónimo';
-            const sport    = gStr('ath-sport');
-            const position = qf('ath-pos')?.value || null;
-            const phone    = gStr('ath-phone');
-            const domSide  = qf('ath-side')?.value || null;
+            // PASO 1 — Identidad
+            const full_name      = qf('ath-name')?.value?.trim()   || 'Atleta Anónimo';
+            const sport           = qf('ath-sport')?.value          || null;
+            const position        = qf('ath-pos')?.value            || null;
+            const phone           = qf('ath-phone')?.value?.trim()  || null;
+            const dominant_side   = qf('ath-side')?.value           || null;
 
-            // Paso 2 — Biometría
-            const birthDate = qf('ath-birth')?.value || null;
-            const weightKg  = gFltN('ath-weight');
-            const heightCm  = gFltN('ath-height');
-            const bodyFat   = gFltN('ath-fat');
+            // PASO 2 — Biometría
+            const birth_date      = qf('ath-birth')?.value          || null;
+            const _w              = parseFloat(qf('ath-weight')?.value);
+            const _h              = parseFloat(qf('ath-height')?.value);
+            const _bf             = parseFloat(qf('ath-fat')?.value);
+            const weight_kg       = isNaN(_w)  ? null : _w;
+            const height_cm       = isNaN(_h)  ? null : _h;
+            const body_fat        = isNaN(_bf) ? null : _bf;
 
-            // Paso 3 — Carga Cometti
-            const trainingYears = gInt('ath-training-years');
-            const clubHours     = gFlt('ath-club-hours');
-            const gymHours      = gFlt('ath-gym-hours');
-            const goal          = gStr('ath-goal');
-            const commitment    = qf('ath-commitment')?.value || null;
+            // PASO 3 — Carga Cometti
+            const _ty             = parseInt(parseFloat(qf('ath-training-years')?.value));
+            const _ch             = parseFloat(qf('ath-club-hours')?.value);
+            const _gh             = parseFloat(qf('ath-gym-hours')?.value);
+            const training_years  = isNaN(_ty) ? 0 : _ty;
+            const club_hours_week = isNaN(_ch) ? 0 : _ch;
+            const gym_hours_week  = isNaN(_gh) ? 0 : _gh;
+            const goal            = qf('ath-goal')?.value           || null;
+            const commitment_level= qf('ath-commitment')?.value     || null;
 
-            // ── Validación explícita campo a campo ────────────────────────
+            // ── 3. Validación de campos obligatorios ───────────────────────
             if (!sport) {
                 restoreBtn();
-                return alert('Por favor, selecciona tu deporte (Paso 1).');
+                return alert('⚠️ Deporte requerido.\nVolvé al Paso 1 y seleccioná tu deporte.');
             }
             if (!position) {
                 restoreBtn();
-                return alert('Por favor, selecciona tu posición o especialidad (Paso 1).');
+                return alert('⚠️ Posición requerida.\nVolvé al Paso 1 y seleccioná tu posición.');
             }
             if (!goal) {
                 restoreBtn();
-                return alert('Por favor, selecciona tu objetivo neuromuscular (Paso 3).');
+                return alert('⚠️ Objetivo neuromuscular requerido.\nSeleccioná un objetivo en el Paso 3.');
             }
-            if (!commitment) {
+            if (!commitment_level) {
                 restoreBtn();
-                return alert('Por favor, selecciona tu nivel de compromiso (Paso 3).');
+                return alert('⚠️ Nivel de compromiso requerido.\nSeleccioná tu nivel en el Paso 3.');
             }
 
-            // ── Payload completo — alineado con columnas de profiles_athlete ──
+            // ── 4. Payload maestro — cada clave mapeada explícitamente ──────
+            //    Columnas de profiles_athlete verificadas contra el esquema.
             const payload = {
                 id:               uid,
-                full_name:        fullName,           // ← SIEMPRE full_name, nunca name
-                sport:            sport,
-                position:         position,
-                phone:            phone,
-                dominant_side:    domSide,
-                birth_date:       birthDate,
-                weight_kg:        weightKg,
-                height_cm:        heightCm,
-                body_fat:         bodyFat,
-                training_years:   trainingYears,
-                club_hours_week:  clubHours,
-                gym_hours_week:   gymHours,
-                goal:             goal,
-                commitment_level: commitment,
+                // ─ Identidad ─────────────────────────────────────────────
+                full_name,        // ← SIEMPRE full_name (NO name)
+                sport,
+                position,
+                phone,
+                dominant_side,
+                // ─ Biometría ─────────────────────────────────────────────
+                birth_date,
+                weight_kg,
+                height_cm,
+                body_fat,
+                // ─ Carga Cometti (nuevos campos) ──────────────────────────
+                training_years,
+                club_hours_week,
+                gym_hours_week,
+                // ─ Objetivo & Compromiso ──────────────────────────────────
+                goal,
+                commitment_level,
+                // ─ Auditoría ─────────────────────────────────────────────
                 updated_at:       new Date().toISOString(),
             };
 
-            console.log('[WIZARD ATLETA] Payload →', JSON.stringify(payload, null, 2));
+            console.log('[WIZARD ATLETA] ▶ Payload maestro enviado a Supabase:');
+            console.table(payload);
 
-            // ── Upsert anti-congelamiento ─────────────────────────────────
+            // ── 5. Upsert con finally incondicionable ──────────────────────
             try {
                 const { error: upsertErr } = await window.supabase
                     .from('profiles_athlete')
                     .upsert(payload, { onConflict: 'id' });
 
                 if (upsertErr) {
-                    // Superficie el mensaje EXACTO de Supabase para diagnóstico
-                    const msg = upsertErr.message || JSON.stringify(upsertErr);
-                    console.error('[SUPABASE] Error en upsert profiles_athlete:', msg,
-                        '| details:', upsertErr.details, '| hint:', upsertErr.hint);
-                    restoreBtn();
-                    return alert(
-                        '❌ Error al guardar el perfil (Supabase):\n\n' + msg +
-                        (upsertErr.hint ? '\n\nHint: ' + upsertErr.hint : '') +
-                        '\n\nVerificá que todos los campos sean válidos e intentá de nuevo.'
-                    );
+                    throw upsertErr; // lo captura el catch para diagnóstico unificado
                 }
 
-                console.log('✅ Perfil atleta guardado en profiles_athlete. Recargando...');
-                location.reload();
+                console.log('✅ profiles_athlete actualizado. Recargando sesión...');
+                location.reload(); // checkSession tomará el control al recargar
 
             } catch (err) {
-                console.error('🔴 Error de red en saveProfile (atleta):', err);
+                // Diagnóstico completo: mensaje exacto de Supabase + payload que rebotó
+                const msg = err.message || JSON.stringify(err);
+                console.error('🔴 [UPSERT ERROR] profiles_athlete rechazó el payload:');
+                console.error('   Mensaje:', msg);
+                console.error('   Details:', err.details  || '—');
+                console.error('   Hint:',    err.hint     || '—');
+                console.error('   Payload enviado:', payload);
+
+                alert(
+                    '❌ Error al guardar el perfil.\n\n' +
+                    'Mensaje Supabase:\n' + msg +
+                    (err.hint    ? '\n\nHint: '    + err.hint    : '') +
+                    (err.details ? '\n\nDetails: ' + err.details : '') +
+                    '\n\n(El payload fue impreso en consola para diagnóstico.)'
+                );
+            } finally {
+                // SIEMPRE restaurar el botón, sin importar qué pasó arriba
                 restoreBtn();
-                alert('Problema de red al guardar:\n' + err.message);
             }
 
         } else {
