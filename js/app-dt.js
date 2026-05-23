@@ -1092,7 +1092,7 @@ window.DTEngine = {
                 <div class="macro-day ${typeClass ? typeClass : ''} ${pastClass}${hasTasks && isPast ? ' has-tasks' : ''}" data-date="${dateStr}" onclick="${isPast ? 'void(0)' : `DTEngine.openDrawer('${dateStr}')`}">
                     <div class="m-day-top">
                         <span class="m-day-num">${d}</span>
-                        <span class="m-day-label">${label}</span>
+                        <span class="m-day-label ${label === 'LIBRE' ? 'label-libre' : ''}">${label}</span>
                         ${isPast && hasTasks ? '<span class="past-hist-badge">HIST</span>' : ''}
                     </div>
                     <div class="m-day-content">
@@ -1154,7 +1154,7 @@ window.DTEngine = {
         console.log(`🗓️ applyMethodologyLabels: ${matchDates.length} partidos encontrados. Metodología: ${methodology}`);
 
         if (matchDates.length === 0 && Object.keys(manualLabels).length === 0) {
-            console.warn('⚠️ applyMethodologyLabels: No hay fechas de partido configuradas ni etiquetas manuales. Las etiquetas quedarán en BASE.');
+            console.warn('⚠️ applyMethodologyLabels: No hay fechas de partido configuradas ni etiquetas manuales. Las etiquetas quedarán en LIBRE.');
             return;
         }
 
@@ -1260,7 +1260,7 @@ window.DTEngine = {
         const yestStr = yesterday.toISOString().split('T')[0];
         if (this._matchDays.has(yestStr)) return 'RECUPERACIÓN';
 
-        return 'BASE';
+        return 'LIBRE';
     },
 
     getTypeClass(label) {
@@ -1400,9 +1400,9 @@ window.DTEngine = {
         }
 
         // --- RENDER CUSTOM (prioridad, badge dorado) ---
-        const customFiltered = (this._showAllExercises || fallbackApplied)
+        const customFiltered = (this._showAllExercises || fallbackApplied || currentPhase === 'LIBRE' || currentPhase === 'BASE')
             ? customTasks
-            : customTasks.filter(ex => !ex.morfociclo_phase || ex.morfociclo_phase.trim().toUpperCase() === currentPhase || currentPhase === 'BASE');
+            : customTasks.filter(ex => !ex.morfociclo_phase || ex.morfociclo_phase.trim().toUpperCase() === currentPhase);
 
         const customHTML = customFiltered.map(ex => {
             const isStaged = this._stagedTasks.some(t => t.id === ex.numericId && t.isCustom);

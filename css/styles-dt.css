@@ -1940,3 +1940,12 @@ body { background: #121212 !important; }
     opacity: 1;
     background: rgba(0, 242, 254, 0.1);
 }
+
+.label-libre {
+    color: #00ffa3; /* Verde neón / cian */
+    font-weight: 700;
+    background: rgba(0, 255, 163, 0.1);
+    border: 1px solid rgba(0, 255, 163, 0.3);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
