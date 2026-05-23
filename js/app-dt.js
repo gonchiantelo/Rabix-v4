@@ -8,20 +8,83 @@
 // ═══════════════════════════════════════════════════════
 // SEASON PLANNING MODAL ENGINE
 // ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// PREDEFINED OBJECTIVES DICTIONARY
+// ═══════════════════════════════════════════════════════
+const predefinedObjectives = [
+    'Volumen Aeróbico', 'Fuerza Base', 'Fuerza Explosiva', 'Hipertrofia Funcional',
+    'Pliometría', 'Velocidad Lineal', 'Agilidad y Cambio de Dirección', 'Movilidad y Flexibilidad',
+    'Resistencia Específica', 'Recuperación Activa', 'Pico de Rendimiento', 'Control de Carga',
+    'Afinación Táctica', 'Ataque Organizado', 'Defensa Organizada',
+    'Transición Defensiva', 'Transición Ofensiva', 'Pelota Parada (ABP)',
+    'Cohesión Táctica', 'Automatismos', 'Estrategia Rival', 'Gestión Psicológica',
+    'Evaluación de Temporada', 'Planificación Siguiente Ciclo'
+];
+
+// ═══════════════════════════════════════════════════════
+// SEASON PLANNING MODAL ENGINE
+// ═══════════════════════════════════════════════════════
 window.SeasonPlanningModal = {
+
+    // --- Internal: Add a tag chip to a container ---
+    _addTag: function(containerId, text) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const normalized = text.trim();
+        if (!normalized) return;
+        // Prevent duplicates
+        const existing = Array.from(container.querySelectorAll('.ravix-tag-text')).map(el => el.textContent);
+        if (existing.includes(normalized)) return;
+
+        const chip = document.createElement('span');
+        chip.className = 'ravix-tag';
+        chip.innerHTML = `<span class="ravix-tag-text">${normalized}</span><button type="button" class="ravix-tag-remove" onclick="this.parentElement.remove()" title="Eliminar">×</button>`;
+        container.appendChild(chip);
+    },
+
+    // --- Internal: Read all tag texts from a container ---
+    _getTags: function(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return [];
+        return Array.from(container.querySelectorAll('.ravix-tag-text')).map(el => el.textContent.trim()).filter(Boolean);
+    },
+
+    // --- Internal: Clear and repopulate a tag container from array ---
+    _renderTags: function(containerId, tagsArray) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '';
+        (tagsArray || []).forEach(tag => this._addTag(containerId, tag));
+    },
+
+    // --- Internal: Handle tag input keydown/selection ---
+    _handleTagInput: function(inputId, containerId) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const val = input.value.trim();
+        if (!val) return;
+        this._addTag(containerId, val);
+        input.value = '';
+        input.focus();
+    },
+
     open: function() {
         const per = window.DTEngine._periodization;
         if (!per) return;
-        // Populate modal fields
+
         const inp = (id) => document.getElementById(id);
         if (inp('spm-temporada')) inp('spm-temporada').value = per.macrociclo || '';
+
+        const keys   = ['pre','comp','playoffs','trans'];
         per.fases.forEach(function(fase, i) {
-            const key = ['pre','comp','playoffs','trans'][i];
+            const key = keys[i];
             if (!key) return;
             if (inp('spm-' + key + '-start')) inp('spm-' + key + '-start').value = fase.start || '';
             if (inp('spm-' + key + '-end'))   inp('spm-' + key + '-end').value   = fase.end   || '';
-            if (inp('spm-' + key + '-objs'))  inp('spm-' + key + '-objs').value  = (fase.objetivos || []).join('\n');
+            // Render tag chips from stored array
+            window.SeasonPlanningModal._renderTags('spm-' + key + '-tags', fase.objetivos || []);
         });
+
         const modal = document.getElementById('modal-season-planning');
         if (modal) {
             modal.classList.remove('hidden');
@@ -44,17 +107,17 @@ window.SeasonPlanningModal = {
         const per = window.DTEngine._periodization;
         if (!per) return;
 
-        const inp = (id) => document.getElementById(id)?.value.trim();
+        const inp  = (id) => document.getElementById(id)?.value.trim();
         const keys = ['pre','comp','playoffs','trans'];
-        const parseObjs = (raw) => (raw || '').split('\n').map(s => s.trim()).filter(Boolean);
 
         // Mutate _periodization in place
         per.macrociclo = inp('spm-temporada') || per.macrociclo;
-        keys.forEach(function(key, i) {
+        keys.forEach((key, i) => {
             if (!per.fases[i]) return;
             per.fases[i].start     = inp('spm-' + key + '-start') || per.fases[i].start;
             per.fases[i].end       = inp('spm-' + key + '-end')   || per.fases[i].end;
-            per.fases[i].objetivos = parseObjs(inp('spm-' + key + '-objs'));
+            // Read objetivos from tag chips in DOM
+            per.fases[i].objetivos = window.SeasonPlanningModal._getTags('spm-' + key + '-tags');
         });
 
         const payload = {
@@ -70,7 +133,6 @@ window.SeasonPlanningModal = {
 
         console.log('💾 Guardando Planificación Anual:', payload);
 
-        // Save to team_configs.season_planning
         const { error } = await window.supabase
             .from('team_configs')
             .update({ season_planning: payload })
@@ -81,10 +143,8 @@ window.SeasonPlanningModal = {
             return;
         }
 
-        // Sync global memory
         if (window.CurrentTeam) window.CurrentTeam.season_planning = payload;
 
-        // Re-render UI
         window.DTEngine.Periodization.renderTimeline();
         window.DTEngine.Periodization.renderProcessView();
 
@@ -771,8 +831,14 @@ window.DTEngine = {
                                         <input type="date" id="spm-pre-end" class="spm-input">
                                     </div>
                                 </div>
-                                <label class="spm-label" style="margin-top:10px;">OBJETIVOS (uno por línea)</label>
-                                <textarea id="spm-pre-objs" class="spm-textarea" rows="3" placeholder="Volumen aeróbico&#10;Fuerza base&#10;Cohesión táctica inicial"></textarea>
+                                <label class="spm-label" style="margin-top:10px;">OBJETIVOS DE FASE</label>
+                                <div class="spm-tag-input-row">
+                                    <input type="text" id="spm-pre-inp" class="spm-input spm-tag-input" list="spm-obj-list" placeholder="Buscar objetivo..." autocomplete="off"
+                                        onkeydown="if(event.key==='Enter'){event.preventDefault();window.SeasonPlanningModal._handleTagInput('spm-pre-inp','spm-pre-tags')}"
+                                        onchange="window.SeasonPlanningModal._handleTagInput('spm-pre-inp','spm-pre-tags');this.value='';">
+                                    <button type="button" class="spm-tag-add-btn" onclick="window.SeasonPlanningModal._handleTagInput('spm-pre-inp','spm-pre-tags')">+</button>
+                                </div>
+                                <div id="spm-pre-tags" class="spm-tags-container"></div>
                             </div>
 
                             <!-- COMPETENCIA -->
@@ -788,8 +854,14 @@ window.DTEngine = {
                                         <input type="date" id="spm-comp-end" class="spm-input">
                                     </div>
                                 </div>
-                                <label class="spm-label" style="margin-top:10px;">OBJETIVOS (uno por línea)</label>
-                                <textarea id="spm-comp-objs" class="spm-textarea" rows="3" placeholder="Afinación táctica&#10;Intensidad específica&#10;Automatismos"></textarea>
+                                <label class="spm-label" style="margin-top:10px;">OBJETIVOS DE FASE</label>
+                                <div class="spm-tag-input-row">
+                                    <input type="text" id="spm-comp-inp" class="spm-input spm-tag-input" list="spm-obj-list" placeholder="Buscar objetivo..." autocomplete="off"
+                                        onkeydown="if(event.key==='Enter'){event.preventDefault();window.SeasonPlanningModal._handleTagInput('spm-comp-inp','spm-comp-tags')}"
+                                        onchange="window.SeasonPlanningModal._handleTagInput('spm-comp-inp','spm-comp-tags');this.value='';">
+                                    <button type="button" class="spm-tag-add-btn" onclick="window.SeasonPlanningModal._handleTagInput('spm-comp-inp','spm-comp-tags')">+</button>
+                                </div>
+                                <div id="spm-comp-tags" class="spm-tags-container"></div>
                             </div>
 
                             <!-- PLAY-OFFS -->
@@ -805,8 +877,14 @@ window.DTEngine = {
                                         <input type="date" id="spm-playoffs-end" class="spm-input">
                                     </div>
                                 </div>
-                                <label class="spm-label" style="margin-top:10px;">OBJETIVOS (uno por línea)</label>
-                                <textarea id="spm-playoffs-objs" class="spm-textarea" rows="3" placeholder="Pico de rendimiento&#10;Gestión de carga&#10;Estrategia rival"></textarea>
+                                <label class="spm-label" style="margin-top:10px;">OBJETIVOS DE FASE</label>
+                                <div class="spm-tag-input-row">
+                                    <input type="text" id="spm-playoffs-inp" class="spm-input spm-tag-input" list="spm-obj-list" placeholder="Buscar objetivo..." autocomplete="off"
+                                        onkeydown="if(event.key==='Enter'){event.preventDefault();window.SeasonPlanningModal._handleTagInput('spm-playoffs-inp','spm-playoffs-tags')}"
+                                        onchange="window.SeasonPlanningModal._handleTagInput('spm-playoffs-inp','spm-playoffs-tags');this.value='';">
+                                    <button type="button" class="spm-tag-add-btn" onclick="window.SeasonPlanningModal._handleTagInput('spm-playoffs-inp','spm-playoffs-tags')">+</button>
+                                </div>
+                                <div id="spm-playoffs-tags" class="spm-tags-container"></div>
                             </div>
 
                             <!-- TRANSICIÓN -->
@@ -822,10 +900,19 @@ window.DTEngine = {
                                         <input type="date" id="spm-trans-end" class="spm-input">
                                     </div>
                                 </div>
-                                <label class="spm-label" style="margin-top:10px;">OBJETIVOS (uno por línea)</label>
-                                <textarea id="spm-trans-objs" class="spm-textarea" rows="3" placeholder="Recuperación activa&#10;Evaluación de temporada&#10;Planificación"></textarea>
+                                <label class="spm-label" style="margin-top:10px;">OBJETIVOS DE FASE</label>
+                                <div class="spm-tag-input-row">
+                                    <input type="text" id="spm-trans-inp" class="spm-input spm-tag-input" list="spm-obj-list" placeholder="Buscar objetivo..." autocomplete="off"
+                                        onkeydown="if(event.key==='Enter'){event.preventDefault();window.SeasonPlanningModal._handleTagInput('spm-trans-inp','spm-trans-tags')}"
+                                        onchange="window.SeasonPlanningModal._handleTagInput('spm-trans-inp','spm-trans-tags');this.value='';">
+                                    <button type="button" class="spm-tag-add-btn" onclick="window.SeasonPlanningModal._handleTagInput('spm-trans-inp','spm-trans-tags')">+</button>
+                                </div>
+                                <div id="spm-trans-tags" class="spm-tags-container"></div>
                             </div>
                         </div>
+
+                        <!-- Global datalist shared by all phase inputs -->
+                        <datalist id="spm-obj-list">${predefinedObjectives.map(o => `<option value="${o}">`).join('')}</datalist>
 
                         <div class="spm-footer">
                             <button class="spm-btn-cancel" onclick="window.SeasonPlanningModal.close()">Cancelar</button>
