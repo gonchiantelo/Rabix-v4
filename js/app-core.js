@@ -654,6 +654,7 @@ window.App = {
         try {
             const token = localStorage.getItem('ravix_token');
             const { data, error } = await window.supabase.from('exercises_library').select('*');
+            console.log("🔍 Respuesta de exercises_library:", { data, error });
             if (error) throw error;
             if (data) {
                 window.ExercisesLibrary = data.map(ex => ({
