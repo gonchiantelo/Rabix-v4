@@ -1094,11 +1094,17 @@ window.DTEngine = {
                         ${isPast && hasTasks ? '<span class="past-hist-badge">HIST</span>' : ''}
                     </div>
                     <div class="m-day-content">
-                        ${renderBlock('gimnasio', 'Gimnasio')}
-                        ${renderBlock('entrada_calor', 'Entrada en Calor')}
-                        ${renderBlock('parte_principal', 'Parte Principal')}
-                        ${renderBlock('doble_turno', '2º Turno / Táctica')}
-                        ${renderBlock('vuelta_calma', 'Vuelta a la Calma')}
+                        ${(!hasTasks || label === 'LIBRE') ? `
+                            <div class="free-day-indicator">
+                                <i class="fas fa-battery-full"></i> Día Libre - Recuperación
+                            </div>
+                        ` : `
+                            ${renderBlock('gimnasio', 'Gimnasio')}
+                            ${renderBlock('entrada_calor', 'Entrada en Calor')}
+                            ${renderBlock('parte_principal', 'Parte Principal')}
+                            ${renderBlock('doble_turno', '2º Turno / Táctica')}
+                            ${renderBlock('vuelta_calma', 'Vuelta a la Calma')}
+                        `}
                     </div>
                 </div>
             `;

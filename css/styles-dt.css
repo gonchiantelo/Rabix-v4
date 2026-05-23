@@ -1915,3 +1915,28 @@ body { background: #121212 !important; }
     color: #ff6b6b;
     background: rgba(255, 107, 107, 0.12);
 }
+
+.free-day-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 80px;
+    border: 1px dashed rgba(0, 242, 254, 0.3); /* Borde sutil cian */
+    background: rgba(0, 242, 254, 0.05);
+    border-radius: 8px;
+    color: #00F2FE;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+.free-day-indicator i {
+    margin-right: 8px;
+}
+.free-day-indicator:hover {
+    opacity: 1;
+    background: rgba(0, 242, 254, 0.1);
+}
