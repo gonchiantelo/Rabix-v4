@@ -840,27 +840,33 @@ window.DTEngine = {
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
                             <div>
                                 <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">S.S.P. (CONTEXTO DE JUEGO)</label>
-                                <textarea id="exercise-ssp-context" rows="2" placeholder="Ej: Ante ataque posicional del rival..." style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
+                                <textarea id="ex-ssp" rows="2" placeholder="Ej: Ante ataque posicional del rival..." style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
                             </div>
                             <div>
                                 <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">PRINCIPIOS TÁCTICOS</label>
-                                <textarea id="exercise-tactical-principles" rows="2" placeholder="Principal / De Base / Episódico" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
+                                <textarea id="ex-principles" rows="2" placeholder="Principal / De Base / Episódico" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
                             </div>
                         </div>
 
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
                             <div>
                                 <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">REGLAS DE INTERVENCIÓN</label>
-                                <textarea id="exercise-intervention-rules" rows="2" placeholder="Provocación / Propensión / Continuidad" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
+                                <textarea id="ex-rules" rows="2" placeholder="Provocación / Propensión / Continuidad" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
                             </div>
                             <div>
                                 <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">DIMENSIONES Y ESTRUCTURAS</label>
-                                <input type="text" id="exercise-dimensions-density" placeholder="Medidas, m² por jugador y estructuras implicadas" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;box-sizing:border-box;">
+                                <input type="text" id="ex-dimensions" placeholder="Medidas, m² por jugador y estructuras implicadas" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;box-sizing:border-box;">
                             </div>
                         </div>
 
                         <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">TAGS TÁCTICOS</label>
                         <input type="text" id="exercise-tags" placeholder="Ej: pressing, posesion, amplitud (separados por coma)" style="width:100%;padding:12px;margin-bottom:20px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#00F2FE;font-weight:bold;outline:none;box-sizing:border-box;">
+
+                        <!-- Placeholder Pilar 5 -->
+                        <div style="margin-bottom:20px;border:2px dashed rgba(255,255,255,0.15);background:rgba(0,0,0,0.2);border-radius:12px;padding:25px;text-align:center;color:#6b7280;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:not-allowed;">
+                            <i class="fas fa-chalkboard-teacher" style="font-size:2rem;color:rgba(255,255,255,0.1);"></i>
+                            <span style="font-size:0.8rem;font-weight:bold;letter-spacing:0.5px;">Añadir Esquema Táctico (Próximamente)</span>
+                        </div>
 
                         <button onclick="DTEngine.saveCustomTask()" style="width:100%;padding:14px;background:var(--primary-color,#00F2FE);color:#000;border:none;border-radius:8px;font-weight:900;font-family:Outfit,sans-serif;font-size:1.05rem;cursor:pointer;letter-spacing:0.5px;">GUARDAR FICHA TÉCNICA</button>
                     </div>
@@ -2031,10 +2037,10 @@ window.DTEngine = {
     // --- BÓVEDA DE TAREAS PERSONALIZADAS ---
     openCustomTaskModal() {
         document.getElementById('custom-task-name').value = '';
-        document.getElementById('exercise-ssp-context').value = '';
-        document.getElementById('exercise-tactical-principles').value = '';
-        document.getElementById('exercise-intervention-rules').value = '';
-        document.getElementById('exercise-dimensions-density').value = '';
+        document.getElementById('ex-ssp').value = '';
+        document.getElementById('ex-principles').value = '';
+        document.getElementById('ex-rules').value = '';
+        document.getElementById('ex-dimensions').value = '';
         document.getElementById('exercise-tags').value = '';
         const tb = document.getElementById('task-blocks'); if (tb) tb.value = '';
         const tw = document.getElementById('task-work');   if (tw) tw.value = '';
@@ -2052,10 +2058,10 @@ window.DTEngine = {
         const token = localStorage.getItem('ravix_token');
         const name  = document.getElementById('custom-task-name').value.trim();
         const phase = document.getElementById('custom-task-phase').value;
-        const sspContext = document.getElementById('exercise-ssp-context').value.trim();
-        const tacticalPrinciples = document.getElementById('exercise-tactical-principles').value.trim();
-        const interventionRules = document.getElementById('exercise-intervention-rules').value.trim();
-        const dimensionsDensity = document.getElementById('exercise-dimensions-density').value.trim();
+        const sspContext = document.getElementById('ex-ssp').value.trim();
+        const tacticalPrinciples = document.getElementById('ex-principles').value.trim();
+        const interventionRules = document.getElementById('ex-rules').value.trim();
+        const dimensionsDensity = document.getElementById('ex-dimensions').value.trim();
         const tagsRaw = document.getElementById('exercise-tags').value;
         const tags = tagsRaw.split(',').map(t => t.trim()).filter(t => t !== '');
         
