@@ -837,10 +837,32 @@ window.DTEngine = {
                         <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">MATERIALES NECESARIOS</label>
                         <input type="text" id="task-materials" placeholder="Ej: 10 conos, 6 petos, balones" style="width:100%;padding:12px;margin-bottom:15px;background:#1f2937;border:1px solid #374151;border-radius:8px;color:#fff;outline:none;box-sizing:border-box;">
 
-                        <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">REGLAS / CONSTREÑIMIENTOS</label>
-                        <textarea id="custom-task-rules" rows="3" placeholder="Describe los objetivos, comodines, límites de toques..." style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;margin-bottom:20px;resize:none;box-sizing:border-box;"></textarea>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
+                            <div>
+                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">OBJETIVO TÁCTICO PRINCIPAL</label>
+                                <textarea id="exercise-tactical-objective" rows="2" placeholder="Ej: Atraer para liberar lado opuesto" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
+                            </div>
+                            <div>
+                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">REGLAS DE PROVOCACIÓN / CONSIGNAS</label>
+                                <textarea id="exercise-provocation-rules" rows="2" placeholder="Ej: Máximo 2 toques, comodín interior" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
+                            </div>
+                        </div>
 
-                        <button onclick="DTEngine.saveCustomTask()" style="width:100%;padding:14px;background:var(--primary-color,#00F2FE);color:#000;border:none;border-radius:8px;font-weight:900;font-family:Outfit,sans-serif;font-size:1.05rem;cursor:pointer;letter-spacing:0.5px;">GUARDAR EN BÓVEDA PRIVADA</button>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
+                            <div>
+                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">DIMENSIONES Y DENSIDAD - m²</label>
+                                <input type="text" id="exercise-dimensions-density" placeholder="Ej: 40x30m (75 m²/jugador)" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;box-sizing:border-box;">
+                            </div>
+                            <div>
+                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">EVOLUCIÓN / PROGRESIÓN</label>
+                                <textarea id="exercise-progressions-evolution" rows="2" placeholder="Ej: Sumar pases seguidos o gol en miniporterías" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
+                            </div>
+                        </div>
+
+                        <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">TAGS TÁCTICOS</label>
+                        <input type="text" id="exercise-tags" placeholder="Ej: pressing, posesion, amplitud (separados por coma)" style="width:100%;padding:12px;margin-bottom:20px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#00F2FE;font-weight:bold;outline:none;box-sizing:border-box;">
+
+                        <button onclick="DTEngine.saveCustomTask()" style="width:100%;padding:14px;background:var(--primary-color,#00F2FE);color:#000;border:none;border-radius:8px;font-weight:900;font-family:Outfit,sans-serif;font-size:1.05rem;cursor:pointer;letter-spacing:0.5px;">GUARDAR FICHA TÉCNICA</button>
                     </div>
                 </div>
 
@@ -1597,24 +1619,45 @@ window.DTEngine = {
     renderTaskModal(task) {
         const modal = document.getElementById('dt-modal');
         const body = document.getElementById('modal-body-content');
+        const tagsHtml = Array.isArray(task.tags) 
+            ? task.tags.map(t => `<span style="background:rgba(0,242,254,0.1);color:#00F2FE;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:700;margin-right:5px;border:1px solid rgba(0,242,254,0.3);">${t}</span>`).join('') 
+            : '';
+
         body.innerHTML = `
             <div class="modal-header">
                 <div class="m-title-group">
                     <span class="m-task-id">#${task.numericId}</span>
                     <h2 class="m-task-title">${task.title}</h2>
+                    ${tagsHtml ? `<div style="margin-top:8px;">${tagsHtml}</div>` : ''}
                 </div>
                 <button class="btn-close-modal" onclick="DTEngine.closeModal()">✕</button>
             </div>
-            <div class="modal-grid">
-                <div class="m-col">
-                    <div class="m-info-block"><label>Momento</label><p>${task.game_moment.replace('_', ' ').toUpperCase()}</p></div>
-                    <div class="m-info-block"><label>SSP</label><p>${task.ssp_type}</p></div>
-                    <div class="m-info-block"><label>Jugadores</label><p>${task.min_players}-${task.max_players}</p></div>
-                    <div class="m-info-block"><label>Dimensiones</label><p>${task.dimensions}</p></div>
+            <div class="modal-grid" style="grid-template-columns: 1fr;">
+                <!-- Metadatos Base -->
+                <div style="display:flex;gap:15px;background:rgba(255,255,255,0.03);padding:15px;border-radius:12px;border:1px solid rgba(255,255,255,0.05);margin-bottom:15px;">
+                    <div style="flex:1"><label style="font-size:0.65rem;color:#888;text-transform:uppercase;">Momento</label><p style="margin:2px 0 0;font-weight:700;color:#fff;">${(task.game_moment || '').replace('_', ' ').toUpperCase()}</p></div>
+                    <div style="flex:1"><label style="font-size:0.65rem;color:#888;text-transform:uppercase;">SSP</label><p style="margin:2px 0 0;font-weight:700;color:#fff;">${task.ssp_type || 'N/A'}</p></div>
+                    <div style="flex:1"><label style="font-size:0.65rem;color:#888;text-transform:uppercase;">Materiales</label><p style="margin:2px 0 0;font-weight:700;color:#fff;">${task.materials || 'Balones, Conos'}</p></div>
                 </div>
-                <div class="m-col">
-                    <div class="m-info-block"><label>Descripción</label><p class="m-desc">${task.description || '...'}</p></div>
-                    <div class="m-info-block"><label>Materiales</label><p>${task.materials || 'Balones'}</p></div>
+
+                <!-- Ficha Técnica Premium -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                    <div class="m-info-block">
+                        <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;">🎯 Objetivo Táctico</label>
+                        <p class="m-desc">${task.tactical_objective || task.description || 'No especificado'}</p>
+                    </div>
+                    <div class="m-info-block">
+                        <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;">📝 Reglas y Consignas</label>
+                        <p class="m-desc">${task.provocation_rules || 'No especificado'}</p>
+                    </div>
+                    <div class="m-info-block">
+                        <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;">📐 Dimensiones y Densidad</label>
+                        <p class="m-desc">${task.dimensions_density || task.dimensions || 'No especificado'}</p>
+                    </div>
+                    <div class="m-info-block">
+                        <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;">📈 Evolución / Progresión</label>
+                        <p class="m-desc">${task.progressions_evolution || 'No especificado'}</p>
+                    </div>
                 </div>
             </div>
         `;
@@ -1988,7 +2031,11 @@ window.DTEngine = {
     // --- BÓVEDA DE TAREAS PERSONALIZADAS ---
     openCustomTaskModal() {
         document.getElementById('custom-task-name').value = '';
-        document.getElementById('custom-task-rules').value = '';
+        document.getElementById('exercise-tactical-objective').value = '';
+        document.getElementById('exercise-provocation-rules').value = '';
+        document.getElementById('exercise-dimensions-density').value = '';
+        document.getElementById('exercise-progressions-evolution').value = '';
+        document.getElementById('exercise-tags').value = '';
         const tb = document.getElementById('task-blocks'); if (tb) tb.value = '';
         const tw = document.getElementById('task-work');   if (tw) tw.value = '';
         const tp = document.getElementById('task-pause');  if (tp) tp.value = '';
@@ -2005,7 +2052,13 @@ window.DTEngine = {
         const token = localStorage.getItem('ravix_token');
         const name  = document.getElementById('custom-task-name').value.trim();
         const phase = document.getElementById('custom-task-phase').value;
-        const rules = document.getElementById('custom-task-rules').value.trim();
+        const tacticalObjective = document.getElementById('exercise-tactical-objective').value.trim();
+        const provocationRules = document.getElementById('exercise-provocation-rules').value.trim();
+        const dimensionsDensity = document.getElementById('exercise-dimensions-density').value.trim();
+        const progressionsEvolution = document.getElementById('exercise-progressions-evolution').value.trim();
+        const tagsRaw = document.getElementById('exercise-tags').value;
+        const tags = tagsRaw.split(',').map(t => t.trim()).filter(t => t !== '');
+        
         const moment   = document.getElementById('task-moment')    ? document.getElementById('task-moment').value    : '';
         const ssp      = document.getElementById('task-ssp')       ? document.getElementById('task-ssp').value       : '';
         const blocks   = document.getElementById('task-blocks')    ? parseInt(document.getElementById('task-blocks').value)  || null : null;
@@ -2013,17 +2066,25 @@ window.DTEngine = {
         const pauseTime= document.getElementById('task-pause')     ? parseInt(document.getElementById('task-pause').value)   || null : null;
         const materials= document.getElementById('task-materials') ? document.getElementById('task-materials').value.trim()          : '';
 
-        if (!name) return alert('El nombre de la tarea es obligatorio.');
+        if (!name || !tacticalObjective || !provocationRules || !dimensionsDensity || !progressionsEvolution) {
+            return alert('Completa todos los campos obligatorios de la ficha técnica (Nombre, Objetivo, Reglas, Dimensiones y Evolución).');
+        }
 
         const totalMinutes = (blocks && workTime) ? blocks * workTime : null;
 
         try {
-            console.log('💾 Guardando tarea personalizada en bóveda...');
+            console.log('💾 Guardando ficha técnica en bóveda...');
             const { data, error } = await window.supabase.from('custom_exercises').insert({
                 user_id: uid,
                 title: name,
                 morfociclo_phase: phase,
-                description: rules,
+                tactical_objective: tacticalObjective,
+                provocation_rules: provocationRules,
+                dimensions_density: dimensionsDensity,
+                progressions_evolution: progressionsEvolution,
+                tags: tags,
+                description: provocationRules, // Fallback legacy
+                dimensions: dimensionsDensity, // Fallback legacy
                 game_moment: moment,
                 ssp_type: ssp,
                 series: blocks,
