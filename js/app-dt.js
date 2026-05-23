@@ -850,15 +850,24 @@ window.DTEngine = {
                             </div>
                         </div>
 
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;margin-bottom:15px;">
                             <div>
-                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">REGLAS DE INTERVENCIÓN</label>
-                                <textarea id="ex-rules" rows="2" placeholder="Provocación / Propensión / Continuidad" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
+                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">REGLA DE PROVOCACIÓN</label>
+                                <textarea id="ex-rule-provocation" rows="2" placeholder="Ej: Si filtran pase, suma 1 punto." style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
                             </div>
                             <div>
-                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">DIMENSIONES Y ESTRUCTURAS</label>
-                                <input type="text" id="ex-dimensions" placeholder="Medidas, m² por jugador y estructuras implicadas" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;box-sizing:border-box;">
+                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">REGLA DE PROPENSIÓN</label>
+                                <textarea id="ex-rule-propension" rows="2" placeholder="Ej: Repliegue inmediato al área." style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
                             </div>
+                            <div>
+                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">REGLA DE CONTINUIDAD</label>
+                                <textarea id="ex-rule-continuity" rows="2" placeholder="Ej: Inyección de balón del DT." style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:15px;">
+                            <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">DIMENSIONES Y ESTRUCTURAS</label>
+                            <input type="text" id="ex-dimensions" placeholder="Medidas, m² por jugador y estructuras implicadas" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;box-sizing:border-box;">
                         </div>
 
                         <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">TAGS TÁCTICOS</label>
@@ -1660,7 +1669,11 @@ window.DTEngine = {
                     </div>
                     <div class="m-info-block">
                         <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;"><i class="fas fa-clipboard-list"></i> Reglas de Intervención</label>
-                        <p class="m-desc">${task.intervention_rules || task.provocation_rules || '<span style="color:#6b7280;font-style:italic;">No definido para esta tarea</span>'}</p>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <div><span style="color:#9ca3af;font-size:0.65rem;font-weight:bold;text-transform:uppercase;">Provocación:</span> <span class="m-desc" style="display:inline-block;margin-top:2px;">${task.rule_provocation || task.intervention_rules || task.provocation_rules || '<span style="color:#6b7280;font-style:italic;">No definido</span>'}</span></div>
+                            <div><span style="color:#9ca3af;font-size:0.65rem;font-weight:bold;text-transform:uppercase;">Propensión:</span> <span class="m-desc" style="display:inline-block;margin-top:2px;">${task.rule_propension || '<span style="color:#6b7280;font-style:italic;">No definido</span>'}</span></div>
+                            <div><span style="color:#9ca3af;font-size:0.65rem;font-weight:bold;text-transform:uppercase;">Continuidad:</span> <span class="m-desc" style="display:inline-block;margin-top:2px;">${task.rule_continuity || '<span style="color:#6b7280;font-style:italic;">No definido</span>'}</span></div>
+                        </div>
                     </div>
                     <div class="m-info-block">
                         <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;"><i class="fas fa-vector-square"></i> Dimensiones y Estructuras</label>
@@ -2041,7 +2054,9 @@ window.DTEngine = {
         document.getElementById('custom-task-name').value = '';
         document.getElementById('ex-ssp').value = '';
         document.getElementById('ex-principles').value = '';
-        document.getElementById('ex-rules').value = '';
+        document.getElementById('ex-rule-provocation').value = '';
+        document.getElementById('ex-rule-propension').value = '';
+        document.getElementById('ex-rule-continuity').value = '';
         document.getElementById('ex-dimensions').value = '';
         document.getElementById('exercise-tags').value = '';
         const tb = document.getElementById('task-blocks'); if (tb) tb.value = '';
@@ -2062,7 +2077,9 @@ window.DTEngine = {
         const phase = document.getElementById('custom-task-phase').value;
         const sspContext = document.getElementById('ex-ssp').value.trim();
         const tacticalPrinciples = document.getElementById('ex-principles').value.trim();
-        const interventionRules = document.getElementById('ex-rules').value.trim();
+        const ruleProvocation = document.getElementById('ex-rule-provocation').value.trim();
+        const rulePropension = document.getElementById('ex-rule-propension').value.trim();
+        const ruleContinuity = document.getElementById('ex-rule-continuity').value.trim();
         const dimensionsDensity = document.getElementById('ex-dimensions').value.trim();
         const tagsRaw = document.getElementById('exercise-tags').value;
         const tags = tagsRaw.split(',').map(t => t.trim()).filter(t => t !== '');
@@ -2074,7 +2091,7 @@ window.DTEngine = {
         const pauseTime= document.getElementById('task-pause')     ? parseInt(document.getElementById('task-pause').value)   || null : null;
         const materials= document.getElementById('task-materials') ? document.getElementById('task-materials').value.trim()          : '';
 
-        if (!name || !sspContext || !tacticalPrinciples || !interventionRules || !dimensionsDensity) {
+        if (!name || !sspContext || !tacticalPrinciples || !ruleProvocation || !dimensionsDensity) {
             return alert('Completa todos los campos obligatorios de la ficha técnica.');
         }
 
@@ -2088,7 +2105,9 @@ window.DTEngine = {
                 morfociclo_phase: phase,
                 ssp_context: sspContext,
                 tactical_principles: tacticalPrinciples,
-                intervention_rules: interventionRules,
+                rule_provocation: ruleProvocation,
+                rule_propension: rulePropension,
+                rule_continuity: ruleContinuity,
                 dimensions_density: dimensionsDensity,
                 tags: tags,
                 description: sspContext, // Fallback legacy
