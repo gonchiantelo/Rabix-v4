@@ -839,23 +839,23 @@ window.DTEngine = {
 
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
                             <div>
-                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">OBJETIVO TÁCTICO PRINCIPAL</label>
-                                <textarea id="exercise-tactical-objective" rows="2" placeholder="Ej: Atraer para liberar lado opuesto" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
+                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">S.S.P. (CONTEXTO DE JUEGO)</label>
+                                <textarea id="exercise-ssp-context" rows="2" placeholder="Ej: Ante ataque posicional del rival..." style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
                             </div>
                             <div>
-                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">REGLAS DE PROVOCACIÓN / CONSIGNAS</label>
-                                <textarea id="exercise-provocation-rules" rows="2" placeholder="Ej: Máximo 2 toques, comodín interior" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
+                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">PRINCIPIOS TÁCTICOS</label>
+                                <textarea id="exercise-tactical-principles" rows="2" placeholder="Principal / De Base / Episódico" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
                             </div>
                         </div>
 
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
                             <div>
-                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">DIMENSIONES Y DENSIDAD - m²</label>
-                                <input type="text" id="exercise-dimensions-density" placeholder="Ej: 40x30m (75 m²/jugador)" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;box-sizing:border-box;">
+                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">REGLAS DE INTERVENCIÓN</label>
+                                <textarea id="exercise-intervention-rules" rows="2" placeholder="Provocación / Propensión / Continuidad" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
                             </div>
                             <div>
-                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">EVOLUCIÓN / PROGRESIÓN</label>
-                                <textarea id="exercise-progressions-evolution" rows="2" placeholder="Ej: Sumar pases seguidos o gol en miniporterías" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
+                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">DIMENSIONES Y ESTRUCTURAS</label>
+                                <input type="text" id="exercise-dimensions-density" placeholder="Medidas, m² por jugador y estructuras implicadas" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;box-sizing:border-box;">
                             </div>
                         </div>
 
@@ -1643,20 +1643,20 @@ window.DTEngine = {
                 <!-- Ficha Técnica Premium -->
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
                     <div class="m-info-block">
-                        <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;">🎯 Objetivo Táctico</label>
-                        <p class="m-desc">${task.tactical_objective || task.description || 'No especificado'}</p>
+                        <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;"><i class="fas fa-chess-board"></i> S.S.P. (Contexto de Juego)</label>
+                        <p class="m-desc">${task.ssp_context || task.tactical_objective || task.description || '<span style="color:#6b7280;font-style:italic;">No definido para esta tarea</span>'}</p>
                     </div>
                     <div class="m-info-block">
-                        <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;">📝 Reglas y Consignas</label>
-                        <p class="m-desc">${task.provocation_rules || 'No especificado'}</p>
+                        <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;"><i class="fas fa-brain"></i> Principios Tácticos</label>
+                        <p class="m-desc">${task.tactical_principles || '<span style="color:#6b7280;font-style:italic;">No definido para esta tarea</span>'}</p>
                     </div>
                     <div class="m-info-block">
-                        <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;">📐 Dimensiones y Densidad</label>
-                        <p class="m-desc">${task.dimensions_density || task.dimensions || 'No especificado'}</p>
+                        <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;"><i class="fas fa-clipboard-list"></i> Reglas de Intervención</label>
+                        <p class="m-desc">${task.intervention_rules || task.provocation_rules || '<span style="color:#6b7280;font-style:italic;">No definido para esta tarea</span>'}</p>
                     </div>
                     <div class="m-info-block">
-                        <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;">📈 Evolución / Progresión</label>
-                        <p class="m-desc">${task.progressions_evolution || 'No especificado'}</p>
+                        <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;"><i class="fas fa-vector-square"></i> Dimensiones y Estructuras</label>
+                        <p class="m-desc">${task.dimensions_density || task.dimensions || '<span style="color:#6b7280;font-style:italic;">No definido para esta tarea</span>'}</p>
                     </div>
                 </div>
             </div>
@@ -2031,10 +2031,10 @@ window.DTEngine = {
     // --- BÓVEDA DE TAREAS PERSONALIZADAS ---
     openCustomTaskModal() {
         document.getElementById('custom-task-name').value = '';
-        document.getElementById('exercise-tactical-objective').value = '';
-        document.getElementById('exercise-provocation-rules').value = '';
+        document.getElementById('exercise-ssp-context').value = '';
+        document.getElementById('exercise-tactical-principles').value = '';
+        document.getElementById('exercise-intervention-rules').value = '';
         document.getElementById('exercise-dimensions-density').value = '';
-        document.getElementById('exercise-progressions-evolution').value = '';
         document.getElementById('exercise-tags').value = '';
         const tb = document.getElementById('task-blocks'); if (tb) tb.value = '';
         const tw = document.getElementById('task-work');   if (tw) tw.value = '';
@@ -2052,10 +2052,10 @@ window.DTEngine = {
         const token = localStorage.getItem('ravix_token');
         const name  = document.getElementById('custom-task-name').value.trim();
         const phase = document.getElementById('custom-task-phase').value;
-        const tacticalObjective = document.getElementById('exercise-tactical-objective').value.trim();
-        const provocationRules = document.getElementById('exercise-provocation-rules').value.trim();
+        const sspContext = document.getElementById('exercise-ssp-context').value.trim();
+        const tacticalPrinciples = document.getElementById('exercise-tactical-principles').value.trim();
+        const interventionRules = document.getElementById('exercise-intervention-rules').value.trim();
         const dimensionsDensity = document.getElementById('exercise-dimensions-density').value.trim();
-        const progressionsEvolution = document.getElementById('exercise-progressions-evolution').value.trim();
         const tagsRaw = document.getElementById('exercise-tags').value;
         const tags = tagsRaw.split(',').map(t => t.trim()).filter(t => t !== '');
         
@@ -2066,8 +2066,8 @@ window.DTEngine = {
         const pauseTime= document.getElementById('task-pause')     ? parseInt(document.getElementById('task-pause').value)   || null : null;
         const materials= document.getElementById('task-materials') ? document.getElementById('task-materials').value.trim()          : '';
 
-        if (!name || !tacticalObjective || !provocationRules || !dimensionsDensity || !progressionsEvolution) {
-            return alert('Completa todos los campos obligatorios de la ficha técnica (Nombre, Objetivo, Reglas, Dimensiones y Evolución).');
+        if (!name || !sspContext || !tacticalPrinciples || !interventionRules || !dimensionsDensity) {
+            return alert('Completa todos los campos obligatorios de la ficha técnica.');
         }
 
         const totalMinutes = (blocks && workTime) ? blocks * workTime : null;
@@ -2078,12 +2078,12 @@ window.DTEngine = {
                 user_id: uid,
                 title: name,
                 morfociclo_phase: phase,
-                tactical_objective: tacticalObjective,
-                provocation_rules: provocationRules,
+                ssp_context: sspContext,
+                tactical_principles: tacticalPrinciples,
+                intervention_rules: interventionRules,
                 dimensions_density: dimensionsDensity,
-                progressions_evolution: progressionsEvolution,
                 tags: tags,
-                description: provocationRules, // Fallback legacy
+                description: sspContext, // Fallback legacy
                 dimensions: dimensionsDensity, // Fallback legacy
                 game_moment: moment,
                 ssp_type: ssp,
