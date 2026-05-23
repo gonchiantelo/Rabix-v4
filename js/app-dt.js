@@ -174,10 +174,16 @@ window.DTEngine = {
         const lastDay = new Date(year, monthNum, 0).getDate();
         const lastDayStr = String(lastDay).padStart(2, '0');
 
-        const teamId = window.CurrentTeam?.id;
+        // ── RESOLUCIÓN DE teamId (3 capas de fallback) ─────────────────────
+        const teamId = window.CurrentTeam?.id
+            || localStorage.getItem('ravix_team_id')
+            || window.CurrentUser?.team_id;
         const token = localStorage.getItem('ravix_token');
+
+        console.log('🔑 fetchMonthLogs → teamId:', teamId, '| token:', token ? '✅' : '❌ FALTA');
+
         if (!teamId || !token) {
-            console.warn('⚠️ fetchMonthLogs: Sin teamId o token. Abortando.');
+            console.warn('⚠️ fetchMonthLogs: Sin teamId o token. Abortando. CurrentTeam:', window.CurrentTeam);
             return;
         }
 

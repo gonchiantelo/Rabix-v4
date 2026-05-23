@@ -628,6 +628,21 @@ window.App = {
                 }
             }
 
+            // ── PERSISTIR team_id como fallback ironclad ──────────────────
+            // Necesario porque window.CurrentTeam puede ser null si la fila
+            // en 'teams' no existe aún, o si teams[0] no tiene campo 'id'.
+            const resolvedTeamId = window.CurrentTeam?.id || userData.team_id;
+            if (resolvedTeamId) {
+                localStorage.setItem('ravix_team_id', resolvedTeamId);
+                // Garantizar que CurrentTeam siempre tenga .id
+                if (!window.CurrentTeam) {
+                    window.CurrentTeam = { id: resolvedTeamId };
+                } else if (!window.CurrentTeam.id) {
+                    window.CurrentTeam.id = resolvedTeamId;
+                }
+            }
+            LOG('DT')(`✅ teamId persistido: ${resolvedTeamId}`);
+
             await this.fetchExercisesLibrary();
             await this.fetchCustomExercises();
 
