@@ -775,8 +775,10 @@ window.DTEngine = {
 
                 <!-- Modal de Tarea Personalizada -->
                 <div id="modal-custom-task" class="modal-overlay hidden" onclick="DTEngine.closeCustomTaskModal()">
-                    <div onclick="event.stopPropagation()" style="background:#111827;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:30px;width:100%;max-width:520px;color:#fff;position:relative;">
-                        <button onclick="DTEngine.closeCustomTaskModal()" style="position:absolute;top:16px;right:16px;background:transparent;border:none;color:#6b7280;font-size:1.2rem;cursor:pointer;">✕</button>
+                    <div class="custom-task-content" onclick="event.stopPropagation()" style="background:#111827;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:30px;width:100%;max-width:520px;color:#fff;position:relative;">
+                        <div style="position:sticky; top:-30px; z-index:100; display:flex; justify-content:flex-end; margin-bottom:-30px; pointer-events:none;">
+                            <button onclick="DTEngine.closeCustomTaskModal()" style="background:#1f2937;border:1px solid #374151;color:#fff;font-size:1.2rem;cursor:pointer;border-radius:50%;width:32px;height:32px;pointer-events:auto;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.5);">✕</button>
+                        </div>
                         <p style="margin:0 0 2px 0;font-size:0.65rem;font-weight:800;color:#00F2FE;letter-spacing:2px;font-family:Outfit,sans-serif;">BÓVEDA PRIVADA</p>
                         <h2 style="margin:0 0 20px 0;color:var(--primary-color,#00F2FE);font-family:Outfit,sans-serif;font-size:1.4rem;">Nueva Tarea Táctica</h2>
 

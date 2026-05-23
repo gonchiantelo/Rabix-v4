@@ -1949,3 +1949,31 @@ body { background: #121212 !important; }
     padding: 2px 6px;
     border-radius: 4px;
 }
+
+/* Modals Contención Vertical y Scroll Interno */
+.modal-content,
+.custom-task-content {
+    max-height: 85vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+/* Estilización de la Barra de Scroll (Premium Dark Mode) */
+.modal-content::-webkit-scrollbar,
+.custom-task-content::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-content::-webkit-scrollbar-track,
+.custom-task-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02); 
+    border-radius: 8px;
+}
+.modal-content::-webkit-scrollbar-thumb,
+.custom-task-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 242, 254, 0.3);
+    border-radius: 8px;
+}
+.modal-content::-webkit-scrollbar-thumb:hover,
+.custom-task-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 242, 254, 0.6);
+}
