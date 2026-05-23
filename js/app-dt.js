@@ -176,7 +176,10 @@ window.DTEngine = {
 
         const teamId = window.CurrentTeam?.id;
         const token = localStorage.getItem('ravix_token');
-        if (!teamId || !token) return;
+        if (!teamId || !token) {
+            console.warn('⚠️ fetchMonthLogs: Sin teamId o token. Abortando.');
+            return;
+        }
 
         // Recuperar Configuración del Morfociclo (Match Days)
         await this.fetchTeamConfig();
@@ -184,29 +187,56 @@ window.DTEngine = {
         try {
             const startDate = `${year}-${monthStr}-01`;
             const endDate = `${year}-${monthStr}-${lastDayStr}`;
+
             const { data, error } = await window.supabase.from('training_logs')
                 .select('*')
                 .eq('team_id', teamId)
                 .gte('fecha', startDate)
                 .lte('fecha', endDate);
+
+            // ── DIAGNÓSTICO FASE 1 ──────────────────────────────────────────
+            console.log('📅 Datos de training_logs recibidos:', data);
+            if (error) console.error('❌ Error en training_logs:', error);
+            // ───────────────────────────────────────────────────────────────
+
             if (error) throw error;
 
             this._assignedTasks = {};
             if (data && Array.isArray(data)) {
                 data.forEach(log => {
+                    if (!log.fecha) return;
                     if (!this._assignedTasks[log.fecha]) this._assignedTasks[log.fecha] = [];
-                    const rawId = Array.isArray(log.ejs_cods) ? log.ejs_cods[0] : log.ejs_cods;
-                    const taskId = parseInt(rawId);
 
-                    this._assignedTasks[log.fecha].push({
-                        logId: log.id,
-                        id: taskId,
-                        block: log.scenario
+                    // ejs_cods puede ser: string, number, UUID string, o array de los anteriores
+                    const rawCods = Array.isArray(log.ejs_cods) ? log.ejs_cods : [log.ejs_cods];
+
+                    rawCods.forEach(rawId => {
+                        if (rawId == null) return;
+
+                        // Intentar parsear como entero (ID numérico legacy)
+                        const numericAttempt = parseInt(String(rawId).replace(/\D/g, ''), 10);
+
+                        this._assignedTasks[log.fecha].push({
+                            logId:    log.id,
+                            id:       isNaN(numericAttempt) ? rawId : numericAttempt,
+                            rawId:    rawId,       // Guardar el original para matching por UUID
+                            block:    log.scenario || log.block || 'parte_principal'
+                        });
                     });
                 });
+
+                // ── DIAGNÓSTICO FASE 1b ─────────────────────────────────────
+                const totalTasks = Object.values(this._assignedTasks).reduce((acc, arr) => acc + arr.length, 0);
+                console.log(`📅 _assignedTasks mapeados: ${Object.keys(this._assignedTasks).length} días, ${totalTasks} tareas totales`);
+                const sampleDate = Object.keys(this._assignedTasks)[0];
+                if (sampleDate) {
+                    console.log(`📅 Muestra [${sampleDate}]:`, this._assignedTasks[sampleDate]);
+                }
+                // ─────────────────────────────────────────────────────────────
             }
-        } catch (e) { console.error("Error al cargar planificación:", e); }
+        } catch (e) { console.error('Error al cargar planificación:', e); }
     },
+
 
     async fetchTeamConfig() {
         const teamId = window.CurrentTeam?.id;
@@ -998,9 +1028,15 @@ window.DTEngine = {
             const renderBlock = (blockId, title) => {
                 const tasks = assignments.filter(a => a.block === blockId);
                 const tasksHtml = tasks.map((a) => {
-                    const ex = (window.ExercisesLibrary || []).find(e => e.numericId === a.id)
-                           || (window.CustomExercises  || []).find(e => e.numericId === a.id);
+                    // Dual matching: numeric legacy ID OR UUID string (Supabase primary key)
+                    const findEx = (lib) => (lib || []).find(e =>
+                        e.numericId === a.id ||          // numeric match (legacy)
+                        e.id === a.rawId ||              // UUID string match (Supabase PK)
+                        e.id === String(a.id)            // coerced string match
+                    );
+                    const ex = findEx(window.ExercisesLibrary) || findEx(window.CustomExercises);
                     if (!ex) return '';
+
                     let timeBadge = '';
                     const ser = ex.series || ex.blocks;
                     const wrk = ex.work_time || ex.duration;
@@ -1256,12 +1292,18 @@ window.DTEngine = {
         const container = document.getElementById('library-list');
         if (!container) return;
 
+        // ── DIAGNÓSTICO FASE 2 ──────────────────────────────────────────
+        const libraryData = window.ExercisesLibrary || [];
+        console.log('🏋️ Datos de exercises_library recibidos:', libraryData.length, 'ejercicios');
+        if (libraryData.length > 0) console.log('🏋️ Muestra ejercicio[0]:', libraryData[0]);
+        // ───────────────────────────────────────────────────────────────
+
         // Fase actual limpia
         const currentPhase = currentLabel.split(' ')[0].trim().toUpperCase();
 
         // --- FUENTES DE DATOS ---
         const customTasks = window.CustomExercises || [];
-        let globalTasks = window.ExercisesLibrary || [];
+        let globalTasks = libraryData;
 
         // Filtrar tareas globales por fase si aplica
         if (!this._showAllExercises && (currentPhase.startsWith('MD-') || currentPhase === 'PARTIDO')) {
