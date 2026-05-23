@@ -5,29 +5,91 @@
    Phase 3.8: Navegación Anual & Bloques Ocultos (Completo)
    ============================================================ */
 
-window.CalendarEngine = window.CalendarEngine || {};
-window.CalendarEngine.saveSeasonPlanning = async function() {
-    const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id');
-    if (!teamId) return;
+// ═══════════════════════════════════════════════════════
+// SEASON PLANNING MODAL ENGINE
+// ═══════════════════════════════════════════════════════
+window.SeasonPlanningModal = {
+    open: function() {
+        const per = window.DTEngine._periodization;
+        if (!per) return;
+        // Populate modal fields
+        const inp = (id) => document.getElementById(id);
+        if (inp('spm-temporada')) inp('spm-temporada').value = per.macrociclo || '';
+        per.fases.forEach(function(fase, i) {
+            const key = ['pre','comp','playoffs','trans'][i];
+            if (!key) return;
+            if (inp('spm-' + key + '-start')) inp('spm-' + key + '-start').value = fase.start || '';
+            if (inp('spm-' + key + '-end'))   inp('spm-' + key + '-end').value   = fase.end   || '';
+            if (inp('spm-' + key + '-objs'))  inp('spm-' + key + '-objs').value  = (fase.objetivos || []).join('\n');
+        });
+        const modal = document.getElementById('modal-season-planning');
+        if (modal) {
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => modal.classList.add('spm-visible'));
+        }
+    },
 
-    const planningPayload = {
-        temporada: document.getElementById('plan-temporada')?.textContent.trim(),
-        macrociclo: document.getElementById('plan-macrociclo')?.textContent.trim(),
-        mesociclo: document.getElementById('plan-mesociclo')?.textContent.trim(),
-        microciclo: document.getElementById('plan-microciclo')?.textContent.trim()
-    };
-    
-    window.CalendarEngine.planningData = planningPayload;
+    close: function() {
+        const modal = document.getElementById('modal-season-planning');
+        if (modal) {
+            modal.classList.remove('spm-visible');
+            setTimeout(() => modal.classList.add('hidden'), 250);
+        }
+    },
 
-    console.log("💾 Guardando Planificación de Temporada:", planningPayload);
+    save: async function() {
+        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id');
+        if (!teamId) { console.warn('SeasonPlanningModal.save: no teamId'); return; }
 
-    const { error } = await window.supabase
-        .from('team_configs')
-        .update({ season_planning: planningPayload })
-        .eq('team_id', teamId);
+        const per = window.DTEngine._periodization;
+        if (!per) return;
 
-    if (error) {
-        console.error("Error al persistir temporada:", error.message);
+        const inp = (id) => document.getElementById(id)?.value.trim();
+        const keys = ['pre','comp','playoffs','trans'];
+        const parseObjs = (raw) => (raw || '').split('\n').map(s => s.trim()).filter(Boolean);
+
+        // Mutate _periodization in place
+        per.macrociclo = inp('spm-temporada') || per.macrociclo;
+        keys.forEach(function(key, i) {
+            if (!per.fases[i]) return;
+            per.fases[i].start     = inp('spm-' + key + '-start') || per.fases[i].start;
+            per.fases[i].end       = inp('spm-' + key + '-end')   || per.fases[i].end;
+            per.fases[i].objetivos = parseObjs(inp('spm-' + key + '-objs'));
+        });
+
+        const payload = {
+            macrociclo: per.macrociclo,
+            fases: per.fases.map(f => ({
+                name:      f.name,
+                color:     f.color,
+                start:     f.start,
+                end:       f.end,
+                objetivos: f.objetivos
+            }))
+        };
+
+        console.log('💾 Guardando Planificación Anual:', payload);
+
+        // Save to team_configs.season_planning
+        const { error } = await window.supabase
+            .from('team_configs')
+            .update({ season_planning: payload })
+            .eq('team_id', teamId);
+
+        if (error) {
+            console.error('Error al guardar season_planning:', error.message);
+            return;
+        }
+
+        // Sync global memory
+        if (window.CurrentTeam) window.CurrentTeam.season_planning = payload;
+
+        // Re-render UI
+        window.DTEngine.Periodization.renderTimeline();
+        window.DTEngine.Periodization.renderProcessView();
+
+        this.close();
+        console.log('✅ Planificación guardada y UI actualizada.');
     }
 };
 
@@ -93,7 +155,6 @@ window.DTEngine = {
         // Priorizar memoria de App Core (window.CurrentTeam) para match_dates
         if (window.CurrentTeam && window.CurrentTeam.match_dates) {
             this._matchDays = new Set(window.CurrentTeam.match_dates);
-            console.log("📍 Morfociclo cargado desde Memoria Core");
         }
 
         try {
@@ -103,16 +164,36 @@ window.DTEngine = {
                 if (data[0].match_dates) {
                     this._matchDays = new Set(data[0].match_dates);
                 }
-                if (data[0].season_planning) {
-                    window.CalendarEngine = window.CalendarEngine || {};
-                    window.CalendarEngine.planningData = data[0].season_planning;
+                // Load season_planning JSON into _periodization
+                if (data[0].season_planning && data[0].season_planning.fases) {
+                    const sp = data[0].season_planning;
+                    // Merge stored fases with default colors/names if missing
+                    const defaultPhases = window.DTEngine.Periodization._defaultPhases;
+                    const mergedFases = sp.fases.map(function(f, i) {
+                        const def = defaultPhases[i] || {};
+                        return {
+                            name:      f.name      || def.name,
+                            color:     f.color     || def.color || '#00F2FE',
+                            start:     f.start     || '',
+                            end:       f.end       || '',
+                            objetivos: Array.isArray(f.objetivos) ? f.objetivos : (def.objetivos || []),
+                            completed: f.completed || false
+                        };
+                    });
+                    window.DTEngine._periodization = {
+                        macrociclo:      sp.macrociclo || ('Temporada ' + new Date().getFullYear()),
+                        fases:           mergedFases,
+                        fase_actual_idx: 0
+                    };
+                    if (window.CurrentTeam) window.CurrentTeam.season_planning = sp;
+                    console.log('📅 season_planning cargado desde Supabase');
                 }
             }
-            // Sincronizar estado global para que applyMethodologyLabels() lea la verdad fresca
+            // Sincronizar estado global
             if (window.CurrentTeam) {
                 window.CurrentTeam.match_dates = Array.from(this._matchDays);
             }
-        } catch (e) { console.error("Error al cargar configuración de equipo:", e); }
+        } catch (e) { console.error('Error al cargar configuración de equipo:', e); }
     },
 
     changeMonth(e, offset) {
@@ -236,9 +317,12 @@ window.DTEngine = {
                                     <span style="font-family: Outfit, sans-serif; font-size: 0.65rem; font-weight: 800; color: #00F2FE; letter-spacing: 2px; text-transform: uppercase;">PERIODIZACIÓN</span>
                                     <span id="periodo-macro-name" style="font-family: Outfit, sans-serif; font-size: 0.85rem; color: #e5e7eb; font-weight: 600;">—</span>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 6px; background: #1a2235; border-radius: 8px; padding: 3px;">
-                                    <button id="btn-view-weekly" onclick="DTEngine.Periodization.setView('weekly')" style="padding: 6px 14px; border-radius: 6px; border: none; font-size: 0.7rem; font-weight: 700; font-family: Outfit, sans-serif; cursor: pointer; transition: all 0.2s; background: #00F2FE; color: #0d1117; letter-spacing: 0.5px;">SEMANAL</button>
-                                    <button id="btn-view-process" onclick="DTEngine.Periodization.setView('process')" style="padding: 6px 14px; border-radius: 6px; border: none; font-size: 0.7rem; font-weight: 700; font-family: Outfit, sans-serif; cursor: pointer; transition: all 0.2s; background: transparent; color: #6b7280; letter-spacing: 0.5px;">PROCESO</button>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <button onclick="window.SeasonPlanningModal.open()" class="btn-edit-planning" title="Editar Planificación Anual">✎ Editar Planificación</button>
+                                    <div style="display: flex; align-items: center; gap: 6px; background: #1a2235; border-radius: 8px; padding: 3px;">
+                                        <button id="btn-view-weekly" onclick="DTEngine.Periodization.setView('weekly')" style="padding: 6px 14px; border-radius: 6px; border: none; font-size: 0.7rem; font-weight: 700; font-family: Outfit, sans-serif; cursor: pointer; transition: all 0.2s; background: #00F2FE; color: #0d1117; letter-spacing: 0.5px;">SEMANAL</button>
+                                        <button id="btn-view-process" onclick="DTEngine.Periodization.setView('process')" style="padding: 6px 14px; border-radius: 6px; border: none; font-size: 0.7rem; font-weight: 700; font-family: Outfit, sans-serif; cursor: pointer; transition: all 0.2s; background: transparent; color: #6b7280; letter-spacing: 0.5px;">PROCESO</button>
+                                    </div>
                                 </div>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
@@ -651,6 +735,102 @@ window.DTEngine = {
                 <div id="dt-modal" class="modal-overlay hidden" onclick="DTEngine.closeModal()">
                     <div class="modal-content" onclick="event.stopPropagation()">
                         <div id="modal-body-content"></div>
+                    </div>
+                </div>
+
+                <!-- ═══ MODAL: PLANIFICACIÓN ANUAL ═══ -->
+                <div id="modal-season-planning" class="spm-overlay hidden" onclick="if(event.target===this) window.SeasonPlanningModal.close()">
+                    <div class="spm-panel" onclick="event.stopPropagation()">
+                        <div class="spm-header">
+                            <div>
+                                <p class="spm-eyebrow">PLANIFICACIÓN ANUAL</p>
+                                <h2 class="spm-title">Editar Temporada</h2>
+                            </div>
+                            <button class="spm-close-btn" onclick="window.SeasonPlanningModal.close()">✕</button>
+                        </div>
+
+                        <div class="spm-body">
+                            <!-- Nombre de Temporada -->
+                            <div class="spm-field-group">
+                                <label class="spm-label">NOMBRE DE TEMPORADA</label>
+                                <input type="text" id="spm-temporada" class="spm-input" placeholder="Ej: Temporada 2026">
+                            </div>
+
+                            <div class="spm-divider"></div>
+
+                            <!-- PRETEMPORADA -->
+                            <div class="spm-phase-block">
+                                <div class="spm-phase-title" style="--phase-color: #f59e0b;">⬤ Pretemporada</div>
+                                <div class="spm-dates-row">
+                                    <div class="spm-field-group">
+                                        <label class="spm-label">INICIO</label>
+                                        <input type="date" id="spm-pre-start" class="spm-input">
+                                    </div>
+                                    <div class="spm-field-group">
+                                        <label class="spm-label">FIN</label>
+                                        <input type="date" id="spm-pre-end" class="spm-input">
+                                    </div>
+                                </div>
+                                <label class="spm-label" style="margin-top:10px;">OBJETIVOS (uno por línea)</label>
+                                <textarea id="spm-pre-objs" class="spm-textarea" rows="3" placeholder="Volumen aeróbico&#10;Fuerza base&#10;Cohesión táctica inicial"></textarea>
+                            </div>
+
+                            <!-- COMPETENCIA -->
+                            <div class="spm-phase-block">
+                                <div class="spm-phase-title" style="--phase-color: #00F2FE;">⬤ Competencia</div>
+                                <div class="spm-dates-row">
+                                    <div class="spm-field-group">
+                                        <label class="spm-label">INICIO</label>
+                                        <input type="date" id="spm-comp-start" class="spm-input">
+                                    </div>
+                                    <div class="spm-field-group">
+                                        <label class="spm-label">FIN</label>
+                                        <input type="date" id="spm-comp-end" class="spm-input">
+                                    </div>
+                                </div>
+                                <label class="spm-label" style="margin-top:10px;">OBJETIVOS (uno por línea)</label>
+                                <textarea id="spm-comp-objs" class="spm-textarea" rows="3" placeholder="Afinación táctica&#10;Intensidad específica&#10;Automatismos"></textarea>
+                            </div>
+
+                            <!-- PLAY-OFFS -->
+                            <div class="spm-phase-block">
+                                <div class="spm-phase-title" style="--phase-color: #a855f7;">⬤ Play-offs</div>
+                                <div class="spm-dates-row">
+                                    <div class="spm-field-group">
+                                        <label class="spm-label">INICIO</label>
+                                        <input type="date" id="spm-playoffs-start" class="spm-input">
+                                    </div>
+                                    <div class="spm-field-group">
+                                        <label class="spm-label">FIN</label>
+                                        <input type="date" id="spm-playoffs-end" class="spm-input">
+                                    </div>
+                                </div>
+                                <label class="spm-label" style="margin-top:10px;">OBJETIVOS (uno por línea)</label>
+                                <textarea id="spm-playoffs-objs" class="spm-textarea" rows="3" placeholder="Pico de rendimiento&#10;Gestión de carga&#10;Estrategia rival"></textarea>
+                            </div>
+
+                            <!-- TRANSICIÓN -->
+                            <div class="spm-phase-block">
+                                <div class="spm-phase-title" style="--phase-color: #6b7280;">⬤ Transición</div>
+                                <div class="spm-dates-row">
+                                    <div class="spm-field-group">
+                                        <label class="spm-label">INICIO</label>
+                                        <input type="date" id="spm-trans-start" class="spm-input">
+                                    </div>
+                                    <div class="spm-field-group">
+                                        <label class="spm-label">FIN</label>
+                                        <input type="date" id="spm-trans-end" class="spm-input">
+                                    </div>
+                                </div>
+                                <label class="spm-label" style="margin-top:10px;">OBJETIVOS (uno por línea)</label>
+                                <textarea id="spm-trans-objs" class="spm-textarea" rows="3" placeholder="Recuperación activa&#10;Evaluación de temporada&#10;Planificación"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="spm-footer">
+                            <button class="spm-btn-cancel" onclick="window.SeasonPlanningModal.close()">Cancelar</button>
+                            <button class="spm-btn-save" onclick="window.SeasonPlanningModal.save()">💾 Guardar Planificación</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2240,64 +2420,47 @@ window.DTEngine = {
             if (roadmapEl && per.fases[currentIdx]) {
                 var currentFase = per.fases[currentIdx];
                 var fasesDone = currentIdx;
-                var fasesTotal = per.fases.length;
-                // Progress within current phase
                 var today2 = new Date();
-                var phaseStart = new Date(currentFase.start + 'T00:00:00');
-                var phaseEnd = new Date(currentFase.end + 'T00:00:00');
-                var phaseLen = Math.max(1, phaseEnd - phaseStart);
-                var elapsed = Math.max(0, Math.min(phaseLen, today2 - phaseStart));
-                var phasePct = Math.round((elapsed / phaseLen) * 100);
-                // Microciclos restantes (assume 1 per week)
-                var weeksLeft = Math.max(0, Math.round((phaseEnd - today2) / (7 * 86400000)));
+                var phaseStart = new Date(currentFase.start ? currentFase.start + 'T00:00:00' : today2);
+                var phaseEnd   = new Date(currentFase.end   ? currentFase.end   + 'T00:00:00' : today2);
+                var phaseLen   = Math.max(1, phaseEnd - phaseStart);
+                var elapsed    = Math.max(0, Math.min(phaseLen, today2 - phaseStart));
+                var phasePct   = Math.round((elapsed / phaseLen) * 100);
+                var weeksLeft  = Math.max(0, Math.round((phaseEnd - today2) / (7 * 86400000)));
                 var phaseColor = currentFase.color || '#00F2FE';
 
-                var pData = (window.CalendarEngine && window.CalendarEngine.planningData) ? window.CalendarEngine.planningData : {};
-                var textTemporada = pData.temporada || 'TEMPORADA';
-                var textMacrociclo = pData.macrociclo || ('MACROCICLO ' + (fasesDone + 1));
-                var textMesociclo = pData.mesociclo || currentFase.name;
-                var textMicrociclo = pData.microciclo || ('Microciclo ' + (currentIdx + 1));
+                // Format date helper
+                var fmtDate = function(d) {
+                    if (!d) return '—';
+                    var parts = d.split('-');
+                    if (parts.length < 3) return d;
+                    var months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+                    return parts[2] + ' ' + months[parseInt(parts[1]) - 1];
+                };
 
-                roadmapEl.innerHTML = '<div style="background:linear-gradient(90deg,#111827 0%,#1a2235 100%);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px;">'
-                    + '<div style="display:flex;flex-direction:column;gap:5px;">'
-                    + '<div style="display:flex;gap:10px;align-items:center;">'
-                    + '<span id="plan-temporada" class="editable-cycle-banner" contenteditable="true" style="background:rgba(0,242,254,0.1);color:#00F2FE;padding:4px 10px;border-radius:4px;font-size:0.65rem;font-weight:800;border:1px solid rgba(0,242,254,0.3);font-family:Outfit,sans-serif;letter-spacing:1px;min-width:30px;">' + textTemporada + '</span>'
-                    + '<span id="plan-macrociclo" class="editable-cycle-banner" contenteditable="true" style="color:#9ca3af;font-size:0.8rem;font-weight:600;font-family:Outfit,sans-serif;min-width:30px;">' + textMacrociclo + '</span>'
+                // Build objectives HTML
+                var objsHtml = '';
+                (currentFase.objetivos || []).slice(0, 3).forEach(function(obj) {
+                    objsHtml += '<div style="display:flex;align-items:center;gap:6px;margin-top:4px;"><span style="color:' + phaseColor + ';font-size:0.6rem;">◉</span><span style="font-size:0.72rem;color:#9ca3af;font-family:Outfit,sans-serif;">' + obj + '</span></div>';
+                });
+
+                roadmapEl.innerHTML =
+                    '<div class="spm-roadmap-card">'
+                    + '<div class="spm-roadmap-left">'
+                    + '<div class="spm-roadmap-meta">'
+                    + '<span class="spm-roadmap-badge">' + per.macrociclo + '</span>'
+                    + '<span style="font-size:0.6rem;color:#4b5563;font-family:Outfit,sans-serif;">' + fmtDate(currentFase.start) + ' → ' + fmtDate(currentFase.end) + '</span>'
                     + '</div>'
-                    + '<h2 style="margin:4px 0 0 0;color:#fff;font-family:Outfit,sans-serif;font-size:1.5rem;letter-spacing:-0.5px;font-weight:800;"><span id="plan-mesociclo" class="editable-cycle-banner" contenteditable="true" style="min-width:30px;display:inline-block;">' + textMesociclo + '</span> <span style="color:#6b7280;font-size:1rem;font-weight:500;">/</span> <span id="plan-microciclo" class="editable-cycle-banner" contenteditable="true" style="color:#6b7280;font-size:1rem;font-weight:500;min-width:30px;display:inline-block;">' + textMicrociclo + '</span></h2>'
-                    + '<p style="margin:2px 0 0 0;color:#6b7280;font-size:0.8rem;font-family:Outfit,sans-serif;">Progreso de fase</p>'
+                    + '<h2 class="spm-roadmap-phase-name" style="color:' + phaseColor + ';">' + currentFase.name + '</h2>'
+                    + '<p class="spm-roadmap-sub">Fase ' + (fasesDone + 1) + ' de ' + per.fases.length + ' &nbsp;·&nbsp; Mesociclo activo</p>'
+                    + objsHtml
                     + '</div>'
-                    + '<div style="text-align:right;min-width:180px;">'
-                    + '<div style="display:flex;justify-content:space-between;margin-bottom:5px;">'
-                    + '<span style="color:#9ca3af;font-size:0.7rem;font-weight:700;font-family:Outfit,sans-serif;">PROGRESO DE ETAPA</span>'
-                    + '<span style="color:' + phaseColor + ';font-size:0.7rem;font-weight:800;font-family:Outfit,sans-serif;">' + phasePct + '%</span>'
-                    + '</div>'
-                    + '<div style="width:100%;height:6px;background:#1f2937;border-radius:3px;overflow:hidden;">'
-                    + '<div style="width:' + phasePct + '%;height:100%;background:' + phaseColor + ';box-shadow:0 0 8px ' + phaseColor + ';transition:width 0.5s ease;"></div>'
-                    + '</div>'
-                    + '<p style="margin:5px 0 0 0;color:#6b7280;font-size:0.68rem;font-family:Outfit,sans-serif;">Restan ' + weeksLeft + ' microciclo' + (weeksLeft !== 1 ? 's' : '') + '</p>'
+                    + '<div class="spm-roadmap-right">'
+                    + '<div class="spm-roadmap-pct-label"><span style="color:#6b7280;font-size:0.65rem;font-weight:700;font-family:Outfit,sans-serif;">PROGRESO DE ETAPA</span><span style="color:' + phaseColor + ';font-size:0.7rem;font-weight:800;font-family:Outfit,sans-serif;">' + phasePct + '%</span></div>'
+                    + '<div class="spm-roadmap-bar"><div class="spm-roadmap-fill" style="width:' + phasePct + '%;background:' + phaseColor + ';box-shadow:0 0 8px ' + phaseColor + ';"></div></div>'
+                    + '<p style="margin:6px 0 0 0;color:#4b5563;font-size:0.65rem;font-family:Outfit,sans-serif;">Restan <strong style="color:#9ca3af;">' + weeksLeft + '</strong> semana' + (weeksLeft !== 1 ? 's' : '') + '</p>'
                     + '</div>'
                     + '</div>';
-
-                // Assign listeners
-                setTimeout(() => {
-                    ['plan-temporada', 'plan-macrociclo', 'plan-mesociclo', 'plan-microciclo'].forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el) {
-                            el.addEventListener('blur', () => {
-                                if(window.CalendarEngine && window.CalendarEngine.saveSeasonPlanning) {
-                                    window.CalendarEngine.saveSeasonPlanning();
-                                }
-                            });
-                            el.addEventListener('keydown', (e) => {
-                                if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    el.blur();
-                                }
-                            });
-                        }
-                    });
-                }, 0);
             }
         },
 
