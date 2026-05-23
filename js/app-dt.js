@@ -194,15 +194,30 @@ window.DTEngine = {
             const startDate = `${year}-${monthStr}-01`;
             const endDate = `${year}-${monthStr}-${lastDayStr}`;
 
-            const { data, error } = await window.supabase.from('training_logs')
-                .select('*')
-                .eq('team_id', teamId)
-                .gte('fecha', startDate)
-                .lte('fecha', endDate);
+            const [ { data, error }, { data: overrides, error: overridesErr } ] = await Promise.all([
+                window.supabase.from('training_logs')
+                    .select('*')
+                    .eq('team_id', teamId)
+                    .gte('fecha', startDate)
+                    .lte('fecha', endDate),
+                window.supabase.from('overrides')
+                    .select('*')
+                    .eq('team_id', teamId)
+                    .gte('date', startDate)
+                    .lte('date', endDate)
+            ]);
 
             // ── DIAGNÓSTICO FASE 1 ──────────────────────────────────────────
             console.log('📅 Datos de training_logs recibidos:', data);
             if (error) console.error('❌ Error en training_logs:', error);
+            
+            // Poblar overrides (Etiquetas Manuales)
+            this._manualLabels = {};
+            if (overrides) {
+                overrides.forEach(ov => this._manualLabels[ov.date] = ov.label_override);
+                console.log(`🏷️ Overrides cargados: ${overrides.length}`, this._manualLabels);
+            }
+            if (overridesErr) console.error('❌ Error en overrides:', overridesErr);
             // ───────────────────────────────────────────────────────────────
 
             if (error) throw error;
@@ -1096,17 +1111,42 @@ window.DTEngine = {
 
     applyMethodologyLabels() {
         // Fuente de verdad: priorizar array de Core, fallback al Set local
-        const matchDates = (window.CurrentTeam?.match_dates && window.CurrentTeam.match_dates.length > 0)
-            ? window.CurrentTeam.match_dates
+        let matchDates = (window.CurrentTeam?.match_dates && window.CurrentTeam.match_dates.length > 0)
+            ? [...window.CurrentTeam.match_dates]
             : Array.from(this._matchDays);
 
         const methodology = window.CurrentTeam?.methodology || 'Periodización Táctica';
         const manualLabels = this._manualLabels || {};
 
+        // ── AUTO-DETECT FALLBACK: Si no hay matchDays, buscar tareas de Partido en training_logs ──
+        if (matchDates.length === 0 && this._assignedTasks) {
+            Object.entries(this._assignedTasks).forEach(([dateStr, tasks]) => {
+                const hasMatchTask = tasks.some(t => {
+                    // Try to match task title/phase with "partido" or "match"
+                    const ex = (window.ExercisesLibrary || []).find(e => e.numericId === t.id || e.id === t.rawId) ||
+                               (window.CustomExercises || []).find(e => e.numericId === t.id || e.id === t.rawId);
+                    if (ex) {
+                        const title = String(ex.title).toLowerCase();
+                        const phase = String(ex.morfociclo_phase || '').toLowerCase();
+                        const gMoment = String(ex.game_moment || '').toLowerCase();
+                        return title.includes('partido') || phase.includes('partido') || phase === 'match' || gMoment.includes('partido');
+                    }
+                    return false;
+                });
+                if (hasMatchTask && !matchDates.includes(dateStr)) {
+                    matchDates.push(dateStr);
+                }
+            });
+            if (matchDates.length > 0 && window.CurrentTeam) {
+                window.CurrentTeam.match_dates = [...matchDates];
+                this._matchDays = new Set(matchDates);
+            }
+        }
+
         console.log(`🗓️ applyMethodologyLabels: ${matchDates.length} partidos encontrados. Metodología: ${methodology}`);
 
-        if (matchDates.length === 0) {
-            console.warn('⚠️ applyMethodologyLabels: No hay fechas de partido configuradas. Las etiquetas quedarán en BASE.');
+        if (matchDates.length === 0 && Object.keys(manualLabels).length === 0) {
+            console.warn('⚠️ applyMethodologyLabels: No hay fechas de partido configuradas ni etiquetas manuales. Las etiquetas quedarán en BASE.');
             return;
         }
 
@@ -1239,7 +1279,7 @@ window.DTEngine = {
     async forceLabel(val) {
         const oldLabel = this._manualLabels[this._selectedDate];
 
-        if (!val) delete this._manualLabels[this._selectedDate];
+        if (!val || val === 'BASE') delete this._manualLabels[this._selectedDate];
         else this._manualLabels[this._selectedDate] = val;
 
         const isMatch = (val === 'PARTIDO');
@@ -1251,6 +1291,31 @@ window.DTEngine = {
         // Sincronizar inmediatamente el estado global
         if (window.CurrentTeam) {
             window.CurrentTeam.match_dates = Array.from(this._matchDays);
+        }
+
+        // ── PERSISTENCIA DE ETIQUETA MANUAL (OVERRIDES) ──
+        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id');
+        if (teamId) {
+            try {
+                if (!val || val === 'BASE') {
+                    // Si se deselecciona o es BASE, la borramos de la DB para que aplique lógica automática
+                    await window.supabase.from('overrides')
+                        .delete()
+                        .match({ team_id: teamId, date: this._selectedDate });
+                    console.log(`✅ Etiqueta manual eliminada en DB: ${this._selectedDate}`);
+                } else {
+                    // Upsert con la nueva etiqueta manual
+                    await window.supabase.from('overrides')
+                        .upsert({
+                            team_id: teamId,
+                            date: this._selectedDate,
+                            label_override: val
+                        }, { onConflict: 'team_id,date' });
+                    console.log(`✅ Etiqueta manual guardada en DB: ${this._selectedDate} -> ${val}`);
+                }
+            } catch (err) {
+                console.error("🔴 Error guardando override:", err);
+            }
         }
 
         // Si hubo cambios en los días de partido, persistir en team_configs
