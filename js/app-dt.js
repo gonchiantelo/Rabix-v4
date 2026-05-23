@@ -194,17 +194,19 @@ window.DTEngine = {
             const startDate = `${year}-${monthStr}-01`;
             const endDate = `${year}-${monthStr}-${lastDayStr}`;
 
+            // ── VALIDACIÓN ANTI-400 PARA OVERRIDES ──
+            const isValidQuery = teamId != null && startDate && endDate && !startDate.includes('NaN');
+            const overridesPromise = isValidQuery 
+                ? window.supabase.from('overrides').select('*').eq('team_id', teamId).gte('date', startDate).lte('date', endDate)
+                : Promise.resolve({ data: null, error: new Error('Parámetros inválidos para overrides') });
+
             const [ { data, error }, { data: overrides, error: overridesErr } ] = await Promise.all([
                 window.supabase.from('training_logs')
                     .select('*')
                     .eq('team_id', teamId)
                     .gte('fecha', startDate)
                     .lte('fecha', endDate),
-                window.supabase.from('overrides')
-                    .select('*')
-                    .eq('team_id', teamId)
-                    .gte('date', startDate)
-                    .lte('date', endDate)
+                overridesPromise
             ]);
 
             // ── DIAGNÓSTICO FASE 1 ──────────────────────────────────────────
@@ -1094,7 +1096,7 @@ window.DTEngine = {
                         ${isPast && hasTasks ? '<span class="past-hist-badge">HIST</span>' : ''}
                     </div>
                     <div class="m-day-content">
-                        ${(!hasTasks || label === 'LIBRE') ? `
+                        ${(label === 'LIBRE') ? `
                             <div class="free-day-indicator">
                                 <i class="fas fa-battery-full"></i> Día Libre - Recuperación
                             </div>
@@ -1381,16 +1383,24 @@ window.DTEngine = {
         // --- FUENTES DE DATOS ---
         const customTasks = window.CustomExercises || [];
         let globalTasks = libraryData;
+        let fallbackApplied = false;
 
         // Filtrar tareas globales por fase si aplica
         if (!this._showAllExercises && (currentPhase.startsWith('MD-') || currentPhase === 'PARTIDO')) {
-            globalTasks = globalTasks.filter(ex =>
+            const filteredGlobal = globalTasks.filter(ex =>
                 ex.morfociclo_phase?.trim().toUpperCase() === currentPhase
             );
+            
+            if (filteredGlobal.length > 0) {
+                globalTasks = filteredGlobal;
+            } else {
+                fallbackApplied = true;
+                console.warn(`⚠️ renderLibrary: 0 tareas globales para fase ${currentPhase}. Aplicando fallback (mostrando todo).`);
+            }
         }
 
         // --- RENDER CUSTOM (prioridad, badge dorado) ---
-        const customFiltered = this._showAllExercises
+        const customFiltered = (this._showAllExercises || fallbackApplied)
             ? customTasks
             : customTasks.filter(ex => !ex.morfociclo_phase || ex.morfociclo_phase.trim().toUpperCase() === currentPhase || currentPhase === 'BASE');
 
