@@ -873,10 +873,19 @@ window.DTEngine = {
                         <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">TAGS TÁCTICOS</label>
                         <input type="text" id="exercise-tags" placeholder="Ej: pressing, posesion, amplitud (separados por coma)" style="width:100%;padding:12px;margin-bottom:20px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#00F2FE;font-weight:bold;outline:none;box-sizing:border-box;">
 
-                        <!-- Placeholder Pilar 5 -->
-                        <div style="margin-bottom:20px;border:2px dashed rgba(255,255,255,0.15);background:rgba(0,0,0,0.2);border-radius:12px;padding:25px;text-align:center;color:#6b7280;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:not-allowed;">
-                            <i class="fas fa-chalkboard-teacher" style="font-size:2rem;color:rgba(255,255,255,0.1);"></i>
-                            <span style="font-size:0.8rem;font-weight:bold;letter-spacing:0.5px;">Añadir Esquema Táctico (Próximamente)</span>
+                        <!-- Pizarra Técnica (Pilar 4) -->
+                        <div style="margin-bottom:20px;border:1px solid #374151;border-radius:12px;overflow:hidden;background:#111827;">
+                            <div style="padding:10px;background:#1f2937;border-bottom:1px solid #374151;display:flex;justify-content:space-between;align-items:center;">
+                                <div style="display:flex;gap:10px;">
+                                    <button type="button" class="tactical-color-btn active" data-color="#ff3b30" style="width:24px;height:24px;border-radius:50%;background:#ff3b30;border:2px solid #fff;cursor:pointer;" onclick="DTEngine.setCanvasColor('#ff3b30', this)" title="Movimiento"></button>
+                                    <button type="button" class="tactical-color-btn" data-color="#0a84ff" style="width:24px;height:24px;border-radius:50%;background:#0a84ff;border:2px solid transparent;cursor:pointer;" onclick="DTEngine.setCanvasColor('#0a84ff', this)" title="Pase"></button>
+                                    <button type="button" class="tactical-color-btn" data-color="#ffd60a" style="width:24px;height:24px;border-radius:50%;background:#ffd60a;border:2px solid transparent;cursor:pointer;" onclick="DTEngine.setCanvasColor('#ffd60a', this)" title="Balón / Cono"></button>
+                                </div>
+                                <button type="button" onclick="DTEngine.clearCanvas()" style="background:transparent;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;"><i class="fas fa-trash"></i></button>
+                            </div>
+                            <div style="position:relative;width:100%;height:350px;">
+                                <canvas id="tactical-board" style="position:absolute;top:0;left:0;width:100%;height:100%;touch-action:none;background:linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px), #1a2f24;background-size:20px 20px;cursor:crosshair;"></canvas>
+                            </div>
                         </div>
 
                         <button onclick="DTEngine.saveCustomTask()" style="width:100%;padding:14px;background:var(--primary-color,#00F2FE);color:#000;border:none;border-radius:8px;font-weight:900;font-family:Outfit,sans-serif;font-size:1.05rem;cursor:pointer;letter-spacing:0.5px;">GUARDAR FICHA TÉCNICA</button>
@@ -1677,8 +1686,15 @@ window.DTEngine = {
                     </div>
                     <div class="m-info-block">
                         <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;"><i class="fas fa-vector-square"></i> Dimensiones y Estructuras</label>
-                        <p class="m-desc">${task.dimensions_density || task.dimensions || '<span style="color:#6b7280;font-style:italic;">No definido para esta tarea</span>'}</p>
+                        <p class="m-desc">${task.dimensions_density || task.dimensions || '<span style="color:#6b7280;font-style:italic;">No definido</span>'}</p>
                     </div>
+                    ${task.tactical_diagram_url ? `
+                    <div class="m-info-block" style="grid-column: 1 / -1; margin-top: 10px;">
+                        <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:10px;"><i class="fas fa-chalkboard"></i> Esquema Táctico</label>
+                        <div style="border-radius:12px;overflow:hidden;border:1px solid #374151;max-width:100%;">
+                            <img src="${task.tactical_diagram_url}" style="width:100%;height:auto;display:block;background:linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px), #1a2f24;background-size:20px 20px;">
+                        </div>
+                    </div>` : ''}
                 </div>
             </div>
         `;
@@ -2049,6 +2065,100 @@ window.DTEngine = {
         }
     },
 
+    // --- CANVAS DIBUJO TÁCTICO ---
+    _canvasParams: {
+        isDrawing: false,
+        ctx: null,
+        color: '#ff3b30',
+        lastX: 0,
+        lastY: 0,
+        initialized: false
+    },
+
+    initCanvas() {
+        const canvas = document.getElementById('tactical-board');
+        if (!canvas || this._canvasParams.initialized) return;
+        
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width || 500;
+        canvas.height = rect.height || 350;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 3;
+        this._canvasParams.ctx = ctx;
+        
+        const getMousePos = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+            
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }
+            
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        };
+
+        const startDrawing = (e) => {
+            if (e.type.startsWith('touch')) e.preventDefault();
+            this._canvasParams.isDrawing = true;
+            const pos = getMousePos(e);
+            this._canvasParams.lastX = pos.x;
+            this._canvasParams.lastY = pos.y;
+        };
+
+        const draw = (e) => {
+            if (!this._canvasParams.isDrawing) return;
+            if (e.type.startsWith('touch')) e.preventDefault();
+            const pos = getMousePos(e);
+            
+            ctx.beginPath();
+            ctx.moveTo(this._canvasParams.lastX, this._canvasParams.lastY);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.strokeStyle = this._canvasParams.color;
+            ctx.stroke();
+            
+            this._canvasParams.lastX = pos.x;
+            this._canvasParams.lastY = pos.y;
+        };
+
+        const stopDrawing = (e) => {
+            this._canvasParams.isDrawing = false;
+        };
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, {passive: false});
+        canvas.addEventListener('touchmove', draw, {passive: false});
+        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('touchcancel', stopDrawing);
+
+        this._canvasParams.initialized = true;
+    },
+
+    setCanvasColor(color, btnEl) {
+        this._canvasParams.color = color;
+        document.querySelectorAll('.tactical-color-btn').forEach(btn => btn.style.border = '2px solid transparent');
+        if (btnEl) btnEl.style.border = '2px solid #fff';
+    },
+
+    clearCanvas() {
+        if (!this._canvasParams.ctx) return;
+        const canvas = document.getElementById('tactical-board');
+        this._canvasParams.ctx.clearRect(0, 0, canvas.width, canvas.height);
+    },
+
     // --- BÓVEDA DE TAREAS PERSONALIZADAS ---
     openCustomTaskModal() {
         document.getElementById('custom-task-name').value = '';
@@ -2063,6 +2173,12 @@ window.DTEngine = {
         const tw = document.getElementById('task-work');   if (tw) tw.value = '';
         const tp = document.getElementById('task-pause');  if (tp) tp.value = '';
         const tm = document.getElementById('task-materials'); if (tm) tm.value = '';
+        
+        setTimeout(() => {
+            this.initCanvas();
+            this.clearCanvas();
+        }, 100);
+
         document.getElementById('modal-custom-task').classList.remove('hidden');
     },
 
@@ -2096,6 +2212,13 @@ window.DTEngine = {
         }
 
         const totalMinutes = (blocks && workTime) ? blocks * workTime : null;
+        
+        // Capturar Pizarra
+        const canvas = document.getElementById('tactical-board');
+        let diagramDataUrl = null;
+        if (canvas) {
+            diagramDataUrl = canvas.toDataURL("image/png");
+        }
 
         try {
             console.log('💾 Guardando ficha técnica en bóveda...');
@@ -2109,6 +2232,7 @@ window.DTEngine = {
                 rule_propension: rulePropension,
                 rule_continuity: ruleContinuity,
                 dimensions_density: dimensionsDensity,
+                tactical_diagram_url: diagramDataUrl,
                 tags: tags,
                 description: sspContext, // Fallback legacy
                 dimensions: dimensionsDensity, // Fallback legacy
