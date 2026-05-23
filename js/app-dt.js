@@ -1027,11 +1027,14 @@ window.DTEngine = {
                 `;
             };
 
+            const hasTasks = assignments.length > 0;
+
             html += `
-                <div class="macro-day ${typeClass ? typeClass : ''} ${pastClass}" data-date="${dateStr}" onclick="${isPast ? 'void(0)' : `DTEngine.openDrawer('${dateStr}')`}">
+                <div class="macro-day ${typeClass ? typeClass : ''} ${pastClass}${hasTasks && isPast ? ' has-tasks' : ''}" data-date="${dateStr}" onclick="${isPast ? 'void(0)' : `DTEngine.openDrawer('${dateStr}')`}">
                     <div class="m-day-top">
                         <span class="m-day-num">${d}</span>
                         <span class="m-day-label">${label}</span>
+                        ${isPast && hasTasks ? '<span class="past-hist-badge">HIST</span>' : ''}
                     </div>
                     <div class="m-day-content">
                         ${renderBlock('gimnasio', 'Gimnasio')}

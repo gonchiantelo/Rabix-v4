@@ -845,18 +845,58 @@ body { background: #121212 !important; }
     letter-spacing: 2px;
     color: var(--dt-accent);
 }
-/* ── Días Pasados (Read-Only) ── */
+/* ── Días Pasados — Modo Historial (Read-Only Premium) ── */
 .past-day {
-    opacity: 0.35;
-    pointer-events: none;   /* Desactiva clicks, hover y drag */
+    opacity: 0.72;
     cursor: default !important;
+    background: rgba(0, 0, 0, 0.18) !important;
+    border-color: rgba(255, 255, 255, 0.04) !important;
 }
 
-/* Excepción: las tasks-chip en días pasados siguen siendo legibles */
+/* Bloquear apertura del drawer pero NO los clicks en chips internos */
+.past-day .m-day-top {
+    pointer-events: none;
+}
+.past-day .m-day-content {
+    pointer-events: none;
+}
 
-/* Excepción: las tasks-chip en días pasados siguen siendo legibles */
+/* Los task-chips en días pasados SÍ son clickeables (modo lectura) */
 .past-day .task-chip {
-    opacity: 0.85;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    opacity: 1;
+    filter: saturate(0.5) brightness(0.88);
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+}
+.past-day .task-chip:hover {
+    filter: saturate(0.85) brightness(1.05);
+    border-color: rgba(0, 242, 254, 0.25) !important;
+}
+
+/* Número de día apagado */
+.past-day .m-day-num {
+    color: #374151 !important;
+}
+/* Etiqueta de metodología apagada */
+.past-day .m-day-label {
+    opacity: 0.45;
+}
+
+/* Badge HIST para días pasados con contenido */
+.past-hist-badge {
+    font-size: 0.48rem;
+    font-weight: 800;
+    font-family: Outfit, sans-serif;
+    letter-spacing: 0.8px;
+    color: #1f2937;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 3px;
+    padding: 1px 4px;
+    line-height: 1.4;
+    align-self: center;
 }
 
 /* ── Centro de Comando ── */
