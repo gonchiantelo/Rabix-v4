@@ -876,12 +876,16 @@ window.DTEngine = {
                         <!-- Pizarra Técnica (Pilar 4) -->
                         <div style="margin-bottom:20px;border:1px solid #374151;border-radius:12px;overflow:hidden;background:#111827;">
                             <div style="padding:10px;background:#1f2937;border-bottom:1px solid #374151;display:flex;justify-content:space-between;align-items:center;">
-                                <div style="display:flex;gap:10px;">
-                                    <button type="button" class="tactical-color-btn active" data-color="#ff3b30" style="width:24px;height:24px;border-radius:50%;background:#ff3b30;border:2px solid #fff;cursor:pointer;" onclick="DTEngine.setCanvasColor('#ff3b30', this)" title="Movimiento"></button>
-                                    <button type="button" class="tactical-color-btn" data-color="#0a84ff" style="width:24px;height:24px;border-radius:50%;background:#0a84ff;border:2px solid transparent;cursor:pointer;" onclick="DTEngine.setCanvasColor('#0a84ff', this)" title="Pase"></button>
-                                    <button type="button" class="tactical-color-btn" data-color="#ffd60a" style="width:24px;height:24px;border-radius:50%;background:#ffd60a;border:2px solid transparent;cursor:pointer;" onclick="DTEngine.setCanvasColor('#ffd60a', this)" title="Balón / Cono"></button>
+                                <div style="display:flex;gap:8px;align-items:center;">
+                                    <button type="button" class="tactical-color-btn" data-color="#0088ff" style="width:22px;height:22px;border-radius:50%;background:#0088ff;border:2px solid transparent;cursor:pointer;" onclick="DTEngine.setCanvasColor('#0088ff', this, false)" title="Titulares"></button>
+                                    <button type="button" class="tactical-color-btn" data-color="#ffffff" style="width:22px;height:22px;border-radius:50%;background:#ffffff;border:2px solid transparent;cursor:pointer;" onclick="DTEngine.setCanvasColor('#ffffff', this, false)" title="Base / Suplentes"></button>
+                                    <button type="button" class="tactical-color-btn active" data-color="#ff4444" style="width:22px;height:22px;border-radius:50%;background:#ff4444;border:2px solid #fff;cursor:pointer;" onclick="DTEngine.setCanvasColor('#ff4444', this, false)" title="Rival / Movimiento"></button>
+                                    <button type="button" class="tactical-color-btn" data-color="#ffcc00" style="width:22px;height:22px;border-radius:50%;background:#ffcc00;border:2px solid transparent;cursor:pointer;" onclick="DTEngine.setCanvasColor('#ffcc00', this, false)" title="Balón"></button>
+                                    <button type="button" class="tactical-color-btn" data-color="#00ffa3" style="width:22px;height:22px;border-radius:50%;background:#00ffa3;border:2px solid transparent;cursor:pointer;" onclick="DTEngine.setCanvasColor('#00ffa3', this, false)" title="Zonas libres"></button>
+                                    <div style="width:1px;height:20px;background:#374151;margin:0 5px;"></div>
+                                    <button type="button" class="tactical-color-btn" data-color="eraser" style="width:22px;height:22px;border-radius:50%;background:transparent;border:2px solid transparent;color:#9ca3af;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;" onclick="DTEngine.setCanvasColor('eraser', this, true)" title="Borrador"><i class="fas fa-eraser"></i></button>
                                 </div>
-                                <button type="button" onclick="DTEngine.clearCanvas()" style="background:transparent;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;"><i class="fas fa-trash"></i></button>
+                                <button type="button" onclick="DTEngine.clearCanvas()" style="background:transparent;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;" title="Limpiar Todo"><i class="fas fa-trash"></i></button>
                             </div>
                             <div style="position:relative;width:100%;height:350px;">
                                 <canvas id="tactical-board" style="position:absolute;top:0;left:0;width:100%;height:100%;touch-action:none;background:linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px), #1a2f24;background-size:20px 20px;cursor:crosshair;"></canvas>
@@ -2069,10 +2073,11 @@ window.DTEngine = {
     _canvasParams: {
         isDrawing: false,
         ctx: null,
-        color: '#ff3b30',
+        color: '#ff4444',
         lastX: 0,
         lastY: 0,
-        initialized: false
+        initialized: false,
+        isEraser: false
     },
 
     initCanvas() {
@@ -2086,7 +2091,8 @@ window.DTEngine = {
         const ctx = canvas.getContext('2d');
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = this._canvasParams.isEraser ? 15 : 3;
+        ctx.globalCompositeOperation = this._canvasParams.isEraser ? 'destination-out' : 'source-over';
         this._canvasParams.ctx = ctx;
         
         const getMousePos = (e) => {
@@ -2147,8 +2153,18 @@ window.DTEngine = {
         this._canvasParams.initialized = true;
     },
 
-    setCanvasColor(color, btnEl) {
+    setCanvasColor(color, btnEl, isEraser = false) {
         this._canvasParams.color = color;
+        this._canvasParams.isEraser = isEraser;
+        if (this._canvasParams.ctx) {
+            if (isEraser) {
+                this._canvasParams.ctx.globalCompositeOperation = 'destination-out';
+                this._canvasParams.ctx.lineWidth = 15;
+            } else {
+                this._canvasParams.ctx.globalCompositeOperation = 'source-over';
+                this._canvasParams.ctx.lineWidth = 3;
+            }
+        }
         document.querySelectorAll('.tactical-color-btn').forEach(btn => btn.style.border = '2px solid transparent');
         if (btnEl) btnEl.style.border = '2px solid #fff';
     },
@@ -2231,11 +2247,10 @@ window.DTEngine = {
                 rule_provocation: ruleProvocation,
                 rule_propension: rulePropension,
                 rule_continuity: ruleContinuity,
-                dimensions_density: dimensionsDensity,
+                dimensions: dimensionsDensity,
                 tactical_diagram_url: diagramDataUrl,
                 tags: tags,
                 description: sspContext, // Fallback legacy
-                dimensions: dimensionsDensity, // Fallback legacy
                 game_moment: moment,
                 ssp_type: ssp,
                 series: blocks,
