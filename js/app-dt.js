@@ -1692,13 +1692,13 @@ window.DTEngine = {
                     </div>
                     <div class="m-info-block">
                         <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;"><i class="fas fa-vector-square"></i> Dimensiones y Estructuras</label>
-                        <p class="m-desc">${task.dimensions_density || task.dimensions || '<span style="color:#6b7280;font-style:italic;">No definido</span>'}</p>
+                        <p class="m-desc">${task.dimensions || task.dimensions_density || '<span style="color:#6b7280;font-style:italic;">No definido</span>'}</p>
                     </div>
-                    ${task.tactical_diagram_url ? `
+                    ${(task.tactical_diagram_url && task.tactical_diagram_url.length > 100) ? `
                     <div class="m-info-block" style="grid-column: 1 / -1; margin-top: 10px;">
                         <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:10px;"><i class="fas fa-chalkboard"></i> Esquema Táctico</label>
                         <div style="border-radius:12px;overflow:hidden;border:1px solid #374151;max-width:100%;">
-                            <img src="${task.tactical_diagram_url}" style="width:100%;height:auto;display:block;background:linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px), #1a2f24;background-size:20px 20px;">
+                            <img src="${task.tactical_diagram_url}" class="tactical-board-preview" style="width:100%; border-radius:8px; border:1px solid #333; margin-top:15px;background:linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px), #1a2f24;background-size:20px 20px;">
                         </div>
                     </div>` : ''}
                 </div>
