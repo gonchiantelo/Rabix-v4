@@ -191,23 +191,30 @@ window.DTEngine = {
         await this.fetchTeamConfig();
 
         try {
+            if (isNaN(year) || isNaN(monthNum)) {
+                console.warn('⚠️ fetchMonthLogs: Fecha inválida (NaN). Abortando fetch para evitar Error 400.');
+                return;
+            }
+
             const startDate = `${year}-${monthStr}-01`;
             const endDate = `${year}-${monthStr}-${lastDayStr}`;
 
             // ── VALIDACIÓN ANTI-400 PARA OVERRIDES ──
-            const isValidQuery = teamId != null && startDate && endDate && !startDate.includes('NaN');
+            const isValidQuery = teamId != null && startDate && endDate && !startDate.includes('NaN') && !startDate.includes('undefined');
             const overridesPromise = isValidQuery 
                 ? window.supabase.from('overrides').select('*').eq('team_id', teamId).gte('date', startDate).lte('date', endDate)
                 : Promise.resolve({ data: null, error: new Error('Parámetros inválidos para overrides') });
 
-            const [ { data, error }, { data: overrides, error: overridesErr } ] = await Promise.all([
-                window.supabase.from('training_logs')
-                    .select('*')
-                    .eq('team_id', teamId)
-                    .gte('fecha', startDate)
-                    .lte('fecha', endDate),
-                overridesPromise
+            const [ { data, error }, { data: overrides, error: overridesErr }, { data: customData, error: customErr } ] = await Promise.all([
+                isValidQuery ? window.supabase.from('training_logs').select('*').eq('team_id', teamId).gte('fecha', startDate).lte('fecha', endDate) : Promise.resolve({data:null, error:null}),
+                overridesPromise,
+                window.supabase.from('custom_exercises').select('*')
             ]);
+
+            if (customData) {
+                window.CustomExercises = customData.map(ex => ({ ...ex, numericId: ex.id, isCustom: true }));
+                console.log("🔒 Bóveda de tareas personalizadas cargada:", customData);
+            }
 
             // ── DIAGNÓSTICO FASE 1 ──────────────────────────────────────────
             console.log('📅 Datos de training_logs recibidos:', data);
@@ -1644,6 +1651,10 @@ window.DTEngine = {
         let task = (window.ExercisesLibrary || []).find(ex => String(ex.numericId) === String(id) || String(ex.id) === String(id));
         if (!task) {
             task = (window.CustomExercises || []).find(ex => String(ex.numericId) === String(id) || String(ex.id) === String(id));
+        }
+        if (!task) {
+            console.warn("⚠️ Tarea no encontrada en memoria. ID:", id);
+            return;
         }
         if (task) this.renderTaskModal(task);
     },
