@@ -1631,19 +1631,12 @@ window.DTEngine = {
                 });
                 if (error) throw error;
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(JSON.stringify(errorData));
-            }
-
-            console.log("🟢 Tarea eliminada con éxito vía RPC");
-
             // Solo después de confirmar, refrescamos el estado global
             await this.refreshState();
 
         } catch (error) {
-            console.error("🔴 Error crítico al borrar en RPC:", error.message);
-            alert("Error al borrar: " + error.message);
+            console.error("🔴 Error crítico al borrar en RPC:", error);
+            alert("Error al borrar: " + (error.message || error));
         }
     },
 
@@ -1655,17 +1648,22 @@ window.DTEngine = {
         
         if (!task) {
             // FALLBACK DIRECTO A BASE DE DATOS
-            const { data, error } = await window.supabase
-                .from('custom_exercises')
-                .select('*')
-                .eq('id', id)
-                .single();
+            try {
+                const { data, error } = await window.supabase
+                    .from('custom_exercises')
+                    .select('*')
+                    .eq('id', String(id))
+                    .single();
 
-            if (data) {
-                // Mapeo seguro para el frontend
-                task = { ...data, numericId: data.id, isCustom: true };
-            } else {
-                console.warn("⚠️ Tarea no encontrada en memoria ni en BD. ID:", id, error);
+                if (data) {
+                    // Mapeo seguro para el frontend
+                    task = { ...data, numericId: data.id, isCustom: true };
+                } else {
+                    console.warn("⚠️ Tarea no encontrada en memoria ni en BD. ID:", id, error);
+                    return;
+                }
+            } catch (fallbackError) {
+                console.error("⚠️ Fallback abortado por error en Supabase:", fallbackError);
                 return;
             }
         }

@@ -678,6 +678,17 @@ window.App = {
                 }));
                 console.log("📚 Biblioteca Táctica cargada globalmente:", window.ExercisesLibrary.length);
             }
+
+            const { data: customTasks, error: customErr } = await window.supabase.from('custom_exercises').select('*');
+            if (!customErr && customTasks) {
+                window.CustomExercises = customTasks.map(ex => ({
+                    ...ex,
+                    numericId: ex.id,
+                    isCustom: true
+                }));
+                console.log("🔒 Tareas personalizadas cargadas en memoria desde init:", window.CustomExercises.length);
+            }
+
         } catch (e) { console.error("🔴 Error cargando biblioteca:", e); }
     },
 
