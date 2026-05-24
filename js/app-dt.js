@@ -1105,9 +1105,8 @@ window.DTEngine = {
                 const tasksHtml = tasks.map((a) => {
                     // Dual matching: numeric legacy ID OR UUID string (Supabase primary key)
                     const findEx = (lib) => (lib || []).find(e =>
-                        e.numericId === a.id ||          // numeric match (legacy)
-                        e.id === a.rawId ||              // UUID string match (Supabase PK)
-                        e.id === String(a.id)            // coerced string match
+                        String(e.numericId) === String(a.id) ||          
+                        String(e.id) === String(a.rawId || a.id)
                     );
                     const ex = findEx(window.ExercisesLibrary) || findEx(window.CustomExercises);
                     if (!ex) return '';
@@ -1123,7 +1122,7 @@ window.DTEngine = {
                         timeBadge = `<span style="color:#00F2FE;font-size:0.6rem;font-weight:700;margin-right:3px;">⏱ ${wrk}'</span>`;
                     }
                     return `
-                        <div class="task-chip" onclick="event.stopPropagation(); DTEngine.openTaskModal(${a.id})">
+                        <div class="task-chip" onclick="event.stopPropagation(); DTEngine.openTaskModal('${a.id}')">
                             ${timeBadge}<span class="tc-name">${ex.title}</span>
                             ${!isPast ? `<span class="tc-delete" onclick="event.stopPropagation(); DTEngine.removeTask('${dateStr}', ${assignments.indexOf(a)})">\u00d7</span>` : ''}
                         </div>
@@ -1457,7 +1456,7 @@ window.DTEngine = {
             : customTasks.filter(ex => !ex.morfociclo_phase || ex.morfociclo_phase.trim().toUpperCase() === currentPhase);
 
         const customHTML = customFiltered.map(ex => {
-            const isStaged = this._stagedTasks.some(t => t.id === ex.numericId && t.isCustom);
+            const isStaged = this._stagedTasks.some(t => String(t.id) === String(ex.numericId) && t.isCustom);
             return `
                 <div class="exercise-card custom-task-card ${isStaged ? 'staged-card' : ''}">
                     <div class="ex-info">
@@ -1473,7 +1472,7 @@ window.DTEngine = {
                             <option value="doble_turno">2º Turno</option>
                             <option value="vuelta_calma">V. Calma</option>
                         </select>
-                        <button id="btn-add-c${ex.numericId}" class="ex-add-btn ${isStaged ? 'staged' : ''}" onclick="DTEngine.stageExercise(${ex.numericId}, true)">
+                        <button id="btn-add-c${ex.numericId}" class="ex-add-btn ${isStaged ? 'staged' : ''}" onclick="DTEngine.stageExercise('${ex.numericId}', true)">
                             ${isStaged ? '✓' : '+'}
                         </button>
                     </div>
@@ -1483,7 +1482,7 @@ window.DTEngine = {
 
         // --- RENDER GLOBAL ---
         const globalHTML = globalTasks.map(ex => {
-            const isStaged = this._stagedTasks.some(t => t.id === ex.numericId && !t.isCustom);
+            const isStaged = this._stagedTasks.some(t => String(t.id) === String(ex.numericId) && !t.isCustom);
             return `
                 <div class="exercise-card ${isStaged ? 'staged-card' : ''}">
                     <div class="ex-info">
@@ -1499,7 +1498,7 @@ window.DTEngine = {
                             <option value="doble_turno">2º Turno</option>
                             <option value="vuelta_calma">V. Calma</option>
                         </select>
-                        <button id="btn-add-${ex.numericId}" class="ex-add-btn ${isStaged ? 'staged' : ''}" onclick="DTEngine.stageExercise(${ex.numericId}, false)">
+                        <button id="btn-add-${ex.numericId}" class="ex-add-btn ${isStaged ? 'staged' : ''}" onclick="DTEngine.stageExercise('${ex.numericId}', false)">
                             ${isStaged ? '✓' : '+'}
                         </button>
                     </div>
@@ -1529,7 +1528,7 @@ window.DTEngine = {
         const btnEl = document.getElementById(isCustom ? `btn-add-c${id}` : `btn-add-${id}`);
 
         // Toggle selection
-        const existingIdx = this._stagedTasks.findIndex(t => t.id === id && t.isCustom === isCustom);
+        const existingIdx = this._stagedTasks.findIndex(t => String(t.id) === String(id) && t.isCustom === isCustom);
         if (existingIdx > -1) {
             this._stagedTasks.splice(existingIdx, 1);
             if (btnEl) { btnEl.classList.remove('staged'); btnEl.innerText = '+'; }
@@ -1641,8 +1640,11 @@ window.DTEngine = {
         }
     },
 
-    openTaskModal(numericId) {
-        const task = (window.ExercisesLibrary || []).find(ex => ex.numericId === numericId);
+    openTaskModal(id) {
+        let task = (window.ExercisesLibrary || []).find(ex => String(ex.numericId) === String(id) || String(ex.id) === String(id));
+        if (!task) {
+            task = (window.CustomExercises || []).find(ex => String(ex.numericId) === String(id) || String(ex.id) === String(id));
+        }
         if (task) this.renderTaskModal(task);
     },
 
