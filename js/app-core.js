@@ -1457,3 +1457,58 @@ window.App.signUp = async function (email, pass, event) {
         if (btn) { btn.textContent = originalText; btn.disabled = false; }
     }
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Localizar el Botón Real
+    const finishButton = document.getElementById('btn-finish-wizard');
+
+    if (finishButton) {
+        // Removemos listeners viejos clonando el botón (hack de seguridad de DOM)
+        const newFinishButton = finishButton.cloneNode(true);
+        finishButton.parentNode.replaceChild(newFinishButton, finishButton);
+
+        newFinishButton.addEventListener('click', async (e) => {
+            e.preventDefault();
+            console.log("🚀 INICIANDO GUARDADO DE ONBOARDING...");
+            
+            const userId = localStorage.getItem('ravix_v5_uid');
+            const nombreDT = document.getElementById('ob-name').value;
+            const nombreEquipo = document.getElementById('ob-club-name').value;
+
+            try {
+                // PASO 1: Crear Equipo
+                console.log("⏳ Paso 1: Creando equipo en Supabase...");
+                const { data: newTeam, error: teamError } = await window.supabase
+                    .from('teams')
+                    .insert([{ name: nombreEquipo, owner_id: userId }])
+                    .select()
+                    .single();
+
+                if (teamError) throw new Error("Fallo en tabla teams: " + teamError.message);
+                console.log("✅ Equipo creado. ID:", newTeam.id);
+
+                // PASO 2: Actualizar Perfil
+                console.log("⏳ Paso 2: Vinculando team_id al perfil del DT...");
+                const { error: userError } = await window.supabase
+                    .from('users') 
+                    .update({ 
+                        name: nombreDT,
+                        team_id: newTeam.id,
+                        is_profile_complete: true 
+                    })
+                    .eq('id', userId);
+
+                if (userError) throw new Error("Fallo en tabla users: " + userError.message);
+                console.log("✅ Perfil vinculado. Redirigiendo...");
+
+                // PASO 3: Éxito y Recarga
+                localStorage.setItem('dt_onboarding_complete', 'true');
+                window.location.reload();
+
+            } catch (error) {
+                console.error("❌ ERROR CRÍTICO EN ONBOARDING:", error);
+                alert(error.message);
+            }
+        });
+    }
+});
