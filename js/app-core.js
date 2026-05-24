@@ -131,22 +131,38 @@ window.Wizard = {
                 const tSystems = document.getElementById('ob-systems-input').value;
                 const tCode = 'CU-' + Math.floor(1000 + Math.random() * 9000);
 
-                const { data: teams, error: tErr } = await window.supabase.from('teams').insert({ name: tName, code: tCode, owner_id: uid }).select();
-                if (tErr || !teams || !teams[0]) throw new Error('Error al fundar equipo: ' + (tErr?.message || ''));
-                teamId = teams[0].id;
+                // Paso A: Crear el Equipo
+                const { data: teamData, error: teamError } = await window.supabase
+                    .from('teams')
+                    .insert([{ name: tName, code: tCode, owner_id: uid }])
+                    .select()
+                    .single();
+                
+                if (teamError) throw new Error('Error al fundar equipo: ' + teamError.message);
+                teamId = teamData.id;
 
-                const { error: tcErr } = await window.supabase.from('team_configs').insert({ team_id: teamId, owner_id: uid, primary_color: tColor, methodology: tMethodology, base_systems: tSystems });
+                const { error: tcErr } = await window.supabase.from('team_configs').insert([{ team_id: teamId, owner_id: uid, primary_color: tColor, methodology: tMethodology, base_systems: tSystems }]);
                 if (tcErr) console.error(tcErr);
             } else {
                 const code = document.getElementById('ob-invite-code').value;
-                const { data: teams, error: tErr } = await window.supabase.from('teams').select('*').eq('code', code);
-                if (tErr || !teams || !teams[0]) throw new Error('Código inválido o equipo no encontrado.');
-                teamId = teams[0].id;
+                const { data: teamData, error: teamError } = await window.supabase.from('teams').select('*').eq('code', code).single();
+                if (teamError || !teamData) throw new Error('Código inválido o equipo no encontrado.');
+                teamId = teamData.id;
             }
 
-            const { error: uErr } = await window.supabase.from('users').update({ name, staff_role: role, license, team_id: teamId }).eq('id', uid);
-            if (uErr) throw new Error('Error al actualizar perfil: ' + uErr.message);
-            location.reload();
+            // Paso B: Actualizar el Perfil del DT
+            const { error: userError } = await window.supabase
+                .from('users')
+                .upsert({ id: uid, name, staff_role: role, license, team_id: teamId, is_profile_complete: true });
+            
+            if (userError) throw new Error('Error al actualizar perfil: ' + userError.message);
+            
+            // Limpieza de caché local
+            localStorage.setItem('dt_onboarding_complete', 'true');
+            
+            // Redirigir inmediatamente a la pantalla principal del DT
+            window.location.hash = '#home';
+            window.App.init();
         } catch (err) { alert(err.message); }
     },
 
@@ -595,7 +611,10 @@ window.App = {
 
             const userData = users[0];
 
-            if (!userData.name || !userData.team_id) {
+            const isLocalComplete = localStorage.getItem('dt_onboarding_complete') === 'true';
+            if (userData.is_profile_complete === true || isLocalComplete) {
+                LOG('DT')('Perfil completo validado. Pasando al dashboard...');
+            } else if (!userData.name || !userData.team_id) {
                 LOG('DT')('Perfil incompleto (sin nombre o equipo) → redirigiendo a Wizard DT');
                 this._hideAllViews();
                 window.Wizard.startFor('dt');

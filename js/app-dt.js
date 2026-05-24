@@ -886,13 +886,10 @@ window.DTEngine = {
                         <div style="margin-bottom:20px;border:1px solid #374151;border-radius:12px;overflow:hidden;background:#111827;">
                             <div style="padding:10px;background:#1f2937;border-bottom:1px solid #374151;display:flex;justify-content:space-between;align-items:center;">
                                 <div style="display:flex;gap:8px;align-items:center;">
-                                    <button type="button" class="tactical-color-btn" data-color="#0088ff" style="width:22px;height:22px;border-radius:50%;background:#0088ff;border:2px solid transparent;cursor:pointer;" onclick="DTEngine.setCanvasColor('#0088ff', this, false)" title="Titulares"></button>
-                                    <button type="button" class="tactical-color-btn" data-color="#ffffff" style="width:22px;height:22px;border-radius:50%;background:#ffffff;border:2px solid transparent;cursor:pointer;" onclick="DTEngine.setCanvasColor('#ffffff', this, false)" title="Base / Suplentes"></button>
-                                    <button type="button" class="tactical-color-btn active" data-color="#ff4444" style="width:22px;height:22px;border-radius:50%;background:#ff4444;border:2px solid #fff;cursor:pointer;" onclick="DTEngine.setCanvasColor('#ff4444', this, false)" title="Rival / Movimiento"></button>
-                                    <button type="button" class="tactical-color-btn" data-color="#ffcc00" style="width:22px;height:22px;border-radius:50%;background:#ffcc00;border:2px solid transparent;cursor:pointer;" onclick="DTEngine.setCanvasColor('#ffcc00', this, false)" title="Balón"></button>
-                                    <button type="button" class="tactical-color-btn" data-color="#00ffa3" style="width:22px;height:22px;border-radius:50%;background:#00ffa3;border:2px solid transparent;cursor:pointer;" onclick="DTEngine.setCanvasColor('#00ffa3', this, false)" title="Zonas libres"></button>
-                                    <div style="width:1px;height:20px;background:#374151;margin:0 5px;"></div>
-                                    <button type="button" class="tactical-color-btn" data-color="eraser" style="width:22px;height:22px;border-radius:50%;background:transparent;border:2px solid transparent;color:#9ca3af;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;" onclick="DTEngine.setCanvasColor('eraser', this, true)" title="Borrador"><i class="fas fa-eraser"></i></button>
+                                    <button type="button" id="btn-add-player-blue" style="padding: 6px 12px; border-radius: 4px; background: #0088ff; color: white; border: none; cursor: pointer; font-size: 0.8rem; font-family: Outfit;" onclick="window.DTEngine.Board.addPlayerBlue()">🔵 Jugador Base</button>
+                                    <button type="button" id="btn-add-player-red" style="padding: 6px 12px; border-radius: 4px; background: #ff4444; color: white; border: none; cursor: pointer; font-size: 0.8rem; font-family: Outfit;" onclick="window.DTEngine.Board.addPlayerRed()">🔴 Jugador Rival</button>
+                                    <button type="button" id="btn-add-ball" style="padding: 6px 12px; border-radius: 4px; background: #ffffff; color: #000; border: none; cursor: pointer; font-size: 0.8rem; font-family: Outfit;" onclick="window.DTEngine.Board.addBall()">⚽ Balón</button>
+                                    <button type="button" id="btn-delete-obj" style="padding: 6px 12px; border-radius: 4px; background: transparent; color: #ef4444; border: 1px solid #ef4444; cursor: pointer; font-size: 0.8rem; font-family: Outfit;" onclick="window.DTEngine.Board.deleteActive()">🗑️ Borrar Seleccionado</button>
                                 </div>
                                 <button type="button" onclick="DTEngine.clearCanvas()" style="background:transparent;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;" title="Limpiar Todo"><i class="fas fa-trash"></i></button>
                             </div>
@@ -2100,110 +2097,27 @@ window.DTEngine = {
         }
     },
 
-    // --- CANVAS DIBUJO TÁCTICO ---
-    _canvasParams: {
-        isDrawing: false,
-        ctx: null,
-        color: '#ff4444',
-        lastX: 0,
-        lastY: 0,
-        initialized: false,
-        isEraser: false
-    },
-
+    // --- CANVAS DIBUJO TÁCTICO (Fabric.js) ---
     initCanvas() {
-        const canvas = document.getElementById('tactical-board');
-        if (!canvas || this._canvasParams.initialized) return;
-        
-        const rect = canvas.parentElement.getBoundingClientRect();
-        canvas.width = rect.width || 500;
-        canvas.height = rect.height || 350;
-        
-        const ctx = canvas.getContext('2d');
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.lineWidth = this._canvasParams.isEraser ? 15 : 3;
-        ctx.globalCompositeOperation = this._canvasParams.isEraser ? 'destination-out' : 'source-over';
-        this._canvasParams.ctx = ctx;
-        
-        const getMousePos = (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            let clientX = e.clientX;
-            let clientY = e.clientY;
+        if (!window.tacticalCanvas) {
+            window.tacticalCanvas = new fabric.Canvas('tactical-board', {
+                selection: false // No permite seleccionar grupos por ahora
+            });
             
-            if (e.touches && e.touches.length > 0) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            }
-            
-            return {
-                x: (clientX - rect.left) * scaleX,
-                y: (clientY - rect.top) * scaleY
-            };
-        };
-
-        const startDrawing = (e) => {
-            if (e.type.startsWith('touch')) e.preventDefault();
-            this._canvasParams.isDrawing = true;
-            const pos = getMousePos(e);
-            this._canvasParams.lastX = pos.x;
-            this._canvasParams.lastY = pos.y;
-        };
-
-        const draw = (e) => {
-            if (!this._canvasParams.isDrawing) return;
-            if (e.type.startsWith('touch')) e.preventDefault();
-            const pos = getMousePos(e);
-            
-            ctx.beginPath();
-            ctx.moveTo(this._canvasParams.lastX, this._canvasParams.lastY);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.strokeStyle = this._canvasParams.color;
-            ctx.stroke();
-            
-            this._canvasParams.lastX = pos.x;
-            this._canvasParams.lastY = pos.y;
-        };
-
-        const stopDrawing = (e) => {
-            this._canvasParams.isDrawing = false;
-        };
-
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
-
-        canvas.addEventListener('touchstart', startDrawing, {passive: false});
-        canvas.addEventListener('touchmove', draw, {passive: false});
-        canvas.addEventListener('touchend', stopDrawing);
-        canvas.addEventListener('touchcancel', stopDrawing);
-
-        this._canvasParams.initialized = true;
-    },
-
-    setCanvasColor(color, btnEl, isEraser = false) {
-        this._canvasParams.color = color;
-        this._canvasParams.isEraser = isEraser;
-        if (this._canvasParams.ctx) {
-            if (isEraser) {
-                this._canvasParams.ctx.globalCompositeOperation = 'destination-out';
-                this._canvasParams.ctx.lineWidth = 15;
-            } else {
-                this._canvasParams.ctx.globalCompositeOperation = 'source-over';
-                this._canvasParams.ctx.lineWidth = 3;
+            const canvasEl = document.getElementById('tactical-board');
+            const container = canvasEl ? canvasEl.parentElement : null;
+            if (container) {
+                const rect = container.getBoundingClientRect();
+                window.tacticalCanvas.setWidth(rect.width || 500);
+                window.tacticalCanvas.setHeight(rect.height || 350);
             }
         }
-        document.querySelectorAll('.tactical-color-btn').forEach(btn => btn.style.border = '2px solid transparent');
-        if (btnEl) btnEl.style.border = '2px solid #fff';
     },
 
     clearCanvas() {
-        if (!this._canvasParams.ctx) return;
-        const canvas = document.getElementById('tactical-board');
-        this._canvasParams.ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (window.tacticalCanvas) {
+            window.tacticalCanvas.clear();
+        }
     },
 
     // --- BÓVEDA DE TAREAS PERSONALIZADAS ---
@@ -2261,10 +2175,12 @@ window.DTEngine = {
         const totalMinutes = (blocks && workTime) ? blocks * workTime : null;
         
         // Capturar Pizarra
-        const canvas = document.getElementById('tactical-board');
         let diagramDataUrl = null;
-        if (canvas) {
-            diagramDataUrl = canvas.toDataURL("image/png");
+        if (window.tacticalCanvas) {
+            diagramDataUrl = window.tacticalCanvas.toDataURL({
+                format: 'png',
+                quality: 1
+            });
         }
 
         try {
@@ -2369,6 +2285,59 @@ window.DTEngine = {
     // MÓDULO PITCH ENGINE — Pizarra del 11 Ideal
     // ══════════════════════════════════════════════════════
     Board: {
+        addPlayerBlue: function() {
+            if (!window.tacticalCanvas) return;
+            const circle = new fabric.Circle({
+                radius: 15,
+                fill: '#0088ff',
+                stroke: '#ffffff',
+                strokeWidth: 2,
+                top: 100,
+                left: 100,
+                hasControls: false,
+                hasBorders: true
+            });
+            window.tacticalCanvas.add(circle);
+            window.tacticalCanvas.setActiveObject(circle);
+        },
+        addPlayerRed: function() {
+            if (!window.tacticalCanvas) return;
+            const circle = new fabric.Circle({
+                radius: 15,
+                fill: '#ff4444',
+                stroke: '#ffffff',
+                strokeWidth: 2,
+                top: 100,
+                left: 150,
+                hasControls: false,
+                hasBorders: true
+            });
+            window.tacticalCanvas.add(circle);
+            window.tacticalCanvas.setActiveObject(circle);
+        },
+        addBall: function() {
+            if (!window.tacticalCanvas) return;
+            const circle = new fabric.Circle({
+                radius: 8,
+                fill: '#ffffff',
+                stroke: '#000000',
+                strokeWidth: 2,
+                top: 100,
+                left: 200,
+                hasControls: false,
+                hasBorders: true
+            });
+            window.tacticalCanvas.add(circle);
+            window.tacticalCanvas.setActiveObject(circle);
+        },
+        deleteActive: function() {
+            if (!window.tacticalCanvas) return;
+            const activeObj = window.tacticalCanvas.getActiveObject();
+            if (activeObj) {
+                window.tacticalCanvas.remove(activeObj);
+            }
+        },
+
         init: function() {
             const layer = document.getElementById('tokens-layer');
             if (!layer) return;
