@@ -199,14 +199,16 @@ window.DTEngine = {
             const startDate = `${year}-${monthStr}-01`;
             const endDate = `${year}-${monthStr}-${lastDayStr}`;
 
+            if (!startDate || startDate === 'undefined' || startDate.includes('undefined') || !endDate || endDate === 'undefined' || endDate.includes('undefined') || startDate.includes('NaN')) {
+                console.warn("Fetch overrides cancelado por fecha inválida.");
+                return;
+            }
+
             // ── VALIDACIÓN ANTI-400 PARA OVERRIDES ──
-            const isValidQuery = teamId != null && startDate && endDate && !startDate.includes('NaN') && !startDate.includes('undefined');
-            const overridesPromise = isValidQuery 
-                ? window.supabase.from('overrides').select('*').eq('team_id', teamId).gte('date', startDate).lte('date', endDate)
-                : Promise.resolve({ data: null, error: new Error('Parámetros inválidos para overrides') });
+            const overridesPromise = window.supabase.from('overrides').select('*').eq('team_id', teamId).gte('date', startDate).lte('date', endDate);
 
             const [ { data, error }, { data: overrides, error: overridesErr }, { data: customData, error: customErr } ] = await Promise.all([
-                isValidQuery ? window.supabase.from('training_logs').select('*').eq('team_id', teamId).gte('fecha', startDate).lte('fecha', endDate) : Promise.resolve({data:null, error:null}),
+                window.supabase.from('training_logs').select('*').eq('team_id', teamId).gte('fecha', startDate).lte('fecha', endDate),
                 overridesPromise,
                 window.supabase.from('custom_exercises').select('*')
             ]);
@@ -1129,9 +1131,9 @@ window.DTEngine = {
                         timeBadge = `<span style="color:#00F2FE;font-size:0.6rem;font-weight:700;margin-right:3px;">⏱ ${wrk}'</span>`;
                     }
                     return `
-                        <div class="task-chip" onclick="event.stopPropagation(); DTEngine.openTaskModal('${a.id}')">
+                        <div class="task-chip" onclick="event.stopPropagation(); window.DTEngine.openTaskModal('${a.id}')">
                             ${timeBadge}<span class="tc-name">${ex.title}</span>
-                            ${!isPast ? `<span class="tc-delete" onclick="event.stopPropagation(); DTEngine.removeTask('${dateStr}', ${assignments.indexOf(a)})">\u00d7</span>` : ''}
+                            ${!isPast ? `<span class="tc-delete" onclick="event.stopPropagation(); window.DTEngine.removeTask('${dateStr}', ${assignments.indexOf(a)})">\u00d7</span>` : ''}
                         </div>
                     `;
                 }).join('');
@@ -1641,6 +1643,7 @@ window.DTEngine = {
     },
 
     async openTaskModal(taskId) {
+        console.log("Clic detectado en tarea ID:", taskId);
         const idBuscado = String(taskId);
         let task = (window.ExercisesLibrary || []).find(t => String(t.numericId) === idBuscado || String(t.id) === idBuscado) || 
                    (window.CustomExercises || []).find(t => String(t.numericId) === idBuscado || String(t.id) === idBuscado);
@@ -1726,7 +1729,7 @@ window.DTEngine = {
             </div>
         `;
         modal.classList.remove('hidden');
-        modal.style.display = 'block';
+        modal.style.display = 'flex';
     },
 
     closeModal() { document.getElementById('dt-modal').classList.add('hidden'); },
