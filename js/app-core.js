@@ -131,15 +131,25 @@ window.Wizard = {
                 const tSystems = document.getElementById('ob-systems-input').value;
                 const tCode = 'CU-' + Math.floor(1000 + Math.random() * 9000);
 
-                // Paso A: Crear el Equipo
-                const { data: teamData, error: teamError } = await window.supabase
+                // 1. Crear el equipo primero
+                const { data: newTeam, error: teamError } = await window.supabase
                     .from('teams')
-                    .insert([{ name: tName, code: tCode, owner_id: uid }])
+                    .insert([{ 
+                        name: tName, 
+                        owner_id: uid,
+                        code: tCode 
+                    }])
                     .select()
                     .single();
-                
-                if (teamError) throw new Error('Error al fundar equipo: ' + teamError.message);
-                teamId = teamData.id;
+
+                if (teamError) {
+                    console.error("❌ Error al crear el equipo:", teamError);
+                    alert("Hubo un error al crear tu equipo.");
+                    return;
+                }
+
+                console.log("✅ Equipo creado con ID:", newTeam.id);
+                teamId = newTeam.id;
 
                 const { error: tcErr } = await window.supabase.from('team_configs').insert([{ team_id: teamId, owner_id: uid, primary_color: tColor, methodology: tMethodology, base_systems: tSystems }]);
                 if (tcErr) console.error(tcErr);
@@ -150,17 +160,28 @@ window.Wizard = {
                 teamId = teamData.id;
             }
 
-            // Paso B: Actualizar el Perfil del DT
+            // 2. Actualizar el perfil del DT con ese ID exacto
             const { error: userError } = await window.supabase
-                .from('users')
-                .upsert({ id: uid, name, staff_role: role, license, team_id: teamId, is_profile_complete: true });
-            
-            if (userError) throw new Error('Error al actualizar perfil: ' + userError.message);
-            
-            // Limpieza de caché local
+                .from('users') 
+                .update({ 
+                    name: name,
+                    staff_role: role,
+                    license: license,
+                    team_id: teamId,    // VINCULACIÓN FORZADA
+                    is_profile_complete: true 
+                })
+                .eq('id', uid);
+
+            if (userError) {
+                console.error("❌ Error al actualizar el perfil:", userError);
+                alert("Hubo un error al vincular tu perfil.");
+                return;
+            }
+
+            console.log("✅ Perfil actualizado correctamente. Redirigiendo...");
+
+            // 3. Forzar limpieza y redirección
             localStorage.setItem('dt_onboarding_complete', 'true');
-            
-            // Redirigir y recargar para que el router levante la sesión limpia
             window.location.reload();
         } catch (err) { alert(err.message); }
     },
