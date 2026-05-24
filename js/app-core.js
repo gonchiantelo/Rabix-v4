@@ -160,9 +160,8 @@ window.Wizard = {
             // Limpieza de caché local
             localStorage.setItem('dt_onboarding_complete', 'true');
             
-            // Redirigir inmediatamente a la pantalla principal del DT
-            window.location.hash = '#home';
-            window.App.init();
+            // Redirigir y recargar para que el router levante la sesión limpia
+            window.location.reload();
         } catch (err) { alert(err.message); }
     },
 
