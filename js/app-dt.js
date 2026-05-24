@@ -1640,11 +1640,10 @@ window.DTEngine = {
         }
     },
 
-    async openTaskModal(id) {
-        let task = (window.ExercisesLibrary || []).find(ex => String(ex.numericId) === String(id) || String(ex.id) === String(id));
-        if (!task) {
-            task = (window.CustomExercises || []).find(ex => String(ex.numericId) === String(id) || String(ex.id) === String(id));
-        }
+    async openTaskModal(taskId) {
+        const idBuscado = String(taskId);
+        let task = (window.ExercisesLibrary || []).find(t => String(t.numericId) === idBuscado || String(t.id) === idBuscado) || 
+                   (window.CustomExercises || []).find(t => String(t.numericId) === idBuscado || String(t.id) === idBuscado);
         
         if (!task) {
             // FALLBACK DIRECTO A BASE DE DATOS
@@ -1652,14 +1651,14 @@ window.DTEngine = {
                 const { data, error } = await window.supabase
                     .from('custom_exercises')
                     .select('*')
-                    .eq('id', String(id))
+                    .eq('id', idBuscado)
                     .single();
 
                 if (data) {
                     // Mapeo seguro para el frontend
                     task = { ...data, numericId: data.id, isCustom: true };
                 } else {
-                    console.warn("⚠️ Tarea no encontrada en memoria ni en BD. ID:", id, error);
+                    console.warn("⚠️ Tarea no encontrada en memoria ni en BD. ID:", idBuscado, error);
                     return;
                 }
             } catch (fallbackError) {
@@ -1717,17 +1716,17 @@ window.DTEngine = {
                         <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:5px;"><i class="fas fa-vector-square"></i> Dimensiones y Estructuras</label>
                         <p class="m-desc">${task.dimensions || task.dimensions_density || '<span style="color:#6b7280;font-style:italic;">No definido</span>'}</p>
                     </div>
-                    ${(task.tactical_diagram_url && task.tactical_diagram_url.length > 100) ? `
-                    <div class="m-info-block" style="grid-column: 1 / -1; margin-top: 10px;">
+                    <div class="m-info-block" style="grid-column: 1 / -1; margin-top: 10px;" id="contenedor-diagrama-tactico">
                         <label style="color:#00F2FE;font-size:0.75rem;font-weight:bold;display:block;margin-bottom:10px;"><i class="fas fa-chalkboard"></i> Esquema Táctico</label>
-                        <div style="border-radius:12px;overflow:hidden;border:1px solid #374151;max-width:100%;">
-                            <img src="${task.tactical_diagram_url}" class="tactical-board-preview" style="width:100%; border-radius:8px; border:1px solid #333; margin-top:15px;background:linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px), #1a2f24;background-size:20px 20px;">
-                        </div>
-                    </div>` : ''}
+                        ${(task.tactical_diagram_url && task.tactical_diagram_url.length > 50) ? `
+                        <div style="margin-top: 15px; border: 1px solid #333; border-radius: 8px; overflow: hidden;"><img src="${task.tactical_diagram_url}" style="width: 100%; display: block;" alt="Diagrama Táctico"></div>
+                        ` : '<p class="text-muted" style="font-size: 0.85em;">Sin esquema táctico adjunto.</p>'}
+                    </div>
                 </div>
             </div>
         `;
         modal.classList.remove('hidden');
+        modal.style.display = 'block';
     },
 
     closeModal() { document.getElementById('dt-modal').classList.add('hidden'); },
@@ -1746,6 +1745,10 @@ window.DTEngine = {
         const anView = document.getElementById('dt-analytics-view');
         if (anView && anView.style.display === 'block') {
             this.renderAnalytics();
+        }
+        if (this.Periodization) {
+            if (typeof this.Periodization.renderProcessView === 'function') this.Periodization.renderProcessView();
+            if (typeof this.Periodization.renderTimeline === 'function') this.Periodization.renderTimeline();
         }
     },
 
