@@ -1647,16 +1647,30 @@ window.DTEngine = {
         }
     },
 
-    openTaskModal(id) {
+    async openTaskModal(id) {
         let task = (window.ExercisesLibrary || []).find(ex => String(ex.numericId) === String(id) || String(ex.id) === String(id));
         if (!task) {
             task = (window.CustomExercises || []).find(ex => String(ex.numericId) === String(id) || String(ex.id) === String(id));
         }
+        
         if (!task) {
-            console.warn("⚠️ Tarea no encontrada en memoria. ID:", id);
-            return;
+            // FALLBACK DIRECTO A BASE DE DATOS
+            const { data, error } = await window.supabase
+                .from('custom_exercises')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (data) {
+                // Mapeo seguro para el frontend
+                task = { ...data, numericId: data.id, isCustom: true };
+            } else {
+                console.warn("⚠️ Tarea no encontrada en memoria ni en BD. ID:", id, error);
+                return;
+            }
         }
-        if (task) this.renderTaskModal(task);
+        
+        this.renderTaskModal(task);
     },
 
     renderTaskModal(task) {
