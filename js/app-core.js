@@ -1476,16 +1476,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const nombreEquipo = document.getElementById('ob-club-name').value;
 
             try {
-                // PASO 1: Crear Equipo
+                // PASO 1: Crear Equipo con código autogenerado
                 console.log("⏳ Paso 1: Creando equipo en Supabase...");
+
+                // Generamos un código de 6 caracteres en mayúsculas
+                const generatedCode = Math.random().toString(36).substring(2, 8).toUpperCase(); 
+
                 const { data: newTeam, error: teamError } = await window.supabase
                     .from('teams')
-                    .insert([{ name: nombreEquipo, owner_id: userId }])
+                    .insert([{ 
+                        name: nombreEquipo, 
+                        owner_id: userId,
+                        code: generatedCode // <-- EL CAMPO QUE EXIGE SUPABASE
+                    }])
                     .select()
                     .single();
 
                 if (teamError) throw new Error("Fallo en tabla teams: " + teamError.message);
-                console.log("✅ Equipo creado. ID:", newTeam.id);
+                console.log("✅ Equipo creado. ID:", newTeam.id, " | Código:", generatedCode);
 
                 // PASO 2: Actualizar Perfil
                 console.log("⏳ Paso 2: Vinculando team_id al perfil del DT...");
