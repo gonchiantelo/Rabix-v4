@@ -1489,8 +1489,7 @@ window.ejecutarOnboardingFinal = async function() {
             .from('users') 
             .update({ 
                 name: nombreDT,
-                team_id: newTeam.id,
-                is_profile_complete: true 
+                team_id: newTeam.id
             })
             .eq('id', userId);
 
