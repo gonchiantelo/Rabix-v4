@@ -1458,65 +1458,51 @@ window.App.signUp = async function (email, pass, event) {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Localizar el Botón Real
-    const finishButton = document.getElementById('btn-finish-wizard');
+window.ejecutarOnboardingFinal = async function() {
+    console.log("🚀 INICIANDO GUARDADO DE ONBOARDING FORZADO...");
+    
+    // Reemplaza los IDs con los de tus inputs HTML
+    const inputNombre = document.getElementById('ob-name');
+    const inputEquipo = document.getElementById('ob-club-name');
+    
+    const nombreDT = inputNombre ? inputNombre.value : 'DT';
+    const nombreEquipo = inputEquipo ? inputEquipo.value : 'Mi Equipo';
+    const userId = localStorage.getItem('ravix_v5_uid'); 
 
-    if (finishButton) {
-        // Removemos listeners viejos clonando el botón (hack de seguridad de DOM)
-        const newFinishButton = finishButton.cloneNode(true);
-        finishButton.parentNode.replaceChild(newFinishButton, finishButton);
+    try {
+        // PASO 1: Crear Equipo con código aleatorio
+        console.log("⏳ Creando equipo...");
+        const generatedCode = Math.random().toString(36).substring(2, 8).toUpperCase(); 
+        
+        const { data: newTeam, error: teamError } = await window.supabase
+            .from('teams')
+            .insert([{ name: nombreEquipo, owner_id: userId, code: generatedCode }])
+            .select()
+            .single();
 
-        newFinishButton.addEventListener('click', async (e) => {
-            e.preventDefault();
-            console.log("🚀 INICIANDO GUARDADO DE ONBOARDING...");
-            
-            const userId = localStorage.getItem('ravix_v5_uid');
-            const nombreDT = document.getElementById('ob-name').value;
-            const nombreEquipo = document.getElementById('ob-club-name').value;
+        if (teamError) throw new Error("Fallo en teams: " + teamError.message);
+        console.log("✅ Equipo creado con ID:", newTeam.id);
 
-            try {
-                // PASO 1: Crear Equipo con código autogenerado
-                console.log("⏳ Paso 1: Creando equipo en Supabase...");
+        // PASO 2: Actualizar Perfil
+        console.log("⏳ Vinculando perfil al equipo...");
+        const { error: userError } = await window.supabase
+            .from('users') 
+            .update({ 
+                name: nombreDT,
+                team_id: newTeam.id,
+                is_profile_complete: true 
+            })
+            .eq('id', userId);
 
-                // Generamos un código de 6 caracteres en mayúsculas
-                const generatedCode = Math.random().toString(36).substring(2, 8).toUpperCase(); 
+        if (userError) throw new Error("Fallo en tabla usuarios: " + userError.message);
+        console.log("✅ Perfil vinculado. Saliendo del Wizard...");
 
-                const { data: newTeam, error: teamError } = await window.supabase
-                    .from('teams')
-                    .insert([{ 
-                        name: nombreEquipo, 
-                        owner_id: userId,
-                        code: generatedCode // <-- EL CAMPO QUE EXIGE SUPABASE
-                    }])
-                    .select()
-                    .single();
-
-                if (teamError) throw new Error("Fallo en tabla teams: " + teamError.message);
-                console.log("✅ Equipo creado. ID:", newTeam.id, " | Código:", generatedCode);
-
-                // PASO 2: Actualizar Perfil
-                console.log("⏳ Paso 2: Vinculando team_id al perfil del DT...");
-                const { error: userError } = await window.supabase
-                    .from('users') 
-                    .update({ 
-                        name: nombreDT,
-                        team_id: newTeam.id,
-                        is_profile_complete: true 
-                    })
-                    .eq('id', userId);
-
-                if (userError) throw new Error("Fallo en tabla users: " + userError.message);
-                console.log("✅ Perfil vinculado. Redirigiendo...");
-
-                // PASO 3: Éxito y Recarga
-                localStorage.setItem('dt_onboarding_complete', 'true');
-                window.location.reload();
-
-            } catch (error) {
-                console.error("❌ ERROR CRÍTICO EN ONBOARDING:", error);
-                alert(error.message);
-            }
-        });
+        // PASO 3: Redirección forzada al Dashboard
+        localStorage.setItem('dt_onboarding_complete', 'true');
+        window.location.reload();
+        
+    } catch (error) {
+        console.error("❌ ERROR CRÍTICO:", error);
+        alert("Error al guardar: " + error.message);
     }
-});
+};
