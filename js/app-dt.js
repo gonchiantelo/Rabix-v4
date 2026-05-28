@@ -1369,7 +1369,7 @@ window.DTEngine = {
             const isStaged = this._stagedTasks.some(t => String(t.id) === String(ex.numericId) && t.isCustom);
             return `
                 <div class="exercise-card custom-task-card ${isStaged ? 'staged-card' : ''}">
-                    <div class="ex-info">
+                    <div class="ex-info" onclick="DTEngine.openTaskModal('${ex.numericId}')" style="cursor: pointer;">
                         <span class="ex-id custom-badge">★ TUYA</span>
                         <h5 class="ex-title">${ex.title}</h5>
                         <p class="ex-meta">${ex.ssp_type || 'Personalizada'} | ${ex.game_moment || ex.description || ''}</p>
@@ -1395,7 +1395,7 @@ window.DTEngine = {
             const isStaged = this._stagedTasks.some(t => String(t.id) === String(ex.numericId) && !t.isCustom);
             return `
                 <div class="exercise-card ${isStaged ? 'staged-card' : ''}">
-                    <div class="ex-info">
+                    <div class="ex-info" onclick="DTEngine.openTaskModal('${ex.numericId}')" style="cursor: pointer;">
                         <span class="ex-id">#${ex.numericId}</span>
                         <h5 class="ex-title">${ex.title}</h5>
                         <p class="ex-meta">${ex.ssp_type || 'Universal'} | ${ex.game_moment || ''}</p>
@@ -1474,19 +1474,17 @@ window.DTEngine = {
 
                 console.log(`💾 Guardando masivamente ${this._stagedTasks.length} tareas para ${date}...`);
 
-                // Usar RPC para mayor consistencia y performance
-                for (const task of this._stagedTasks) {
-                    const payload = {
-                        p_user_id: userId,
-                        p_team_id: teamId,
-                        p_fecha: date,
-                        p_scenario: task.block,
-                        p_task_id: task.id.toString()
-                    };
+                // Usar INSERT directo a training_logs con la columna 'fecha'
+                const logsToInsert = this._stagedTasks.map(task => ({
+                    user_id: userId,
+                    team_id: teamId,
+                    fecha: date,
+                    scenario: task.block,
+                    ejs_cods: [task.id.toString()]
+                }));
 
-                    const { error } = await window.supabase.rpc('guardar_tarea_calendario', payload);
-                    if (error) throw error;
-                }
+                const { error } = await window.supabase.from('training_logs').insert(logsToInsert);
+                if (error) throw error;
 
                 this._stagedTasks = [];
                 // Cadena estricta: fetch → render → labels (sin reconstruir shell)
