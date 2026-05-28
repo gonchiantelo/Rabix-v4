@@ -1571,34 +1571,37 @@ window.DTEngine = {
     },
 
     async openTaskModal(taskId) {
-        console.log("Clic detectado en tarea ID:", taskId);
-        const idBuscado = String(taskId);
-        let task = (window.ExercisesLibrary || []).find(t => String(t.numericId) === idBuscado || String(t.id) === idBuscado) || 
-                   (window.CustomExercises || []).find(t => String(t.numericId) === idBuscado || String(t.id) === idBuscado);
-        
-        if (!task) {
-            // FALLBACK DIRECTO A BASE DE DATOS
-            try {
+        try {
+            console.log("Clic detectado en tarea ID:", taskId);
+            const idBuscado = String(taskId);
+            let task = (window.ExercisesLibrary || []).find(t => String(t.numericId) === idBuscado || String(t.id) === idBuscado) || 
+                       (window.CustomExercises || []).find(t => String(t.numericId) === idBuscado || String(t.id) === idBuscado);
+            
+            if (!task) {
+                // FALLBACK DIRECTO A BASE DE DATOS
                 const { data, error } = await window.supabase
                     .from('custom_exercises')
                     .select('*')
                     .eq('id', idBuscado)
                     .single();
 
+                if (error) {
+                    console.warn("⚠️ Error en fallback de Supabase:", error.message);
+                }
+
                 if (data) {
                     // Mapeo seguro para el frontend
                     task = { ...data, numericId: data.id, isCustom: true };
                 } else {
-                    console.warn("⚠️ Tarea no encontrada en memoria ni en BD. ID:", idBuscado, error);
+                    console.warn("⚠️ Tarea no encontrada en memoria ni en BD. ID:", idBuscado);
                     return;
                 }
-            } catch (fallbackError) {
-                console.error("⚠️ Fallback abortado por error en Supabase:", fallbackError);
-                return;
             }
+            
+            this.renderTaskModal(task);
+        } catch (error) {
+            console.error("Error abriendo popup:", error);
         }
-        
-        this.renderTaskModal(task);
     },
 
     renderTaskModal(task) {
