@@ -1084,7 +1084,7 @@ window.DTEngine = {
 
         for (let d = 1; d <= daysInMonth; d++) {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-            const label = this.getMethodologyLabel(dateStr);
+            const label = this.calcularEtiquetaMD(dateStr, Array.from(this._matchDays));
             const typeClass = this.getTypeClass(label);
 
             const cellDate = new Date(dateStr + 'T00:00:00');
