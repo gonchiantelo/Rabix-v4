@@ -1162,79 +1162,10 @@ window.DTEngine = {
     },
 
     applyMethodologyLabels() {
-        // Fuente de verdad: priorizar array de Core, fallback al Set local
         let matchDates = (window.CurrentTeam?.match_dates && window.CurrentTeam.match_dates.length > 0)
             ? [...window.CurrentTeam.match_dates]
             : Array.from(this._matchDays);
 
-        const methodology = window.CurrentTeam?.methodology || 'Periodización Táctica';
-        const manualLabels = this._manualLabels || {};
-
-        // ── AUTO-DETECT FALLBACK: Si no hay matchDays, buscar tareas de Partido en training_logs ──
-        if (matchDates.length === 0 && this._assignedTasks) {
-            Object.entries(this._assignedTasks).forEach(([dateStr, tasks]) => {
-                const hasMatchTask = tasks.some(t => {
-                    // Try to match task title/phase with "partido" or "match"
-                    const ex = (window.ExercisesLibrary || []).find(e => e.numericId === t.id || e.id === t.rawId) ||
-                               (window.CustomExercises || []).find(e => e.numericId === t.id || e.id === t.rawId);
-                    if (ex) {
-                        const title = String(ex.title).toLowerCase();
-                        const phase = String(ex.morfociclo_phase || '').toLowerCase();
-                        const gMoment = String(ex.game_moment || '').toLowerCase();
-                        return title.includes('partido') || phase.includes('partido') || phase === 'match' || gMoment.includes('partido');
-                    }
-                    return false;
-                });
-                if (hasMatchTask && !matchDates.includes(dateStr)) {
-                    matchDates.push(dateStr);
-                }
-            });
-            if (matchDates.length > 0 && window.CurrentTeam) {
-                window.CurrentTeam.match_dates = [...matchDates];
-                this._matchDays = new Set(matchDates);
-            }
-        }
-
-        console.log(`🗓️ applyMethodologyLabels: ${matchDates.length} partidos encontrados. Metodología: ${methodology}`);
-
-        if (matchDates.length === 0 && Object.keys(manualLabels).length === 0) {
-            console.warn('⚠️ applyMethodologyLabels: No hay fechas de partido configuradas ni etiquetas manuales. Las etiquetas quedarán en LIBRE.');
-            return;
-        }
-
-        // Mapa de etiquetas por metodología (D-1 = más cercano al partido)
-        const isPT = methodology !== 'Microciclo Estructurado';
-        const preLabels = isPT
-            ? { 1: 'MD-1', 2: 'MD-2', 3: 'MD-3', 4: 'MD-4' }
-            : { 1: 'Activación', 2: 'Velocidad', 3: 'Duración', 4: 'Tensión' };
-
-        // Construir el mapa de etiquetas definitivo
-        const labelMap = new Map();
-
-        matchDates.forEach(matchStr => {
-            // Partido
-            labelMap.set(matchStr, 'PARTIDO');
-
-            const matchDate = new Date(matchStr + 'T00:00:00');
-
-            // D-1 a D-4 (días PRE-partido)
-            for (let i = 1; i <= 4; i++) {
-                const d = new Date(matchDate);
-                d.setDate(matchDate.getDate() - i);
-                const dStr = d.toISOString().split('T')[0];
-                if (!labelMap.has(dStr)) {
-                    labelMap.set(dStr, preLabels[i] || `MD-${i}`);
-                }
-            }
-
-            // D+1 (Recuperación)
-            const postDate = new Date(matchDate);
-            postDate.setDate(matchDate.getDate() + 1);
-            const postStr = postDate.toISOString().split('T')[0];
-            if (!labelMap.has(postStr)) {
-                labelMap.set(postStr, 'RECUPERACIÓN');
-            }
-        });
 
         // Etiquetas manuales siempre ganan (overwrite final)
         Object.entries(manualLabels).forEach(([dateStr, lbl]) => {
@@ -1275,38 +1206,44 @@ window.DTEngine = {
 
         const current = new Date(fechaActual + 'T00:00:00');
         
-        // Buscar el partido anterior más cercano (distancia máxima de 2 días según regla)
-        let prevMatchDist = Infinity;
-        for (let i = 1; i <= 2; i++) {
+        let diasPost = Infinity;
+        let diasPre = Infinity;
+
+        // 1. Buscar partido anterior más cercano
+        for (let i = 1; i <= 60; i++) {
             const prev = new Date(current);
             prev.setDate(current.getDate() - i);
             const prevStr = prev.toISOString().split('T')[0];
             if (arrayFechasPartidos.includes(prevStr)) {
-                prevMatchDist = i;
+                diasPost = i;
                 break;
             }
         }
 
-        if (prevMatchDist === 1) return 'MD+1';
-        if (prevMatchDist === 2) return 'MD+2';
-
-        // A partir del 3er día post-partido, el foco cambia al PRÓXIMO partido.
-        let nextMatchDist = Infinity;
-        for (let i = 1; i <= 15; i++) { // Buscar hasta 15 días en el futuro
+        // 2. Buscar partido siguiente más cercano
+        for (let i = 1; i <= 60; i++) {
             const fut = new Date(current);
             fut.setDate(current.getDate() + i);
             const futStr = fut.toISOString().split('T')[0];
             if (arrayFechasPartidos.includes(futStr)) {
-                nextMatchDist = i;
+                diasPre = i;
                 break;
             }
         }
 
-        if (nextMatchDist !== Infinity) {
-            return `MD-${nextMatchDist}`;
+        let etiquetaFinal = "";
+
+        if (diasPost === 1) {
+            etiquetaFinal = "MD+1"; // PRIORIDAD ABSOLUTA: Si jugué ayer, hoy recupero. No importa si juego mañana de nuevo.
+        } else if (diasPost === 2) {
+            etiquetaFinal = "MD+2"; // PRIORIDAD: Descanso o recuperación compensatoria.
+        } else if (diasPre > 0 && diasPre !== Infinity) {
+            etiquetaFinal = "MD-" + diasPre; // Recién a partir del 3er día post-partido, miro hacia el futuro partido.
+        } else {
+            etiquetaFinal = ""; // Sin partidos a la vista
         }
 
-        return '';
+        return etiquetaFinal;
     },
 
     getMethodologyLabel(dateStr) {
