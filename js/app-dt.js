@@ -1115,7 +1115,7 @@ window.DTEngine = {
                         timeBadge = `<span style="color:#00F2FE;font-size:0.6rem;font-weight:700;margin-right:3px;">⏱ ${wrk}'</span>`;
                     }
                     return `
-                        <div class="task-chip" draggable="${!isPast}" ondragstart="event.dataTransfer.setData('text/plain', '${a.logId}|${a.block}|${dateStr}'); event.stopPropagation();" onclick="event.stopPropagation(); window.DTEngine.openTaskModal('${a.id}')">
+                        <div class="task-chip" draggable="${!isPast}" ondragstart="event.dataTransfer.setData('text/plain', '${a.logId}|${a.block}|${dateStr}'); event.stopPropagation();" onclick="event.stopPropagation(); window.DTEngine.openTaskModal('${a.rawId || a.id}')">
                             ${timeBadge}<span class="tc-name">${ex.title}</span>
                             ${!isPast ? `<span class="tc-delete" onclick="event.stopPropagation(); window.DTEngine.removeTask('${dateStr}', ${assignments.indexOf(a)})">\u00d7</span>` : ''}
                         </div>
@@ -1156,49 +1156,6 @@ window.DTEngine = {
             `;
         }
         grid.innerHTML = html;
-
-        // Último paso obligatorio: re-pintar etiquetas sobre el DOM ya renderizado
-        this.applyMethodologyLabels();
-    },
-
-    applyMethodologyLabels() {
-        let matchDates = (window.CurrentTeam?.match_dates && window.CurrentTeam.match_dates.length > 0)
-            ? [...window.CurrentTeam.match_dates]
-            : Array.from(this._matchDays);
-
-
-        // Etiquetas manuales siempre ganan (overwrite final)
-        Object.entries(manualLabels).forEach(([dateStr, lbl]) => {
-            if (lbl) labelMap.set(dateStr, lbl);
-        });
-
-        // Patch DOM: buscar cada celda por data-date e inyectar solo la etiqueta
-        let patched = 0;
-        labelMap.forEach((label, dateStr) => {
-            try {
-                const cell = document.querySelector(`.macro-day[data-date="${dateStr}"]`);
-                if (!cell) return; // Fuera del mes visible — OK, ignorar silenciosamente
-
-                // Actualizar texto de la etiqueta de fase
-                const labelEl = cell.querySelector('.m-day-label');
-                if (labelEl) {
-                    labelEl.textContent = label;
-                    patched++;
-                }
-
-                // Actualizar clase de color del tipo
-                const typeClasses = ['type-partido', 'type-base', 'type-tension', 'type-duracion', 'type-velocidad', 'type-activacion', 'type-recuperacion', 'type-descanso'];
-                typeClasses.forEach(c => cell.classList.remove(c));
-                const newClass = this.getTypeClass(label);
-                if (newClass && newClass.trim() !== '') {
-                    cell.classList.add(newClass.trim());
-                }
-            } catch (err) {
-                console.error(`🔴 applyMethodologyLabels: error procesando ${dateStr}:`, err);
-            }
-        });
-
-        console.log(`✅ applyMethodologyLabels: ${patched} celdas actualizadas de ${labelMap.size} etiquetas calculadas.`);
     },
 
     calcularEtiquetaMD(fechaActual, arrayFechasPartidos) {
@@ -1490,7 +1447,7 @@ window.DTEngine = {
                 // Cadena estricta: fetch → render → labels (sin reconstruir shell)
                 try {
                     await this.fetchMonthLogs();
-                    this.generateCalendar();  // incluye applyMethodologyLabels()
+                    this.generateCalendar();
                     console.log('✅ Post-guardado: calendario actualizado correctamente.');
                 } catch (renderErr) {
                     console.error('🔴 Error en cadena post-guardado:', renderErr);
