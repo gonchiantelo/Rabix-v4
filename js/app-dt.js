@@ -168,8 +168,14 @@ window.DTEngine = {
     _periodization: null, // { macrociclo, fases: [{name, start, end, objetivos}], fase_actual_idx }
 
     async fetchMonthLogs() {
-        const year = this._currentDate.getFullYear();
-        const monthNum = this._currentDate.getMonth() + 1;
+        let dateToUse = this._currentDate;
+        if (!(dateToUse instanceof Date) || isNaN(dateToUse.getTime())) {
+            dateToUse = new Date();
+            this._currentDate = dateToUse;
+        }
+
+        const year = dateToUse.getFullYear();
+        const monthNum = dateToUse.getMonth() + 1;
         const monthStr = String(monthNum).padStart(2, '0');
         const lastDay = new Date(year, monthNum, 0).getDate();
         const lastDayStr = String(lastDay).padStart(2, '0');
@@ -196,11 +202,14 @@ window.DTEngine = {
                 return;
             }
 
-            const startDate = `${year}-${monthStr}-01`;
-            const endDate = `${year}-${monthStr}-${lastDayStr}`;
+            let startDate = `${year}-${monthStr}-01`.substring(0, 10);
+            let endDate = `${year}-${monthStr}-${lastDayStr}`.substring(0, 10);
 
-            if (!startDate || startDate === 'undefined' || startDate.includes('undefined') || !endDate || endDate === 'undefined' || endDate.includes('undefined') || startDate.includes('NaN')) {
-                console.warn("Fetch overrides cancelado por fecha inválida.");
+            console.log("Fechas para overrides:", startDate, endDate);
+
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
+                console.warn("Fetch overrides cancelado por formato de fecha inválido:", startDate, endDate);
                 return;
             }
 
@@ -225,7 +234,7 @@ window.DTEngine = {
             // Poblar overrides (Etiquetas Manuales)
             this._manualLabels = {};
             if (overrides) {
-                overrides.forEach(ov => this._manualLabels[ov.date] = ov.label_override);
+                overrides.forEach(ov => this._manualLabels[ov.date] = ov.label || ov.label_override);
                 console.log(`🏷️ Overrides cargados: ${overrides.length}`, this._manualLabels);
             }
             if (overridesErr) console.error('❌ Error en overrides:', overridesErr);
@@ -1128,7 +1137,7 @@ window.DTEngine = {
                         timeBadge = `<span style="color:#00F2FE;font-size:0.6rem;font-weight:700;margin-right:3px;">⏱ ${wrk}'</span>`;
                     }
                     return `
-                        <div class="task-chip" onclick="event.stopPropagation(); window.DTEngine.openTaskModal('${a.id}')">
+                        <div class="task-chip" draggable="${!isPast}" ondragstart="event.dataTransfer.setData('text/plain', '${a.logId}|${a.block}|${dateStr}'); event.stopPropagation();" onclick="event.stopPropagation(); window.DTEngine.openTaskModal('${a.id}')">
                             ${timeBadge}<span class="tc-name">${ex.title}</span>
                             ${!isPast ? `<span class="tc-delete" onclick="event.stopPropagation(); window.DTEngine.removeTask('${dateStr}', ${assignments.indexOf(a)})">\u00d7</span>` : ''}
                         </div>
@@ -1136,7 +1145,7 @@ window.DTEngine = {
                 }).join('');
 
                 return `
-                    <div class="session-block ${blockId}">
+                    <div class="session-block ${blockId}" ondragover="event.preventDefault();" ondrop="event.preventDefault(); event.stopPropagation(); window.DTEngine.handleTaskDrop(event, '${dateStr}', '${blockId}')">
                         ${tasks.length > 0 ? `<span class="sb-title">${title}</span>` : ''}
                         <div class="sb-tasks">${tasksHtml}</div>
                     </div>
@@ -1342,54 +1351,74 @@ window.DTEngine = {
     },
 
     async forceLabel(val) {
-        const oldLabel = this._manualLabels[this._selectedDate];
+        // 1. Sanitización Estricta de la Fecha
+        let sanitizedDate = String(this._selectedDate).substring(0, 10);
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(sanitizedDate)) {
+            console.error("❌ Error: formato de fecha inválido para override", this._selectedDate);
+            return;
+        }
 
-        if (!val || val === 'BASE') delete this._manualLabels[this._selectedDate];
-        else this._manualLabels[this._selectedDate] = val;
+        const teamId = (window.App && window.App.user && window.App.user.team_id) || window.CurrentTeam?.id || localStorage.getItem('ravix_team_id') || window.CurrentUser?.team_id;
+        if (!teamId) { 
+            console.error("No hay teamId para guardar el override."); 
+            return; 
+        }
 
+        const oldLabel = this._manualLabels[sanitizedDate];
         const isMatch = (val === 'PARTIDO');
         const wasMatch = (oldLabel === 'PARTIDO');
 
-        if (isMatch) this._matchDays.add(this._selectedDate);
-        else if (wasMatch) this._matchDays.delete(this._selectedDate);
-
-        // Sincronizar inmediatamente el estado global
-        if (window.CurrentTeam) {
-            window.CurrentTeam.match_dates = Array.from(this._matchDays);
-        }
-
-        // ── PERSISTENCIA DE ETIQUETA MANUAL (OVERRIDES) ──
-        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id');
-        if (teamId) {
-            try {
-                if (!val || val === 'BASE') {
-                    // Si se deselecciona o es BASE, la borramos de la DB para que aplique lógica automática
-                    await window.supabase.from('overrides')
-                        .delete()
-                        .match({ team_id: teamId, date: this._selectedDate });
-                    console.log(`✅ Etiqueta manual eliminada en DB: ${this._selectedDate}`);
-                } else {
-                    // Upsert con la nueva etiqueta manual
-                    await window.supabase.from('overrides')
-                        .upsert({
-                            team_id: teamId,
-                            date: this._selectedDate,
-                            label_override: val
-                        }, { onConflict: 'team_id,date' });
-                    console.log(`✅ Etiqueta manual guardada en DB: ${this._selectedDate} -> ${val}`);
-                }
-            } catch (err) {
-                console.error("🔴 Error guardando override:", err);
+        try {
+            // 2. Operación a DB (await antes de mutar estado local)
+            if (!val || val === 'BASE') {
+                const { error } = await window.supabase.from('overrides')
+                    .delete()
+                    .match({ team_id: teamId, date: sanitizedDate });
+                
+                if (error) throw error;
+                console.log(`✅ Etiqueta manual eliminada en DB: ${sanitizedDate}`);
+                
+                // 3. Mutación de estado local post-éxito
+                delete this._manualLabels[sanitizedDate];
+            } else {
+                const { error } = await window.supabase.from('overrides')
+                    .upsert({
+                        team_id: teamId,
+                        date: sanitizedDate,
+                        label: val
+                    }, { onConflict: 'team_id, date' });
+                
+                if (error) throw error;
+                console.log(`✅ Override guardado: ${sanitizedDate} -> ${val}`);
+                
+                // 3. Mutación de estado local post-éxito
+                this._manualLabels[sanitizedDate] = val;
             }
-        }
 
-        // Si hubo cambios en los días de partido, persistir en team_configs
-        if (isMatch || wasMatch) {
-            await this.saveMatchDays();
-        }
+            // Sincronizar match_dates
+            if (isMatch) this._matchDays.add(sanitizedDate);
+            else if (wasMatch) this._matchDays.delete(sanitizedDate);
 
-        this.generateCalendar();
-        this.updateDrawerUI();
+            if (window.CurrentTeam) {
+                window.CurrentTeam.match_dates = Array.from(this._matchDays);
+            }
+
+            if (isMatch || wasMatch) {
+                await this.saveMatchDays();
+            }
+
+            // 4. Refrescar UI (sincronización final)
+            this.generateCalendar();
+            this.updateDrawerUI();
+
+        } catch (err) {
+            console.error("❌ Error guardando override (rollback):", err);
+            alert("Error al guardar la etiqueta. Se revertirá a su estado anterior.");
+            // Rollback UI del selector
+            const selector = document.getElementById('label-selector');
+            if (selector) selector.value = oldLabel || '';
+        }
     },
 
     async saveMatchDays() {
@@ -1604,6 +1633,35 @@ window.DTEngine = {
     },
 
     // assignExercise antigua eliminada en favor de staging
+
+    async handleTaskDrop(event, newDate, newBlock) {
+        const data = event.dataTransfer.getData('text/plain');
+        if (!data) return;
+        const [logId, oldBlock, oldDate] = data.split('|');
+        if (!logId || (oldDate === newDate && oldBlock === newBlock)) return;
+
+        // Efectuamos la actualización estricta a Supabase
+        await this.actualizarActividad(logId, { fecha: newDate, scenario: newBlock });
+    },
+
+    async actualizarActividad(idActividad, nuevosDatos) {
+        try {
+            const { data, error } = await window.supabase
+                .from('training_logs')
+                .update(nuevosDatos)
+                .eq('id', idActividad);
+
+            if (error) throw error;
+
+            console.log("✅ Actividad actualizada en Supabase con éxito.");
+            
+            // Refrescar UI del calendario luego de modificar Supabase
+            await this.refreshState();
+        } catch (error) {
+            console.error("❌ Error al actualizar en Supabase:", error.message);
+            alert("Error al guardar los cambios en la base de datos.");
+        }
+    },
 
     async removeTask(date, index) {
         try {
