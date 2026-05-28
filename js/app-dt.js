@@ -205,20 +205,16 @@ window.DTEngine = {
             let startDate = `${year}-${monthStr}-01`.substring(0, 10);
             let endDate = `${year}-${monthStr}-${lastDayStr}`.substring(0, 10);
 
-            console.log("Fechas para overrides:", startDate, endDate);
+            console.log("Fechas de consulta principal:", startDate, endDate);
 
             const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
             if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
-                console.warn("Fetch overrides cancelado por formato de fecha inválido:", startDate, endDate);
+                console.warn("Fetch mensual cancelado por formato de fecha inválido:", startDate, endDate);
                 return;
             }
 
-            // ── VALIDACIÓN ANTI-400 PARA OVERRIDES ──
-            const overridesPromise = window.supabase.from('overrides').select('*').eq('team_id', teamId).gte('date', startDate).lte('date', endDate);
-
-            const [ { data, error }, { data: overrides, error: overridesErr }, { data: customData, error: customErr } ] = await Promise.all([
+            const [ { data, error }, { data: customData, error: customErr } ] = await Promise.all([
                 window.supabase.from('training_logs').select('*').eq('team_id', teamId).gte('fecha', startDate).lte('fecha', endDate),
-                overridesPromise,
                 window.supabase.from('custom_exercises').select('*')
             ]);
 
@@ -230,15 +226,6 @@ window.DTEngine = {
             // ── DIAGNÓSTICO FASE 1 ──────────────────────────────────────────
             console.log('📅 Datos de training_logs recibidos:', data);
             if (error) console.error('❌ Error en training_logs:', error);
-            
-            // Poblar overrides (Etiquetas Manuales)
-            this._manualLabels = {};
-            if (overrides) {
-                overrides.forEach(ov => this._manualLabels[ov.date] = ov.label || ov.label_override);
-                console.log(`🏷️ Overrides cargados: ${overrides.length}`, this._manualLabels);
-            }
-            if (overridesErr) console.error('❌ Error en overrides:', overridesErr);
-            // ───────────────────────────────────────────────────────────────
 
             if (error) throw error;
 
@@ -246,6 +233,13 @@ window.DTEngine = {
             if (data && Array.isArray(data)) {
                 data.forEach(log => {
                     if (!log.fecha) return;
+
+                    // Escáner de Partidos automático
+                    const isMatchLog = log.type === 'Partido' || log.title === 'Partido' || log.tipo === 'Partido' || log.block === 'Partido';
+                    if (isMatchLog) {
+                        this._matchDays.add(log.fecha);
+                    }
+
                     if (!this._assignedTasks[log.fecha]) this._assignedTasks[log.fecha] = [];
 
                     // ejs_cods puede ser: string, number, UUID string, o array de los anteriores
@@ -1292,51 +1286,58 @@ window.DTEngine = {
         console.log(`✅ applyMethodologyLabels: ${patched} celdas actualizadas de ${labelMap.size} etiquetas calculadas.`);
     },
 
-    getMethodologyLabel(dateStr) {
-        if (this._manualLabels[dateStr]) return this._manualLabels[dateStr];
-        if (this._matchDays.has(dateStr)) return 'PARTIDO';
+    calcularEtiquetaMD(fechaActual, arrayFechasPartidos) {
+        if (arrayFechasPartidos.includes(fechaActual)) return 'MD';
 
-        const current = new Date(dateStr + 'T00:00:00');
-        const methodology = window.CurrentTeam?.methodology || 'Periodización Táctica';
-
-        // 1. Días Pre-Partido
-        for (let i = 1; i <= 4; i++) {
-            const fut = new Date(current);
-            fut.setDate(current.getDate() + i);
-            const futStr = fut.toISOString().split('T')[0];
-
-            if (this._matchDays.has(futStr)) {
-                if (methodology === 'Microciclo Estructurado') {
-                    const structLabels = {
-                        1: 'Activación (MD-1)',
-                        2: 'Velocidad (MD-2)',
-                        3: 'Duración (MD-3)',
-                        4: 'Tensión (MD-4)'
-                    };
-                    return structLabels[i] || `MD-${i}`;
-                }
-                // Periodización Táctica
-                return `MD-${i}`;
+        const current = new Date(fechaActual + 'T00:00:00');
+        
+        // Buscar el partido anterior más cercano (distancia máxima de 2 días según regla)
+        let prevMatchDist = Infinity;
+        for (let i = 1; i <= 2; i++) {
+            const prev = new Date(current);
+            prev.setDate(current.getDate() - i);
+            const prevStr = prev.toISOString().split('T')[0];
+            if (arrayFechasPartidos.includes(prevStr)) {
+                prevMatchDist = i;
+                break;
             }
         }
 
-        // 2. Días Post-Partido (MD+1)
-        const yesterday = new Date(current);
-        yesterday.setDate(current.getDate() - 1);
-        const yestStr = yesterday.toISOString().split('T')[0];
-        if (this._matchDays.has(yestStr)) return 'RECUPERACIÓN';
+        if (prevMatchDist === 1) return 'MD+1';
+        if (prevMatchDist === 2) return 'MD+2';
 
-        return 'LIBRE';
+        // A partir del 3er día post-partido, el foco cambia al PRÓXIMO partido.
+        let nextMatchDist = Infinity;
+        for (let i = 1; i <= 60; i++) { // Buscar hasta 60 días en el futuro
+            const fut = new Date(current);
+            fut.setDate(current.getDate() + i);
+            const futStr = fut.toISOString().split('T')[0];
+            if (arrayFechasPartidos.includes(futStr)) {
+                nextMatchDist = i;
+                break;
+            }
+        }
+
+        if (nextMatchDist !== Infinity) {
+            return `MD-${nextMatchDist}`;
+        }
+
+        return 'Pretemporada';
+    },
+
+    getMethodologyLabel(dateStr) {
+        const matchDaysArray = Array.from(this._matchDays);
+        return this.calcularEtiquetaMD(dateStr, matchDaysArray);
     },
 
     getTypeClass(label) {
         if (!label) return 'type-base';
-        if (label.includes('PARTIDO')) return 'type-partido';
+        if (label === 'MD' || label.includes('PARTIDO')) return 'type-partido';
         if (label.includes('MD-4') || label.includes('Tensión')) return 'type-tension';
         if (label.includes('MD-3') || label.includes('Duración')) return 'type-duracion';
         if (label.includes('MD-2') || label.includes('Velocidad')) return 'type-velocidad';
         if (label.includes('MD-1') || label.includes('Activación')) return 'type-activacion';
-        if (label.includes('RECUPERACIÓN')) return 'type-recuperacion';
+        if (label.includes('MD+1') || label.includes('MD+2') || label.includes('RECUPERACIÓN')) return 'type-recuperacion';
         if (label.includes('DESCANSO')) return 'type-descanso';
         return 'type-base';
     },
@@ -1361,63 +1362,45 @@ window.DTEngine = {
 
         const teamId = (window.App && window.App.user && window.App.user.team_id) || window.CurrentTeam?.id || localStorage.getItem('ravix_team_id') || window.CurrentUser?.team_id;
         if (!teamId) { 
-            console.error("No hay teamId para guardar el override."); 
+            console.error("No hay teamId."); 
             return; 
         }
 
-        const oldLabel = this._manualLabels[sanitizedDate];
+        const wasMatch = this._matchDays.has(sanitizedDate);
         const isMatch = (val === 'PARTIDO');
-        const wasMatch = (oldLabel === 'PARTIDO');
 
         try {
-            // 2. Operación a DB (await antes de mutar estado local)
-            if (!val || val === 'BASE') {
-                const { error } = await window.supabase.from('overrides')
-                    .delete()
-                    .match({ team_id: teamId, date: sanitizedDate });
-                
-                if (error) throw error;
-                console.log(`✅ Etiqueta manual eliminada en DB: ${sanitizedDate}`);
-                
-                // 3. Mutación de estado local post-éxito
-                delete this._manualLabels[sanitizedDate];
-            } else {
-                const { error } = await window.supabase.from('overrides')
-                    .upsert({
-                        team_id: teamId,
-                        date: sanitizedDate,
-                        label: val
-                    }, { onConflict: 'team_id, date' });
-                
-                if (error) throw error;
-                console.log(`✅ Override guardado: ${sanitizedDate} -> ${val}`);
-                
-                // 3. Mutación de estado local post-éxito
-                this._manualLabels[sanitizedDate] = val;
-            }
-
-            // Sincronizar match_dates
+            // Sincronizar match_dates (Nuevo Paradigma)
             if (isMatch) this._matchDays.add(sanitizedDate);
-            else if (wasMatch) this._matchDays.delete(sanitizedDate);
+            else this._matchDays.delete(sanitizedDate);
 
             if (window.CurrentTeam) {
                 window.CurrentTeam.match_dates = Array.from(this._matchDays);
             }
 
-            if (isMatch || wasMatch) {
+            if (isMatch !== wasMatch) {
                 await this.saveMatchDays();
+                console.log(`✅ Estado de partido actualizado: ${sanitizedDate} -> ${isMatch}`);
             }
 
-            // 4. Refrescar UI (sincronización final)
+            // Refrescar UI (sincronización final)
             this.generateCalendar();
             this.updateDrawerUI();
 
         } catch (err) {
-            console.error("❌ Error guardando override (rollback):", err);
-            alert("Error al guardar la etiqueta. Se revertirá a su estado anterior.");
-            // Rollback UI del selector
+            console.error("❌ Error guardando (rollback):", err);
+            alert("Error al guardar. Se revertirá a su estado anterior.");
+            
+            // Rollback UI local
+            if (wasMatch) this._matchDays.add(sanitizedDate);
+            else this._matchDays.delete(sanitizedDate);
+
+            if (window.CurrentTeam) {
+                window.CurrentTeam.match_dates = Array.from(this._matchDays);
+            }
+            
             const selector = document.getElementById('label-selector');
-            if (selector) selector.value = oldLabel || '';
+            if (selector) selector.value = wasMatch ? 'PARTIDO' : 'BASE';
         }
     },
 
