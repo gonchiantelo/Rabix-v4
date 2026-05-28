@@ -760,21 +760,14 @@ window.DTEngine = {
                                 <label>Forzar Etiqueta:</label>
                                 <select id="label-selector" onchange="DTEngine.stageLabel(this.value)">
                                     <option value="">(Automático)</option>
-                                    <option value="MD-4">MD-4 (Tensión)</option>
-                                    <option value="MD-3">MD-3 (Duración)</option>
-                                    <option value="MD-2">MD-2 (Velocidad)</option>
-                                    <option value="MD-1">MD-1 (Activación)</option>
-                                    <option value="PARTIDO">Partido (MD)</option>
-                                    <option value="RECUPERACIÓN">Recuperación (MD+1)</option>
-                                    <option value="DESCANSO">Descanso</option>
-                                    <option value="BASE">Base / Libre</option>
+                                    <option value="PARTIDO">Añadir Partido (MD)</option>
+                                    <option value="BASE">Quitar Partido</option>
                                 </select>
                             </div>
                         </div>
                         <div class="drawer-body">
                             <div class="library-header">
                                 <h4>Biblioteca de Tareas</h4>
-                                <button id="btn-toggle-filter" class="btn-text" onclick="DTEngine.toggleFilter()">Ver Toda</button>
                             </div>
                             <button class="btn-add-custom-task" onclick="DTEngine.openCustomTaskModal()">+ Añadir Tarea Personalizada</button>
                             <div id="library-list" class="exercise-list-container"></div>
@@ -837,16 +830,7 @@ window.DTEngine = {
                             </div>
                         </div>
 
-                        <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">ETIQUETA TÁCTICA (FASE)</label>
-                        <select id="custom-task-phase" style="width:100%;padding:12px;margin-bottom:15px;background:#1f2937;border:1px solid #374151;border-radius:8px;color:#fff;outline:none;">
-                            <option value="MD-4">MD-4 (Tensión)</option>
-                            <option value="MD-3">MD-3 (Duración)</option>
-                            <option value="MD-2">MD-2 (Velocidad)</option>
-                            <option value="MD-1">MD-1 (Activación)</option>
-                            <option value="PARTIDO">Partido (MD)</option>
-                            <option value="RECUPERACIÓN">Recuperación (MD+1)</option>
-                            <option value="BASE">Base / Libre</option>
-                        </select>
+
 
                         <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">MATERIALES NECESARIOS</label>
                         <input type="text" id="task-materials" placeholder="Ej: 10 conos, 6 petos, balones" style="width:100%;padding:12px;margin-bottom:15px;background:#1f2937;border:1px solid #374151;border-radius:8px;color:#fff;outline:none;box-sizing:border-box;">
@@ -1148,25 +1132,25 @@ window.DTEngine = {
 
             const hasTasks = assignments.length > 0;
 
+            const ptSuggestions = { "MD-4": "Tensión", "MD-3": "Duración", "MD-2": "Velocidad", "MD-1": "Activación", "MD+1": "Recup. Activa", "MD+2": "Descanso" };
+            const sugBadge = (label && ptSuggestions[label]) ? `<span class="m-day-suggestion" style="font-size: 0.6rem; color: #a1a1aa; background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 4px; margin-top: 2px;">Sug: ${ptSuggestions[label]}</span>` : '';
+
             html += `
                 <div class="macro-day ${typeClass ? typeClass : ''} ${pastClass}${hasTasks && isPast ? ' has-tasks' : ''}" data-date="${dateStr}" onclick="${isPast ? 'void(0)' : `DTEngine.openDrawer('${dateStr}')`}">
                     <div class="m-day-top">
                         <span class="m-day-num">${d}</span>
-                        <span class="m-day-label ${label === 'LIBRE' ? 'label-libre' : ''}">${label}</span>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                            <span class="m-day-label ${label === '' ? 'label-libre' : ''}">${label}</span>
+                            ${sugBadge}
+                        </div>
                         ${isPast && hasTasks ? '<span class="past-hist-badge">HIST</span>' : ''}
                     </div>
                     <div class="m-day-content">
-                        ${(label === 'LIBRE') ? `
-                            <div class="free-day-indicator">
-                                <i class="fas fa-battery-full"></i> Día Libre - Recuperación
-                            </div>
-                        ` : `
-                            ${renderBlock('gimnasio', 'Gimnasio')}
-                            ${renderBlock('entrada_calor', 'Entrada en Calor')}
-                            ${renderBlock('parte_principal', 'Parte Principal')}
-                            ${renderBlock('doble_turno', '2º Turno / Táctica')}
-                            ${renderBlock('vuelta_calma', 'Vuelta a la Calma')}
-                        `}
+                        ${renderBlock('gimnasio', 'Gimnasio')}
+                        ${renderBlock('entrada_calor', 'Entrada en Calor')}
+                        ${renderBlock('parte_principal', 'Parte Principal')}
+                        ${renderBlock('doble_turno', '2º Turno / Táctica')}
+                        ${renderBlock('vuelta_calma', 'Vuelta a la Calma')}
                     </div>
                 </div>
             `;
@@ -1308,7 +1292,7 @@ window.DTEngine = {
 
         // A partir del 3er día post-partido, el foco cambia al PRÓXIMO partido.
         let nextMatchDist = Infinity;
-        for (let i = 1; i <= 60; i++) { // Buscar hasta 60 días en el futuro
+        for (let i = 1; i <= 15; i++) { // Buscar hasta 15 días en el futuro
             const fut = new Date(current);
             fut.setDate(current.getDate() + i);
             const futStr = fut.toISOString().split('T')[0];
@@ -1322,7 +1306,7 @@ window.DTEngine = {
             return `MD-${nextMatchDist}`;
         }
 
-        return 'Pretemporada';
+        return '';
     },
 
     getMethodologyLabel(dateStr) {
@@ -1446,32 +1430,12 @@ window.DTEngine = {
         if (libraryData.length > 0) console.log('🏋️ Muestra ejercicio[0]:', libraryData[0]);
         // ───────────────────────────────────────────────────────────────
 
-        // Fase actual limpia
-        const currentPhase = currentLabel.split(' ')[0].trim().toUpperCase();
-
         // --- FUENTES DE DATOS ---
         const customTasks = window.CustomExercises || [];
-        let globalTasks = libraryData;
-        let fallbackApplied = false;
-
-        // Filtrar tareas globales por fase si aplica
-        if (!this._showAllExercises && (currentPhase.startsWith('MD-') || currentPhase === 'PARTIDO')) {
-            const filteredGlobal = globalTasks.filter(ex =>
-                ex.morfociclo_phase?.trim().toUpperCase() === currentPhase
-            );
-            
-            if (filteredGlobal.length > 0) {
-                globalTasks = filteredGlobal;
-            } else {
-                fallbackApplied = true;
-                console.warn(`⚠️ renderLibrary: 0 tareas globales para fase ${currentPhase}. Aplicando fallback (mostrando todo).`);
-            }
-        }
+        const globalTasks = libraryData;
 
         // --- RENDER CUSTOM (prioridad, badge dorado) ---
-        const customFiltered = (this._showAllExercises || fallbackApplied || currentPhase === 'LIBRE' || currentPhase === 'BASE')
-            ? customTasks
-            : customTasks.filter(ex => !ex.morfociclo_phase || ex.morfociclo_phase.trim().toUpperCase() === currentPhase);
+        const customFiltered = customTasks;
 
         const customHTML = customFiltered.map(ex => {
             const isStaged = this._stagedTasks.some(t => String(t.id) === String(ex.numericId) && t.isCustom);
@@ -1480,7 +1444,7 @@ window.DTEngine = {
                     <div class="ex-info">
                         <span class="ex-id custom-badge">★ TUYA</span>
                         <h5 class="ex-title">${ex.title}</h5>
-                        <p class="ex-meta">${ex.morfociclo_phase || 'Personalizada'} | ${ex.description || ''}</p>
+                        <p class="ex-meta">${ex.ssp_type || 'Personalizada'} | ${ex.game_moment || ex.description || ''}</p>
                     </div>
                     <div class="ex-actions">
                         <select class="block-select" id="select-c${ex.numericId}">
@@ -1506,7 +1470,7 @@ window.DTEngine = {
                     <div class="ex-info">
                         <span class="ex-id">#${ex.numericId}</span>
                         <h5 class="ex-title">${ex.title}</h5>
-                        <p class="ex-meta">${ex.morfociclo_phase} | ${ex.game_moment}</p>
+                        <p class="ex-meta">${ex.ssp_type || 'Universal'} | ${ex.game_moment || ''}</p>
                     </div>
                     <div class="ex-actions">
                         <select class="block-select" id="select-${ex.numericId}">
@@ -2192,7 +2156,7 @@ window.DTEngine = {
         const uid   = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
         const name  = document.getElementById('custom-task-name').value.trim();
-        const phase = document.getElementById('custom-task-phase').value;
+        const phase = ''; // Universal (Desacoplado)
         const sspContext = document.getElementById('ex-ssp').value.trim();
         const tacticalPrinciples = document.getElementById('ex-principles').value.trim();
         const ruleProvocation = document.getElementById('ex-rule-provocation').value.trim();
