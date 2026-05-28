@@ -1246,10 +1246,6 @@ window.DTEngine = {
         return etiquetaFinal;
     },
 
-    getMethodologyLabel(dateStr) {
-        const matchDaysArray = Array.from(this._matchDays);
-        return this.calcularEtiquetaMD(dateStr, matchDaysArray);
-    },
 
     getTypeClass(label) {
         if (!label) return 'type-base';
@@ -1345,17 +1341,12 @@ window.DTEngine = {
     },
 
     updateDrawerUI() {
-        const label = this.getMethodologyLabel(this._selectedDate);
-        document.getElementById('drawer-methodology-label').innerText = label;
-        this.renderLibrary(label);
+        const etiquetaReal = this.calcularEtiquetaMD(this._selectedDate, Array.from(this._matchDays));
+        document.getElementById('drawer-methodology-label').innerText = etiquetaReal;
+        this.renderLibrary(etiquetaReal);
     },
 
-    toggleFilter() {
-        this._showAllExercises = !this._showAllExercises;
-        const btn = document.getElementById('btn-toggle-filter');
-        btn.innerText = this._showAllExercises ? 'Filtrar por Fase' : 'Ver Toda';
-        this.renderLibrary(this.getMethodologyLabel(this._selectedDate));
-    },
+
 
     renderLibrary(currentLabel) {
         const container = document.getElementById('library-list');
@@ -1437,7 +1428,7 @@ window.DTEngine = {
         // Preview visual inmediato en el drawer sin tocar Supabase
         const labelDisplay = document.getElementById('drawer-methodology-label');
         if (labelDisplay) {
-            labelDisplay.textContent = val ? `Etiqueta: ${val} (pendiente de guardar)` : this.getMethodologyLabel(this._selectedDate);
+            labelDisplay.textContent = val ? `Etiqueta: ${val} (pendiente de guardar)` : this.calcularEtiquetaMD(this._selectedDate, Array.from(this._matchDays));
         }
     },
 
@@ -1763,7 +1754,7 @@ window.DTEngine = {
         }
 
         // --- FOCO DE HOY ---
-        const todayLabel = this.getMethodologyLabel(todayStr);
+        const todayLabel = this.calcularEtiquetaMD(todayStr, matchDates);
         todayFocusEl.textContent = todayLabel;
         const focusClass = this.getTypeClass(todayLabel);
         todayFocusEl.className = `cc-value ${focusClass ? 'cc-' + focusClass.replace('type-', '') : 'cc-base'}`;
@@ -2160,7 +2151,8 @@ window.DTEngine = {
             });
 
             this.closeCustomTaskModal();
-            this.renderLibrary(this.getMethodologyLabel(this._selectedDate));
+            const etiquetaReal = this.calcularEtiquetaMD(this._selectedDate, Array.from(this._matchDays));
+            this.renderLibrary(etiquetaReal);
             console.log('✅ Tarea personalizada guardada y priorizada en biblioteca.');
         } catch (err) {
             alert('🔴 Error: ' + err.message);
