@@ -769,7 +769,7 @@ window.DTEngine = {
                             <div class="library-header">
                                 <h4>Biblioteca de Tareas</h4>
                             </div>
-                            <button class="btn-add-custom-task" onclick="DTEngine.openCustomTaskModal()">+ Añadir Tarea Personalizada</button>
+                            <button class="btn-add-custom-task" onclick="DTEngine.openCustomTaskModal()">+ CREAR TAREA</button>
                             <div id="library-list" class="exercise-list-container"></div>
                         </div>
                         <div class="drawer-footer-actions">
@@ -1994,14 +1994,16 @@ window.DTEngine = {
             window.tacticalCanvas = new fabric.Canvas('tactical-board', {
                 selection: false // No permite seleccionar grupos por ahora
             });
-            
-            const canvasEl = document.getElementById('tactical-board');
-            const container = canvasEl ? canvasEl.parentElement : null;
-            if (container) {
-                const rect = container.getBoundingClientRect();
-                window.tacticalCanvas.setWidth(rect.width || 500);
-                window.tacticalCanvas.setHeight(rect.height || 350);
-            }
+        }
+        
+        const canvasEl = document.getElementById('tactical-board');
+        const container = canvasEl ? canvasEl.parentElement : null;
+        if (container && window.tacticalCanvas) {
+            const rect = container.getBoundingClientRect();
+            window.tacticalCanvas.setWidth(rect.width || 500);
+            window.tacticalCanvas.setHeight(rect.height || 350);
+            window.tacticalCanvas.calcOffset();
+            window.tacticalCanvas.renderAll();
         }
     },
 
@@ -2026,12 +2028,14 @@ window.DTEngine = {
         const tp = document.getElementById('task-pause');  if (tp) tp.value = '';
         const tm = document.getElementById('task-materials'); if (tm) tm.value = '';
         
+        // 1. Mostrar el modal primero para que los contenedores tengan dimensiones reales en el DOM
+        document.getElementById('modal-custom-task').classList.remove('hidden');
+
+        // 2. Inicializar la pizarra un instante después para asegurar que el BoundingClientRect sea correcto
         setTimeout(() => {
             this.initCanvas();
             this.clearCanvas();
         }, 100);
-
-        document.getElementById('modal-custom-task').classList.remove('hidden');
     },
 
     closeCustomTaskModal() {
@@ -2059,8 +2063,8 @@ window.DTEngine = {
         const pauseTime= document.getElementById('task-pause')     ? parseInt(document.getElementById('task-pause').value)   || null : null;
         const materials= document.getElementById('task-materials') ? document.getElementById('task-materials').value.trim()          : '';
 
-        if (!name || !sspContext || !tacticalPrinciples || !ruleProvocation || !dimensionsDensity) {
-            return alert('Completa todos los campos obligatorios de la ficha técnica.');
+        if (!name) {
+            return alert('Por favor, ingresa al menos un título para la tarea.');
         }
 
         const totalMinutes = (blocks && workTime) ? blocks * workTime : null;
