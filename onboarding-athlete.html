@@ -206,6 +206,38 @@
             transform: none;
         }
 
+        .btn-secondary {
+            width: 100%;
+            padding: 16px;
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: var(--muted);
+        }
+
+        .form-input.normal {
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            text-transform: none;
+            text-align: left;
+        }
+
+        .form-input.normal option {
+            background: var(--surface);
+            color: var(--text);
+        }
+
         .btn-spinner {
             display: none;
             width: 18px;
@@ -216,8 +248,6 @@
             animation: spin 0.7s linear infinite;
             margin: 0 auto;
         }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* Feedback */
         .feedback {
@@ -310,10 +340,43 @@
         <div class="logo-text">RAVI<span>X</span></div>
     </div>
 
-    <div class="card">
-        <p class="card-eyebrow">Portal del Atleta</p>
+    <!-- PASO 1: Datos Básicos -->
+    <div class="card" id="step-1">
+        <p class="card-eyebrow">Paso 1 de 2</p>
+        <h1 class="card-title">Tu Perfil</h1>
+        <p class="card-subtitle">Definamos tu identidad deportiva.</p>
+
+        <label for="athlete-name" class="form-label">Nombre Completo *</label>
+        <input id="athlete-name" type="text" class="form-input normal" placeholder="Ej: Lucas Martínez">
+
+        <label for="athlete-sport" class="form-label">Deporte Principal *</label>
+        <select id="athlete-sport" class="form-input normal">
+            <option value="">Selecciona un deporte...</option>
+            <option value="Fútbol">Fútbol</option>
+            <option value="Natación">Natación</option>
+            <option value="Atletismo">Atletismo</option>
+            <option value="Judo">Judo</option>
+            <option value="Rugby">Rugby</option>
+            <option value="Básquetbol">Básquetbol</option>
+            <option value="Tenis">Tenis</option>
+            <option value="Otro">Otro</option>
+        </select>
+
+        <label for="athlete-position" class="form-label">Posición / Especialidad</label>
+        <input id="athlete-position" type="text" class="form-input normal" placeholder="Ej: Pivote, 100m Libres..." style="margin-bottom: 16px;">
+
+        <div id="feedback-step1" class="feedback" style="margin-bottom: 16px;"></div>
+
+        <button class="btn-primary" onclick="goToStep2()">
+            <span>CONTINUAR</span>
+        </button>
+    </div>
+
+    <!-- PASO 2: Equipo -->
+    <div class="card" id="step-2" style="display:none;">
+        <p class="card-eyebrow">Paso 2 de 2</p>
         <h1 class="card-title">Únete a tu Equipo</h1>
-        <p class="card-subtitle">Ingresa el código de 6 caracteres que te entregó tu entrenador para vincular tu perfil al equipo.</p>
+        <p class="card-subtitle">Ingresa el código de 6 caracteres que te entregó tu entrenador.</p>
 
         <label for="team-code-input" class="form-label">Código de Equipo</label>
         <input
@@ -329,17 +392,22 @@
         >
 
         <button id="join-btn" class="btn-primary" onclick="joinTeam()">
-            <span id="btn-label">UNIRME AL EQUIPO</span>
+            <span id="btn-label">VINCULAR EQUIPO</span>
             <div id="btn-spinner" class="btn-spinner"></div>
         </button>
+
+        <div style="margin-top: 16px;">
+            <button id="independent-btn" class="btn-secondary" onclick="joinIndependent()">
+                <span id="indep-label">Continuar como Independiente</span>
+                <div id="indep-spinner" class="btn-spinner" style="border-color: rgba(255,255,255,0.2); border-top-color: var(--text);"></div>
+            </button>
+        </div>
 
         <div id="feedback" class="feedback"></div>
 
         <div class="divider"></div>
-
-        <p class="footer-text">
-            ¿No eres atleta? <a href="index.html">Acceder como entrenador</a>
-        </p>
+        
+        <button class="btn-secondary" onclick="goToStep1()" style="border: none; padding: 0; color: var(--muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1.5px;">← Volver al Paso 1</button>
     </div>
 </div>
 
@@ -413,6 +481,70 @@
         if (e.key === 'Enter') joinTeam();
     });
 
+    // ── Wizard Logic ────────────────────────────────────────────
+    let athleteData = {
+        name: '',
+        sport: '',
+        position: ''
+    };
+
+    function goToStep2() {
+        const nameInput = document.getElementById('athlete-name').value.trim();
+        const sportInput = document.getElementById('athlete-sport').value;
+        const posInput = document.getElementById('athlete-position').value.trim();
+        const feedback = document.getElementById('feedback-step1');
+        
+        if (!nameInput || !sportInput) {
+            feedback.className = 'feedback error';
+            feedback.innerHTML = '⚠️ Completa tu nombre y deporte.';
+            feedback.style.display = 'flex';
+            return;
+        }
+        
+        feedback.style.display = 'none';
+        athleteData.name = nameInput;
+        athleteData.sport = sportInput;
+        athleteData.position = posInput || 'General';
+        
+        document.getElementById('step-1').style.display = 'none';
+        document.getElementById('step-2').style.display = 'block';
+    }
+
+    function goToStep1() {
+        document.getElementById('step-2').style.display = 'none';
+        document.getElementById('step-1').style.display = 'block';
+    }
+
+    async function saveAthleteProfile(teamId = null) {
+        const { data: { session } } = await db.auth.getSession();
+        if (!session) {
+            window.location.replace('index.html');
+            return false;
+        }
+        const uid = session.user.id;
+        
+        const updatePayload = {
+            full_name: athleteData.name,
+            sport: athleteData.sport,
+            position: athleteData.position
+        };
+        
+        if (teamId !== null) {
+            updatePayload.team_id = teamId;
+        }
+        
+        const { error: updateErr } = await db
+            .from('profiles_athlete')
+            .update(updatePayload)
+            .eq('id', uid);
+            
+        if (updateErr) {
+            console.error('[ONBOARDING] Update error:', updateErr);
+            return false;
+        }
+        return true;
+    }
+
     // ── Join team logic ─────────────────────────────────────────
     async function joinTeam() {
         const code = document.getElementById('team-code-input').value.trim().toUpperCase();
@@ -436,13 +568,6 @@
         spinner.style.display = 'block';
 
         try {
-            const { data: { session } } = await db.auth.getSession();
-            if (!session) {
-                window.location.replace('index.html');
-                return;
-            }
-            const uid = session.user.id;
-
             // 1. Look up the team by code
             const { data: team, error: teamErr } = await db
                 .from('teams')
@@ -451,18 +576,15 @@
                 .single();
 
             if (teamErr || !team) {
-                showFeedback('error', '❌ Código incorrecto. Verifica con tu entrenador e intenta de nuevo.');
+                showFeedback('error', '❌ Código incorrecto. Verifica con tu entrenador.');
                 resetBtn();
                 return;
             }
 
-            // 2. Assign team_id to this athlete's profile
-            const { error: updateErr } = await db
-                .from('profiles_athlete')
-                .update({ team_id: team.id })
-                .eq('id', uid);
+            // 2. Assign team_id and profile data
+            const success = await saveAthleteProfile(team.id);
 
-            if (updateErr) {
+            if (!success) {
                 showFeedback('error', '🔴 Error al vincular el equipo. Intenta de nuevo.');
                 resetBtn();
                 return;
@@ -481,10 +603,50 @@
         }
     }
 
+    // ── Independent logic ───────────────────────────────────────
+    async function joinIndependent() {
+        const btn = document.getElementById('independent-btn');
+        const label = document.getElementById('indep-label');
+        const spinner = document.getElementById('indep-spinner');
+        const feedback = document.getElementById('feedback');
+        
+        feedback.className = 'feedback';
+        feedback.style.display = 'none';
+        
+        btn.disabled = true;
+        label.style.display = 'none';
+        spinner.style.display = 'block';
+        
+        try {
+            const success = await saveAthleteProfile(null);
+            
+            if (!success) {
+                showFeedback('error', '🔴 Error al guardar tu perfil. Intenta de nuevo.');
+                btn.disabled = false;
+                label.style.display = 'block';
+                spinner.style.display = 'none';
+                return;
+            }
+            
+            showFeedback('success', '✅ Perfil creado. Redirigiendo...');
+            setTimeout(() => {
+                window.location.replace('dashboard-athlete.html');
+            }, 1200);
+            
+        } catch (err) {
+            console.error('[ONBOARDING] joinIndependent error:', err);
+            showFeedback('error', '🔴 Error inesperado. Recarga e intenta de nuevo.');
+            btn.disabled = false;
+            label.style.display = 'block';
+            spinner.style.display = 'none';
+        }
+    }
+
     function showFeedback(type, msg) {
         const el = document.getElementById('feedback');
         el.className = `feedback ${type}`;
         el.innerHTML = msg;
+        el.style.display = 'flex';
     }
 
     function resetBtn() {
