@@ -881,7 +881,7 @@ window.DTEngine = {
                                 <button type="button" onclick="DTEngine.clearCanvas()" style="background:transparent;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;" title="Limpiar Todo"><i class="fas fa-trash"></i></button>
                             </div>
                             <div id="tactical-board-container" style="position:relative;width:100%;height:350px;">
-                                <canvas id="tactical-board" style="position:absolute;top:0;left:0;width:100%;height:100%;touch-action:none;background:linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px), #1a2f24;background-size:20px 20px;cursor:crosshair;"></canvas>
+                                <canvas id="tactical-board" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:auto;touch-action:none;background:linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px), #1a2f24;background-size:20px 20px;cursor:crosshair;"></canvas>
                             </div>
                         </div>
 
@@ -1991,11 +1991,19 @@ window.DTEngine = {
     initCanvas() {
         const container = document.getElementById('tactical-board-container');
         const rect = container ? container.getBoundingClientRect() : { width: 500, height: 350 };
+        const canvasEl = document.getElementById('tactical-board');
 
         // Destruir por completo la instancia anterior para evitar corrupción de eventos o de coordenadas
         if (window.tacticalCanvas) {
             window.tacticalCanvas.dispose();
             window.tacticalCanvas = null;
+        }
+
+        // Forzar dimensiones internas DOM antes de inicializar
+        if (canvasEl) {
+            canvasEl.width = canvasEl.offsetWidth || rect.width || 500;
+            canvasEl.height = canvasEl.offsetHeight || rect.height || 350;
+            canvasEl.addEventListener('mousedown', () => console.log('✅ Clic registrado en el DOM nativo del Canvas'));
         }
 
         // Crear una instancia 100% fresca ahora que el contenedor ya es visible
@@ -2008,6 +2016,10 @@ window.DTEngine = {
         window.tacticalCanvas.setHeight(rect.height || 350);
         window.tacticalCanvas.calcOffset();
         window.tacticalCanvas.renderAll();
+
+        window.tacticalCanvas.on('mouse:down', function(options) {
+            console.log('✅ Clic registrado en Fabric.js (Canvas Interactivo)', options.pointer);
+        });
     },
 
     clearCanvas() {
