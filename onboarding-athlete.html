@@ -350,7 +350,6 @@
     const db = supabase.createClient(window.SUPA_URL, window.SUPA_KEY);
 
     // ── Auth gate ───────────────────────────────────────────────
-    // We gate on the Supabase session (JWT-based), not localStorage alone.
     async function checkAuth() {
         try {
             const { data: { session } } = await db.auth.getSession();
@@ -363,32 +362,44 @@
 
             const uid = session.user.id;
 
-            // Fetch the athlete's profile
+            // Fetch the athlete's profile — solo columnas que existen en la tabla
             const { data: profile, error } = await db
                 .from('profiles_athlete')
-                .select('team_id')
+                .select('id, full_name, sport, position')
                 .eq('id', uid)
-                .single();
+                .maybeSingle();
 
-            if (error || !profile) {
-                // Profile not found — send back to main app
-                window.location.replace('index.html');
+            // Si el perfil no existe aún, creamos uno mínimo para no romper el flujo
+            if (!profile && !error) {
+                await db.from('profiles_athlete').upsert({ id: uid }, { onConflict: 'id' });
+            }
+
+            // Si hubo error de DB (ej. columna inválida), igual mostramos el form
+            // para no entrar en loop infinito con index.html
+            if (error) {
+                console.warn('[ONBOARDING] Error al leer perfil (no es fatal):', error.message);
+                // Mostrar el formulario de todas formas
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('main-page').style.display = 'flex';
                 return;
             }
 
-            if (profile.team_id) {
-                // Already has a team — go straight to dashboard
+            // Perfil completo (sport + position) → ir al dashboard directamente
+            if (profile && profile.full_name && profile.sport && profile.position) {
                 window.location.replace('dashboard-athlete.html');
                 return;
             }
 
-            // team_id is NULL → show the join-team form
+            // Perfil incompleto o sin equipo → mostrar formulario de onboarding
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('main-page').style.display = 'flex';
 
         } catch (err) {
             console.error('[ONBOARDING] Auth check failed:', err);
-            window.location.replace('index.html');
+            // NO redirigir a index.html para evitar el loop infinito.
+            // Mostrar el formulario y dejar que el usuario actúe.
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('main-page').style.display = 'flex';
         }
     }
 

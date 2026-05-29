@@ -593,39 +593,32 @@
     // ── Boot sequence ───────────────────────────────────────────
     async function boot() {
         try {
-            // 1. Verify Supabase session (no localStorage-only loops)
+            // 1. Verify Supabase session
             const { data: { session } } = await db.auth.getSession();
             if (!session) {
-                window.location.replace('onboarding-athlete.html');
+                window.location.replace('index.html');
                 return;
             }
 
             const uid = session.user.id;
 
-            // 2. Fetch athlete profile + team in one query
+            // 2. Fetch athlete profile — solo columnas base, sin join team
             const { data: profile, error } = await db
                 .from('profiles_athlete')
-                .select('full_name, team_id, sport, position, teams(name)')
+                .select('id, full_name, sport, position')
                 .eq('id', uid)
-                .single();
+                .maybeSingle();
 
-            if (error || !profile) {
-                console.error('[DASHBOARD] Profile not found:', error?.message);
-                window.location.replace('onboarding-athlete.html');
-                return;
+            // Si hay error de DB, mostramos el dashboard igual (datos mínimos)
+            if (error) {
+                console.warn('[DASHBOARD] Error al leer perfil (no es fatal):', error.message);
             }
 
-            // 3. If no team assigned yet, send to onboarding
-            if (!profile.team_id) {
-                window.location.replace('onboarding-athlete.html');
-                return;
-            }
-
-            // 4. Render everything now that we have valid data
-            renderProfile(profile);
+            // 4. Render con datos disponibles (o datos por defecto si no hay perfil)
+            renderProfile(profile || {});
             setDate();
 
-            // 5. Hide loading, show app
+            // 5. Ocultar loader, mostrar app
             const ls = document.getElementById('loading-screen');
             ls.classList.add('fade-out');
             setTimeout(() => ls.style.display = 'none', 400);
@@ -633,7 +626,13 @@
 
         } catch (err) {
             console.error('[DASHBOARD] Boot failed:', err);
-            window.location.replace('onboarding-athlete.html');
+            // Mostrar dashboard aunque haya error — no redirigir (evita loops)
+            renderProfile({});
+            setDate();
+            const ls = document.getElementById('loading-screen');
+            if (ls) ls.style.display = 'none';
+            const shell = document.getElementById('app-shell');
+            if (shell) shell.style.display = 'grid';
         }
     }
 
@@ -641,7 +640,7 @@
         const firstName = profile.full_name
             ? profile.full_name.split(' ')[0]
             : 'Atleta';
-        const teamName = profile.teams?.name || 'Equipo';
+        const teamName = profile.team_name || 'Tu Equipo';
 
         // Topbar
         document.getElementById('topbar-athlete-name').textContent = firstName;
@@ -653,7 +652,9 @@
         // Welcome card
         document.getElementById('welcome-name').textContent = firstName;
         document.getElementById('welcome-team-line').textContent =
-            `Eres parte de ${teamName}. Tu entrenador ya puede ver tu progreso.`;
+            profile.sport
+                ? `${profile.sport}${profile.position ? ' · ' + profile.position : ''} — Motor de Rendimiento activo.`
+                : 'Dashboard de Atleta. Completa tu perfil para acceder a todas las funciones.';
     }
 
     function setDate() {
