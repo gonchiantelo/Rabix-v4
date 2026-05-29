@@ -880,7 +880,7 @@ window.DTEngine = {
                                 </div>
                                 <button type="button" onclick="DTEngine.clearCanvas()" style="background:transparent;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;" title="Limpiar Todo"><i class="fas fa-trash"></i></button>
                             </div>
-                            <div style="position:relative;width:100%;height:350px;">
+                            <div id="tactical-board-container" style="position:relative;width:100%;height:350px;">
                                 <canvas id="tactical-board" style="position:absolute;top:0;left:0;width:100%;height:100%;touch-action:none;background:linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px), #1a2f24;background-size:20px 20px;cursor:crosshair;"></canvas>
                             </div>
                         </div>
@@ -1988,23 +1988,26 @@ window.DTEngine = {
         }
     },
 
-    // --- CANVAS DIBUJO TÁCTICO (Fabric.js) ---
     initCanvas() {
-        if (!window.tacticalCanvas) {
-            window.tacticalCanvas = new fabric.Canvas('tactical-board', {
-                selection: false // No permite seleccionar grupos por ahora
-            });
+        const container = document.getElementById('tactical-board-container');
+        const rect = container ? container.getBoundingClientRect() : { width: 500, height: 350 };
+
+        // Destruir por completo la instancia anterior para evitar corrupción de eventos o de coordenadas
+        if (window.tacticalCanvas) {
+            window.tacticalCanvas.dispose();
+            window.tacticalCanvas = null;
         }
+
+        // Crear una instancia 100% fresca ahora que el contenedor ya es visible
+        window.tacticalCanvas = new fabric.Canvas('tactical-board', {
+            selection: false // No permite seleccionar grupos por ahora
+        });
         
-        const canvasEl = document.getElementById('tactical-board');
-        const container = canvasEl ? canvasEl.parentElement : null;
-        if (container && window.tacticalCanvas) {
-            const rect = container.getBoundingClientRect();
-            window.tacticalCanvas.setWidth(rect.width || 500);
-            window.tacticalCanvas.setHeight(rect.height || 350);
-            window.tacticalCanvas.calcOffset();
-            window.tacticalCanvas.renderAll();
-        }
+        // Asignar dimensiones basadas en el DOM renderizado
+        window.tacticalCanvas.setWidth(rect.width || 500);
+        window.tacticalCanvas.setHeight(rect.height || 350);
+        window.tacticalCanvas.calcOffset();
+        window.tacticalCanvas.renderAll();
     },
 
     clearCanvas() {
