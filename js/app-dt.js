@@ -778,114 +778,72 @@ window.DTEngine = {
                     </div>
                 </div>
 
-                <!-- Modal de Tarea Personalizada -->
+                <!-- Modal de Tarea Personalizada PREMIUM V2 -->
                 <div id="modal-custom-task" class="modal-overlay hidden" onclick="DTEngine.closeCustomTaskModal()">
-                    <div class="custom-task-content" onclick="event.stopPropagation()" style="background:#111827;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:30px;width:100%;max-width:520px;color:#fff;position:relative;">
-                        <div style="position:sticky; top:-30px; z-index:100; display:flex; justify-content:flex-end; margin-bottom:-30px; pointer-events:none;">
-                            <button onclick="DTEngine.closeCustomTaskModal()" style="background:#1f2937;border:1px solid #374151;color:#fff;font-size:1.2rem;cursor:pointer;border-radius:50%;width:32px;height:32px;pointer-events:auto;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.5);">✕</button>
-                        </div>
-                        <p style="margin:0 0 2px 0;font-size:0.65rem;font-weight:800;color:#00F2FE;letter-spacing:2px;font-family:Outfit,sans-serif;">BÓVEDA PRIVADA</p>
-                        <h2 style="margin:0 0 20px 0;color:var(--primary-color,#00F2FE);font-family:Outfit,sans-serif;font-size:1.4rem;">Nueva Tarea Táctica</h2>
+                    <div class="custom-task-content" onclick="event.stopPropagation()" style="background:#080808; border:1px solid rgba(0,240,255,0.2); border-radius:16px; width:90vw; max-width:1400px; height:85vh; display:flex; flex-direction:row; overflow:hidden; color:#F5F5F5; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
+                        
+                        <!-- Columna Izquierda: Formularios (30%) -->
+                        <div style="width:30%; background:#1A1A1A; border-right:1px solid rgba(255,255,255,0.1); display:flex; flex-direction:column; padding:30px; box-sizing:border-box;">
+                            <h2 style="margin:0 0 5px 0; color:#00F0FF; font-family:Outfit,sans-serif; font-size:1.6rem; letter-spacing:1px;">DETALLES DE LA TAREA</h2>
+                            <p style="margin:0 0 25px 0; font-size:0.8rem; color:#9ca3af;">Configura los metadatos de tu ejercicio.</p>
 
-                        <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">NOMBRE DE LA TAREA</label>
-                        <input type="text" id="custom-task-name" placeholder="Ej: Rondo de pressing específico" style="width:100%;padding:12px;margin-bottom:15px;background:#1f2937;border:1px solid #374151;border-radius:8px;color:#fff;outline:none;box-sizing:border-box;">
+                            <div style="flex-grow:1; overflow-y:auto; padding-right:10px;">
+                                <label style="font-size:0.75rem; color:#9ca3af; font-weight:bold; display:block; margin-bottom:5px;">TÍTULO</label>
+                                <input type="text" id="custom-task-name" placeholder="Ej: Rondo de pressing 4v4+3" style="width:100%; padding:14px; margin-bottom:20px; background:#080808; border:1px solid #333; border-radius:8px; color:#F5F5F5; font-size:1rem; outline:none; box-sizing:border-box; transition:border 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#333'">
 
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
-                            <div>
-                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">MOMENTO DEL JUEGO</label>
-                                <select id="task-moment" style="width:100%;padding:12px;background:#1f2937;border:1px solid #374151;border-radius:8px;color:#fff;outline:none;">
-                                    <option value="Ataque Organizado">Ataque Organizado</option>
-                                    <option value="Defensa Organizada">Defensa Organizada</option>
-                                    <option value="Transición O-D">Transición O-D</option>
-                                    <option value="Transición D-O">Transición D-O</option>
-                                    <option value="ABP">Pelota Parada (ABP)</option>
-                                </select>
+                                <label style="font-size:0.75rem; color:#9ca3af; font-weight:bold; display:block; margin-bottom:5px;">OBJETIVO / S.S.P.</label>
+                                <textarea id="ex-ssp" rows="3" placeholder="Ej: Ante ataque posicional del rival, presionar tras pérdida..." style="width:100%; padding:14px; margin-bottom:20px; background:#080808; border:1px solid #333; border-radius:8px; color:#F5F5F5; font-size:0.95rem; outline:none; resize:none; box-sizing:border-box; transition:border 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#333'"></textarea>
+
+                                <label style="font-size:0.75rem; color:#9ca3af; font-weight:bold; display:block; margin-bottom:5px;">DIMENSIONES</label>
+                                <input type="text" id="ex-dimensions" placeholder="Ej: 20x20m (400m²)" style="width:100%; padding:14px; margin-bottom:20px; background:#080808; border:1px solid #333; border-radius:8px; color:#F5F5F5; font-size:0.95rem; outline:none; box-sizing:border-box; transition:border 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#333'">
+
+                                <label style="font-size:0.75rem; color:#00F0FF; font-weight:bold; display:block; margin-bottom:5px;">TAGS TÁCTICOS</label>
+                                <input type="text" id="exercise-tags" placeholder="pressing, posesion, amplitud" style="width:100%; padding:14px; margin-bottom:20px; background:#080808; border:1px solid rgba(0,240,255,0.4); border-radius:8px; color:#00F0FF; font-size:0.95rem; font-weight:bold; outline:none; box-sizing:border-box; transition:border 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='rgba(0,240,255,0.4)'">
                             </div>
-                            <div>
-                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">TIPO DE TAREA (SSP)</label>
-                                <select id="task-ssp" style="width:100%;padding:12px;background:#1f2937;border:1px solid #374151;border-radius:8px;color:#fff;outline:none;">
-                                    <option value="General">General</option>
-                                    <option value="Dirigida">Dirigida</option>
-                                    <option value="Especial">Especial</option>
-                                    <option value="Competitiva">Competitiva</option>
-                                </select>
+
+                            <div style="margin-top:20px;">
+                                <button onclick="DTEngine.saveCustomTask()" style="width:100%; padding:16px; background:#00F0FF; color:#000; border:none; border-radius:8px; font-weight:900; font-family:Outfit,sans-serif; font-size:1.1rem; cursor:pointer; letter-spacing:1px; text-transform:uppercase; transition:transform 0.1s, filter 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">GUARDAR TAREA</button>
                             </div>
                         </div>
 
-                        <div style="background:rgba(0,242,254,0.05);border:1px solid rgba(0,242,254,0.2);border-radius:8px;padding:15px;margin-bottom:15px;">
-                            <label style="font-size:0.75rem;color:#00F2FE;font-weight:bold;display:block;margin-bottom:10px;">⏱ DOSIFICACIÓN (VOLUMEN Y DENSIDAD)</label>
-                            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-                                <div>
-                                    <label style="font-size:0.65rem;color:#9ca3af;display:block;margin-bottom:4px;">SERIES/BLOQUES</label>
-                                    <input type="number" id="task-blocks" placeholder="Ej: 4" min="1" style="width:100%;padding:10px;background:#111827;border:1px solid #374151;border-radius:6px;color:#fff;outline:none;box-sizing:border-box;">
+                        <!-- Columna Derecha: Pizarra (70%) -->
+                        <div style="width:70%; background:#080808; display:flex; flex-direction:column; position:relative;">
+                            
+                            <!-- Header de la Cancha -->
+                            <div style="padding:15px 30px; background:#1A1A1A; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
+                                <div style="display:flex; gap:10px;">
+                                    <button style="padding:8px 16px; background:#080808; border:1px solid #333; border-radius:6px; color:#F5F5F5; font-size:0.85rem; cursor:pointer; font-weight:bold; transition:all 0.2s;" onmouseover="this.style.borderColor='#00F0FF'; this.style.color='#00F0FF'" onmouseout="this.style.borderColor='#333'; this.style.color='#F5F5F5'">Cancha Completa</button>
+                                    <button style="padding:8px 16px; background:#080808; border:1px solid #333; border-radius:6px; color:#F5F5F5; font-size:0.85rem; cursor:pointer; font-weight:bold; transition:all 0.2s;" onmouseover="this.style.borderColor='#00F0FF'; this.style.color='#00F0FF'" onmouseout="this.style.borderColor='#333'; this.style.color='#F5F5F5'">Media Cancha</button>
+                                    <button style="padding:8px 16px; background:#080808; border:1px solid #333; border-radius:6px; color:#F5F5F5; font-size:0.85rem; cursor:pointer; font-weight:bold; transition:all 0.2s;" onmouseover="this.style.borderColor='#00F0FF'; this.style.color='#00F0FF'" onmouseout="this.style.borderColor='#333'; this.style.color='#F5F5F5'">Área Penal</button>
                                 </div>
-                                <div>
-                                    <label style="font-size:0.65rem;color:#9ca3af;display:block;margin-bottom:4px;">T. TRABAJO (min)</label>
-                                    <input type="number" id="task-work" placeholder="Ej: 5" min="1" style="width:100%;padding:10px;background:#111827;border:1px solid #374151;border-radius:6px;color:#fff;outline:none;box-sizing:border-box;">
+                                <button onclick="DTEngine.closeCustomTaskModal()" style="background:transparent; border:none; color:#F5F5F5; font-size:1.5rem; cursor:pointer; padding:0 10px; transition:color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#F5F5F5'">✕</button>
+                            </div>
+
+                            <!-- Contenedor del Canvas -->
+                            <div id="premium-tactical-board-container" style="flex-grow:1; position:relative; width:100%; height:100%; overflow:hidden;">
+                                <canvas id="premium-tactical-board" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:10; pointer-events:auto; touch-action:none; background-color:#2E7D32; background-image:linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px); background-size:30px 30px; cursor:crosshair;"></canvas>
+                                
+                                <!-- Caja Flotante de Herramientas -->
+                                <div style="position:absolute; top:20px; right:20px; width:60px; background:rgba(26,26,26,0.95); border:1px solid rgba(0,240,255,0.3); border-radius:12px; z-index:20; display:flex; flex-direction:column; align-items:center; padding:10px 0; box-shadow:0 8px 32px rgba(0,0,0,0.5); backdrop-filter:blur(4px);">
+                                    <!-- Elementos -->
+                                    <button onclick="window.DTEngine.Board.addPlayerBlue()" style="width:40px; height:40px; margin-bottom:8px; border-radius:50%; background:#0088ff; border:2px solid #fff; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.5); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'" title="Jugador Base"></button>
+                                    <button onclick="window.DTEngine.Board.addPlayerRed()" style="width:40px; height:40px; margin-bottom:8px; border-radius:50%; background:#ff4444; border:2px solid #fff; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.5); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'" title="Jugador Rival"></button>
+                                    <button onclick="window.DTEngine.Board.addBall()" style="width:24px; height:24px; margin-bottom:15px; border-radius:50%; background:#fff; border:1px solid #000; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.5); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'" title="Balón"></button>
+                                    
+                                    <div style="width:40px; height:1px; background:rgba(255,255,255,0.1); margin-bottom:15px;"></div>
+                                    
+                                    <!-- Formas & Trazos (Placeholders por ahora) -->
+                                    <button onclick="console.log('Implementar Cuadrado')" style="width:40px; height:40px; margin-bottom:8px; border-radius:8px; background:transparent; border:none; color:#F5F5F5; cursor:pointer; font-size:1.2rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'" title="Cuadrado">⬜</button>
+                                    <button onclick="console.log('Implementar Flecha')" style="width:40px; height:40px; margin-bottom:15px; border-radius:8px; background:transparent; border:none; color:#F5F5F5; cursor:pointer; font-size:1.2rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'" title="Flecha">↗️</button>
+                                    
+                                    <div style="width:40px; height:1px; background:rgba(255,255,255,0.1); margin-bottom:15px;"></div>
+                                    
+                                    <!-- Borrador -->
+                                    <button onclick="window.DTEngine.Board.deleteActive()" style="width:40px; height:40px; margin-bottom:8px; border-radius:8px; background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'" title="Borrar Selección">🗑️</button>
+                                    <button onclick="DTEngine.clearCanvas()" style="width:40px; height:40px; border-radius:8px; background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'" title="Limpiar Pizarra">💣</button>
                                 </div>
-                                <div>
-                                    <label style="font-size:0.65rem;color:#9ca3af;display:block;margin-bottom:4px;">T. PAUSA (min)</label>
-                                    <input type="number" id="task-pause" placeholder="Ej: 1" min="0" style="width:100%;padding:10px;background:#111827;border:1px solid #374151;border-radius:6px;color:#fff;outline:none;box-sizing:border-box;">
-                                </div>
                             </div>
                         </div>
-
-
-
-                        <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">MATERIALES NECESARIOS</label>
-                        <input type="text" id="task-materials" placeholder="Ej: 10 conos, 6 petos, balones" style="width:100%;padding:12px;margin-bottom:15px;background:#1f2937;border:1px solid #374151;border-radius:8px;color:#fff;outline:none;box-sizing:border-box;">
-
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
-                            <div>
-                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">S.S.P. (CONTEXTO DE JUEGO)</label>
-                                <textarea id="ex-ssp" rows="2" placeholder="Ej: Ante ataque posicional del rival..." style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
-                            </div>
-                            <div>
-                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">PRINCIPIOS TÁCTICOS</label>
-                                <textarea id="ex-principles" rows="2" placeholder="Principal / De Base / Episódico" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
-                            </div>
-                        </div>
-
-                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;margin-bottom:15px;">
-                            <div>
-                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">REGLA DE PROVOCACIÓN</label>
-                                <textarea id="ex-rule-provocation" rows="2" placeholder="Ej: Si filtran pase, suma 1 punto." style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
-                            </div>
-                            <div>
-                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">REGLA DE PROPENSIÓN</label>
-                                <textarea id="ex-rule-propension" rows="2" placeholder="Ej: Repliegue inmediato al área." style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
-                            </div>
-                            <div>
-                                <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">REGLA DE CONTINUIDAD</label>
-                                <textarea id="ex-rule-continuity" rows="2" placeholder="Ej: Inyección de balón del DT." style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;resize:none;box-sizing:border-box;"></textarea>
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom:15px;">
-                            <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">DIMENSIONES Y ESTRUCTURAS</label>
-                            <input type="text" id="ex-dimensions" placeholder="Medidas, m² por jugador y estructuras implicadas" style="width:100%;padding:12px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#fff;outline:none;box-sizing:border-box;">
-                        </div>
-
-                        <label style="font-size:0.7rem;color:#9ca3af;font-weight:bold;display:block;margin-bottom:5px;">TAGS TÁCTICOS</label>
-                        <input type="text" id="exercise-tags" placeholder="Ej: pressing, posesion, amplitud (separados por coma)" style="width:100%;padding:12px;margin-bottom:20px;background:#1f2937;border:1px solid rgba(0,242,254,0.4);border-radius:8px;color:#00F2FE;font-weight:bold;outline:none;box-sizing:border-box;">
-
-                        <!-- Pizarra Técnica (Pilar 4) -->
-                        <div style="margin-bottom:20px;border:1px solid #374151;border-radius:12px;overflow:hidden;background:#111827;">
-                            <div style="padding:10px;background:#1f2937;border-bottom:1px solid #374151;display:flex;justify-content:space-between;align-items:center;">
-                                <div style="display:flex;gap:8px;align-items:center;">
-                                    <button type="button" id="btn-add-player-blue" style="padding: 6px 12px; border-radius: 4px; background: #0088ff; color: white; border: none; cursor: pointer; font-size: 0.8rem; font-family: Outfit;" onclick="window.DTEngine.Board.addPlayerBlue()">🔵 Jugador Base</button>
-                                    <button type="button" id="btn-add-player-red" style="padding: 6px 12px; border-radius: 4px; background: #ff4444; color: white; border: none; cursor: pointer; font-size: 0.8rem; font-family: Outfit;" onclick="window.DTEngine.Board.addPlayerRed()">🔴 Jugador Rival</button>
-                                    <button type="button" id="btn-add-ball" style="padding: 6px 12px; border-radius: 4px; background: #ffffff; color: #000; border: none; cursor: pointer; font-size: 0.8rem; font-family: Outfit;" onclick="window.DTEngine.Board.addBall()">⚽ Balón</button>
-                                    <button type="button" id="btn-delete-obj" style="padding: 6px 12px; border-radius: 4px; background: transparent; color: #ef4444; border: 1px solid #ef4444; cursor: pointer; font-size: 0.8rem; font-family: Outfit;" onclick="window.DTEngine.Board.deleteActive()">🗑️ Borrar Seleccionado</button>
-                                </div>
-                                <button type="button" onclick="DTEngine.clearCanvas()" style="background:transparent;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;" title="Limpiar Todo"><i class="fas fa-trash"></i></button>
-                            </div>
-                            <div id="tactical-board-container" style="position:relative;width:100%;height:350px;">
-                                <canvas id="tactical-board" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:auto;touch-action:none;background:linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px), #1a2f24;background-size:20px 20px;cursor:crosshair;"></canvas>
-                            </div>
-                        </div>
-
-                        <button onclick="DTEngine.saveCustomTask()" style="width:100%;padding:14px;background:var(--primary-color,#00F2FE);color:#000;border:none;border-radius:8px;font-weight:900;font-family:Outfit,sans-serif;font-size:1.05rem;cursor:pointer;letter-spacing:0.5px;">GUARDAR FICHA TÉCNICA</button>
                     </div>
                 </div>
 
@@ -1989,9 +1947,9 @@ window.DTEngine = {
     },
 
     initCanvas() {
-        const container = document.getElementById('tactical-board-container');
-        const rect = container ? container.getBoundingClientRect() : { width: 500, height: 350 };
-        const canvasEl = document.getElementById('tactical-board');
+        const container = document.getElementById('premium-tactical-board-container');
+        const rect = container ? container.getBoundingClientRect() : { width: 800, height: 600 };
+        const canvasEl = document.getElementById('premium-tactical-board');
 
         // Destruir por completo la instancia anterior para evitar corrupción de eventos o de coordenadas
         if (window.tacticalCanvas) {
@@ -2001,25 +1959,20 @@ window.DTEngine = {
 
         // Forzar dimensiones internas DOM antes de inicializar
         if (canvasEl) {
-            canvasEl.width = canvasEl.offsetWidth || rect.width || 500;
-            canvasEl.height = canvasEl.offsetHeight || rect.height || 350;
-            canvasEl.addEventListener('mousedown', () => console.log('✅ Clic registrado en el DOM nativo del Canvas'));
+            canvasEl.width = canvasEl.offsetWidth || rect.width || 800;
+            canvasEl.height = canvasEl.offsetHeight || rect.height || 600;
         }
 
         // Crear una instancia 100% fresca ahora que el contenedor ya es visible
-        window.tacticalCanvas = new fabric.Canvas('tactical-board', {
+        window.tacticalCanvas = new fabric.Canvas('premium-tactical-board', {
             selection: false // No permite seleccionar grupos por ahora
         });
         
         // Asignar dimensiones basadas en el DOM renderizado
-        window.tacticalCanvas.setWidth(rect.width || 500);
-        window.tacticalCanvas.setHeight(rect.height || 350);
+        window.tacticalCanvas.setWidth(rect.width || 800);
+        window.tacticalCanvas.setHeight(rect.height || 600);
         window.tacticalCanvas.calcOffset();
         window.tacticalCanvas.renderAll();
-
-        window.tacticalCanvas.on('mouse:down', function(options) {
-            console.log('✅ Clic registrado en Fabric.js (Canvas Interactivo)', options.pointer);
-        });
     },
 
     clearCanvas() {
@@ -2032,16 +1985,8 @@ window.DTEngine = {
     openCustomTaskModal() {
         document.getElementById('custom-task-name').value = '';
         document.getElementById('ex-ssp').value = '';
-        document.getElementById('ex-principles').value = '';
-        document.getElementById('ex-rule-provocation').value = '';
-        document.getElementById('ex-rule-propension').value = '';
-        document.getElementById('ex-rule-continuity').value = '';
         document.getElementById('ex-dimensions').value = '';
         document.getElementById('exercise-tags').value = '';
-        const tb = document.getElementById('task-blocks'); if (tb) tb.value = '';
-        const tw = document.getElementById('task-work');   if (tw) tw.value = '';
-        const tp = document.getElementById('task-pause');  if (tp) tp.value = '';
-        const tm = document.getElementById('task-materials'); if (tm) tm.value = '';
         
         // 1. Mostrar el modal primero para que los contenedores tengan dimensiones reales en el DOM
         document.getElementById('modal-custom-task').classList.remove('hidden');
@@ -2062,27 +2007,30 @@ window.DTEngine = {
         const token = localStorage.getItem('ravix_token');
         const name  = document.getElementById('custom-task-name').value.trim();
         const phase = ''; // Universal (Desacoplado)
+        
+        // Nuevos campos V2
         const sspContext = document.getElementById('ex-ssp').value.trim();
-        const tacticalPrinciples = document.getElementById('ex-principles').value.trim();
-        const ruleProvocation = document.getElementById('ex-rule-provocation').value.trim();
-        const rulePropension = document.getElementById('ex-rule-propension').value.trim();
-        const ruleContinuity = document.getElementById('ex-rule-continuity').value.trim();
         const dimensionsDensity = document.getElementById('ex-dimensions').value.trim();
         const tagsRaw = document.getElementById('exercise-tags').value;
         const tags = tagsRaw.split(',').map(t => t.trim()).filter(t => t !== '');
         
-        const moment   = document.getElementById('task-moment')    ? document.getElementById('task-moment').value    : '';
-        const ssp      = document.getElementById('task-ssp')       ? document.getElementById('task-ssp').value       : '';
-        const blocks   = document.getElementById('task-blocks')    ? parseInt(document.getElementById('task-blocks').value)  || null : null;
-        const workTime = document.getElementById('task-work')      ? parseInt(document.getElementById('task-work').value)    || null : null;
-        const pauseTime= document.getElementById('task-pause')     ? parseInt(document.getElementById('task-pause').value)   || null : null;
-        const materials= document.getElementById('task-materials') ? document.getElementById('task-materials').value.trim()          : '';
+        // Campos legacy o eliminados del DOM (pasamos null o vacío para no romper la BD)
+        const tacticalPrinciples = '';
+        const ruleProvocation = '';
+        const rulePropension = '';
+        const ruleContinuity = '';
+        const moment = '';
+        const ssp = '';
+        const blocks = null;
+        const workTime = null;
+        const pauseTime = null;
+        const materials = '';
 
         if (!name) {
             return alert('Por favor, ingresa al menos un título para la tarea.');
         }
 
-        const totalMinutes = (blocks && workTime) ? blocks * workTime : null;
+        const totalMinutes = null;
         
         // Capturar Pizarra
         let diagramDataUrl = null;
