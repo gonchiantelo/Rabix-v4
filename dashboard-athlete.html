@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard · Ravix Athlete</title>
+    <meta name="description" content="Panel de rendimiento del atleta. Registra tu bienestar, carga y sesiones.">
+    <link rel="icon" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:         #080808;
+            --surface:    #111111;
+            --surface2:   #161616;
+            --border:     rgba(255,255,255,0.08);
+            --border2:    rgba(255,255,255,0.05);
+            --text:       #F5F5F5;
+            --muted:      #6b7280;
+            --accent:     #00F0FF;
+            --accent-dim: rgba(0,240,255,0.08);
+            --volt:       #BFFF00;
+            --error:      #ff4d4d;
+            --success:    #10b981;
+            --sidebar-w:  240px;
+            --topbar-h:   64px;
+        }
+
+        html, body {
+            height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+        }
+
+        /* ── Grid Layout ─────────────────────────────────── */
+        .app-shell {
+            display: grid;
+            grid-template-columns: var(--sidebar-w) 1fr;
+            grid-template-rows: var(--topbar-h) 1fr;
+            height: 100vh;
+        }
+
+        /* ── Loading Screen ──────────────────────────────── */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            gap: 20px;
+            transition: opacity 0.4s;
+        }
+
+        #loading-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .ls-logo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            color: var(--text);
+        }
+
+        .ls-logo span { color: var(--accent); }
+
+        .ls-spinner {
+            width: 36px;
+            height: 36px;
+            border: 2px solid rgba(0,240,255,0.15);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .ls-text {
+            font-size: 0.75rem;
+            color: var(--muted);
+            letter-spacing: 3px;
+            font-weight: 600;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Sidebar ─────────────────────────────────────── */
+        .sidebar {
+            grid-column: 1;
+            grid-row: 1 / 3;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 20px 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-logo-icon {
+            width: 34px;
+            height: 34px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #000;
+            font-size: 1rem;
+        }
+
+        .sidebar-logo-name {
+            font-size: 1.2rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .sidebar-logo-name span { color: var(--accent); }
+
+        .sidebar-section-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            color: var(--muted);
+            padding: 0 20px 8px;
+            text-transform: uppercase;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            cursor: pointer;
+            border-radius: 0;
+            transition: background 0.15s, color 0.15s;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--muted);
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.04);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border-left-color: var(--accent);
+            font-weight: 700;
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+            width: 22px;
+            text-align: center;
+        }
+
+        .sidebar-spacer { flex-grow: 1; }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .athlete-tag {
+            background: var(--accent-dim);
+            border: 1px solid rgba(0,240,255,0.2);
+            border-radius: 8px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 14px;
+        }
+
+        .athlete-tag-name {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .athlete-tag-team {
+            font-size: 0.75rem;
+            color: var(--accent);
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            border-color: var(--error);
+            color: var(--error);
+            background: rgba(255,77,77,0.05);
+        }
+
+        /* ── Topbar ──────────────────────────────────────── */
+        .topbar {
+            grid-column: 2;
+            grid-row: 1;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+        }
+
+        .topbar-greeting {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar-eyebrow {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .topbar-name {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        #topbar-date {
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        /* ── Main Content ────────────────────────────────── */
+        .main-content {
+            grid-column: 2;
+            grid-row: 2;
+            overflow-y: auto;
+            padding: 32px;
+            background: var(--bg);
+        }
+
+        /* Welcome card */
+        .welcome-card {
+            background: linear-gradient(135deg, rgba(0,240,255,0.05) 0%, rgba(0,0,0,0) 100%);
+            border: 1px solid rgba(0,240,255,0.15);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-card::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(0,240,255,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .welcome-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--accent-dim);
+            border: 1px solid rgba(0,240,255,0.2);
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 6px;
+        }
+
+        .welcome-title span {
+            color: var(--accent);
+        }
+
+        .welcome-subtitle {
+            font-size: 0.95rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: border-color 0.2s;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(0,240,255,0.2);
+        }
+
+        .stat-icon {
+            font-size: 1.4rem;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--text);
+            line-height: 1;
+        }
+
+        .stat-value.accent { color: var(--accent); }
+        .stat-value.volt { color: var(--volt); }
+
+        .stat-meta {
+            font-size: 0.78rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        /* Content sections */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        /* Training sessions table */
+        .training-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 28px;
+        }
+
+        .training-card-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .training-card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .training-card-body {
+            padding: 22px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--muted);
+        }
+
+        .empty-state-icon { font-size: 2rem; margin-bottom: 12px; }
+        .empty-state-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+        .empty-state-desc { font-size: 0.85rem; }
+
+        /* Construction banner */
+        .module-banner {
+            background: var(--surface2);
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            padding: 28px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        .module-banner-icon { font-size: 2rem; margin-bottom: 10px; }
+        .module-banner-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .module-banner-desc { font-size: 0.85rem; }
+
+        /* ── Responsive (tablet-ish) ─────────────────────── */
+        @media (max-width: 768px) {
+            :root { --sidebar-w: 64px; }
+
+            .sidebar-logo-name,
+            .sidebar-section-label,
+            .nav-item span,
+            .athlete-tag-name,
+            .athlete-tag-team,
+            .logout-btn { display: none; }
+
+            .nav-icon { width: auto; margin: 0 auto; }
+            .nav-item { justify-content: center; padding: 14px; }
+            .sidebar-logo { justify-content: center; padding: 0 0 24px; }
+            .sidebar-footer { padding: 12px; }
+            .athlete-tag { display: none; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loading screen -->
+<div id="loading-screen">
+    <div class="ls-logo">RAVI<span>X</span></div>
+    <div class="ls-spinner"></div>
+    <p class="ls-text">CARGANDO PERFIL...</p>
+</div>
+
+<!-- App Shell -->
+<div class="app-shell" id="app-shell" style="display:none;">
+
+    <!-- ── Sidebar ─────────────────────────── -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">R</div>
+            <div class="sidebar-logo-name">RAVI<span>X</span></div>
+        </div>
+
+        <p class="sidebar-section-label">Principal</p>
+
+        <a class="nav-item active" onclick="showView('dashboard')" href="#">
+            <span class="nav-icon">⚡</span>
+            <span>Dashboard</span>
+        </a>
+        <a class="nav-item" onclick="showView('wellness')" href="#">
+            <span class="nav-icon">💚</span>
+            <span>Wellness</span>
+        </a>
+        <a class="nav-item" onclick="showView('training')" href="#">
+            <span class="nav-icon">🗓</span>
+            <span>Mi Entrenamiento</span>
+        </a>
+        <a class="nav-item" onclick="showView('stats')" href="#">
+            <span class="nav-icon">📊</span>
+            <span>Estadísticas</span>
+        </a>
+
+        <div class="sidebar-spacer"></div>
+
+        <div class="sidebar-footer">
+            <div class="athlete-tag">
+                <div class="athlete-tag-name" id="sidebar-athlete-name">—</div>
+                <div class="athlete-tag-team" id="sidebar-team-name">—</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </aside>
+
+    <!-- ── Topbar ──────────────────────────── -->
+    <header class="topbar">
+        <div class="topbar-greeting">
+            <span class="topbar-eyebrow">Portal del Atleta</span>
+            <span class="topbar-name" id="topbar-athlete-name">Cargando...</span>
+        </div>
+        <span id="topbar-date"></span>
+    </header>
+
+    <!-- ── Main Content ───────────────────── -->
+    <main class="main-content" id="view-dashboard">
+
+        <!-- Welcome card -->
+        <div class="welcome-card" id="welcome-card">
+            <div class="welcome-badge">✅ Sesión activa</div>
+            <h1 class="welcome-title">Bienvenido, <span id="welcome-name">—</span></h1>
+            <p class="welcome-subtitle" id="welcome-team-line">Cargando equipo...</p>
+        </div>
+
+        <!-- Stats row -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-icon">🏃</span>
+                <span class="stat-label">Sesiones este mes</span>
+                <span class="stat-value accent" id="stat-sessions">—</span>
+                <span class="stat-meta">sesiones registradas</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">🔋</span>
+                <span class="stat-label">Wellness Hoy</span>
+                <span class="stat-value" id="stat-wellness">—</span>
+                <span class="stat-meta">sin registro</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">📅</span>
+                <span class="stat-label">Próximo Partido</span>
+                <span class="stat-value volt" id="stat-next-game" style="font-size:1.2rem;">—</span>
+                <span class="stat-meta">según calendario</span>
+            </div>
+        </div>
+
+        <!-- Today's training -->
+        <div class="section-header">
+            <span class="section-title">Entrenamiento del Día</span>
+        </div>
+        <div class="training-card">
+            <div class="training-card-header">
+                <span>📋</span>
+                <span class="training-card-title">Sesión Asignada</span>
+            </div>
+            <div class="training-card-body">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <div class="empty-state-title">Sin sesión asignada hoy</div>
+                    <div class="empty-state-desc">Tu entrenador publicará la sesión de hoy aquí.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wellness module placeholder -->
+        <div class="section-header">
+            <span class="section-title">Módulos Activos</span>
+        </div>
+        <div class="module-banner">
+            <div class="module-banner-icon">🚀</div>
+            <div class="module-banner-title">Módulos de Rendimiento — Próximamente</div>
+            <div class="module-banner-desc">Registro de wellness, carga de entrenamiento y estadísticas personales en construcción.</div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+    // ── Supabase setup ──────────────────────────────────────────
+    window.SUPA_URL = 'https://rscdpwarzltozigfbmev.supabase.co';
+    window.SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzY2Rwd2Fyemx0b3ppZ2ZibWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjYyNjUsImV4cCI6MjA5MTg0MjI2NX0.WaKWoCxbaQ3VVDXLtfBvNyB9zywxZRHCwjzT-5gS-b0';
+    const db = supabase.createClient(window.SUPA_URL, window.SUPA_KEY);
+
+    // ── Boot sequence ───────────────────────────────────────────
+    async function boot() {
+        try {
+            // 1. Verify Supabase session (no localStorage-only loops)
+            const { data: { session } } = await db.auth.getSession();
+            if (!session) {
+                window.location.replace('onboarding-athlete.html');
+                return;
+            }
+
+            const uid = session.user.id;
+
+            // 2. Fetch athlete profile + team in one query
+            const { data: profile, error } = await db
+                .from('profiles_athlete')
+                .select('full_name, team_id, sport, position, teams(name)')
+                .eq('id', uid)
+                .single();
+
+            if (error || !profile) {
+                console.error('[DASHBOARD] Profile not found:', error?.message);
+                window.location.replace('onboarding-athlete.html');
+                return;
+            }
+
+            // 3. If no team assigned yet, send to onboarding
+            if (!profile.team_id) {
+                window.location.replace('onboarding-athlete.html');
+                return;
+            }
+
+            // 4. Render everything now that we have valid data
+            renderProfile(profile);
+            setDate();
+
+            // 5. Hide loading, show app
+            const ls = document.getElementById('loading-screen');
+            ls.classList.add('fade-out');
+            setTimeout(() => ls.style.display = 'none', 400);
+            document.getElementById('app-shell').style.display = 'grid';
+
+        } catch (err) {
+            console.error('[DASHBOARD] Boot failed:', err);
+            window.location.replace('onboarding-athlete.html');
+        }
+    }
+
+    function renderProfile(profile) {
+        const firstName = profile.full_name
+            ? profile.full_name.split(' ')[0]
+            : 'Atleta';
+        const teamName = profile.teams?.name || 'Equipo';
+
+        // Topbar
+        document.getElementById('topbar-athlete-name').textContent = firstName;
+
+        // Sidebar
+        document.getElementById('sidebar-athlete-name').textContent = profile.full_name || 'Atleta';
+        document.getElementById('sidebar-team-name').textContent = teamName.toUpperCase();
+
+        // Welcome card
+        document.getElementById('welcome-name').textContent = firstName;
+        document.getElementById('welcome-team-line').textContent =
+            `Eres parte de ${teamName}. Tu entrenador ya puede ver tu progreso.`;
+    }
+
+    function setDate() {
+        const el = document.getElementById('topbar-date');
+        if (!el) return;
+        const now = new Date();
+        el.textContent = now.toLocaleDateString('es-ES', {
+            weekday: 'long', day: 'numeric', month: 'long'
+        }).toUpperCase();
+    }
+
+    // ── Navigation ──────────────────────────────────────────────
+    function showView(viewId) {
+        // Simple tab nav — future views will be loaded here
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        // placeholder toast for unbuilt modules
+        if (viewId !== 'dashboard') {
+            showToast(`📊 Módulo "${viewId}" en construcción. Próximamente.`);
+        }
+    }
+
+    // ── Logout ──────────────────────────────────────────────────
+    async function logout() {
+        await db.auth.signOut();
+        window.location.replace('index.html');
+    }
+
+    // ── Toast util ──────────────────────────────────────────────
+    function showToast(msg) {
+        const prev = document.getElementById('dash-toast');
+        if (prev) prev.remove();
+
+        const t = document.createElement('div');
+        t.id = 'dash-toast';
+        t.textContent = msg;
+        Object.assign(t.style, {
+            position: 'fixed',
+            bottom: '28px',
+            left: '50%',
+            transform: 'translateX(-50%) translateY(10px)',
+            background: '#1a1a1a',
+            color: '#fff',
+            padding: '12px 24px',
+            borderRadius: '40px',
+            fontSize: '13px',
+            fontWeight: '700',
+            fontFamily: "'Outfit', sans-serif",
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            zIndex: '9999',
+            opacity: '0',
+            transition: 'all 0.3s ease',
+            whiteSpace: 'nowrap',
+        });
+        document.body.appendChild(t);
+        requestAnimationFrame(() => {
+            t.style.opacity = '1';
+            t.style.transform = 'translateX(-50%) translateY(0)';
+        });
+        setTimeout(() => {
+            t.style.opacity = '0';
+            t.style.transform = 'translateX(-50%) translateY(8px)';
+            setTimeout(() => t.remove(), 300);
+        }, 3000);
+    }
+
+    // ── Boot ────────────────────────────────────────────────────
+    boot();
+</script>
+
+</body>
+</html>
