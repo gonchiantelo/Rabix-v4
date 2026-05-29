@@ -244,7 +244,7 @@
     <!-- Contenedor para inyección dinámica -->
     <div id="app-shell"></div>
 
-    <!-- SECCIÓN ONBOARDING RAMIFICADO -->
+    <!-- SECCIÓN ONBOARDING DT (wizard de 3 pasos — purga atleta legacy) -->
     <section id="view-onboarding" class="onboarding-view" style="display: none; background: #0A0B1E;">
 
         <!-- WIZARD DT -->
@@ -419,102 +419,6 @@
                 </div>
             </div>
         </div> <!-- /wizard-dt -->
-
-        <!-- WIZARD ATLETA (legacy — superseded by #view-onboarding-athlete) -->
-        <div id="wizard-athlete" style="display: none; width:100%; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:40px 20px; background:#F5F5F7;">
-            <div style="width:100%; max-width:520px; background:#fff; border-radius:24px; padding:40px; box-shadow:0 20px 60px rgba(0,0,0,0.08); font-family:'Inter', sans-serif;">
-                <!-- Stepper Atleta -->
-                <div style="display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:36px;">
-                    <div class="step-ball active" id="ath-ball-1" style="background:#bf953f; border-color:#bf953f; color:#fff;">1</div>
-                    <div style="width:40px; height:2px; background:#EBEBEB;"></div>
-                    <div class="step-ball" id="ath-ball-2">2</div>
-                    <div style="width:40px; height:2px; background:#EBEBEB;"></div>
-                    <div class="step-ball" id="ath-ball-3">3</div>
-                </div>
-
-                <!-- Paso 1: Deporte y Nombre -->
-                <div id="lgc-step-1">
-                    <h2 style="font-family:Outfit; font-size:24px; color:#1a1a2e; margin:0 0 6px;">Tu Perfil de Atleta</h2>
-                    <p style="color:#888; font-size:13px; margin-bottom:24px;">Definamos tu identidad deportiva.</p>
-                    <div style="display:grid; gap:14px;">
-                        <div>
-                            <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">NOMBRE COMPLETO *</label>
-                            <input type="text" id="lgc-name" class="ob-input" placeholder="Ej: Lucas Mart&iacute;nez" style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
-                        </div>
-                        <div>
-                            <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">DEPORTE PRINCIPAL *</label>
-                            <select id="lgc-sport" class="ob-input" style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
-                                <option value="">Selecciona un deporte...</option>
-                                <option value="Futbol">F&uacute;tbol</option>
-                                <option value="Natacion">Nataci&oacute;n</option>
-                                <option value="Atletismo">Atletismo</option>
-                                <option value="Judo">Judo</option>
-                                <option value="Rugby">Rugby</option>
-                                <option value="Basquetbol">Basquetbol</option>
-                                <option value="Tenis">Tenis</option>
-                                <option value="Otro">Otro</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">POSICI&Oacute;N / ESPECIALIDAD</label>
-                            <input type="text" id="lgc-pos" class="ob-input" placeholder="Ej: Pivote, 100m Libres..." style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
-                        </div>
-                    </div>
-                    <div class="ob-footer" style="margin-top:28px;">
-                        <button class="btn-ob-next" onclick="window.Wizard.nextStep()" style="background:linear-gradient(135deg,#bf953f,#b38728); width:100%;">CONTINUAR</button>
-                    </div>
-                </div>
-
-                <!-- Paso 2: Datos Biom&eacute;tricos -->
-                <div id="lgc-step-2" style="display:none;">
-                    <h2 style="font-family:Outfit; font-size:24px; color:#1a1a2e; margin:0 0 6px;">Datos Biom&eacute;tricos</h2>
-                    <p style="color:#888; font-size:13px; margin-bottom:24px;">Base estructural seg&uacute;n protocolo Cometti.</p>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
-                        <div>
-                            <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">PESO (kg)</label>
-                            <input type="number" id="lgc-weight" class="ob-input" placeholder="Ej: 78" style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
-                        </div>
-                        <div>
-                            <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">ALTURA (cm)</label>
-                            <input type="number" id="lgc-height" class="ob-input" placeholder="Ej: 181" style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
-                        </div>
-                        <div style="grid-column:1/-1; display:flex; gap:14px;">
-                            <div style="flex:1;">
-                                <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">ENVERGADURA (cm)</label>
-                                <input type="number" id="lgc-wingspan" class="ob-input" placeholder="Ej: 185" style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
-                            </div>
-                            <div style="flex:1;">
-                                <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">FECHA DE NACIMIENTO</label>
-                                <input type="date" id="lgc-birth" class="ob-input" style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ob-footer" style="margin-top:28px;">
-                        <button class="btn-ob-prev" onclick="window.Wizard.prevStep()">VOLVER</button>
-                        <button class="btn-ob-next" onclick="window.Wizard.nextStep()" style="background:linear-gradient(135deg,#bf953f,#b38728);">SIGUIENTE</button>
-                    </div>
-                </div>
-
-                <!-- Paso 3: Objetivo -->
-                <div id="lgc-step-3" style="display:none;">
-                    <h2 style="font-family:Outfit; font-size:24px; color:#1a1a2e; margin:0 0 6px;">Objetivo Principal</h2>
-                    <p style="color:#888; font-size:13px; margin-bottom:24px;">Definir el foco de tu laboratorio personal.</p>
-                    <div style="display:grid; gap:10px;">
-                        <label style="font-size:10px; font-weight:900; color:#bf953f; letter-spacing:1px;">OBJETIVO NEUROMUSCULAR</label>
-                        <select id="lgc-goal" class="ob-input" style="border-color:rgba(191,149,63,0.3); color:#1a1a2e; background:#fafafa;">
-                            <option value="Fuerza Explosiva">Fuerza Explosiva</option>
-                            <option value="Resistencia">Resistencia</option>
-                            <option value="Pliometria">Pliometr&iacute;a</option>
-                            <option value="Recuperacion">Recuperaci&oacute;n</option>
-                        </select>
-                    </div>
-                    <div class="ob-footer" style="margin-top:28px;">
-                        <button class="btn-ob-prev" onclick="window.Wizard.prevStep()">VOLVER</button>
-                        <button class="btn-ob-next" onclick="window.App.saveProfile(event)" style="background:linear-gradient(135deg,#bf953f,#b38728);">FINALIZAR Y ENTRAR</button>
-                    </div>
-                </div>
-            </div>
-        </div> <!-- /wizard-athlete -->
 
     </section> <!-- /view-onboarding -->
 

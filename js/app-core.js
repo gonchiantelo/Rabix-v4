@@ -27,51 +27,24 @@ window.Wizard = {
         // This prevents any black-screen gap regardless of CSS transitions.
 
         if (role === 'athlete') {
-            // ══ NUEVO ONBOARDING ATLETA ══
-            const oaView = document.getElementById('view-onboarding-athlete');
-            if (!oaView) {
-                console.error('[WIZARD] #view-onboarding-athlete no encontrado en el DOM');
-                window.App._showPortalWithError('Error de configuración: pantalla de onboarding no disponible.');
-                return;
-            }
-
-            // 1. Show onboarding FIRST (no gap, no black screen)
-            oaView.style.display = 'flex';
-            oaView.classList.remove('oa-visible');
-
-            // 2. Now hide all other views
-            ['view-login', 'view-portal', 'app-shell', 'view-onboarding'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) { el.style.display = 'none'; el.style.opacity = ''; }
-            });
-
-            // 3. Fade-in animation after one frame
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    oaView.classList.add('oa-visible');
-                    try {
-                        if (window.AthWizard) window.AthWizard.init();
-                    } catch (wizErr) {
-                        console.warn('[WIZARD] Error al iniciar AthWizard:', wizErr);
-                    }
-                });
-            });
+            // ══ V2: Onboarding atleta vive en archivo físico separado ══
+            console.log('[WIZARD] Redirigiendo al onboarding V2 del atleta...');
+            window.location.href = './onboarding-athlete.html';
+            return;
 
         } else {
             // ══ WIZARD DT (original) ══
             const onboarding = document.getElementById('view-onboarding');
             if (onboarding) onboarding.style.display = 'flex';
 
-            // Hide others after showing onboarding
-            ['view-login', 'view-portal', 'app-shell', 'view-onboarding-athlete'].forEach(id => {
+            // Hide others after showing DT wizard
+            ['view-login', 'view-portal', 'app-shell'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) { el.style.display = 'none'; el.style.opacity = ''; }
             });
 
             const wizDT = document.getElementById('wizard-dt');
             if (wizDT) wizDT.style.display = 'flex';
-            const wizAth = document.getElementById('wizard-athlete');
-            if (wizAth) wizAth.style.display = 'none';
         }
     },
 
@@ -282,8 +255,7 @@ window.App = {
     _hideAllViews() {
         const ids = [
             'view-portal', 'view-login', 'view-onboarding',
-            'view-onboarding-athlete', 'app-shell',
-            'view-athlete-dashboard', 'view-athletes'
+            'app-shell', 'view-athlete-dashboard', 'view-athletes'
         ];
         ids.forEach(id => {
             const el = document.getElementById(id);
@@ -590,21 +562,16 @@ window.App = {
                 LOG('ATHLETE')(`Filas encontradas: ${athData.length}. full_name="${athData[0]?.full_name || 'vacío'}"`);
 
                 if (!athData.length || !athData[0].full_name || athData[0].full_name === 'vacío' || !athData[0].sport || !athData[0].position) {
-                    LOG('ATHLETE')('Perfil incompleto → redirigiendo a Onboarding Atleta');
-                    // FAILSAFE: verificar existencia antes de ocultar todo
-                    if (!this._safeShowView('view-onboarding-athlete', 'flex')) return;
-                    this._hideAllViews();
-                    window.Wizard.startFor('athlete');
+                    LOG('ATHLETE')('Perfil incompleto → redirigiendo a onboarding-athlete.html (V2)');
+                    // ── V2: Redirección dura al archivo físico de onboarding ──
+                    window.location.href = './onboarding-athlete.html';
                     return;
                 }
 
-                LOG('ATHLETE')('✅ Perfil completo → cargando Dashboard Atleta');
+                LOG('ATHLETE')('✅ Perfil completo → redirigiendo a dashboard-athlete.html (V2)');
                 window.CurrentUser = athData[0];
-                this._hideAllViews();
-                // ── NOTA: El atleta tiene su propio section (#view-athlete-dashboard),
-                // NO usa app-shell. injectRoleAssets cargará app-player.js que llama
-                // AthleteApp.init() el cual mostrará #view-athlete-dashboard.
-                this.injectRoleAssets('athlete');
+                // ── V2: Redirección dura al archivo físico del dashboard ──
+                window.location.href = './dashboard-athlete.html';
                 return;
             }
 
@@ -893,7 +860,12 @@ window.App = {
                 }
 
                 console.log(`✅ Perfil inicial en ${table}`);
-                window.Wizard.startFor(role);
+                // ── V2: Router bifurcado — atleta va a su archivo físico ──
+                if (role === 'athlete') {
+                    window.location.href = './onboarding-athlete.html';
+                } else {
+                    window.Wizard.startFor(role);
+                }
             } else {
                 window.LoginUI?.showSuccess('¡Revisa tu correo para confirmar tu cuenta!');
             }
