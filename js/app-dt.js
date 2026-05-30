@@ -359,6 +359,7 @@ window.DTEngine = {
                     <div class="header-actions">
                         <button onclick="DTEngine.toggleView('home')" class="btn-logout">🏠 HOME</button>
                         <button id="btn-nav-calendar" onclick="DTEngine.toggleView('calendar')" class="btn-logout">📅 CALENDARIO</button>
+                        <button id="btn-nav-thermo" onclick="DTEngine.toggleView('thermo')" class="btn-logout">🔥 TERMOGRAMA</button>
                         <button id="btn-nav-analytics" onclick="DTEngine.toggleView('analytics')" class="btn-logout">📊 ANALÍTICA</button>
                         <button onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" class="btn-logout">🏟️ PIZARRA</button>
                         <button onclick="App.logout()" class="btn-logout">SALIR</button>
@@ -430,6 +431,91 @@ window.DTEngine = {
                         <div class="platinum-widget" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" style="cursor: pointer; border-color: var(--primary-color);">
                             <h3 style="color: var(--primary-color); margin-bottom: 5px;">SALA DE JUEGOS</h3>
                             <p style="color: #888; font-size: 0.85rem;">Pizarra Táctica Interactiva</p>
+                        </div>
+                    </section>
+
+                    <section id="dt-thermo-view" class="dt-dashboard-view" style="display: none;">
+                        <style>
+                            .status-optimal { background: rgba(255,255,255,0.05); color: #00F0FF; }
+                            .status-warning { background: rgba(255, 204, 0, 0.1); color: #FFCC00; }
+                            .status-danger { background: #330000; color: #FF3B30; }
+                            
+                            .thermo-table { width: 100%; border-collapse: separate; border-spacing: 4px; }
+                            .thermo-th { padding: 12px 8px; color: var(--muted); font-weight: 600; text-align: center; font-size: 0.85rem; }
+                            .thermo-td { padding: 8px; border-radius: 8px; text-align: center; }
+                        </style>
+                        <div class="thermo-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; background: #111111; padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                            <button class="btn-nav" style="background: rgba(255,255,255,0.05); border: none; color: #fff; cursor: pointer; padding: 8px 16px; border-radius: 8px; font-weight: 800;">◀ SEMANA ANTERIOR</button>
+                            <h2 style="color: #fff; font-size: 1.2rem; margin: 0; font-family: 'Outfit', sans-serif;">Semana Actual (Microciclo Activo)</h2>
+                            <button class="btn-nav" style="background: rgba(255,255,255,0.05); border: none; color: #fff; cursor: pointer; padding: 8px 16px; border-radius: 8px; font-weight: 800;">SIGUIENTE ▶</button>
+                        </div>
+                        
+                        <div class="thermo-matrix-container" style="overflow-x: auto; margin-bottom: 24px; background: #161616; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 16px;">
+                            <table class="thermo-table">
+                                <thead>
+                                    <tr>
+                                        <th class="thermo-th" style="text-align: left; width: 220px; padding-left: 12px;">Jugador / Posición</th>
+                                        <th class="thermo-th">LUN</th>
+                                        <th class="thermo-th">MAR</th>
+                                        <th class="thermo-th">MIÉ</th>
+                                        <th class="thermo-th">JUE</th>
+                                        <th class="thermo-th">VIE</th>
+                                        <th class="thermo-th">SÁB</th>
+                                        <th class="thermo-th">DOM</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="thermo-td" style="text-align: left; padding-left: 12px;">
+                                            <div style="display: flex; align-items: center; gap: 12px;">
+                                                <div style="width: 36px; height: 36px; border-radius: 50%; background: #2A2A2A; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: #fff; font-weight: 700;">GA</div>
+                                                <div>
+                                                    <div style="color: #fff; font-weight: 700; font-size: 0.95rem;">G. Antelo</div>
+                                                    <div style="color: var(--muted); font-size: 0.75rem; text-transform: uppercase;">MEDIOCAMPISTA</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="thermo-td status-optimal">
+                                            <div style="font-size: 0.65rem; opacity: 0.7; font-weight: 700; margin-bottom: 2px;">CP: 450</div>
+                                            <div style="font-size: 1.15rem; font-weight: 900; letter-spacing: -0.5px;">420</div>
+                                        </td>
+                                        <td class="thermo-td status-warning">
+                                            <div style="font-size: 0.65rem; opacity: 0.7; font-weight: 700; margin-bottom: 2px;">CP: 300</div>
+                                            <div style="font-size: 1.15rem; font-weight: 900; letter-spacing: -0.5px;">550</div>
+                                        </td>
+                                        <td class="thermo-td status-danger">
+                                            <div style="font-size: 0.65rem; opacity: 0.7; font-weight: 700; margin-bottom: 2px;">CP: 600</div>
+                                            <div style="font-size: 1.15rem; font-weight: 900; letter-spacing: -0.5px;">950</div>
+                                        </td>
+                                        <td class="thermo-td" style="background: rgba(255,255,255,0.02);"></td>
+                                        <td class="thermo-td" style="background: rgba(255,255,255,0.02);"></td>
+                                        <td class="thermo-td" style="background: rgba(255,255,255,0.02);"></td>
+                                        <td class="thermo-td" style="background: rgba(255,255,255,0.02);"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Panel Inferior (Resumen del Día / Configuración de Sesión) -->
+                        <div class="thermo-session-panel" style="background: #111111; padding: 24px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                            <h3 style="color: #fff; margin-bottom: 20px; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">Configuración de Solé <span style="color: var(--muted); font-size: 0.9rem; font-weight: normal; margin-left: 8px;">(Día Seleccionado)</span></h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                                <div>
+                                    <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 10px; font-weight: 600;">Volumen de la Sesión (Minutos)</label>
+                                    <input type="number" placeholder="Ej: 90" style="width: 100%; background: #1A1A1A; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px; border-radius: 8px; outline: none; font-family: 'Outfit', sans-serif; font-size: 1rem;">
+                                </div>
+                                <div>
+                                    <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 10px; font-weight: 600;">Índice de Especificidad (Solé)</label>
+                                    <select style="width: 100%; background: #1A1A1A; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px; border-radius: 8px; outline: none; font-family: 'Outfit', sans-serif; cursor: pointer; font-size: 1rem;">
+                                        <option style="background: #1A1A1A;" value="0.4">0.4 - Tareas Generales (Preparación Base)</option>
+                                        <option style="background: #1A1A1A;" value="0.5">0.5 - Tareas Dirigidas (Orientadas)</option>
+                                        <option style="background: #1A1A1A;" value="0.6">0.6 - Tareas Especiales (Específicas de F. Física)</option>
+                                        <option style="background: #1A1A1A;" value="0.7">0.7 - Tareas Competitivas (Simulación de Juego)</option>
+                                        <option style="background: #1A1A1A;" value="0.9">0.9 - Competición Oficial</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button style="margin-top: 24px; width: 100%; padding: 16px; background: #00F0FF; color: #080808; border: none; border-radius: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; font-size: 1rem;">GUARDAR PARÁMETROS DEL DÍA</button>
                         </div>
                     </section>
 
@@ -1725,17 +1811,20 @@ window.DTEngine = {
     toggleView(viewName) {
         const home = document.getElementById('dt-home-view');
         const cal = document.getElementById('dt-calendar-view');
+        const thermo = document.getElementById('dt-thermo-view');
         const an = document.getElementById('dt-analytics-view');
         const prof = document.getElementById('view-profile');
         const board = document.getElementById('view-board');
 
-        [home, cal, an, prof, board].forEach(v => { if (v) v.style.display = 'none'; });
+        [home, cal, thermo, an, prof, board].forEach(v => { if (v) v.style.display = 'none'; });
 
         let targetView = null;
 
         if (viewName === 'home') {
             targetView = home;
             this.updateHomeUI();
+        } else if (viewName === 'thermo') {
+            targetView = thermo;
         } else if (viewName === 'analytics') {
             targetView = an;
             this.renderAnalytics();
