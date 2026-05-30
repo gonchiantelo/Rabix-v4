@@ -573,46 +573,7 @@
 
 
 
-        <!-- REPORTE POST-SESIÓN (Check-out) -->
-        <div class="section-header" style="margin-top: 32px;">
-            <span class="section-title">Reporte Post-Sesión (Check-out)</span>
-        </div>
-        
-        <div class="wellness-card" id="checkout-form-container">
-            <div class="wellness-item">
-                <div class="wellness-header">
-                    <span>RPE (Escala de Borg)</span>
-                    <span class="wellness-value" id="val-rpe" style="color: #CCFF00;">5</span>
-                </div>
-                <div style="display:flex; justify-content: space-between; font-size: 0.75rem; color: #888; margin-bottom: 5px;">
-                    <span>0: Reposo</span>
-                    <span>10: Exhaustivo</span>
-                </div>
-                <input type="range" id="slider-rpe" class="wellness-slider" min="0" max="10" step="1" value="5" oninput="document.getElementById('val-rpe').textContent=this.value" style="accent-color: #CCFF00;">
-            </div>
 
-            <div class="wellness-item">
-                <div class="wellness-header">
-                    <span>Duración (Minutos)</span>
-                </div>
-                <input type="number" id="input-duracion" class="form-input" placeholder="Ej: 90" min="1" max="300" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); width: 100%; border-radius: 8px; color: #fff; padding: 12px; font-size: 1rem; text-align: center; text-transform: none; letter-spacing: normal; font-weight: normal;">
-            </div>
-
-            <div class="wellness-item">
-                <div class="wellness-header">
-                    <span>FC Media (BPM) <span style="color:#888; font-weight:normal;">- Opcional</span></span>
-                </div>
-                <input type="number" id="input-fc" class="form-input" placeholder="Ej: 145" min="40" max="220" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); width: 100%; border-radius: 8px; color: #fff; padding: 12px; font-size: 1rem; text-align: center; text-transform: none; letter-spacing: normal; font-weight: normal;">
-            </div>
-            
-            <button class="btn-primary" id="btn-save-checkout" onclick="saveCheckout()" style="margin-top: 16px; background: #CCFF00; color: #080808; font-weight: 900; text-transform: uppercase; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; width: 100%;">ENVIAR REPORTE DE CARGA</button>
-        </div>
-
-        <div class="wellness-success" id="checkout-success-container" style="display: none; border-color: #CCFF00; background: rgba(204,255,0,0.05);">
-            <div class="wellness-success-icon" style="background: #CCFF00; color: #000;">⚡</div>
-            <div class="wellness-success-title" style="color: #CCFF00;">Reporte enviado</div>
-            <div id="checkout-feedback-text" style="color: #FFF; font-size: 1.1rem; font-weight: 700; margin-top: 8px;">Carga de la sesión: 0 Unidades Arbitrarias.</div>
-        </div>
 
     </main>
 </div>
@@ -796,7 +757,7 @@
 </div>
 
 <!-- Modal de Peaje Diario: Entrenamiento Invisible -->
-<div id="daily-wellness-modal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(8, 8, 8, 0.95); z-index: 9000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+<div id="daily-wellness-modal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(8, 8, 8, 0.95); z-index: 9100; display: none; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
     <div class="wellness-card" style="width: 100%; max-width: 440px; margin: 20px; background: var(--surface); padding: 32px; border: 1px solid rgba(0,240,255,0.2);">
         <div style="text-align: center; margin-bottom: 24px;">
             <div style="font-size: 2.5rem; margin-bottom: 10px;">🔋</div>
@@ -837,6 +798,45 @@
         </div>
         
         <button class="btn-primary" id="btn-save-wellness" onclick="saveWellness()" style="margin-top: 24px; background: #00F0FF; color: #080808; font-weight: 800; text-transform: uppercase; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; width: 100%;">REGISTRAR MI ESTADO</button>
+    </div>
+</div>
+
+<!-- Modal de Check-out (Peaje de Carga) -->
+<div id="checkout-modal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(8, 8, 8, 0.95); z-index: 9000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+    <div class="wellness-card" style="width: 100%; max-width: 440px; margin: 20px; background: var(--surface); padding: 32px; border: 1px solid rgba(204,255,0,0.2);">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <div style="font-size: 2.5rem; margin-bottom: 10px;">⚡</div>
+            <h2 style="font-size: 1.5rem; font-weight: 900; color: var(--text); text-transform: uppercase; letter-spacing: 1px;">Reporte Post-Sesión</h2>
+            <p id="checkout-warning-msg" style="color: var(--muted); font-size: 0.9rem; margin-top: 8px; font-weight: 700;"></p>
+        </div>
+        
+        <div class="wellness-item">
+            <div class="wellness-header">
+                <span>RPE (Escala de Borg)</span>
+                <span class="wellness-value" id="val-rpe" style="color: #CCFF00;">5</span>
+            </div>
+            <div style="display:flex; justify-content: space-between; font-size: 0.75rem; color: #888; margin-bottom: 5px;">
+                <span>0: Reposo</span>
+                <span>10: Exhaustivo</span>
+            </div>
+            <input type="range" id="slider-rpe" class="wellness-slider" min="0" max="10" step="1" value="5" oninput="document.getElementById('val-rpe').textContent=this.value" style="accent-color: #CCFF00;">
+        </div>
+
+        <div class="wellness-item">
+            <div class="wellness-header">
+                <span>Duración (Minutos)</span>
+            </div>
+            <input type="number" id="input-duracion" class="form-input" placeholder="Ej: 90" min="1" max="300" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); width: 100%; border-radius: 8px; color: #fff; padding: 12px; font-size: 1rem; text-align: center; text-transform: none; letter-spacing: normal; font-weight: normal;">
+        </div>
+
+        <div class="wellness-item">
+            <div class="wellness-header">
+                <span>FC Media (BPM) <span style="color:#888; font-weight:normal;">- Opcional</span></span>
+            </div>
+            <input type="number" id="input-fc" class="form-input" placeholder="Ej: 145" min="40" max="220" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); width: 100%; border-radius: 8px; color: #fff; padding: 12px; font-size: 1rem; text-align: center; text-transform: none; letter-spacing: normal; font-weight: normal;">
+        </div>
+        
+        <button class="btn-primary" id="btn-save-checkout" onclick="saveCheckout()" style="margin-top: 24px; background: #CCFF00; color: #080808; font-weight: 900; text-transform: uppercase; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; width: 100%;">ENVIAR REPORTE DE CARGA</button>
     </div>
 </div>
 
@@ -893,10 +893,11 @@
                 document.getElementById('app-shell').style.display = 'grid';
                 
                 // 7. Radar Diario de Wellness (Check-in)
-                const offset = (new Date()).getTimezoneOffset() * 60000;
-                const localISOTime = (new Date(Date.now() - offset)).toISOString().slice(0, 10);
+                const offsetMs = (new Date()).getTimezoneOffset() * 60000;
+                const todayLocal = new Date(Date.now() - offsetMs);
+                const localISOTime = todayLocal.toISOString().slice(0, 10);
                 
-                const { data: wellnessToday, error: wError } = await db
+                const { data: wellnessToday } = await db
                     .from('daily_wellness')
                     .select('id, sueno')
                     .eq('athlete_id', uid)
@@ -911,6 +912,60 @@
                     if (statEl) {
                         statEl.textContent = "Listo";
                         statEl.classList.add('accent');
+                    }
+                }
+
+                // 8. Chequeo de Cargas Pendientes (Check-out)
+                const yesterdayLocal = new Date(todayLocal.getTime() - 86400000);
+                const yesterdayStr = yesterdayLocal.toISOString().slice(0, 10);
+
+                if (profile.team_id) {
+                    const { data: wellnessRecent } = await db
+                        .from('daily_wellness')
+                        .select('date, rpe_sesion')
+                        .eq('athlete_id', uid)
+                        .in('date', [localISOTime, yesterdayStr]);
+
+                    const { data: trainingRecent } = await db
+                        .from('training_logs')
+                        .select('fecha')
+                        .eq('team_id', profile.team_id)
+                        .in('fecha', [localISOTime, yesterdayStr]);
+
+                    const wellToday = wellnessRecent?.find(w => w.date === localISOTime);
+                    const wellYesterday = wellnessRecent?.find(w => w.date === yesterdayStr);
+                    
+                    const trainToday = trainingRecent?.find(t => t.fecha === localISOTime);
+                    const trainYesterday = trainingRecent?.find(t => t.fecha === yesterdayStr);
+
+                    let triggerCheckoutFor = null;
+                    let warningMsg = '';
+
+                    // Prioridad 1: Retroactivo
+                    if (trainYesterday && (!wellYesterday || wellYesterday.rpe_sesion === null)) {
+                        triggerCheckoutFor = yesterdayStr;
+                        warningMsg = 'Reporte pendiente de la sesión de ayer';
+                    } 
+                    // Prioridad 2: Hoy
+                    else if (trainToday && wellToday && wellToday.rpe_sesion === null) {
+                        triggerCheckoutFor = localISOTime;
+                        warningMsg = 'Reporte pendiente de la sesión de hoy';
+                    }
+
+                    if (triggerCheckoutFor) {
+                        console.log(`[DASHBOARD] Muro Checkout activado para fecha: ${triggerCheckoutFor}`);
+                        const checkoutModal = document.getElementById('checkout-modal');
+                        if (checkoutModal) {
+                            checkoutModal.dataset.targetDate = triggerCheckoutFor;
+                            document.getElementById('checkout-warning-msg').textContent = warningMsg;
+                            if (triggerCheckoutFor === yesterdayStr) {
+                                document.getElementById('checkout-warning-msg').style.color = '#ff4444';
+                            } else {
+                                document.getElementById('checkout-warning-msg').style.color = 'var(--muted)';
+                            }
+                            // Si el checkin modal está activo (z-index 9100), el checkout (z-index 9000) esperará abajo
+                            checkoutModal.style.display = 'flex';
+                        }
                     }
                 }
             }
@@ -1131,25 +1186,29 @@
             const offset = (new Date()).getTimezoneOffset() * 60000;
             const localISOTime = (new Date(Date.now() - offset)).toISOString().slice(0, 10);
             
+            const checkoutModal = document.getElementById('checkout-modal');
+            const targetDate = checkoutModal.dataset.targetDate || localISOTime;
+            
             const payload = {
                 athlete_id: uid,
-                date: localISOTime,
+                date: targetDate, // Usa la fecha objetivo dinámica (Ayer u Hoy)
                 rpe_sesion: rpe,
                 duracion_minutos: duracion
             };
             if (fc_media) payload.fc_media = fc_media;
             
-            // Upsert: Si el Atleta no hizo el Check-in hoy, creará la fila. Si la hizo, la actualizará agregando la sesión.
+            // Upsert: Actualiza la fila correcta (Retroactiva o Actual)
             const { error } = await db.from('daily_wellness').upsert([payload], { onConflict: 'athlete_id,date' });
             if (error) throw error;
             
             const cargaUA = rpe * duracion;
             
-            document.getElementById('checkout-form-container').style.display = 'none';
-            document.getElementById('checkout-feedback-text').textContent = `Carga de la sesión: ${cargaUA} Unidades Arbitrarias.`;
-            document.getElementById('checkout-success-container').style.display = 'block';
+            checkoutModal.style.display = 'none';
             
-            showToast('⚡ Reporte de Carga enviado con éxito.');
+            showToast(`⚡ Reporte enviado. Carga: ${cargaUA} UA.`);
+            
+            // Recargar para limpiar variables y revisar si falta otra capa (ej. faltaba ayer Y hoy)
+            setTimeout(() => window.location.reload(), 1500);
             
         } catch (e) {
             console.error('Error saving checkout:', e);
