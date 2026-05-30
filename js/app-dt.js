@@ -27,7 +27,7 @@ const predefinedObjectives = [
 window.SeasonPlanningModal = {
 
     // --- Internal: Add a tag chip to a container ---
-    _addTag: function(containerId, text) {
+    _addTag: function (containerId, text) {
         const container = document.getElementById(containerId);
         if (!container) return;
         const normalized = text.trim();
@@ -43,14 +43,14 @@ window.SeasonPlanningModal = {
     },
 
     // --- Internal: Read all tag texts from a container ---
-    _getTags: function(containerId) {
+    _getTags: function (containerId) {
         const container = document.getElementById(containerId);
         if (!container) return [];
         return Array.from(container.querySelectorAll('.ravix-tag-text')).map(el => el.textContent.trim()).filter(Boolean);
     },
 
     // --- Internal: Clear and repopulate a tag container from array ---
-    _renderTags: function(containerId, tagsArray) {
+    _renderTags: function (containerId, tagsArray) {
         const container = document.getElementById(containerId);
         if (!container) return;
         container.innerHTML = '';
@@ -58,7 +58,7 @@ window.SeasonPlanningModal = {
     },
 
     // --- Internal: Handle tag input keydown/selection ---
-    _handleTagInput: function(inputId, containerId) {
+    _handleTagInput: function (inputId, containerId) {
         const input = document.getElementById(inputId);
         if (!input) return;
         const val = input.value.trim();
@@ -68,19 +68,19 @@ window.SeasonPlanningModal = {
         input.focus();
     },
 
-    open: function() {
+    open: function () {
         const per = window.DTEngine._periodization;
         if (!per) return;
 
         const inp = (id) => document.getElementById(id);
         if (inp('spm-temporada')) inp('spm-temporada').value = per.macrociclo || '';
 
-        const keys   = ['pre','comp','playoffs','trans'];
-        per.fases.forEach(function(fase, i) {
+        const keys = ['pre', 'comp', 'playoffs', 'trans'];
+        per.fases.forEach(function (fase, i) {
             const key = keys[i];
             if (!key) return;
             if (inp('spm-' + key + '-start')) inp('spm-' + key + '-start').value = fase.start || '';
-            if (inp('spm-' + key + '-end'))   inp('spm-' + key + '-end').value   = fase.end   || '';
+            if (inp('spm-' + key + '-end')) inp('spm-' + key + '-end').value = fase.end || '';
             // Render tag chips from stored array
             window.SeasonPlanningModal._renderTags('spm-' + key + '-tags', fase.objetivos || []);
         });
@@ -92,7 +92,7 @@ window.SeasonPlanningModal = {
         }
     },
 
-    close: function() {
+    close: function () {
         const modal = document.getElementById('modal-season-planning');
         if (modal) {
             modal.classList.remove('spm-visible');
@@ -100,22 +100,22 @@ window.SeasonPlanningModal = {
         }
     },
 
-    save: async function() {
+    save: async function () {
         const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id');
         if (!teamId) { console.warn('SeasonPlanningModal.save: no teamId'); return; }
 
         const per = window.DTEngine._periodization;
         if (!per) return;
 
-        const inp  = (id) => document.getElementById(id)?.value.trim();
-        const keys = ['pre','comp','playoffs','trans'];
+        const inp = (id) => document.getElementById(id)?.value.trim();
+        const keys = ['pre', 'comp', 'playoffs', 'trans'];
 
         // Mutate _periodization in place
         per.macrociclo = inp('spm-temporada') || per.macrociclo;
         keys.forEach((key, i) => {
             if (!per.fases[i]) return;
-            per.fases[i].start     = inp('spm-' + key + '-start') || per.fases[i].start;
-            per.fases[i].end       = inp('spm-' + key + '-end')   || per.fases[i].end;
+            per.fases[i].start = inp('spm-' + key + '-start') || per.fases[i].start;
+            per.fases[i].end = inp('spm-' + key + '-end') || per.fases[i].end;
             // Read objetivos from tag chips in DOM
             per.fases[i].objetivos = window.SeasonPlanningModal._getTags('spm-' + key + '-tags');
         });
@@ -123,10 +123,10 @@ window.SeasonPlanningModal = {
         const payload = {
             macrociclo: per.macrociclo,
             fases: per.fases.map(f => ({
-                name:      f.name,
-                color:     f.color,
-                start:     f.start,
-                end:       f.end,
+                name: f.name,
+                color: f.color,
+                start: f.start,
+                end: f.end,
                 objetivos: f.objetivos
             }))
         };
@@ -162,7 +162,7 @@ window.DTEngine = {
     _exercises: [],
     _selectedDate: null,
     _showAllExercises: false,
-    _dayActivities: [], // Temporary list of activities for modal
+    _dayActivities: [],  // Actividades temporales del día seleccionado
     _stagedLabel: null,  // Etiqueta pendiente de confirmar (Lazy Execution)
     _charts: {}, // Almacén para instancias de Chart.js
     _calendarView: 'weekly', // 'weekly' | 'process'
@@ -214,7 +214,7 @@ window.DTEngine = {
                 return;
             }
 
-            const [ { data, error }, { data: customData, error: customErr } ] = await Promise.all([
+            const [{ data, error }, { data: customData, error: customErr }] = await Promise.all([
                 window.supabase.from('training_logs').select('*').eq('team_id', teamId).gte('fecha', startDate).lte('fecha', endDate),
                 window.supabase.from('custom_exercises').select('*')
             ]);
@@ -253,10 +253,10 @@ window.DTEngine = {
                         const numericAttempt = parseInt(String(rawId).replace(/\D/g, ''), 10);
 
                         this._assignedTasks[log.fecha].push({
-                            logId:    log.id,
-                            id:       isNaN(numericAttempt) ? rawId : numericAttempt,
-                            rawId:    rawId,       // Guardar el original para matching por UUID
-                            block:    log.scenario || log.block || 'parte_principal'
+                            logId: log.id,
+                            id: isNaN(numericAttempt) ? rawId : numericAttempt,
+                            rawId: rawId,       // Guardar el original para matching por UUID
+                            block: log.scenario || log.block || 'parte_principal'
                         });
                     });
                 });
@@ -295,20 +295,20 @@ window.DTEngine = {
                     const sp = data[0].season_planning;
                     // Merge stored fases with default colors/names if missing
                     const defaultPhases = window.DTEngine.Periodization._defaultPhases;
-                    const mergedFases = sp.fases.map(function(f, i) {
+                    const mergedFases = sp.fases.map(function (f, i) {
                         const def = defaultPhases[i] || {};
                         return {
-                            name:      f.name      || def.name,
-                            color:     f.color     || def.color || '#00F2FE',
-                            start:     f.start     || '',
-                            end:       f.end       || '',
+                            name: f.name || def.name,
+                            color: f.color || def.color || '#00F2FE',
+                            start: f.start || '',
+                            end: f.end || '',
                             objetivos: Array.isArray(f.objetivos) ? f.objetivos : (def.objetivos || []),
                             completed: f.completed || false
                         };
                     });
                     window.DTEngine._periodization = {
-                        macrociclo:      sp.macrociclo || ('Temporada ' + new Date().getFullYear()),
-                        fases:           mergedFases,
+                        macrociclo: sp.macrociclo || ('Temporada ' + new Date().getFullYear()),
+                        fases: mergedFases,
                         fase_actual_idx: 0
                     };
                     if (window.CurrentTeam) window.CurrentTeam.season_planning = sp;
@@ -322,43 +322,26 @@ window.DTEngine = {
         } catch (e) { console.error('Error al cargar configuración de equipo:', e); }
     },
 
-    changeWeek(e, offsetDays) {
+    changeMonth(e, offset) {
         if (e) {
             e.preventDefault();
             e.stopPropagation();
         }
+        // Navegación pura: solo actualizar grilla, NO reconstruir el shell
         const nextDate = new Date(this._currentDate);
-        nextDate.setDate(nextDate.getDate() + offsetDays);
+        nextDate.setMonth(nextDate.getMonth() + offset);
         this._currentDate = nextDate;
 
+        // Actualizar solo el texto del mes visible
         const monthDisplay = document.querySelector('.current-month-display');
         if (monthDisplay) {
-            monthDisplay.textContent = this.getWeekLabel(this._currentDate);
+            monthDisplay.textContent = this._currentDate.toLocaleString('es', { month: 'long', year: 'numeric' }).toUpperCase();
         }
 
+        // Re-fetch y re-pintar solo la grilla del calendario
         this.fetchMonthLogs().then(() => {
             this.generateCalendar();
         });
-    },
-
-    getWeekLabel(dateObj) {
-        const d = new Date(dateObj);
-        d.setHours(0, 0, 0, 0);
-        
-        // Find Monday of the current week
-        const dayOfWeek = d.getDay();
-        const distanceToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        d.setDate(d.getDate() - distanceToMonday);
-        
-        // Calculate week of month (1-5) based on the Monday
-        const month = d.getMonth();
-        const firstDayOfMonth = new Date(d.getFullYear(), month, 1);
-        const firstDayOfWeek = firstDayOfMonth.getDay();
-        const offset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
-        const weekNum = Math.ceil((d.getDate() + offset) / 7);
-        
-        const monthName = d.toLocaleString('es', { month: 'long', year: 'numeric' }).toUpperCase();
-        return \`SEMANA \${weekNum} DE \${monthName}\`;
     },
 
     async guardarConfiguracionSole() {
@@ -371,7 +354,7 @@ window.DTEngine = {
         const enfoque = document.getElementById('sole-enfoque').value;
         const volumen = document.getElementById('sole-volumen').value || null;
         const especificidad = document.getElementById('sole-especificidad').value;
-        
+
         let targetDate = this._selectedDate;
         if (!targetDate) {
             const offsetMs = (new Date()).getTimezoneOffset() * 60000;
@@ -400,7 +383,7 @@ window.DTEngine = {
                 .upsert([payload], { onConflict: 'team_id,fecha' });
 
             if (error) throw error;
-            
+
             if (btn) btn.textContent = '¡GUARDADO CON ÉXITO!';
             setTimeout(() => { if (btn) btn.textContent = oldText; }, 2000);
             console.log('✅ Configuración de sesión guardada:', payload);
@@ -638,7 +621,7 @@ window.DTEngine = {
                         <div id="dt-weekly-view">
                             <div class="month-nav calendar-nav-ux">
                                 <button type="button" id="btn-prev-month" class="btn-nav">◀</button>
-                                <span class="current-month-display">${this.getWeekLabel(this._currentDate)}</span>
+                                <span class="current-month-display">${monthName}</span>
                                 <button type="button" id="btn-next-month" class="btn-nav">▶</button>
                             </div>
                             
@@ -913,389 +896,92 @@ window.DTEngine = {
                 </main>
             </div>
 
-
-
-                <!-- Modal de Detalle de Día (Split View) -->
-                <div id="modal-day-detail" class="modal-overlay hidden" onclick="if(event.target===this) window.DTEngine.closeDayDetail()">
-                    <div class="day-detail-content" onclick="event.stopPropagation()" style="background:#080808; border:1px solid rgba(0,242,254,0.2); border-radius:16px; width:95vw; max-width:1200px; height:80vh; display:flex; flex-direction:row; overflow:hidden; color:#F5F5F5; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
-                        
-                        <!-- MÓDULO A: PLANIFICACIÓN Y ACTIVIDADES (35%) — Rebuilt Nuclear v2 -->
-                        <div style="
-                            width: 35%;
-                            background: #111111;
-                            border-right: 1px solid rgba(255,255,255,0.05);
-                            display: flex;
-                            flex-direction: column;
-                            gap: 0;
-                            padding: 0;
-                            box-sizing: border-box;
-                            overflow-y: auto;
-                        ">
-                            <!-- ══ INNER WRAPPER con gap y padding ══ -->
-                            <div style="
-                                display: flex;
-                                flex-direction: column;
-                                gap: 24px;
-                                padding: 28px 24px;
-                                flex-grow: 1;
-                                box-sizing: border-box;
-                            ">
-
-                                <!-- ── CABECERA DEL DÍA ── -->
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <h2 id="day-detail-title" style="
-                                        margin: 0;
-                                        color: #00F2FE;
-                                        font-family: Outfit, sans-serif;
-                                        font-size: 1.35rem;
-                                        font-weight: 900;
-                                        letter-spacing: 1.5px;
-                                        text-transform: uppercase;
-                                        line-height: 1.2;
-                                    ">FECHA</h2>
-                                    <p style="margin: 0; font-size: 0.78rem; color: #6b7280; line-height: 1.4;">
-                                        Configura los parámetros de la sesión de este día.
-                                    </p>
-                                </div>
-
-                                <!-- ── FILA 1: MACRO & SOLÉ (Grid 3 columnas) ── -->
-                                <div style="
-                                    display: grid;
-                                    grid-template-columns: 1fr 1fr auto;
-                                    gap: 12px;
-                                    align-items: end;
-                                ">
-                                    <!-- Col 1: Enfoque del Día -->
-                                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                                        <label style="
-                                            color: #9ca3af;
-                                            font-size: 0.72rem;
-                                            font-weight: 700;
-                                            letter-spacing: 1px;
-                                            text-transform: uppercase;
-                                        ">Enfoque</label>
-                                        <select id="day-detail-enfoque" style="
-                                            width: 100%;
-                                            background: #1A1A1A;
-                                            border: 1px solid rgba(255,255,255,0.12);
-                                            color: #fff;
-                                            padding: 11px 10px;
-                                            border-radius: 8px;
-                                            outline: none;
-                                            font-family: Outfit, sans-serif;
-                                            cursor: pointer;
-                                            font-size: 0.88rem;
-                                            box-sizing: border-box;
-                                        ">
-                                            <option value="Tensión">Tensión</option>
-                                            <option value="Resistencia">Resistencia</option>
-                                            <option value="Velocidad">Velocidad</option>
-                                            <option value="Activación">Activación</option>
-                                            <option value="Recuperación">Recuperación</option>
-                                            <option value="Día Libre">Día Libre</option>
-                                            <option value="Día Club">Día Club</option>
-                                            <option value="Gimnasio">Gimnasio</option>
-                                            <option value="ABP">ABP</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Col 2: Índice Especificidad -->
-                                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                                        <label style="
-                                            color: #9ca3af;
-                                            font-size: 0.72rem;
-                                            font-weight: 700;
-                                            letter-spacing: 1px;
-                                            text-transform: uppercase;
-                                        ">Índice Solé</label>
-                                        <select id="day-detail-especificidad" style="
-                                            width: 100%;
-                                            background: #1A1A1A;
-                                            border: 1px solid rgba(255,255,255,0.12);
-                                            color: #fff;
-                                            padding: 11px 10px;
-                                            border-radius: 8px;
-                                            outline: none;
-                                            font-family: Outfit, sans-serif;
-                                            cursor: pointer;
-                                            font-size: 0.88rem;
-                                            box-sizing: border-box;
-                                        " onchange="window.DTEngine.recalculateThermogram()">
-                                            <option value="0.4">0.4 — General</option>
-                                            <option value="0.5">0.5 — Dirigido</option>
-                                            <option value="0.6">0.6 — Especial</option>
-                                            <option value="0.7">0.7 — Competitivo</option>
-                                            <option value="0.9">0.9 — Oficial</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Col 3: Toggle Día de Partido -->
-                                    <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
-                                        <label style="
-                                            color: #9ca3af;
-                                            font-size: 0.68rem;
-                                            font-weight: 700;
-                                            letter-spacing: 1px;
-                                            text-transform: uppercase;
-                                            text-align: center;
-                                            white-space: nowrap;
-                                        ">Match Day</label>
-                                        <label for="day-detail-match" style="
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            width: 52px;
-                                            height: 42px;
-                                            background: rgba(0,242,254,0.06);
-                                            border: 1px solid rgba(0,242,254,0.25);
-                                            border-radius: 8px;
-                                            cursor: pointer;
-                                            transition: background 0.2s, border-color 0.2s;
-                                            position: relative;
-                                        " title="Día de Partido (Match Day)"
-                                           onmouseover="this.style.background='rgba(0,242,254,0.12)'; this.style.borderColor='rgba(0,242,254,0.6)'"
-                                           onmouseout="this.style.background='rgba(0,242,254,0.06)'; this.style.borderColor='rgba(0,242,254,0.25)'"
-                                        >
-                                            <span style="font-size: 1.3rem; line-height:1; pointer-events:none;">⚽</span>
-                                            <input type="checkbox" id="day-detail-match"
-                                                style="position:absolute; opacity:0; width:0; height:0; pointer-events:none;"
-                                                onchange="window.DTEngine.toggleMatchDay(this.checked); this.parentElement.style.background=this.checked?'rgba(0,242,254,0.22)':'rgba(0,242,254,0.06)'; this.parentElement.style.borderColor=this.checked?'#00F2FE':'rgba(0,242,254,0.25)';">
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <!-- ── DIVISOR ── -->
-                                <div style="height:1px; background: rgba(255,255,255,0.08);"></div>
-
-                                <!-- ── FILA 2: CREADOR DE ACTIVIDADES (Flex, crece) ── -->
-                                <div style="
-                                    display: flex;
-                                    flex-direction: column;
-                                    gap: 14px;
-                                    flex-grow: 1;
-                                ">
-                                    <h3 style="
-                                        margin: 0;
-                                        color: #E5E7EB;
-                                        font-family: Outfit, sans-serif;
-                                        font-size: 0.95rem;
-                                        font-weight: 800;
-                                        letter-spacing: 1px;
-                                        text-transform: uppercase;
-                                    ">Creador de Actividades</h3>
-
-                                    <!-- Formulario de actividad -->
-                                    <div style="
-                                        background: #161616;
-                                        border: 1px solid #2a2a2a;
-                                        border-radius: 10px;
-                                        padding: 16px;
-                                        display: flex;
-                                        flex-direction: column;
-                                        gap: 10px;
-                                        box-sizing: border-box;
-                                    ">
-                                        <input
-                                            type="text"
-                                            id="act-name"
-                                            placeholder="Nombre de Tarea (ej. Rondo 4v4)"
-                                            style="
-                                                width: 100%;
-                                                background: #0d0d0d;
-                                                border: 1px solid #2e2e2e;
-                                                color: #F5F5F5;
-                                                padding: 10px 12px;
-                                                border-radius: 7px;
-                                                box-sizing: border-box;
-                                                outline: none;
-                                                font-family: Outfit, sans-serif;
-                                                font-size: 0.9rem;
-                                                transition: border-color 0.2s;
-                                            "
-                                            onfocus="this.style.borderColor='#00F2FE'"
-                                            onblur="this.style.borderColor='#2e2e2e'"
-                                        >
-                                        <textarea
-                                            id="act-desc"
-                                            placeholder="Descripción breve..."
-                                            style="
-                                                width: 100%;
-                                                background: #0d0d0d;
-                                                border: 1px solid #2e2e2e;
-                                                color: #F5F5F5;
-                                                padding: 10px 12px;
-                                                border-radius: 7px;
-                                                box-sizing: border-box;
-                                                resize: vertical;
-                                                min-height: 56px;
-                                                outline: none;
-                                                font-family: Outfit, sans-serif;
-                                                font-size: 0.85rem;
-                                                transition: border-color 0.2s;
-                                            "
-                                            onfocus="this.style.borderColor='#00F2FE'"
-                                            onblur="this.style.borderColor='#2e2e2e'"
-                                        ></textarea>
-                                        <div style="display: flex; gap: 10px; align-items: stretch;">
-                                            <input
-                                                type="number"
-                                                id="act-duration"
-                                                placeholder="Minutos"
-                                                style="
-                                                    flex: 1;
-                                                    background: #0d0d0d;
-                                                    border: 1px solid #2e2e2e;
-                                                    color: #F5F5F5;
-                                                    padding: 10px 12px;
-                                                    border-radius: 7px;
-                                                    box-sizing: border-box;
-                                                    outline: none;
-                                                    font-family: Outfit, sans-serif;
-                                                    font-size: 0.9rem;
-                                                    transition: border-color 0.2s;
-                                                "
-                                                onfocus="this.style.borderColor='#00F2FE'"
-                                                onblur="this.style.borderColor='#2e2e2e'"
-                                            >
-                                            <button
-                                                onclick="window.DTEngine.addDayActivity()"
-                                                style="
-                                                    background: #00F2FE;
-                                                    color: #000;
-                                                    font-family: Outfit, sans-serif;
-                                                    font-weight: 800;
-                                                    font-size: 0.85rem;
-                                                    border: none;
-                                                    padding: 10px 16px;
-                                                    border-radius: 7px;
-                                                    cursor: pointer;
-                                                    white-space: nowrap;
-                                                    letter-spacing: 0.5px;
-                                                    transition: filter 0.2s;
-                                                "
-                                                onmouseover="this.style.filter='brightness(1.1)'"
-                                                onmouseout="this.style.filter='brightness(1)'"
-                                            >+ AGREGAR</button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Lista de actividades añadidas -->
-                                    <div id="day-activities-list" style="
-                                        display: flex;
-                                        flex-direction: column;
-                                        gap: 8px;
-                                        min-height: 40px;
-                                    ">
-                                        <!-- Actividades inyectadas por JS -->
-                                    </div>
-                                </div>
-
-                                <!-- ── DIVISOR ── -->
-                                <div style="height:1px; background: rgba(255,255,255,0.08);"></div>
-
-                                <!-- ── FILA 3: CIERRE Y GUARDADO ── -->
-                                <div style="
-                                    display: flex;
-                                    justify-content: space-between;
-                                    align-items: center;
-                                    gap: 14px;
-                                ">
-                                    <!-- Volumen Total (izquierda) -->
-                                    <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;">
-                                        <label style="
-                                            color: #00F2FE;
-                                            font-size: 0.7rem;
-                                            font-weight: 800;
-                                            letter-spacing: 1.5px;
-                                            text-transform: uppercase;
-                                        ">Volumen Total</label>
-                                        <input
-                                            type="number"
-                                            id="day-detail-volumen"
-                                            placeholder="0"
-                                            readonly
-                                            style="
-                                                width: 110px;
-                                                background: #0a0a0a;
-                                                border: 1.5px solid rgba(0,242,254,0.35);
-                                                color: #00F2FE;
-                                                padding: 10px 8px;
-                                                border-radius: 8px;
-                                                outline: none;
-                                                font-family: Outfit, sans-serif;
-                                                font-size: 1.3rem;
-                                                font-weight: 900;
-                                                text-align: center;
-                                                box-sizing: border-box;
-                                                letter-spacing: 1px;
-                                            "
-                                        >
-                                    </div>
-
-                                    <!-- Botón Guardar Sesión (derecha) -->
-                                    <button
-                                        id="day-detail-save-btn"
-                                        onclick="if(window.DTEngine) window.DTEngine.guardarDayDetail()"
-                                        style="
-                                            flex: 1;
-                                            padding: 14px 12px;
-                                            background: #00F2FE;
-                                            color: #080808;
-                                            border: none;
-                                            border-radius: 8px;
-                                            font-family: Outfit, sans-serif;
-                                            font-weight: 900;
-                                            font-size: 0.95rem;
-                                            text-transform: uppercase;
-                                            letter-spacing: 1.5px;
-                                            cursor: pointer;
-                                            transition: filter 0.2s, transform 0.1s;
-                                            white-space: nowrap;
-                                        "
-                                        onmouseover="this.style.filter='brightness(1.1)'; this.style.transform='translateY(-1px)'"
-                                        onmouseout="this.style.filter='brightness(1)'; this.style.transform='translateY(0)'"
-                                        onmousedown="this.style.transform='scale(0.98)'"
-                                        onmouseup="this.style.transform='translateY(-1px)'"
-                                    >GUARDAR SESIÓN</button>
-                                </div>
-
-                            </div><!-- /inner wrapper -->
+                <!-- Drawer Lateral Unificado -->
+                <div id="dt-drawer" class="drawer-overlay hidden">
+                    <div class="drawer-content" style="max-width: 480px;">
+                        <div class="drawer-header">
+                            <div class="title-group">
+                                <h3 id="drawer-date-title">Detalle</h3>
+                                <p id="drawer-methodology-label" class="methodology-badge"></p>
+                            </div>
+                            <button class="btn-close" onclick="DTEngine.closeDrawer()">✕</button>
                         </div>
 
-                        <!-- MÓDULO B: TERMOGRAMA DEL DÍA (65%) -->
-                        <div style="width:65%; background:#080808; display:flex; flex-direction:column; position:relative;">
-                            <div style="padding:15px 30px; background:#111111; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
-                                <h3 style="margin:0; font-family:Outfit,sans-serif; color:#E5E7EB; font-size:1.1rem; display:flex; align-items:center; gap:10px;">
-                                    🔥 MATRIZ TERMOGRÁFICA <span style="font-size:0.75rem; background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-weight:600; color:#9ca3af;">CARGA PLANIFICADA vs CARGA REAL</span>
-                                </h3>
-                                <button onclick="window.DTEngine.closeDayDetail()" style="background:transparent; border:none; color:#F5F5F5; font-size:1.5rem; cursor:pointer; transition:color 0.2s;">✕</button>
+                        <!-- ══ BLOQUE SUPERIOR: MACRO & SOLÉ ══ -->
+                        <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end;">
+                                <div style="display: flex; flex-direction: column; gap: 5px;">
+                                    <label style="color:#9ca3af; font-size:0.68rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Enfoque</label>
+                                    <select id="drawer-enfoque" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff; padding:10px 8px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; cursor:pointer; font-size:0.85rem; box-sizing:border-box;">
+                                        <option value="Tensión">Tensión</option>
+                                        <option value="Resistencia">Resistencia</option>
+                                        <option value="Velocidad">Velocidad</option>
+                                        <option value="Activación">Activación</option>
+                                        <option value="Recuperación">Recuperación</option>
+                                        <option value="Día Libre">Día Libre</option>
+                                        <option value="Día Club">Día Club</option>
+                                        <option value="Gimnasio">Gimnasio</option>
+                                        <option value="ABP">ABP</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 5px;">
+                                    <label style="color:#9ca3af; font-size:0.68rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Índice Solé</label>
+                                    <select id="drawer-especificidad" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff; padding:10px 8px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; cursor:pointer; font-size:0.85rem; box-sizing:border-box;">
+                                        <option value="0.4">0.4 — General</option>
+                                        <option value="0.5">0.5 — Dirigido</option>
+                                        <option value="0.6">0.6 — Especial</option>
+                                        <option value="0.7">0.7 — Competitivo</option>
+                                        <option value="0.9">0.9 — Oficial</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 5px; align-items: center;">
+                                    <label style="color:#9ca3af; font-size:0.62rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; text-align:center; white-space:nowrap;">Match Day</label>
+                                    <label for="drawer-match" style="display:flex; align-items:center; justify-content:center; width:48px; height:40px; background:rgba(0,242,254,0.06); border:1px solid rgba(0,242,254,0.25); border-radius:8px; cursor:pointer; transition:background 0.2s, border-color 0.2s;" title="Día de Partido" onmouseover="this.style.background='rgba(0,242,254,0.12)'; this.style.borderColor='rgba(0,242,254,0.6)'" onmouseout="this.style.background=this.querySelector('input').checked?'rgba(0,242,254,0.22)':'rgba(0,242,254,0.06)'; this.style.borderColor=this.querySelector('input').checked?'#00F2FE':'rgba(0,242,254,0.25)'">
+                                        <span style="font-size:1.2rem; line-height:1; pointer-events:none;">⚽</span>
+                                        <input type="checkbox" id="drawer-match" style="position:absolute; opacity:0; width:0; height:0; pointer-events:none;" onchange="window.DTEngine.toggleDrawerMatchDay(this.checked); this.parentElement.style.background=this.checked?'rgba(0,242,254,0.22)':'rgba(0,242,254,0.06)'; this.parentElement.style.borderColor=this.checked?'#00F2FE':'rgba(0,242,254,0.25)';">
+                                    </label>
+                                </div>
                             </div>
+                        </div>
 
-                            <div style="flex-grow:1; overflow-y:auto; padding:20px 30px;">
-                                <style>
-                                    .day-thermo-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; }
-                                    .day-thermo-th { padding: 12px 16px; color: var(--muted); font-weight: 600; text-align: left; font-size: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); text-transform: uppercase; letter-spacing: 1px; }
-                                    .day-thermo-td { padding: 12px 16px; background: #111111; text-align: left; }
-                                    .day-thermo-td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
-                                    .day-thermo-td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
-                                    .status-optimal-bg { background: rgba(0, 242, 254, 0.05) !important; border-left: 3px solid #00F2FE; }
-                                    .status-danger-bg { background: rgba(255, 59, 48, 0.08) !important; border-left: 3px solid #FF3B30; }
-                                </style>
-                                <table class="day-thermo-table">
-                                    <thead>
-                                        <tr>
-                                            <th class="day-thermo-th">Jugador</th>
-                                            <th class="day-thermo-th" style="text-align: center;">RPE Reportado</th>
-                                            <th class="day-thermo-th" style="text-align: center;">Minutos Reales</th>
-                                            <th class="day-thermo-th" style="text-align: center;">CR (Carga Real)</th>
-                                            <th class="day-thermo-th" style="text-align: center;">Estado</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="day-detail-athletes-list">
-                                        <!-- Inyección dinámica -->
-                                    </tbody>
-                                </table>
+                        <!-- ══ BLOQUE CENTRAL: CREADOR DE ACTIVIDADES ══ -->
+                        <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+                            <h4 style="margin:0; color:#E5E7EB; font-family:Outfit,sans-serif; font-size:0.85rem; font-weight:800; letter-spacing:1px; text-transform:uppercase;">Actividades de la Sesión</h4>
+                            <div style="background:#161616; border:1px solid #2a2a2a; border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:8px; box-sizing:border-box;">
+                                <input type="text" id="drawer-act-name" placeholder="Nombre (ej. Rondo 4v4)" style="width:100%; background:#0d0d0d; border:1px solid #2e2e2e; color:#F5F5F5; padding:9px 10px; border-radius:7px; box-sizing:border-box; outline:none; font-family:Outfit,sans-serif; font-size:0.85rem; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F2FE'" onblur="this.style.borderColor='#2e2e2e'">
+                                <textarea id="drawer-act-desc" placeholder="Descripción breve..." rows="2" style="width:100%; background:#0d0d0d; border:1px solid #2e2e2e; color:#F5F5F5; padding:9px 10px; border-radius:7px; box-sizing:border-box; resize:vertical; min-height:44px; outline:none; font-family:Outfit,sans-serif; font-size:0.8rem; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F2FE'" onblur="this.style.borderColor='#2e2e2e'"></textarea>
+                                <div style="display:flex; gap:8px; align-items:stretch;">
+                                    <input type="number" id="drawer-act-dur" placeholder="Min" min="1" style="flex:1; background:#0d0d0d; border:1px solid #2e2e2e; color:#F5F5F5; padding:9px 10px; border-radius:7px; box-sizing:border-box; outline:none; font-family:Outfit,sans-serif; font-size:0.85rem; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F2FE'" onblur="this.style.borderColor='#2e2e2e'">
+                                    <button onclick="window.DTEngine.addDrawerActivity()" style="background:#00F2FE; color:#000; font-family:Outfit,sans-serif; font-weight:800; font-size:0.8rem; border:none; padding:9px 14px; border-radius:7px; cursor:pointer; white-space:nowrap; letter-spacing:0.5px; transition:filter 0.2s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">+ AGREGAR</button>
+                                </div>
                             </div>
+                            <div id="drawer-activities-list" style="display:flex; flex-direction:column; gap:6px; min-height:30px;">
+                                <div style="color:#6b7280; font-size:0.8rem; text-align:center; padding:8px;">No hay actividades para esta sesión.</div>
+                            </div>
+                        </div>
+
+                        <!-- ══ BLOQUE INFERIOR: MATEMÁTICA & GUARDADO ══ -->
+                        <div style="padding: 16px 20px; display: flex; align-items: center; gap: 14px;">
+                            <div style="display:flex; flex-direction:column; gap:3px; flex-shrink:0;">
+                                <label style="color:#00F2FE; font-size:0.65rem; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;">Volumen</label>
+                                <input type="number" id="drawer-volumen" placeholder="0" readonly style="width:90px; background:#0a0a0a; border:1.5px solid rgba(0,242,254,0.35); color:#00F2FE; padding:9px 6px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; font-size:1.2rem; font-weight:900; text-align:center; box-sizing:border-box; letter-spacing:1px;">
+                            </div>
+                            <button id="drawer-save-btn" onclick="window.DTEngine.guardarDrawerSession()" style="flex:1; padding:13px 10px; background:#00F2FE; color:#080808; border:none; border-radius:8px; font-family:Outfit,sans-serif; font-weight:900; font-size:0.9rem; text-transform:uppercase; letter-spacing:1.5px; cursor:pointer; transition:filter 0.2s, transform 0.1s; white-space:nowrap;" onmouseover="this.style.filter='brightness(1.1)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.filter='brightness(1)'; this.style.transform='translateY(0)'">GUARDAR SESIÓN</button>
+                        </div>
+
+                        <!-- ══ BIBLIOTECA DE TAREAS (Cajón colapsable) ══ -->
+                        <div style="padding: 0 20px 16px; border-top: 1px solid rgba(255,255,255,0.06);">
+                            <details style="margin-top: 12px;">
+                                <summary style="cursor:pointer; color:#9ca3af; font-size:0.75rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:8px 0; user-select:none;">📚 Biblioteca de Tareas</summary>
+                                <div style="margin-top: 8px;">
+                                    <button class="btn-add-custom-task" onclick="DTEngine.openCustomTaskModal()" style="width:100%; margin-bottom:8px;">+ CREAR TAREA</button>
+                                    <div id="library-list" class="exercise-list-container"></div>
+                                </div>
+                            </details>
+                        </div>
+
+                        <div class="drawer-footer-actions">
+                            <button class="btn-save-staged" onclick="DTEngine.saveStagedTasks()">GUARDAR CAMBIOS TAREAS</button>
                         </div>
                     </div>
                 </div>
@@ -1508,14 +1194,14 @@ window.DTEngine = {
             if (bp) {
                 bp.onclick = (e) => {
                     e.preventDefault(); e.stopPropagation();
-                    this.changeWeek(e, -7);
+                    this.changeMonth(e, -1);
                     return false;
                 };
             }
             if (bn) {
                 bn.onclick = (e) => {
                     e.preventDefault(); e.stopPropagation();
-                    this.changeWeek(e, 7);
+                    this.changeMonth(e, 1);
                     return false;
                 };
             }
@@ -1544,86 +1230,93 @@ window.DTEngine = {
 
     // fetchExercises eliminada, integrada en App.fetchExercisesLibrary
 
-    async generateCalendar() {
+    generateCalendar() {
         const grid = document.getElementById('dt-calendar-grid');
         if (!grid) return;
 
-        grid.className = '';
-        grid.style.display = 'grid';
-        grid.style.gridTemplateColumns = 'repeat(7, 1fr)';
-        grid.style.gap = '16px';
-        grid.style.marginTop = '20px';
+        const year = this._currentDate.getFullYear();
+        const month = this._currentDate.getMonth();
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+
+        let html = '';
+        ['L', 'M', 'X', 'J', 'V', 'S', 'D'].forEach(n => html += `<div class="day-h">${n}</div>`);
+
+        for (let i = 0; i < startOffset; i++) html += `<div class="macro-day empty"></div>`;
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const current = new Date(this._currentDate);
-        const dayOfWeek = current.getDay();
-        const distanceToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        current.setDate(current.getDate() - distanceToMonday);
-
-        let html = '';
-        const dayNames = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO', 'DOMINGO'];
-
-        let microSessions = [];
-        
-        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id') || window.CurrentUser?.team_id;
-        if (teamId) {
-            const startStr = current.toISOString().slice(0, 10);
-            const end = new Date(current);
-            end.setDate(end.getDate() + 6);
-            const endStr = end.toISOString().slice(0, 10);
-            
-            try {
-                const { data } = await window.supabase
-                    .from('microcycle_sessions')
-                    .select('*')
-                    .eq('team_id', teamId)
-                    .gte('fecha', startStr)
-                    .lte('fecha', endStr);
-                if (data) microSessions = data;
-            } catch (e) { console.error('Error fetching week data:', e); }
-        }
-
-        for (let i = 0; i < 7; i++) {
-            const date = new Date(current);
-            date.setDate(date.getDate() + i);
-            const dateStr = date.toISOString().slice(0, 10);
-            const dayNum = date.getDate();
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const label = this.calcularEtiquetaMD(dateStr, Array.from(this._matchDays));
-            const isPast = date < today;
-            
-            const sessionData = microSessions.find(m => m.fecha === dateStr);
-            const enfoque = sessionData ? sessionData.enfoque : 'Sin Configurar';
-            
+            const typeClass = this.getTypeClass(label);
+
+            const cellDate = new Date(dateStr + 'T00:00:00');
+            const isPast = cellDate < today;
+            const pastClass = isPast ? 'past-day' : '';
+
             const assignments = this._assignedTasks[dateStr] || [];
+
+            const renderBlock = (blockId, title) => {
+                const tasks = assignments.filter(a => a.block === blockId);
+                const tasksHtml = tasks.map((a) => {
+                    // Dual matching: numeric legacy ID OR UUID string (Supabase primary key)
+                    const findEx = (lib) => (lib || []).find(e =>
+                        String(e.numericId) === String(a.id) ||
+                        String(e.id) === String(a.rawId || a.id)
+                    );
+                    const ex = findEx(window.ExercisesLibrary) || findEx(window.CustomExercises);
+                    if (!ex) return '';
+
+                    let timeBadge = '';
+                    const ser = ex.series || ex.blocks;
+                    const wrk = ex.work_time || ex.duration;
+                    const pse = ex.pause_time;
+                    if (ser && wrk) {
+                        const pausePart = pse ? ` (${pse}')` : '';
+                        timeBadge = `<span style="color:#00F2FE;font-size:0.6rem;font-weight:700;margin-right:3px;white-space:nowrap;">⏱ ${ser}x${wrk}'${pausePart}</span>`;
+                    } else if (wrk) {
+                        timeBadge = `<span style="color:#00F2FE;font-size:0.6rem;font-weight:700;margin-right:3px;">⏱ ${wrk}'</span>`;
+                    }
+                    return `
+                        <div class="task-chip" draggable="${!isPast}" ondragstart="event.dataTransfer.setData('text/plain', '${a.logId}|${a.block}|${dateStr}'); event.stopPropagation();" onclick="event.stopPropagation(); window.DTEngine.openTaskModal('${a.rawId || a.id}')">
+                            ${timeBadge}<span class="tc-name">${ex.title}</span>
+                            ${!isPast ? `<span class="tc-delete" onclick="event.stopPropagation(); window.DTEngine.removeTask('${dateStr}', ${assignments.indexOf(a)})">\u00d7</span>` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="session-block ${blockId}" ondragover="event.preventDefault();" ondrop="event.preventDefault(); event.stopPropagation(); window.DTEngine.handleTaskDrop(event, '${dateStr}', '${blockId}')">
+                        ${tasks.length > 0 ? `<span class="sb-title">${title}</span>` : ''}
+                        <div class="sb-tasks">${tasksHtml}</div>
+                    </div>
+                `;
+            };
+
             const hasTasks = assignments.length > 0;
 
-            const bgColor = isPast ? '#0d0d0d' : '#111111';
-            const borderColor = 'rgba(255,255,255,0.05)';
+            const ptSuggestions = { "MD-4": "Tensión", "MD-3": "Duración", "MD-2": "Velocidad", "MD-1": "Activación", "MD+1": "Recup. Activa", "MD+2": "Descanso" };
+            const sugBadge = (label && ptSuggestions[label]) ? `<span class="m-day-suggestion" style="font-size: 0.6rem; color: #a1a1aa; background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 4px; margin-top: 2px;">Sug: ${ptSuggestions[label]}</span>` : '';
 
             html += `
-                <div class="microcycle-day-card ${isPast ? 'past-day' : ''}" style="background: ${bgColor}; border: 1px solid ${borderColor}; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; display: flex; flex-direction: column;" onclick="DTEngine.openDayDetail('${dateStr}')" onmouseover="this.style.borderColor='#00F2FE'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='${borderColor}'; this.style.transform='translateY(0)'">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
-                        <div>
-                            <div style="font-size: 0.7rem; color: #6b7280; font-weight: 800; letter-spacing: 1px;">${dayNames[i]}</div>
-                            <div style="font-size: 2.2rem; font-weight: 900; color: ${isPast ? '#9ca3af' : '#fff'}; line-height: 1;">${dayNum}</div>
+                <div class="macro-day ${typeClass ? typeClass : ''} ${pastClass}${hasTasks && isPast ? ' has-tasks' : ''}" data-date="${dateStr}" onclick="${isPast ? 'void(0)' : `DTEngine.openDrawer('${dateStr}')`}">
+                    <div class="m-day-top">
+                        <span class="m-day-num">${d}</span>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                            <span class="m-day-label ${label === '' ? 'label-libre' : ''}">${label}</span>
+                            ${sugBadge}
                         </div>
-                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-                            <span class="m-day-label ${label === '' ? 'label-libre' : ''}" style="padding: 4px 8px; font-size: 0.65rem;">${label}</span>
-                            ${hasTasks ? '<span style="font-size: 0.6rem; color: #00F2FE; font-weight: 800; background: rgba(0,242,254,0.1); padding: 2px 6px; border-radius: 4px;">TAREAS</span>' : ''}
-                        </div>
+                        ${isPast && hasTasks ? '<span class="past-hist-badge">HIST</span>' : ''}
                     </div>
-                    
-                    <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 12px; flex-grow: 1; display: flex; align-items: center; justify-content: center;">
-                        <span style="font-size: 0.8rem; font-weight: 800; color: ${sessionData ? '#00F2FE' : '#6b7280'}; letter-spacing: 0.5px;">${enfoque.toUpperCase()}</span>
-                    </div>
-
-                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: #9ca3af; font-weight: 700; margin-bottom: 6px; padding: 0 4px;">
-                        <span>SALUD DEL PLANTEL</span>
-                    </div>
-                    <div style="height: 6px; width: 100%; background: #1a1a1a; border-radius: 3px; overflow: hidden;">
-                        <div style="height: 100%; width: ${sessionData ? '100' : '0'}%; background: ${sessionData ? 'linear-gradient(90deg, #00F2FE, #4facfe)' : 'transparent'}; box-shadow: ${sessionData ? '0 0 10px rgba(0,242,254,0.5)' : 'none'};"></div>
+                    <div class="m-day-content">
+                        ${renderBlock('gimnasio', 'Gimnasio')}
+                        ${renderBlock('entrada_calor', 'Entrada en Calor')}
+                        ${renderBlock('parte_principal', 'Parte Principal')}
+                        ${renderBlock('doble_turno', '2º Turno / Táctica')}
+                        ${renderBlock('vuelta_calma', 'Vuelta a la Calma')}
                     </div>
                 </div>
             `;
@@ -1635,7 +1328,7 @@ window.DTEngine = {
         if (arrayFechasPartidos.includes(fechaActual)) return 'MD';
 
         const current = new Date(fechaActual + 'T00:00:00');
-        
+
         let diasPost = Infinity;
         let diasPre = Infinity;
 
@@ -1689,7 +1382,72 @@ window.DTEngine = {
         return 'type-base';
     },
 
-    toggleMatchDay(isChecked) {
+    async openDrawer(date) {
+        this._selectedDate = date;
+        this._showAllExercises = false;
+        this._dayActivities = [];
+
+        // Poblar título y etiqueta
+        document.getElementById('drawer-date-title').innerText = date;
+
+        // Resetear controles
+        const enfoqueEl = document.getElementById('drawer-enfoque');
+        const especEl = document.getElementById('drawer-especificidad');
+        const matchEl = document.getElementById('drawer-match');
+        const volEl = document.getElementById('drawer-volumen');
+        const saveBtn = document.getElementById('drawer-save-btn');
+
+        if (enfoqueEl) enfoqueEl.value = 'Tensión';
+        if (especEl) especEl.value = '0.4';
+        if (matchEl) {
+            matchEl.checked = this._matchDays.has(date);
+            const lbl = matchEl.parentElement;
+            if (lbl) {
+                lbl.style.background = matchEl.checked ? 'rgba(0,242,254,0.22)' : 'rgba(0,242,254,0.06)';
+                lbl.style.borderColor = matchEl.checked ? '#00F2FE' : 'rgba(0,242,254,0.25)';
+            }
+        }
+        if (volEl) volEl.value = '';
+        if (saveBtn) saveBtn.textContent = 'GUARDAR SESIÓN';
+
+        this.renderDrawerActivities();
+        this.updateDrawerUI();
+        document.getElementById('dt-drawer').classList.remove('hidden');
+
+        // Cargar datos existentes de microcycle_sessions
+        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id') || window.CurrentUser?.team_id;
+        if (teamId) {
+            try {
+                const { data: sessionData } = await window.supabase
+                    .from('microcycle_sessions')
+                    .select('*')
+                    .eq('team_id', teamId)
+                    .eq('fecha', date)
+                    .maybeSingle();
+
+                if (sessionData) {
+                    if (enfoqueEl && sessionData.enfoque) enfoqueEl.value = sessionData.enfoque;
+                    if (especEl && sessionData.indice_especificidad) especEl.value = sessionData.indice_especificidad;
+                    if (sessionData.es_partido) {
+                        this._matchDays.add(date);
+                        if (matchEl) {
+                            matchEl.checked = true;
+                            const lbl = matchEl.parentElement;
+                            if (lbl) { lbl.style.background = 'rgba(0,242,254,0.22)'; lbl.style.borderColor = '#00F2FE'; }
+                        }
+                    }
+                    if (sessionData.actividades && Array.isArray(sessionData.actividades)) {
+                        this._dayActivities = sessionData.actividades;
+                    }
+                    this.renderDrawerActivities();
+                    this.calculateDrawerVolume();
+                }
+            } catch (e) { console.error('Error cargando sesión del día:', e); }
+        }
+    },
+
+    // ── TOGGLE MATCH DAY DESDE DRAWER ──
+    toggleDrawerMatchDay(isChecked) {
         if (!this._selectedDate) return;
         if (isChecked) {
             this._matchDays.add(this._selectedDate);
@@ -1698,11 +1456,13 @@ window.DTEngine = {
         }
     },
 
-    addDayActivity() {
-        const nameInput = document.getElementById('act-name');
-        const descInput = document.getElementById('act-desc');
-        const durInput = document.getElementById('act-duration');
-        
+    // ── AGREGAR ACTIVIDAD AL DRAWER ──
+    addDrawerActivity() {
+        const nameInput = document.getElementById('drawer-act-name');
+        const descInput = document.getElementById('drawer-act-desc');
+        const durInput = document.getElementById('drawer-act-dur');
+
+        if (!nameInput || !durInput) return;
         if (!nameInput.value.trim() || !durInput.value) {
             alert('El nombre y la duración son obligatorios.');
             return;
@@ -1711,244 +1471,76 @@ window.DTEngine = {
         const activity = {
             id: Date.now().toString(),
             nombre: nameInput.value.trim(),
-            descripcion: descInput.value.trim(),
+            descripcion: (descInput ? descInput.value.trim() : ''),
             duracion: parseInt(durInput.value)
         };
 
         this._dayActivities.push(activity);
-        
+
         // Limpiar inputs
         nameInput.value = '';
-        descInput.value = '';
+        if (descInput) descInput.value = '';
         durInput.value = '';
+        nameInput.focus();
 
-        this.renderDayActivities();
+        this.renderDrawerActivities();
+        this.calculateDrawerVolume();
     },
 
-    removeDayActivity(index) {
+    // ── ELIMINAR ACTIVIDAD DEL DRAWER ──
+    removeDrawerActivity(index) {
         this._dayActivities.splice(index, 1);
-        this.renderDayActivities();
+        this.renderDrawerActivities();
+        this.calculateDrawerVolume();
     },
 
-    renderDayActivities() {
-        const listDiv = document.getElementById('day-activities-list');
-        listDiv.innerHTML = '';
-        
+    // ── RENDERIZAR LISTA DE ACTIVIDADES ──
+    renderDrawerActivities() {
+        const listDiv = document.getElementById('drawer-activities-list');
+        if (!listDiv) return;
+
         if (this._dayActivities.length === 0) {
-            listDiv.innerHTML = '<div style="color:#6b7280; font-size:0.85rem; text-align:center; padding:10px;">No hay actividades creadas para esta sesión.</div>';
-        } else {
-            this._dayActivities.forEach((act, idx) => {
-                const actDiv = document.createElement('div');
-                actDiv.style.cssText = 'background:#111; border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:10px 15px; display:flex; justify-content:space-between; align-items:center;';
-                actDiv.innerHTML = `
-                    <div style="flex-grow:1;">
-                        <div style="color:#fff; font-weight:bold; font-size:0.95rem;">${act.nombre} <span style="color:#00F2FE; font-size:0.8rem; margin-left:10px;">${act.duracion} min</span></div>
-                        <div style="color:#9ca3af; font-size:0.8rem; margin-top:3px;">${act.descripcion}</div>
-                    </div>
-                    <button onclick="window.DTEngine.removeDayActivity(${idx})" style="background:transparent; border:none; color:#ef4444; font-size:1.2rem; cursor:pointer; padding:5px; transition:color 0.2s;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#ef4444'">✕</button>
-                `;
-                listDiv.appendChild(actDiv);
-            });
+            listDiv.innerHTML = '<div style="color:#6b7280; font-size:0.8rem; text-align:center; padding:8px;">No hay actividades para esta sesión.</div>';
+            return;
         }
-        
-        this.calculateTotalVolume();
-    },
 
-    calculateTotalVolume() {
-        const total = this._dayActivities.reduce((sum, act) => sum + act.duracion, 0);
-        document.getElementById('day-detail-volumen').value = total;
-        this.recalculateThermogram();
-    },
-
-    recalculateThermogram() {
-        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id') || window.CurrentUser?.team_id;
-        if (!teamId || !this._selectedDate) return;
-        
-        // This simulates saving without sending to DB, just updates UI
-        const volume = document.getElementById('day-detail-volumen').value || 0;
-        const especificidad = document.getElementById('day-detail-especificidad').value || 0.4;
-        
-        const cp = volume * (parseFloat(especificidad) * 10);
-        
-        const tbody = document.getElementById('day-detail-athletes-list');
-        const rows = tbody.querySelectorAll('tr');
-        
-        rows.forEach(row => {
-            const rpeCell = row.cells[1];
-            const minsCell = row.cells[2];
-            if (!rpeCell || !minsCell || rpeCell.textContent === '—' || minsCell.textContent === '—') return;
-            
-            const rpe = parseFloat(rpeCell.textContent);
-            const mins = parseFloat(minsCell.textContent);
-            const cr = rpe * mins;
-            
-            const cpDisplayCell = row.cells[3];
-            const badgeCell = row.cells[4];
-            
-            if (cpDisplayCell && badgeCell) {
-                cpDisplayCell.innerHTML = \`<div style="font-size:0.6rem; color:#9ca3af; margin-bottom:2px; font-weight:600;">CP: \${cp}</div>
-                                            <div style="font-size:1.1rem; font-weight:900; color:#fff;">\${cr}</div>\`;
-                                            
-                if (cp > 0) {
-                    if (cr > (cp * 1.20)) {
-                        row.querySelectorAll('td').forEach(td => td.className = 'day-thermo-td status-danger-bg');
-                        badgeCell.innerHTML = '<span style="color:#FF3B30; font-size:0.75rem; font-weight:800; background:rgba(255,59,48,0.1); padding:4px 8px; border-radius:4px;">SOBRECARGA</span>';
-                    } else {
-                        row.querySelectorAll('td').forEach(td => td.className = 'day-thermo-td status-optimal-bg');
-                        badgeCell.innerHTML = '<span style="color:#00F2FE; font-size:0.75rem; font-weight:800; background:rgba(0,242,254,0.1); padding:4px 8px; border-radius:4px;">ÓPTIMO</span>';
-                    }
-                }
-            }
+        listDiv.innerHTML = '';
+        this._dayActivities.forEach((act, idx) => {
+            const actDiv = document.createElement('div');
+            actDiv.style.cssText = 'background:#111; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; transition:border-color 0.2s;';
+            actDiv.onmouseover = () => actDiv.style.borderColor = 'rgba(0,242,254,0.3)';
+            actDiv.onmouseout = () => actDiv.style.borderColor = 'rgba(255,255,255,0.08)';
+            actDiv.innerHTML = `
+                <div style="flex-grow:1; min-width:0;">
+                    <div style="color:#fff; font-weight:700; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${act.nombre} <span style="color:#00F2FE; font-size:0.75rem; margin-left:6px;">${act.duracion} min</span></div>
+                    ${act.descripcion ? `<div style="color:#9ca3af; font-size:0.72rem; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${act.descripcion}</div>` : ''}
+                </div>
+                <button onclick="window.DTEngine.removeDrawerActivity(${idx})" style="background:transparent; border:none; color:#ef4444; font-size:1.1rem; cursor:pointer; padding:4px 6px; transition:color 0.2s; flex-shrink:0;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#ef4444'">✕</button>
+            `;
+            listDiv.appendChild(actDiv);
         });
     },
 
-    async openDayDetail(dateStr) {
-        this._selectedDate = dateStr;
-        const modal = document.getElementById('modal-day-detail');
-        if (!modal) return;
-        
-        document.getElementById('day-detail-title').textContent = dateStr;
-        
-        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id') || window.CurrentUser?.team_id;
-        if (!teamId) return;
-
-        document.getElementById('day-detail-enfoque').value = 'Tensión';
-        document.getElementById('day-detail-volumen').value = '';
-        document.getElementById('day-detail-especificidad').value = '0.4';
-        document.getElementById('day-detail-match').checked = this._matchDays.has(dateStr);
-        document.getElementById('day-detail-save-btn') ? document.getElementById('day-detail-save-btn').textContent = 'GUARDAR SESIÓN' : null;
-        
-        this._dayActivities = [];
-        this.renderDayActivities();
-
-        const tbody = document.getElementById('day-detail-athletes-list');
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--muted);">Cargando termograma...</td></tr>';
-        
-        modal.classList.remove('hidden');
-
-        try {
-            const { data: sessionData } = await window.supabase
-                .from('microcycle_sessions')
-                .select('*')
-                .eq('team_id', teamId)
-                .eq('fecha', dateStr)
-                .maybeSingle();
-                
-            let cp = 0;
-            if (sessionData) {
-                document.getElementById('day-detail-enfoque').value = sessionData.enfoque || 'Tensión';
-                if (sessionData.volumen_minutos) document.getElementById('day-detail-volumen').value = sessionData.volumen_minutos;
-                if (sessionData.indice_especificidad) document.getElementById('day-detail-especificidad').value = sessionData.indice_especificidad;
-                
-                if (sessionData.es_partido) {
-                    document.getElementById('day-detail-match').checked = true;
-                    this._matchDays.add(dateStr);
-                } else if (sessionData.es_partido === false) {
-                    document.getElementById('day-detail-match').checked = false;
-                    this._matchDays.delete(dateStr);
-                }
-
-                if (sessionData.actividades && Array.isArray(sessionData.actividades)) {
-                    this._dayActivities = sessionData.actividades;
-                    this.renderDayActivities();
-                }
-                
-                if (sessionData.volumen_minutos && sessionData.indice_especificidad) {
-                    cp = sessionData.volumen_minutos * (sessionData.indice_especificidad * 10);
-                }
-            }
-            
-            const { data: athletes } = await window.supabase
-                .from('profiles_athlete')
-                .select('id, nombre_completo, posicion')
-                .eq('team_id', teamId);
-                
-            if (!athletes || athletes.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--muted);">No hay atletas en el equipo.</td></tr>';
-                return;
-            }
-            
-            const athleteIds = athletes.map(a => a.id);
-            const { data: wellness } = await window.supabase
-                .from('daily_wellness')
-                .select('athlete_id, rpe_sesion, duracion_minutos')
-                .eq('date', dateStr)
-                .in('athlete_id', athleteIds);
-                
-            let html = '';
-            for (const ath of athletes) {
-                const w = (wellness || []).find(w => w.athlete_id === ath.id);
-                let cr = 0;
-                let rpe = '—';
-                let mins = '—';
-                let statusClass = '';
-                let statusBadge = '<span style="color:#6b7280; font-size:0.7rem; font-weight:700;">Sin datos</span>';
-                
-                if (w && w.rpe_sesion != null && w.duracion_minutos != null) {
-                    rpe = w.rpe_sesion;
-                    mins = w.duracion_minutos;
-                    cr = w.rpe_sesion * w.duracion_minutos;
-                    
-                    if (cp > 0) {
-                        if (cr > (cp * 1.20)) {
-                            statusClass = 'status-danger-bg';
-                            statusBadge = '<span style="color:#FF3B30; font-size:0.75rem; font-weight:800; background:rgba(255,59,48,0.1); padding:4px 8px; border-radius:4px;">SOBRECARGA</span>';
-                        } else {
-                            statusClass = 'status-optimal-bg';
-                            statusBadge = '<span style="color:#00F2FE; font-size:0.75rem; font-weight:800; background:rgba(0,242,254,0.1); padding:4px 8px; border-radius:4px;">ÓPTIMO</span>';
-                        }
-                    } else {
-                        statusBadge = '<span style="color:#e5e7eb; font-size:0.7rem; font-weight:700;">CR: ' + cr + '</span>';
-                    }
-                }
-                
-                const initial = ath.nombre_completo ? ath.nombre_completo.charAt(0).toUpperCase() : 'A';
-                
-                html += `
-                    <tr>
-                        <td class="day-thermo-td ${statusClass}">
-                            <div style="display:flex; align-items:center; gap:12px;">
-                                <div style="width:32px; height:32px; border-radius:50%; background:#1a1a1a; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:800; color:#fff;">${initial}</div>
-                                <div>
-                                    <div style="font-size:0.9rem; font-weight:700; color:#fff;">${ath.nombre_completo || 'Sin Nombre'}</div>
-                                    <div style="font-size:0.7rem; color:#6b7280; text-transform:uppercase;">${ath.posicion || 'Posición'}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="day-thermo-td ${statusClass}" style="text-align:center; font-weight:700; color:#fff;">${rpe}</td>
-                        <td class="day-thermo-td ${statusClass}" style="text-align:center; font-weight:700; color:#fff;">${mins}</td>
-                        <td class="day-thermo-td ${statusClass}" style="text-align:center;">
-                            <div style="font-size:0.6rem; color:#9ca3af; margin-bottom:2px; font-weight:600;">CP: ${cp}</div>
-                            <div style="font-size:1.1rem; font-weight:900; color:#fff;">${cr > 0 ? cr : '—'}</div>
-                        </td>
-                        <td class="day-thermo-td ${statusClass}" style="text-align:center;">
-                            ${statusBadge}
-                        </td>
-                    </tr>
-                `;
-            }
-            tbody.innerHTML = html;
-        } catch (e) {
-            console.error('Error fetching detail:', e);
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: #ef4444;">Error al cargar datos.</td></tr>';
-        }
+    // ── CÁLCULO AUTOMÁTICO DE VOLUMEN ──
+    calculateDrawerVolume() {
+        const total = this._dayActivities.reduce((sum, act) => sum + (act.duracion || 0), 0);
+        const volEl = document.getElementById('drawer-volumen');
+        if (volEl) volEl.value = total || '';
     },
-    
-    closeDayDetail() {
-        const modal = document.getElementById('modal-day-detail');
-        if (modal) modal.classList.add('hidden');
-    },
-    
-    async guardarDayDetail() {
+
+    // ── GUARDADO UNIFICADO (UPSERT) ──
+    async guardarDrawerSession() {
         const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id') || window.CurrentUser?.team_id;
-        if (!teamId) return;
+        if (!teamId) { alert('Error: No se encontró el ID del equipo.'); return; }
 
         const dateStr = this._selectedDate;
-        const enfoque = document.getElementById('day-detail-enfoque').value;
-        const volumen = document.getElementById('day-detail-volumen').value || null;
-        const especificidad = document.getElementById('day-detail-especificidad').value;
-        const isMatch = document.getElementById('day-detail-match').checked;
-        
+        if (!dateStr) return;
+
+        const enfoque = document.getElementById('drawer-enfoque')?.value || 'Tensión';
+        const especificidad = document.getElementById('drawer-especificidad')?.value || '0.4';
+        const isMatch = document.getElementById('drawer-match')?.checked || false;
+        const volumen = document.getElementById('drawer-volumen')?.value || null;
+
         const payload = {
             team_id: teamId,
             fecha: dateStr,
@@ -1959,9 +1551,9 @@ window.DTEngine = {
             actividades: this._dayActivities
         };
 
-        const eventBtn = event ? event.target : null;
-        const oldText = eventBtn ? eventBtn.textContent : 'GUARDAR SESIÓN';
-        if (eventBtn) eventBtn.textContent = 'GUARDANDO...';
+        const btn = document.getElementById('drawer-save-btn');
+        const oldText = btn ? btn.textContent : 'GUARDAR SESIÓN';
+        if (btn) btn.textContent = 'GUARDANDO...';
 
         try {
             const { error } = await window.supabase
@@ -1969,27 +1561,25 @@ window.DTEngine = {
                 .upsert([payload], { onConflict: 'team_id,fecha' });
 
             if (error) throw error;
-            
-            if (eventBtn) eventBtn.textContent = '¡GUARDADO CON ÉXITO!';
-            
-            await this.openDayDetail(dateStr);
-            this.generateCalendar();
-            
-            setTimeout(() => { if (eventBtn) eventBtn.textContent = 'GUARDAR SESIÓN'; }, 2000);
-        } catch (e) {
-            console.error('Error al guardar sesión:', e);
-            btn.textContent = 'ERROR';
-            setTimeout(() => { if (btn) btn.textContent = oldText; }, 2000);
-        }
-    },
 
-    openDrawer(date) {
-        this._selectedDate = date;
-        this._showAllExercises = false;
-        document.getElementById('drawer-date-title').innerText = date;
-        document.getElementById('label-selector').value = this._manualLabels[date] || '';
-        this.updateDrawerUI();
-        document.getElementById('dt-drawer').classList.remove('hidden');
+            if (btn) btn.textContent = '¡GUARDADO!';
+            console.log('✅ Sesión guardada:', payload);
+
+            // Sincronizar match days si cambió
+            if (isMatch) this._matchDays.add(dateStr);
+            else this._matchDays.delete(dateStr);
+            if (window.CurrentTeam) window.CurrentTeam.match_dates = Array.from(this._matchDays);
+            await this.saveMatchDays();
+
+            // Refrescar calendario
+            this.generateCalendar();
+
+            setTimeout(() => { if (btn) btn.textContent = oldText; }, 2000);
+        } catch (e) {
+            console.error('❌ Error al guardar sesión:', e);
+            alert('Error al guardar la sesión.');
+            if (btn) btn.textContent = oldText;
+        }
     },
 
     async forceLabel(val) {
@@ -2002,9 +1592,9 @@ window.DTEngine = {
         }
 
         const teamId = (window.App && window.App.user && window.App.user.team_id) || window.CurrentTeam?.id || localStorage.getItem('ravix_team_id') || window.CurrentUser?.team_id;
-        if (!teamId) { 
-            console.error("No hay teamId."); 
-            return; 
+        if (!teamId) {
+            console.error("No hay teamId.");
+            return;
         }
 
         const wasMatch = this._matchDays.has(sanitizedDate);
@@ -2031,7 +1621,7 @@ window.DTEngine = {
         } catch (err) {
             console.error("❌ Error guardando (rollback):", err);
             alert("Error al guardar. Se revertirá a su estado anterior.");
-            
+
             // Rollback UI local
             if (wasMatch) this._matchDays.add(sanitizedDate);
             else this._matchDays.delete(sanitizedDate);
@@ -2039,7 +1629,7 @@ window.DTEngine = {
             if (window.CurrentTeam) {
                 window.CurrentTeam.match_dates = Array.from(this._matchDays);
             }
-            
+
             const selector = document.getElementById('label-selector');
             if (selector) selector.value = wasMatch ? 'PARTIDO' : 'BASE';
         }
@@ -2251,7 +1841,7 @@ window.DTEngine = {
             if (error) throw error;
 
             console.log("✅ Actividad actualizada en Supabase con éxito.");
-            
+
             // Refrescar UI del calendario luego de modificar Supabase
             await this.refreshState();
         } catch (error) {
@@ -2277,13 +1867,13 @@ window.DTEngine = {
             console.log("🟡 Intentando borrar vía RPC:", task);
 
             const { error } = await window.supabase.rpc('borrar_tarea_calendario', {
-                    p_user_id: userId,
-                    p_team_id: teamId,
-                    p_fecha: date,
-                    p_scenario: task.block,
-                    p_task_id: task.id.toString()
-                });
-                if (error) throw error;
+                p_user_id: userId,
+                p_team_id: teamId,
+                p_fecha: date,
+                p_scenario: task.block,
+                p_task_id: task.id.toString()
+            });
+            if (error) throw error;
 
             // Solo después de confirmar, refrescamos el estado global
             await this.refreshState();
@@ -2298,9 +1888,9 @@ window.DTEngine = {
         try {
             console.log("Clic detectado en tarea ID:", taskId);
             const idBuscado = String(taskId);
-            let task = (window.ExercisesLibrary || []).find(t => String(t.numericId) === idBuscado || String(t.id) === idBuscado) || 
-                       (window.CustomExercises || []).find(t => String(t.numericId) === idBuscado || String(t.id) === idBuscado);
-            
+            let task = (window.ExercisesLibrary || []).find(t => String(t.numericId) === idBuscado || String(t.id) === idBuscado) ||
+                (window.CustomExercises || []).find(t => String(t.numericId) === idBuscado || String(t.id) === idBuscado);
+
             if (!task) {
                 // FALLBACK DIRECTO A BASE DE DATOS
                 const { data, error } = await window.supabase
@@ -2321,7 +1911,7 @@ window.DTEngine = {
                     return;
                 }
             }
-            
+
             this.renderTaskModal(task);
         } catch (error) {
             console.error("Error abriendo popup:", error);
@@ -2331,8 +1921,8 @@ window.DTEngine = {
     renderTaskModal(task) {
         const modal = document.getElementById('dt-modal');
         const body = document.getElementById('modal-body-content');
-        const tagsHtml = Array.isArray(task.tags) 
-            ? task.tags.map(t => `<span style="background:rgba(0,242,254,0.1);color:#00F2FE;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:700;margin-right:5px;border:1px solid rgba(0,242,254,0.3);">${t}</span>`).join('') 
+        const tagsHtml = Array.isArray(task.tags)
+            ? task.tags.map(t => `<span style="background:rgba(0,242,254,0.1);color:#00F2FE;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:700;margin-right:5px;border:1px solid rgba(0,242,254,0.3);">${t}</span>`).join('')
             : '';
 
         body.innerHTML = `
@@ -2558,7 +2148,7 @@ window.DTEngine = {
             targetView = board;
         } else if (viewName === 'calendar') {
             targetView = cal;
-            setTimeout(function() { window.DTEngine.Periodization.init(); }, 50);
+            setTimeout(function () { window.DTEngine.Periodization.init(); }, 50);
         }
 
         if (targetView) {
@@ -2779,7 +2369,7 @@ window.DTEngine = {
         window.tacticalCanvas = new fabric.Canvas('premium-tactical-board', {
             selection: false // No permite seleccionar grupos por ahora
         });
-        
+
         // Asignar dimensiones basadas en el DOM renderizado
         window.tacticalCanvas.setWidth(rect.width || 800);
         window.tacticalCanvas.setHeight(rect.height || 600);
@@ -2799,7 +2389,7 @@ window.DTEngine = {
         document.getElementById('ex-ssp').value = '';
         document.getElementById('ex-dimensions').value = '';
         document.getElementById('exercise-tags').value = '';
-        
+
         // 1. Mostrar el modal primero para que los contenedores tengan dimensiones reales en el DOM
         document.getElementById('modal-custom-task').classList.remove('hidden');
 
@@ -2815,17 +2405,17 @@ window.DTEngine = {
     },
 
     async saveCustomTask() {
-        const uid   = localStorage.getItem('ravix_v5_uid');
+        const uid = localStorage.getItem('ravix_v5_uid');
         const token = localStorage.getItem('ravix_token');
-        const name  = document.getElementById('custom-task-name').value.trim();
+        const name = document.getElementById('custom-task-name').value.trim();
         const phase = ''; // Universal (Desacoplado)
-        
+
         // Nuevos campos V2
         const sspContext = document.getElementById('ex-ssp').value.trim();
         const dimensionsDensity = document.getElementById('ex-dimensions').value.trim();
         const tagsRaw = document.getElementById('exercise-tags').value;
         const tags = tagsRaw.split(',').map(t => t.trim()).filter(t => t !== '');
-        
+
         // Campos legacy o eliminados del DOM (pasamos null o vacío para no romper la BD)
         const tacticalPrinciples = '';
         const ruleProvocation = '';
@@ -2843,7 +2433,7 @@ window.DTEngine = {
         }
 
         const totalMinutes = null;
-        
+
         // Capturar Pizarra
         let diagramDataUrl = null;
         if (window.tacticalCanvas) {
@@ -2956,7 +2546,7 @@ window.DTEngine = {
     // MÓDULO PITCH ENGINE — Pizarra del 11 Ideal
     // ══════════════════════════════════════════════════════
     Board: {
-        addPlayerBlue: function() {
+        addPlayerBlue: function () {
             if (!window.tacticalCanvas) return;
             const circle = new fabric.Circle({
                 radius: 15,
@@ -2971,7 +2561,7 @@ window.DTEngine = {
             window.tacticalCanvas.add(circle);
             window.tacticalCanvas.setActiveObject(circle);
         },
-        addPlayerRed: function() {
+        addPlayerRed: function () {
             if (!window.tacticalCanvas) return;
             const circle = new fabric.Circle({
                 radius: 15,
@@ -2986,7 +2576,7 @@ window.DTEngine = {
             window.tacticalCanvas.add(circle);
             window.tacticalCanvas.setActiveObject(circle);
         },
-        addBall: function() {
+        addBall: function () {
             if (!window.tacticalCanvas) return;
             const circle = new fabric.Circle({
                 radius: 8,
@@ -3001,7 +2591,7 @@ window.DTEngine = {
             window.tacticalCanvas.add(circle);
             window.tacticalCanvas.setActiveObject(circle);
         },
-        deleteActive: function() {
+        deleteActive: function () {
             if (!window.tacticalCanvas) return;
             const activeObj = window.tacticalCanvas.getActiveObject();
             if (activeObj) {
@@ -3009,7 +2599,7 @@ window.DTEngine = {
             }
         },
 
-        init: function() {
+        init: function () {
             const layer = document.getElementById('tokens-layer');
             if (!layer) return;
             const loc = document.getElementById('slocal') ? document.getElementById('slocal').value : '4-3-3';
@@ -3017,7 +2607,7 @@ window.DTEngine = {
             this.deployTeams(loc, riv);
         },
 
-        deployTeams: function(loc, riv) {
+        deployTeams: function (loc, riv) {
             if (!loc) loc = '4-3-3';
             if (!riv) riv = '4-4-2';
             const layer = document.getElementById('tokens-layer');
@@ -3026,88 +2616,88 @@ window.DTEngine = {
 
             const forms = {
                 '4-3-3': [
-                    {p:'POR', r:'Portero',   x:0.07, y:0.50},
-                    {p:'LD',  r:'Lat. Der.', x:0.22, y:0.18},
-                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.38},
-                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.62},
-                    {p:'LI',  r:'Lat. Izq.', x:0.22, y:0.82},
-                    {p:'MCD', r:'Pivote',    x:0.38, y:0.50},
-                    {p:'MC',  r:'Interior',  x:0.46, y:0.30},
-                    {p:'MC',  r:'Interior',  x:0.46, y:0.70},
-                    {p:'ED',  r:'Extremo',   x:0.58, y:0.18},
-                    {p:'DC',  r:'Delantero', x:0.60, y:0.50},
-                    {p:'EI',  r:'Extremo',   x:0.58, y:0.82}
+                    { p: 'POR', r: 'Portero', x: 0.07, y: 0.50 },
+                    { p: 'LD', r: 'Lat. Der.', x: 0.22, y: 0.18 },
+                    { p: 'DFC', r: 'Zaguero', x: 0.20, y: 0.38 },
+                    { p: 'DFC', r: 'Zaguero', x: 0.20, y: 0.62 },
+                    { p: 'LI', r: 'Lat. Izq.', x: 0.22, y: 0.82 },
+                    { p: 'MCD', r: 'Pivote', x: 0.38, y: 0.50 },
+                    { p: 'MC', r: 'Interior', x: 0.46, y: 0.30 },
+                    { p: 'MC', r: 'Interior', x: 0.46, y: 0.70 },
+                    { p: 'ED', r: 'Extremo', x: 0.58, y: 0.18 },
+                    { p: 'DC', r: 'Delantero', x: 0.60, y: 0.50 },
+                    { p: 'EI', r: 'Extremo', x: 0.58, y: 0.82 }
                 ],
                 '4-4-2': [
-                    {p:'POR', r:'Portero',   x:0.07, y:0.50},
-                    {p:'LD',  r:'Lat. Der.', x:0.22, y:0.18},
-                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.38},
-                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.62},
-                    {p:'LI',  r:'Lat. Izq.', x:0.22, y:0.82},
-                    {p:'MD',  r:'Volante',   x:0.42, y:0.18},
-                    {p:'MC',  r:'Medio',     x:0.40, y:0.38},
-                    {p:'MC',  r:'Medio',     x:0.40, y:0.62},
-                    {p:'MI',  r:'Volante',   x:0.42, y:0.82},
-                    {p:'DC',  r:'Delantero', x:0.58, y:0.38},
-                    {p:'DC',  r:'Delantero', x:0.58, y:0.62}
+                    { p: 'POR', r: 'Portero', x: 0.07, y: 0.50 },
+                    { p: 'LD', r: 'Lat. Der.', x: 0.22, y: 0.18 },
+                    { p: 'DFC', r: 'Zaguero', x: 0.20, y: 0.38 },
+                    { p: 'DFC', r: 'Zaguero', x: 0.20, y: 0.62 },
+                    { p: 'LI', r: 'Lat. Izq.', x: 0.22, y: 0.82 },
+                    { p: 'MD', r: 'Volante', x: 0.42, y: 0.18 },
+                    { p: 'MC', r: 'Medio', x: 0.40, y: 0.38 },
+                    { p: 'MC', r: 'Medio', x: 0.40, y: 0.62 },
+                    { p: 'MI', r: 'Volante', x: 0.42, y: 0.82 },
+                    { p: 'DC', r: 'Delantero', x: 0.58, y: 0.38 },
+                    { p: 'DC', r: 'Delantero', x: 0.58, y: 0.62 }
                 ],
                 '4-2-3-1': [
-                    {p:'POR', r:'Portero',   x:0.07, y:0.50},
-                    {p:'LD',  r:'Lat. Der.', x:0.22, y:0.18},
-                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.38},
-                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.62},
-                    {p:'LI',  r:'Lat. Izq.', x:0.22, y:0.82},
-                    {p:'MCD', r:'Pivote',    x:0.36, y:0.38},
-                    {p:'MCD', r:'Pivote',    x:0.36, y:0.62},
-                    {p:'ED',  r:'Ext. Der.', x:0.50, y:0.20},
-                    {p:'MCO', r:'Enganche',  x:0.50, y:0.50},
-                    {p:'EI',  r:'Ext. Izq.', x:0.50, y:0.80},
-                    {p:'DC',  r:'Delantero', x:0.62, y:0.50}
+                    { p: 'POR', r: 'Portero', x: 0.07, y: 0.50 },
+                    { p: 'LD', r: 'Lat. Der.', x: 0.22, y: 0.18 },
+                    { p: 'DFC', r: 'Zaguero', x: 0.20, y: 0.38 },
+                    { p: 'DFC', r: 'Zaguero', x: 0.20, y: 0.62 },
+                    { p: 'LI', r: 'Lat. Izq.', x: 0.22, y: 0.82 },
+                    { p: 'MCD', r: 'Pivote', x: 0.36, y: 0.38 },
+                    { p: 'MCD', r: 'Pivote', x: 0.36, y: 0.62 },
+                    { p: 'ED', r: 'Ext. Der.', x: 0.50, y: 0.20 },
+                    { p: 'MCO', r: 'Enganche', x: 0.50, y: 0.50 },
+                    { p: 'EI', r: 'Ext. Izq.', x: 0.50, y: 0.80 },
+                    { p: 'DC', r: 'Delantero', x: 0.62, y: 0.50 }
                 ],
                 '3-5-2': [
-                    {p:'POR', r:'Portero',   x:0.07, y:0.50},
-                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.28},
-                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.50},
-                    {p:'DFC', r:'Zaguero',   x:0.20, y:0.72},
-                    {p:'CRL', r:'Carrilero', x:0.36, y:0.12},
-                    {p:'MC',  r:'Medio',     x:0.38, y:0.35},
-                    {p:'MC',  r:'Medio',     x:0.38, y:0.50},
-                    {p:'MC',  r:'Medio',     x:0.38, y:0.65},
-                    {p:'CRL', r:'Carrilero', x:0.36, y:0.88},
-                    {p:'DC',  r:'Delantero', x:0.58, y:0.38},
-                    {p:'DC',  r:'Delantero', x:0.58, y:0.62}
+                    { p: 'POR', r: 'Portero', x: 0.07, y: 0.50 },
+                    { p: 'DFC', r: 'Zaguero', x: 0.20, y: 0.28 },
+                    { p: 'DFC', r: 'Zaguero', x: 0.20, y: 0.50 },
+                    { p: 'DFC', r: 'Zaguero', x: 0.20, y: 0.72 },
+                    { p: 'CRL', r: 'Carrilero', x: 0.36, y: 0.12 },
+                    { p: 'MC', r: 'Medio', x: 0.38, y: 0.35 },
+                    { p: 'MC', r: 'Medio', x: 0.38, y: 0.50 },
+                    { p: 'MC', r: 'Medio', x: 0.38, y: 0.65 },
+                    { p: 'CRL', r: 'Carrilero', x: 0.36, y: 0.88 },
+                    { p: 'DC', r: 'Delantero', x: 0.58, y: 0.38 },
+                    { p: 'DC', r: 'Delantero', x: 0.58, y: 0.62 }
                 ]
             };
 
             const fLocal = forms[loc] || forms['4-3-3'];
             const fRival = forms[riv] || forms['4-4-2'];
-            fLocal.forEach(function(t) { window.DTEngine.Board.createFicha('local', t.p, t.r, t.x, t.y); });
-            fRival.forEach(function(t) { window.DTEngine.Board.createFicha('rival', t.p, t.r, 1 - t.x, 1 - t.y); });
+            fLocal.forEach(function (t) { window.DTEngine.Board.createFicha('local', t.p, t.r, t.x, t.y); });
+            fRival.forEach(function (t) { window.DTEngine.Board.createFicha('rival', t.p, t.r, 1 - t.x, 1 - t.y); });
         },
 
-        createFicha: function(type, posText, roleText, percentX, percentY) {
+        createFicha: function (type, posText, roleText, percentX, percentY) {
             const layer = document.getElementById('tokens-layer');
             if (!layer) return;
             const isLocal = type === 'local';
-            const colorMain  = isLocal ? '#00F2FE' : '#ff4d4d';
-            const colorBg    = isLocal ? 'rgba(0,242,254,0.15)' : 'rgba(255,77,77,0.15)';
-            const colorShadow= isLocal ? 'rgba(0,242,254,0.4)'  : 'rgba(255,77,77,0.4)';
-            const textColor  = isLocal ? '#001a1f' : '#fff';
+            const colorMain = isLocal ? '#00F2FE' : '#ff4d4d';
+            const colorBg = isLocal ? 'rgba(0,242,254,0.15)' : 'rgba(255,77,77,0.15)';
+            const colorShadow = isLocal ? 'rgba(0,242,254,0.4)' : 'rgba(255,77,77,0.4)';
+            const textColor = isLocal ? '#001a1f' : '#fff';
 
             var lx = (percentX * 100).toFixed(2);
             var ly = (percentY * 100).toFixed(2);
 
             var ficha = document.createElement('div');
-            ficha.style.position   = 'absolute';
-            ficha.style.left       = lx + '%';
-            ficha.style.top        = ly + '%';
-            ficha.style.transform  = 'translate(-50%, -50%)';
-            ficha.style.display    = 'flex';
+            ficha.style.position = 'absolute';
+            ficha.style.left = lx + '%';
+            ficha.style.top = ly + '%';
+            ficha.style.transform = 'translate(-50%, -50%)';
+            ficha.style.display = 'flex';
             ficha.style.flexDirection = 'column';
             ficha.style.alignItems = 'center';
-            ficha.style.cursor     = 'grab';
+            ficha.style.cursor = 'grab';
             ficha.style.userSelect = 'none';
-            ficha.style.zIndex     = '10';
+            ficha.style.zIndex = '10';
             ficha.style.pointerEvents = 'auto';
             ficha.style.transition = 'transform 0.12s ease, filter 0.12s ease';
 
@@ -3124,7 +2714,7 @@ window.DTEngine = {
 
             var isDragging = false;
 
-            ficha.addEventListener('pointerdown', function(e) {
+            ficha.addEventListener('pointerdown', function (e) {
                 isDragging = true;
                 ficha.style.cursor = 'grabbing';
                 ficha.style.zIndex = '100';
@@ -3133,16 +2723,16 @@ window.DTEngine = {
                 ficha.setPointerCapture(e.pointerId);
             });
 
-            ficha.addEventListener('pointermove', function(e) {
+            ficha.addEventListener('pointermove', function (e) {
                 if (!isDragging) return;
                 var rect = layer.getBoundingClientRect();
-                var nx = ((e.clientX - rect.left) / rect.width)  * 100;
-                var ny = ((e.clientY - rect.top)  / rect.height) * 100;
+                var nx = ((e.clientX - rect.left) / rect.width) * 100;
+                var ny = ((e.clientY - rect.top) / rect.height) * 100;
                 ficha.style.left = nx.toFixed(2) + '%';
-                ficha.style.top  = ny.toFixed(2) + '%';
+                ficha.style.top = ny.toFixed(2) + '%';
             });
 
-            ficha.addEventListener('pointerup', function(e) {
+            ficha.addEventListener('pointerup', function (e) {
                 isDragging = false;
                 ficha.style.cursor = 'grab';
                 ficha.style.zIndex = '10';
@@ -3223,7 +2813,7 @@ window.DTEngine = {
                     const profile = this._profiles[pos.id];
                     const hasProfile = profile && typeof profile === 'object' && profile.rol;
                     const badgeHTML = hasProfile ? `<div class="role-badge">${profile.rol}</div>` : '';
-                    
+
                     return `
                         <div class="pitch-position ${hasProfile ? 'has-profile' : ''}"
                              onclick="DTEngine.PitchEngine.openPositionModal('${pos.id}', '${pos.label}')"
@@ -3253,9 +2843,9 @@ window.DTEngine = {
             const modal = document.getElementById('position-modal');
             const title = document.getElementById('position-modal-title');
             if (!modal || !title) return;
-            
+
             title.textContent = label;
-            
+
             let profile = this._profiles[posId];
             if (!profile || typeof profile !== 'object' || Array.isArray(profile)) {
                 profile = { rol: '', fisicos: [], tacticos: [] };
@@ -3273,9 +2863,9 @@ window.DTEngine = {
             } else if (upperLabel.includes('D') || upperLabel === 'LI' || upperLabel === 'LD') {
                 lineKey = 'DEF';
             }
-            
+
             const lineRoles = this.rolesByLine[lineKey] || [];
-            
+
             const renderChips = (containerId, dict, type, selectedItems) => {
                 const container = document.getElementById(containerId);
                 if (!container) return;
@@ -3289,11 +2879,11 @@ window.DTEngine = {
                     `;
                 }).join('');
             };
-            
+
             renderChips('options-rol', lineRoles, 'radio', profile.rol);
             renderChips('options-fisicos', this._fisicosDict, 'checkbox', profile.fisicos || []);
             renderChips('options-tacticos', this._tacticosDict, 'checkbox', profile.tacticos || []);
-            
+
             modal.classList.remove('hidden');
         },
 
@@ -3319,24 +2909,24 @@ window.DTEngine = {
 
         savePositionProfile() {
             if (!this._activePosition) return;
-            
+
             const getValues = (containerId, selector) => {
                 const container = document.getElementById(containerId);
                 if (!container) return [];
                 const inputs = container.querySelectorAll(selector);
                 return Array.from(inputs).map(i => i.value);
             };
-            
+
             const rolSel = getValues('options-rol', 'input[type="radio"]:checked')[0] || '';
             const fisicosSel = getValues('options-fisicos', 'input[type="checkbox"]:checked');
             const tacticosSel = getValues('options-tacticos', 'input[type="checkbox"]:checked');
-            
+
             this._profiles[this._activePosition] = {
                 rol: rolSel,
                 fisicos: fisicosSel,
                 tacticos: tacticosSel
             };
-            
+
             this.renderPitch(this._esquema);
             this.closePositionModal();
         }
@@ -3429,13 +3019,13 @@ window.DTEngine = {
     // ══════════════════════════════════════════════════════
     Periodization: {
         _defaultPhases: [
-            { name: 'Pretemporada',  color: '#f59e0b', objetivos: ['Volumen aeróbico', 'Fuerza base', 'Cohesión táctica inicial'] },
-            { name: 'Competencia',   color: '#00F2FE', objetivos: ['Afinación táctica', 'Intensidad específica', 'Automatismos'] },
-            { name: 'Play-offs',     color: '#a855f7', objetivos: ['Pico de rendimiento', 'Gestión de carga', 'Estrategia rival'] },
-            { name: 'Transición',    color: '#6b7280', objetivos: ['Recuperación activa', 'Evaluación de temporada', 'Planificación'] }
+            { name: 'Pretemporada', color: '#f59e0b', objetivos: ['Volumen aeróbico', 'Fuerza base', 'Cohesión táctica inicial'] },
+            { name: 'Competencia', color: '#00F2FE', objetivos: ['Afinación táctica', 'Intensidad específica', 'Automatismos'] },
+            { name: 'Play-offs', color: '#a855f7', objetivos: ['Pico de rendimiento', 'Gestión de carga', 'Estrategia rival'] },
+            { name: 'Transición', color: '#6b7280', objetivos: ['Recuperación activa', 'Evaluación de temporada', 'Planificación'] }
         ],
 
-        init: function() {
+        init: function () {
             var self = this;
             var stored = window.CurrentTeam ? window.CurrentTeam.periodization : null;
 
@@ -3452,9 +3042,9 @@ window.DTEngine = {
             self.setView(window.DTEngine._calendarView || 'weekly');
         },
 
-        _buildDefault: function() {
+        _buildDefault: function () {
             var year = new Date().getFullYear();
-            var phases = this._defaultPhases.map(function(p, i) {
+            var phases = this._defaultPhases.map(function (p, i) {
                 var startMonth = i * 3;
                 var endMonth = startMonth + 2;
                 return {
@@ -3470,10 +3060,10 @@ window.DTEngine = {
                 macrociclo: 'Temporada ' + year,
                 fases: phases,
                 fase_actual_idx: 0
-                };
+            };
         },
 
-        _getCurrentPhaseIdx: function() {
+        _getCurrentPhaseIdx: function () {
             var per = window.DTEngine._periodization;
             if (!per || !per.fases) return 0;
             var today = new Date().toISOString().split('T')[0];
@@ -3483,7 +3073,7 @@ window.DTEngine = {
             return per.fase_actual_idx || 0;
         },
 
-        renderTimeline: function() {
+        renderTimeline: function () {
             var per = window.DTEngine._periodization;
             if (!per) return;
 
@@ -3501,7 +3091,7 @@ window.DTEngine = {
 
             var totalDays = 0;
             var phaseDays = [];
-            per.fases.forEach(function(f) {
+            per.fases.forEach(function (f) {
                 var s = new Date(f.start + 'T00:00:00');
                 var e = new Date(f.end + 'T00:00:00');
                 var d = Math.max(1, Math.round((e - s) / 86400000));
@@ -3511,7 +3101,7 @@ window.DTEngine = {
 
             var html = '';
             var legendHtml = '';
-            per.fases.forEach(function(f, i) {
+            per.fases.forEach(function (f, i) {
                 var pct = ((phaseDays[i] / totalDays) * 100).toFixed(1);
                 var isPast = i < currentIdx;
                 var isCurrent = i === currentIdx;
@@ -3539,25 +3129,25 @@ window.DTEngine = {
                 var fasesDone = currentIdx;
                 var today2 = new Date();
                 var phaseStart = new Date(currentFase.start ? currentFase.start + 'T00:00:00' : today2);
-                var phaseEnd   = new Date(currentFase.end   ? currentFase.end   + 'T00:00:00' : today2);
-                var phaseLen   = Math.max(1, phaseEnd - phaseStart);
-                var elapsed    = Math.max(0, Math.min(phaseLen, today2 - phaseStart));
-                var phasePct   = Math.round((elapsed / phaseLen) * 100);
-                var weeksLeft  = Math.max(0, Math.round((phaseEnd - today2) / (7 * 86400000)));
+                var phaseEnd = new Date(currentFase.end ? currentFase.end + 'T00:00:00' : today2);
+                var phaseLen = Math.max(1, phaseEnd - phaseStart);
+                var elapsed = Math.max(0, Math.min(phaseLen, today2 - phaseStart));
+                var phasePct = Math.round((elapsed / phaseLen) * 100);
+                var weeksLeft = Math.max(0, Math.round((phaseEnd - today2) / (7 * 86400000)));
                 var phaseColor = currentFase.color || '#00F2FE';
 
                 // Format date helper
-                var fmtDate = function(d) {
+                var fmtDate = function (d) {
                     if (!d) return '—';
                     var parts = d.split('-');
                     if (parts.length < 3) return d;
-                    var months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+                    var months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
                     return parts[2] + ' ' + months[parseInt(parts[1]) - 1];
                 };
 
                 // Build objectives HTML
                 var objsHtml = '';
-                (currentFase.objetivos || []).slice(0, 3).forEach(function(obj) {
+                (currentFase.objetivos || []).slice(0, 3).forEach(function (obj) {
                     objsHtml += '<div style="display:flex;align-items:center;gap:6px;margin-top:4px;"><span style="color:' + phaseColor + ';font-size:0.6rem;">◉</span><span style="font-size:0.72rem;color:#9ca3af;font-family:Outfit,sans-serif;">' + obj + '</span></div>';
                 });
 
@@ -3581,7 +3171,7 @@ window.DTEngine = {
             }
         },
 
-        renderProcessView: function() {
+        renderProcessView: function () {
             var per = window.DTEngine._periodization;
             var grid = document.getElementById('process-phases-grid');
             if (!per || !grid) return;
@@ -3589,10 +3179,10 @@ window.DTEngine = {
             var currentIdx = this._getCurrentPhaseIdx();
             var tasks = window.DTEngine._assignedTasks || {};
             var totalSessionsGlobal = 0;
-            Object.keys(tasks).forEach(function(k) { totalSessionsGlobal += tasks[k].length; });
+            Object.keys(tasks).forEach(function (k) { totalSessionsGlobal += tasks[k].length; });
 
             var html = '';
-            per.fases.forEach(function(fase, i) {
+            per.fases.forEach(function (fase, i) {
                 var isPast = i < currentIdx;
                 var isCurrent = i === currentIdx;
                 var statusText = isPast ? 'COMPLETADA' : (isCurrent ? 'EN CURSO' : 'PENDIENTE');
@@ -3600,14 +3190,14 @@ window.DTEngine = {
                 var borderColor = isCurrent ? fase.color : 'rgba(255,255,255,0.05)';
 
                 var sessionsInPhase = 0;
-                Object.keys(tasks).forEach(function(dateStr) {
+                Object.keys(tasks).forEach(function (dateStr) {
                     if (dateStr >= fase.start && dateStr <= fase.end) {
                         sessionsInPhase += tasks[dateStr].length;
                     }
                 });
 
                 var objHtml = '';
-                fase.objetivos.forEach(function(obj, oi) {
+                fase.objetivos.forEach(function (obj, oi) {
                     var checkColor = isPast ? '#10b981' : (isCurrent && oi === 0 ? '#00F2FE' : '#374151');
                     var icon = isPast ? '✓' : (isCurrent && oi === 0 ? '◉' : '○');
                     objHtml += '<div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03);"><span style="color: ' + checkColor + '; font-size: 0.7rem; width: 16px;">' + icon + '</span><span style="font-size: 0.72rem; color: ' + (isPast ? '#9ca3af' : '#e5e7eb') + '; font-family: Outfit, sans-serif;">' + obj + '</span></div>';
@@ -3624,7 +3214,7 @@ window.DTEngine = {
             grid.innerHTML = html;
         },
 
-        setView: function(viewName) {
+        setView: function (viewName) {
             window.DTEngine._calendarView = viewName;
             var weekly = document.getElementById('dt-weekly-view');
             var process = document.getElementById('dt-process-view');
@@ -3644,7 +3234,7 @@ window.DTEngine = {
             }
         },
 
-        save: function() {
+        save: function () {
             var per = window.DTEngine._periodization;
             if (!per) return;
 
@@ -3656,19 +3246,19 @@ window.DTEngine = {
             }
 
             window.supabase.from('team_configs').update({ periodization: per }).eq('team_id', teamId)
-            .then(function({ error }) {
-                if (!error) {
-                    console.log('✅ Periodización guardada en Supabase.');
-                    if (window.CurrentTeam) window.CurrentTeam.periodization = per;
-                } else {
-                    console.error('🔴 Error al guardar periodización:', error.message);
-                }
-            }).catch(function(err) {
-                console.error('🔴 Error de red al guardar periodización:', err);
-            });
+                .then(function ({ error }) {
+                    if (!error) {
+                        console.log('✅ Periodización guardada en Supabase.');
+                        if (window.CurrentTeam) window.CurrentTeam.periodization = per;
+                    } else {
+                        console.error('🔴 Error al guardar periodización:', error.message);
+                    }
+                }).catch(function (err) {
+                    console.error('🔴 Error de red al guardar periodización:', err);
+                });
         },
 
-        updatePhase: function(idx, field, value) {
+        updatePhase: function (idx, field, value) {
             var per = window.DTEngine._periodization;
             if (!per || !per.fases[idx]) return;
             per.fases[idx][field] = value;
@@ -3677,7 +3267,7 @@ window.DTEngine = {
             this.save();
         },
 
-        setMacroName: function(name) {
+        setMacroName: function (name) {
             var per = window.DTEngine._periodization;
             if (!per) return;
             per.macrociclo = name;
