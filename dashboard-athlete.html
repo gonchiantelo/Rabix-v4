@@ -609,7 +609,7 @@
     #biometric-modal .feedback.error { background:rgba(255,68,68,0.1); color:#ff4444; border:1px solid rgba(255,68,68,0.2); }
 </style>
 
-<div id="biometric-modal" style="display:none; position:fixed; inset:0; background:rgba(8,8,8,0.95); z-index:9999; backdrop-filter:blur(10px); flex-direction:column; align-items:center; justify-content:center; padding:20px; overflow-y:auto;">
+<div id="biometric-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(8,8,8,0.98); z-index:9999; backdrop-filter:blur(10px); flex-direction:column; align-items:center; justify-content:center; padding:20px; overflow-y:auto;">
     <div style="background:var(--surface); border:1px solid rgba(0,240,255,0.2); border-radius:16px; width:100%; max-width:560px; padding:32px; box-shadow:0 24px 60px rgba(0,240,255,0.05); margin:auto;">
         <div style="text-align:center; margin-bottom:24px;">
             <h2 style="font-size:1.8rem; font-weight:900; color:var(--text); margin-bottom:8px; font-family:'Outfit', sans-serif;">Laboratorio Biométrico</h2>
@@ -727,13 +727,14 @@
 
             // 6. Muro Biométrico de Cometti
             // Si faltan datos críticos o la flag no está, bloqueamos y mostramos el modal
-            if (profile && (!profile.weight_kg || !profile.height_cm || !profile.neuromuscular_goal)) {
+            const profileIncomplete = !profile || !profile.weight_kg || !profile.height_cm || !profile.birth_date;
+            if (profileIncomplete) {
                 console.log('[DASHBOARD] Muro Biométrico activado (faltan datos).');
                 document.getElementById('biometric-modal').style.display = 'flex';
                 // Precargar lo que ya tenga por las dudas
-                if (profile.birth_date) document.getElementById('bio-birth').value = profile.birth_date;
-                if (profile.weight_kg) document.getElementById('bio-weight').value = profile.weight_kg;
-                if (profile.height_cm) document.getElementById('bio-height').value = profile.height_cm;
+                if (profile && profile.birth_date) document.getElementById('bio-birth').value = profile.birth_date;
+                if (profile && profile.weight_kg) document.getElementById('bio-weight').value = profile.weight_kg;
+                if (profile && profile.height_cm) document.getElementById('bio-height').value = profile.height_cm;
             } else {
                 console.log('[DASHBOARD] Perfil biométrico completo. Abriendo app.');
                 document.getElementById('app-shell').style.display = 'grid';
