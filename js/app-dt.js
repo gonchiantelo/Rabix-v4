@@ -162,6 +162,7 @@ window.DTEngine = {
     _exercises: [],
     _selectedDate: null,
     _showAllExercises: false,
+    _dayActivities: [], // Temporary list of activities for modal
     _stagedLabel: null,  // Etiqueta pendiente de confirmar (Lazy Execution)
     _charts: {}, // Almacén para instancias de Chart.js
     _calendarView: 'weekly', // 'weekly' | 'process'
@@ -332,12 +333,32 @@ window.DTEngine = {
 
         const monthDisplay = document.querySelector('.current-month-display');
         if (monthDisplay) {
-            monthDisplay.textContent = this._currentDate.toLocaleString('es', { month: 'long', year: 'numeric' }).toUpperCase();
+            monthDisplay.textContent = this.getWeekLabel(this._currentDate);
         }
 
         this.fetchMonthLogs().then(() => {
             this.generateCalendar();
         });
+    },
+
+    getWeekLabel(dateObj) {
+        const d = new Date(dateObj);
+        d.setHours(0, 0, 0, 0);
+        
+        // Find Monday of the current week
+        const dayOfWeek = d.getDay();
+        const distanceToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        d.setDate(d.getDate() - distanceToMonday);
+        
+        // Calculate week of month (1-5) based on the Monday
+        const month = d.getMonth();
+        const firstDayOfMonth = new Date(d.getFullYear(), month, 1);
+        const firstDayOfWeek = firstDayOfMonth.getDay();
+        const offset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+        const weekNum = Math.ceil((d.getDate() + offset) / 7);
+        
+        const monthName = d.toLocaleString('es', { month: 'long', year: 'numeric' }).toUpperCase();
+        return \`SEMANA \${weekNum} DE \${monthName}\`;
     },
 
     async guardarConfiguracionSole() {
@@ -617,7 +638,7 @@ window.DTEngine = {
                         <div id="dt-weekly-view">
                             <div class="month-nav calendar-nav-ux">
                                 <button type="button" id="btn-prev-month" class="btn-nav">◀</button>
-                                <span class="current-month-display">${monthName}</span>
+                                <span class="current-month-display">${this.getWeekLabel(this._currentDate)}</span>
                                 <button type="button" id="btn-next-month" class="btn-nav">▶</button>
                             </div>
                             
@@ -892,69 +913,17 @@ window.DTEngine = {
                 </main>
             </div>
 
-                <!-- Drawer Lateral (Cajón Táctico) -->
-                <div id="dt-drawer" class="drawer-overlay hidden">
-                    <div class="drawer-content">
-                        <div class="drawer-header">
-                            <div class="title-group">
-                                <h3 id="drawer-date-title">Detalle</h3>
-                                <p id="drawer-methodology-label" class="methodology-badge"></p>
-                            </div>
-                            <button class="btn-close" onclick="DTEngine.closeDrawer()">✕</button>
-                        </div>
-                        <div class="drawer-controls">
-                            <div class="control-row">
-                                <label>Forzar Etiqueta:</label>
-                                <select id="label-selector" onchange="DTEngine.stageLabel(this.value)">
-                                    <option value="">(Automático)</option>
-                                    <option value="PARTIDO">Añadir Partido (MD)</option>
-                                    <option value="BASE">Quitar Partido</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="drawer-body">
-                            <div class="library-header">
-                                <h4>Biblioteca de Tareas</h4>
-                            </div>
-                            <button class="btn-add-custom-task" onclick="DTEngine.openCustomTaskModal()">+ CREAR TAREA</button>
-                            <div id="library-list" class="exercise-list-container"></div>
-                        </div>
-                        <div class="drawer-footer-actions">
-                            <button class="btn-save-staged" onclick="DTEngine.saveStagedTasks()">GUARDAR CAMBIOS</button>
-                        </div>
-                    </div>
-                </div>
+
 
                 <!-- Modal de Detalle de Día (Split View) -->
                 <div id="modal-day-detail" class="modal-overlay hidden" onclick="if(event.target===this) window.DTEngine.closeDayDetail()">
                     <div class="day-detail-content" onclick="event.stopPropagation()" style="background:#080808; border:1px solid rgba(0,242,254,0.2); border-radius:16px; width:95vw; max-width:1200px; height:80vh; display:flex; flex-direction:row; overflow:hidden; color:#F5F5F5; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
                         
-                        <!-- MÓDULO A: PLANIFICACIÓN (35%) -->
+                        <!-- MÓDULO A: PLANIFICACIÓN Y ACTIVIDADES (35%) -->
                         <div style="width:35%; background:#111111; border-right:1px solid rgba(255,255,255,0.05); display:flex; flex-direction:column; padding:30px; box-sizing:border-box; overflow-y:auto;">
+                            
+                            <!-- BLOQUE SUPERIOR (MACRO) -->
                             <h2 style="margin:0 0 5px 0; color:#00F2FE; font-family:Outfit,sans-serif; font-size:1.4rem; letter-spacing:1px; text-transform:uppercase;" id="day-detail-title">FECHA</h2>
-                            <p style="margin:0 0 25px 0; font-size:0.8rem; color:#9ca3af;">Configura los parámetros de la sesión de este día.</p>
-
-                            <div style="flex-grow:1;">
-                                <label style="display:block; color:var(--muted); font-size:0.85rem; margin-bottom:10px; font-weight:600;">Enfoque del Día</label>
-                                <select id="day-detail-enfoque" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:14px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; cursor:pointer; font-size:1rem; margin-bottom:20px;">
-                                    <option value="Tensión">Tensión</option>
-                                    <option value="Resistencia">Resistencia</option>
-                                    <option value="Velocidad">Velocidad</option>
-                                    <option value="Activación">Activación</option>
-                                    <option value="Recuperación">Recuperación</option>
-                                    <option value="Día Libre">Día Libre</option>
-                                    <option value="Día Club">Día Club</option>
-                                    <option value="Gimnasio">Gimnasio</option>
-                                    <option value="ABP">ABP</option>
-                                </select>
-
-                                <label style="display:block; color:var(--muted); font-size:0.85rem; margin-bottom:10px; font-weight:600;">Volumen de la Sesión (Minutos)</label>
-                                <input type="number" id="day-detail-volumen" placeholder="Ej: 90" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:14px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; font-size:1rem; margin-bottom:20px;">
-
-                                <label style="display:block; color:var(--muted); font-size:0.85rem; margin-bottom:10px; font-weight:600;">Índice de Especificidad (Solé)</label>
-                                <select id="day-detail-especificidad" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:14px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; cursor:pointer; font-size:1rem; margin-bottom:20px;">
-                                    <option value="0.4">0.4 - Tareas Generales (Preparación Base)</option>
-                                    <option value="0.5">0.5 - Tareas Dirigidas (Orientadas)</option>
                                     <option value="0.6">0.6 - Tareas Especiales (Específicas de F. Física)</option>
                                     <option value="0.7">0.7 - Tareas Competitivas (Simulación de Juego)</option>
                                     <option value="0.9">0.9 - Competición Oficial</option>
@@ -1391,6 +1360,119 @@ window.DTEngine = {
         return 'type-base';
     },
 
+    toggleMatchDay(isChecked) {
+        if (!this._selectedDate) return;
+        if (isChecked) {
+            this._matchDays.add(this._selectedDate);
+        } else {
+            this._matchDays.delete(this._selectedDate);
+        }
+    },
+
+    addDayActivity() {
+        const nameInput = document.getElementById('act-name');
+        const descInput = document.getElementById('act-desc');
+        const durInput = document.getElementById('act-duration');
+        
+        if (!nameInput.value.trim() || !durInput.value) {
+            alert('El nombre y la duración son obligatorios.');
+            return;
+        }
+
+        const activity = {
+            id: Date.now().toString(),
+            nombre: nameInput.value.trim(),
+            descripcion: descInput.value.trim(),
+            duracion: parseInt(durInput.value)
+        };
+
+        this._dayActivities.push(activity);
+        
+        // Limpiar inputs
+        nameInput.value = '';
+        descInput.value = '';
+        durInput.value = '';
+
+        this.renderDayActivities();
+    },
+
+    removeDayActivity(index) {
+        this._dayActivities.splice(index, 1);
+        this.renderDayActivities();
+    },
+
+    renderDayActivities() {
+        const listDiv = document.getElementById('day-activities-list');
+        listDiv.innerHTML = '';
+        
+        if (this._dayActivities.length === 0) {
+            listDiv.innerHTML = '<div style="color:#6b7280; font-size:0.85rem; text-align:center; padding:10px;">No hay actividades creadas para esta sesión.</div>';
+        } else {
+            this._dayActivities.forEach((act, idx) => {
+                const actDiv = document.createElement('div');
+                actDiv.style.cssText = 'background:#111; border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:10px 15px; display:flex; justify-content:space-between; align-items:center;';
+                actDiv.innerHTML = `
+                    <div style="flex-grow:1;">
+                        <div style="color:#fff; font-weight:bold; font-size:0.95rem;">${act.nombre} <span style="color:#00F2FE; font-size:0.8rem; margin-left:10px;">${act.duracion} min</span></div>
+                        <div style="color:#9ca3af; font-size:0.8rem; margin-top:3px;">${act.descripcion}</div>
+                    </div>
+                    <button onclick="window.DTEngine.removeDayActivity(${idx})" style="background:transparent; border:none; color:#ef4444; font-size:1.2rem; cursor:pointer; padding:5px; transition:color 0.2s;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#ef4444'">✕</button>
+                `;
+                listDiv.appendChild(actDiv);
+            });
+        }
+        
+        this.calculateTotalVolume();
+    },
+
+    calculateTotalVolume() {
+        const total = this._dayActivities.reduce((sum, act) => sum + act.duracion, 0);
+        document.getElementById('day-detail-volumen').value = total;
+        this.recalculateThermogram();
+    },
+
+    recalculateThermogram() {
+        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id') || window.CurrentUser?.team_id;
+        if (!teamId || !this._selectedDate) return;
+        
+        // This simulates saving without sending to DB, just updates UI
+        const volume = document.getElementById('day-detail-volumen').value || 0;
+        const especificidad = document.getElementById('day-detail-especificidad').value || 0.4;
+        
+        const cp = volume * (parseFloat(especificidad) * 10);
+        
+        const tbody = document.getElementById('day-detail-athletes-list');
+        const rows = tbody.querySelectorAll('tr');
+        
+        rows.forEach(row => {
+            const rpeCell = row.cells[1];
+            const minsCell = row.cells[2];
+            if (!rpeCell || !minsCell || rpeCell.textContent === '—' || minsCell.textContent === '—') return;
+            
+            const rpe = parseFloat(rpeCell.textContent);
+            const mins = parseFloat(minsCell.textContent);
+            const cr = rpe * mins;
+            
+            const cpDisplayCell = row.cells[3];
+            const badgeCell = row.cells[4];
+            
+            if (cpDisplayCell && badgeCell) {
+                cpDisplayCell.innerHTML = \`<div style="font-size:0.6rem; color:#9ca3af; margin-bottom:2px; font-weight:600;">CP: \${cp}</div>
+                                            <div style="font-size:1.1rem; font-weight:900; color:#fff;">\${cr}</div>\`;
+                                            
+                if (cp > 0) {
+                    if (cr > (cp * 1.20)) {
+                        row.querySelectorAll('td').forEach(td => td.className = 'day-thermo-td status-danger-bg');
+                        badgeCell.innerHTML = '<span style="color:#FF3B30; font-size:0.75rem; font-weight:800; background:rgba(255,59,48,0.1); padding:4px 8px; border-radius:4px;">SOBRECARGA</span>';
+                    } else {
+                        row.querySelectorAll('td').forEach(td => td.className = 'day-thermo-td status-optimal-bg');
+                        badgeCell.innerHTML = '<span style="color:#00F2FE; font-size:0.75rem; font-weight:800; background:rgba(0,242,254,0.1); padding:4px 8px; border-radius:4px;">ÓPTIMO</span>';
+                    }
+                }
+            }
+        });
+    },
+
     async openDayDetail(dateStr) {
         this._selectedDate = dateStr;
         const modal = document.getElementById('modal-day-detail');
@@ -1404,8 +1486,12 @@ window.DTEngine = {
         document.getElementById('day-detail-enfoque').value = 'Tensión';
         document.getElementById('day-detail-volumen').value = '';
         document.getElementById('day-detail-especificidad').value = '0.4';
-        document.getElementById('day-detail-save-btn').textContent = 'GUARDAR PARÁMETROS';
+        document.getElementById('day-detail-match').checked = this._matchDays.has(dateStr);
+        document.getElementById('day-detail-save-btn') ? document.getElementById('day-detail-save-btn').textContent = 'GUARDAR SESIÓN' : null;
         
+        this._dayActivities = [];
+        this.renderDayActivities();
+
         const tbody = document.getElementById('day-detail-athletes-list');
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--muted);">Cargando termograma...</td></tr>';
         
@@ -1421,9 +1507,22 @@ window.DTEngine = {
                 
             let cp = 0;
             if (sessionData) {
-                document.getElementById('day-detail-enfoque').value = sessionData.enfoque;
+                document.getElementById('day-detail-enfoque').value = sessionData.enfoque || 'Tensión';
                 if (sessionData.volumen_minutos) document.getElementById('day-detail-volumen').value = sessionData.volumen_minutos;
                 if (sessionData.indice_especificidad) document.getElementById('day-detail-especificidad').value = sessionData.indice_especificidad;
+                
+                if (sessionData.es_partido) {
+                    document.getElementById('day-detail-match').checked = true;
+                    this._matchDays.add(dateStr);
+                } else if (sessionData.es_partido === false) {
+                    document.getElementById('day-detail-match').checked = false;
+                    this._matchDays.delete(dateStr);
+                }
+
+                if (sessionData.actividades && Array.isArray(sessionData.actividades)) {
+                    this._dayActivities = sessionData.actividades;
+                    this.renderDayActivities();
+                }
                 
                 if (sessionData.volumen_minutos && sessionData.indice_especificidad) {
                     cp = sessionData.volumen_minutos * (sessionData.indice_especificidad * 10);
@@ -1519,18 +1618,21 @@ window.DTEngine = {
         const enfoque = document.getElementById('day-detail-enfoque').value;
         const volumen = document.getElementById('day-detail-volumen').value || null;
         const especificidad = document.getElementById('day-detail-especificidad').value;
+        const isMatch = document.getElementById('day-detail-match').checked;
         
         const payload = {
             team_id: teamId,
             fecha: dateStr,
             enfoque: enfoque,
             volumen_minutos: volumen ? parseInt(volumen) : null,
-            indice_especificidad: parseFloat(especificidad)
+            indice_especificidad: parseFloat(especificidad),
+            es_partido: isMatch,
+            actividades: this._dayActivities
         };
 
-        const btn = document.getElementById('day-detail-save-btn');
-        const oldText = btn.textContent;
-        btn.textContent = 'GUARDANDO...';
+        const eventBtn = event ? event.target : null;
+        const oldText = eventBtn ? eventBtn.textContent : 'GUARDAR SESIÓN';
+        if (eventBtn) eventBtn.textContent = 'GUARDANDO...';
 
         try {
             const { error } = await window.supabase
@@ -1539,12 +1641,12 @@ window.DTEngine = {
 
             if (error) throw error;
             
-            btn.textContent = '¡GUARDADO CON ÉXITO!';
+            if (eventBtn) eventBtn.textContent = '¡GUARDADO CON ÉXITO!';
             
             await this.openDayDetail(dateStr);
             this.generateCalendar();
             
-            setTimeout(() => { if (btn) btn.textContent = 'GUARDAR PARÁMETROS'; }, 2000);
+            setTimeout(() => { if (eventBtn) eventBtn.textContent = 'GUARDAR SESIÓN'; }, 2000);
         } catch (e) {
             console.error('Error al guardar sesión:', e);
             btn.textContent = 'ERROR';
