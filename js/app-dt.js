@@ -343,6 +343,56 @@ window.DTEngine = {
         });
     },
 
+    async guardarConfiguracionSole() {
+        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id') || window.CurrentUser?.team_id;
+        if (!teamId) {
+            alert('Error: No se encontró el ID del equipo.');
+            return;
+        }
+
+        const enfoque = document.getElementById('sole-enfoque').value;
+        const volumen = document.getElementById('sole-volumen').value || null;
+        const especificidad = document.getElementById('sole-especificidad').value;
+        
+        let targetDate = this._selectedDate;
+        if (!targetDate) {
+            const offsetMs = (new Date()).getTimezoneOffset() * 60000;
+            targetDate = new Date(Date.now() - offsetMs).toISOString().slice(0, 10);
+        } else {
+            if (targetDate instanceof Date) {
+                targetDate = targetDate.toISOString().slice(0, 10);
+            }
+        }
+
+        const payload = {
+            team_id: teamId,
+            fecha: targetDate,
+            enfoque: enfoque,
+            volumen_minutos: volumen ? parseInt(volumen) : null,
+            indice_especificidad: parseFloat(especificidad)
+        };
+
+        const btn = document.querySelector('.thermo-session-panel button');
+        const oldText = btn ? btn.textContent : '';
+        if (btn) btn.textContent = 'GUARDANDO...';
+
+        try {
+            const { error } = await window.supabase
+                .from('microcycle_sessions')
+                .upsert([payload], { onConflict: 'team_id,fecha' });
+
+            if (error) throw error;
+            
+            if (btn) btn.textContent = '¡GUARDADO CON ÉXITO!';
+            setTimeout(() => { if (btn) btn.textContent = oldText; }, 2000);
+            console.log('✅ Configuración de sesión guardada:', payload);
+        } catch (e) {
+            console.error('❌ Error al guardar sesión:', e);
+            alert('Error al guardar la configuración de la sesión.');
+            if (btn) btn.textContent = oldText;
+        }
+    },
+
     async renderDashboard() {
         const shell = document.getElementById('app-shell');
         if (!shell) return;
@@ -499,14 +549,28 @@ window.DTEngine = {
                         <!-- Panel Inferior (Resumen del Día / Configuración de Sesión) -->
                         <div class="thermo-session-panel" style="background: #111111; padding: 24px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
                             <h3 style="color: #fff; margin-bottom: 20px; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">Configuración de Solé <span style="color: var(--muted); font-size: 0.9rem; font-weight: normal; margin-left: 8px;">(Día Seleccionado)</span></h3>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+                                <div>
+                                    <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 10px; font-weight: 600;">Enfoque del Día</label>
+                                    <select id="sole-enfoque" style="width: 100%; background: #1A1A1A; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px; border-radius: 8px; outline: none; font-family: 'Outfit', sans-serif; cursor: pointer; font-size: 1rem;">
+                                        <option value="Tensión" style="background: #1A1A1A;">Tensión</option>
+                                        <option value="Resistencia" style="background: #1A1A1A;">Resistencia</option>
+                                        <option value="Velocidad" style="background: #1A1A1A;">Velocidad</option>
+                                        <option value="Activación" style="background: #1A1A1A;">Activación</option>
+                                        <option value="Recuperación" style="background: #1A1A1A;">Recuperación</option>
+                                        <option value="Día Libre" style="background: #1A1A1A;">Día Libre</option>
+                                        <option value="Día Club" style="background: #1A1A1A;">Día Club</option>
+                                        <option value="Gimnasio" style="background: #1A1A1A;">Gimnasio</option>
+                                        <option value="ABP" style="background: #1A1A1A;">ABP</option>
+                                    </select>
+                                </div>
                                 <div>
                                     <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 10px; font-weight: 600;">Volumen de la Sesión (Minutos)</label>
-                                    <input type="number" placeholder="Ej: 90" style="width: 100%; background: #1A1A1A; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px; border-radius: 8px; outline: none; font-family: 'Outfit', sans-serif; font-size: 1rem;">
+                                    <input type="number" id="sole-volumen" placeholder="Ej: 90" style="width: 100%; background: #1A1A1A; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px; border-radius: 8px; outline: none; font-family: 'Outfit', sans-serif; font-size: 1rem;">
                                 </div>
                                 <div>
                                     <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 10px; font-weight: 600;">Índice de Especificidad (Solé)</label>
-                                    <select style="width: 100%; background: #1A1A1A; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px; border-radius: 8px; outline: none; font-family: 'Outfit', sans-serif; cursor: pointer; font-size: 1rem;">
+                                    <select id="sole-especificidad" style="width: 100%; background: #1A1A1A; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px; border-radius: 8px; outline: none; font-family: 'Outfit', sans-serif; cursor: pointer; font-size: 1rem;">
                                         <option style="background: #1A1A1A;" value="0.4">0.4 - Tareas Generales (Preparación Base)</option>
                                         <option style="background: #1A1A1A;" value="0.5">0.5 - Tareas Dirigidas (Orientadas)</option>
                                         <option style="background: #1A1A1A;" value="0.6">0.6 - Tareas Especiales (Específicas de F. Física)</option>
@@ -515,7 +579,7 @@ window.DTEngine = {
                                     </select>
                                 </div>
                             </div>
-                            <button style="margin-top: 24px; width: 100%; padding: 16px; background: #00F0FF; color: #080808; border: none; border-radius: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; font-size: 1rem;">GUARDAR PARÁMETROS DEL DÍA</button>
+                            <button onclick="if(window.DTEngine) window.DTEngine.guardarConfiguracionSole()" style="margin-top: 24px; width: 100%; padding: 16px; background: #00F0FF; color: #080808; border: none; border-radius: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; font-size: 1rem;">GUARDAR PARÁMETROS DEL DÍA</button>
                         </div>
                     </section>
 
