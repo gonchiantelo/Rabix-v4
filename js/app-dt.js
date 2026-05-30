@@ -920,17 +920,77 @@ window.DTEngine = {
                     <div class="day-detail-content" onclick="event.stopPropagation()" style="background:#080808; border:1px solid rgba(0,242,254,0.2); border-radius:16px; width:95vw; max-width:1200px; height:80vh; display:flex; flex-direction:row; overflow:hidden; color:#F5F5F5; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
                         
                         <!-- MÓDULO A: PLANIFICACIÓN Y ACTIVIDADES (35%) -->
-                        <div style="width:35%; background:#111111; border-right:1px solid rgba(255,255,255,0.05); display:flex; flex-direction:column; padding:30px; box-sizing:border-box; overflow-y:auto;">
+                        <div style="width:35%; background:#111111; border-right:1px solid rgba(255,255,255,0.05); display:flex; flex-direction:column; gap:20px; padding:30px; box-sizing:border-box; overflow-y:auto;">
                             
                             <!-- BLOQUE SUPERIOR (MACRO) -->
-                            <h2 style="margin:0 0 5px 0; color:#00F2FE; font-family:Outfit,sans-serif; font-size:1.4rem; letter-spacing:1px; text-transform:uppercase;" id="day-detail-title">FECHA</h2>
-                                    <option value="0.6">0.6 - Tareas Especiales (Específicas de F. Física)</option>
-                                    <option value="0.7">0.7 - Tareas Competitivas (Simulación de Juego)</option>
-                                    <option value="0.9">0.9 - Competición Oficial</option>
-                                </select>
+                            <div style="display:flex; flex-direction:column; gap:15px;">
+                                <div>
+                                    <h2 style="margin:0 0 5px 0; color:#00F2FE; font-family:Outfit,sans-serif; font-size:1.4rem; letter-spacing:1px; text-transform:uppercase;" id="day-detail-title">FECHA</h2>
+                                    <p style="margin:0; font-size:0.8rem; color:#9ca3af;">Configura los parámetros de la sesión de este día.</p>
+                                </div>
+
+                                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0, 242, 254, 0.05); padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(0, 242, 254, 0.2);">
+                                    <label style="color:#00F2FE; font-size:0.9rem; font-weight:bold; cursor:pointer; margin:0;" for="day-detail-match">DÍA DE PARTIDO (MATCH DAY)</label>
+                                    <input type="checkbox" id="day-detail-match" style="width:20px; height:20px; cursor:pointer;" onchange="window.DTEngine.toggleMatchDay(this.checked)">
+                                </div>
+
+                                <div>
+                                    <label style="display:block; color:var(--muted); font-size:0.85rem; margin-bottom:5px; font-weight:600;">Enfoque del Día</label>
+                                    <select id="day-detail-enfoque" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:12px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; cursor:pointer; font-size:0.95rem;">
+                                        <option value="Tensión">Tensión</option>
+                                        <option value="Resistencia">Resistencia</option>
+                                        <option value="Velocidad">Velocidad</option>
+                                        <option value="Activación">Activación</option>
+                                        <option value="Recuperación">Recuperación</option>
+                                        <option value="Día Libre">Día Libre</option>
+                                        <option value="Día Club">Día Club</option>
+                                        <option value="Gimnasio">Gimnasio</option>
+                                        <option value="ABP">ABP</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label style="display:block; color:var(--muted); font-size:0.85rem; margin-bottom:5px; font-weight:600;">Índice de Especificidad (Solé)</label>
+                                    <select id="day-detail-especificidad" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:12px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; cursor:pointer; font-size:0.95rem;" onchange="window.DTEngine.recalculateThermogram()">
+                                        <option value="0.4">0.4 - Tareas Generales (Preparación Base)</option>
+                                        <option value="0.5">0.5 - Tareas Dirigidas (Orientadas)</option>
+                                        <option value="0.6">0.6 - Tareas Especiales (Específicas de F. Física)</option>
+                                        <option value="0.7">0.7 - Tareas Competitivas (Simulación de Juego)</option>
+                                        <option value="0.9">0.9 - Competición Oficial</option>
+                                    </select>
+                                </div>
                             </div>
 
-                            <button id="day-detail-save-btn" onclick="if(window.DTEngine) window.DTEngine.guardarDayDetail()" style="width:100%; padding:16px; background:#00F2FE; color:#080808; border:none; border-radius:8px; font-weight:900; text-transform:uppercase; letter-spacing:1px; cursor:pointer; transition:all 0.2s; font-size:1rem;">GUARDAR PARÁMETROS</button>
+                            <hr style="border:0; height:1px; background:rgba(255,255,255,0.1); margin:0;">
+
+                            <!-- BLOQUE CENTRAL (MICRO) -->
+                            <div style="display:flex; flex-direction:column; gap:15px; flex-grow:1;">
+                                <h3 style="margin:0; color:#fff; font-size:1.1rem;">Creador de Actividades</h3>
+                                
+                                <div style="background:#151515; border:1px solid #333; border-radius:8px; padding:15px; display:flex; flex-direction:column; gap:10px;">
+                                    <input type="text" id="act-name" placeholder="Nombre de Tarea (ej. Rondo 4v4)" style="width:100%; background:#080808; border:1px solid #333; color:#fff; padding:10px; border-radius:6px; box-sizing:border-box; outline:none;">
+                                    <textarea id="act-desc" placeholder="Descripción breve..." style="width:100%; background:#080808; border:1px solid #333; color:#fff; padding:10px; border-radius:6px; box-sizing:border-box; resize:vertical; min-height:60px; outline:none;"></textarea>
+                                    <div style="display:flex; gap:10px; align-items:center;">
+                                        <input type="number" id="act-duration" placeholder="Minutos" style="flex:1; background:#080808; border:1px solid #333; color:#fff; padding:10px; border-radius:6px; box-sizing:border-box; outline:none;">
+                                        <button onclick="window.DTEngine.addDayActivity()" style="background:#00F2FE; color:#000; font-weight:bold; border:none; padding:10px 15px; border-radius:6px; cursor:pointer;">+ AGREGAR</button>
+                                    </div>
+                                </div>
+
+                                <div id="day-activities-list" style="display:flex; flex-direction:column; gap:10px;">
+                                    <!-- Actividades inyectadas por JS -->
+                                </div>
+                            </div>
+
+                            <hr style="border:0; height:1px; background:rgba(255,255,255,0.1); margin:0;">
+
+                            <!-- BLOQUE INFERIOR (MATEMÁTICA) -->
+                            <div style="display:flex; flex-direction:column; gap:15px;">
+                                <div>
+                                    <label style="display:block; color:#00F2FE; font-size:0.9rem; margin-bottom:5px; font-weight:bold;">Volumen Total (Minutos)</label>
+                                    <input type="number" id="day-detail-volumen" placeholder="0" readonly style="width:100%; background:#080808; border:1px solid rgba(0,242,254,0.3); color:#00F2FE; padding:14px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; font-size:1.2rem; font-weight:bold; text-align:center; box-sizing:border-box;">
+                                </div>
+                                <button id="day-detail-save-btn" onclick="if(window.DTEngine) window.DTEngine.guardarDayDetail()" style="width:100%; padding:16px; background:#00F2FE; color:#080808; border:none; border-radius:8px; font-weight:900; text-transform:uppercase; letter-spacing:1px; cursor:pointer; transition:all 0.2s; font-size:1rem;">GUARDAR SESIÓN</button>
+                            </div>
                         </div>
 
                         <!-- MÓDULO B: TERMOGRAMA DEL DÍA (65%) -->
