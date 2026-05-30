@@ -1387,15 +1387,22 @@ window.App.signUp = async function (email, pass, event) {
         // Supabase v2 devuelve error 422 como un objeto de error
         if (error) {
             if (error.message.toLowerCase().includes('already registered')) {
-                // Inteligencia Multi-Rol: Si ya existe en auth, cambiar a login y mostrar mensaje premium.
+                // Definir mensaje premium según el rol actual
+                const isAthlete = window.App.currentRole === 'athlete';
+                const msg = isAthlete
+                    ? "Este email ya se encuentra registrado. Si eres usuario DT, ingresa directo a iniciar sesión para activar tu cuenta de Atleta."
+                    : "Este email ya se encuentra registrado. Si eres usuario Atleta, ingresa directo a iniciar sesión para activar tu cuenta de DT.";
+
+                // Inteligencia Multi-Rol: Cambio automático de vista
                 window.App.toggleAuth('login');
                 const emailInput = document.getElementById('login-username');
                 if (emailInput) emailInput.value = email;
                 
+                // Mostrar notificación al usuario
                 if (window.LoginUI && typeof window.LoginUI.showSuccess === 'function') {
-                    window.LoginUI.showSuccess("Ya tienes una cuenta en RAVIX. Introduce tu contraseña para activar tu perfil en este sector.");
+                    window.LoginUI.showSuccess(msg);
                 } else {
-                    alert("Ya tienes una cuenta en RAVIX. Introduce tu contraseña para activar tu perfil en este sector.");
+                    alert(msg);
                 }
                 return;
             }
