@@ -344,55 +344,6 @@ window.DTEngine = {
         });
     },
 
-    async guardarConfiguracionSole() {
-        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id') || window.CurrentUser?.team_id;
-        if (!teamId) {
-            alert('Error: No se encontró el ID del equipo.');
-            return;
-        }
-
-        const enfoque = document.getElementById('sole-enfoque').value;
-        const volumen = document.getElementById('sole-volumen').value || null;
-        const especificidad = document.getElementById('sole-especificidad').value;
-
-        let targetDate = this._selectedDate;
-        if (!targetDate) {
-            const offsetMs = (new Date()).getTimezoneOffset() * 60000;
-            targetDate = new Date(Date.now() - offsetMs).toISOString().slice(0, 10);
-        } else {
-            if (targetDate instanceof Date) {
-                targetDate = targetDate.toISOString().slice(0, 10);
-            }
-        }
-
-        const payload = {
-            team_id: teamId,
-            fecha: targetDate,
-            enfoque: enfoque,
-            volumen_minutos: volumen ? parseInt(volumen) : null,
-            indice_especificidad: parseFloat(especificidad)
-        };
-
-        const btn = document.querySelector('.thermo-session-panel button');
-        const oldText = btn ? btn.textContent : '';
-        if (btn) btn.textContent = 'GUARDANDO...';
-
-        try {
-            const { error } = await window.supabase
-                .from('microcycle_sessions')
-                .upsert([payload], { onConflict: 'team_id,fecha' });
-
-            if (error) throw error;
-
-            if (btn) btn.textContent = '¡GUARDADO CON ÉXITO!';
-            setTimeout(() => { if (btn) btn.textContent = oldText; }, 2000);
-            console.log('✅ Configuración de sesión guardada:', payload);
-        } catch (e) {
-            console.error('❌ Error al guardar sesión:', e);
-            alert('Error al guardar la configuración de la sesión.');
-            if (btn) btn.textContent = oldText;
-        }
-    },
 
     async renderDashboard() {
         const shell = document.getElementById('app-shell');
@@ -410,7 +361,7 @@ window.DTEngine = {
                     <div class="header-actions">
                         <button onclick="DTEngine.toggleView('home')" class="btn-logout">🏠 HOME</button>
                         <button id="btn-nav-calendar" onclick="DTEngine.toggleView('calendar')" class="btn-logout">📅 CALENDARIO</button>
-                        <button id="btn-nav-thermo" onclick="DTEngine.toggleView('thermo')" class="btn-logout">🔥 TERMOGRAMA</button>
+
                         <button id="btn-nav-analytics" onclick="DTEngine.toggleView('analytics')" class="btn-logout">📊 ANALÍTICA</button>
                         <button onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" class="btn-logout">🏟️ PIZARRA</button>
                         <button onclick="App.logout()" class="btn-logout">SALIR</button>
@@ -485,104 +436,7 @@ window.DTEngine = {
                         </div>
                     </section>
 
-                    <section id="dt-thermo-view" class="dt-dashboard-view" style="display: none;">
-                        <style>
-                            .status-optimal { background: rgba(255,255,255,0.05); color: #00F0FF; }
-                            .status-warning { background: rgba(255, 204, 0, 0.1); color: #FFCC00; }
-                            .status-danger { background: #330000; color: #FF3B30; }
-                            
-                            .thermo-table { width: 100%; border-collapse: separate; border-spacing: 4px; }
-                            .thermo-th { padding: 12px 8px; color: var(--muted); font-weight: 600; text-align: center; font-size: 0.85rem; }
-                            .thermo-td { padding: 8px; border-radius: 8px; text-align: center; }
-                        </style>
-                        <div class="thermo-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; background: #111111; padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                            <button class="btn-nav" style="background: rgba(255,255,255,0.05); border: none; color: #fff; cursor: pointer; padding: 8px 16px; border-radius: 8px; font-weight: 800;">◀ SEMANA ANTERIOR</button>
-                            <h2 style="color: #fff; font-size: 1.2rem; margin: 0; font-family: 'Outfit', sans-serif;">Semana Actual (Microciclo Activo)</h2>
-                            <button class="btn-nav" style="background: rgba(255,255,255,0.05); border: none; color: #fff; cursor: pointer; padding: 8px 16px; border-radius: 8px; font-weight: 800;">SIGUIENTE ▶</button>
-                        </div>
-                        
-                        <div class="thermo-matrix-container" style="overflow-x: auto; margin-bottom: 24px; background: #161616; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 16px;">
-                            <table class="thermo-table">
-                                <thead>
-                                    <tr>
-                                        <th class="thermo-th" style="text-align: left; width: 220px; padding-left: 12px;">Jugador / Posición</th>
-                                        <th class="thermo-th">LUN</th>
-                                        <th class="thermo-th">MAR</th>
-                                        <th class="thermo-th">MIÉ</th>
-                                        <th class="thermo-th">JUE</th>
-                                        <th class="thermo-th">VIE</th>
-                                        <th class="thermo-th">SÁB</th>
-                                        <th class="thermo-th">DOM</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="thermo-td" style="text-align: left; padding-left: 12px;">
-                                            <div style="display: flex; align-items: center; gap: 12px;">
-                                                <div style="width: 36px; height: 36px; border-radius: 50%; background: #2A2A2A; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: #fff; font-weight: 700;">GA</div>
-                                                <div>
-                                                    <div style="color: #fff; font-weight: 700; font-size: 0.95rem;">G. Antelo</div>
-                                                    <div style="color: var(--muted); font-size: 0.75rem; text-transform: uppercase;">MEDIOCAMPISTA</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="thermo-td status-optimal">
-                                            <div style="font-size: 0.65rem; opacity: 0.7; font-weight: 700; margin-bottom: 2px;">CP: 450</div>
-                                            <div style="font-size: 1.15rem; font-weight: 900; letter-spacing: -0.5px;">420</div>
-                                        </td>
-                                        <td class="thermo-td status-warning">
-                                            <div style="font-size: 0.65rem; opacity: 0.7; font-weight: 700; margin-bottom: 2px;">CP: 300</div>
-                                            <div style="font-size: 1.15rem; font-weight: 900; letter-spacing: -0.5px;">550</div>
-                                        </td>
-                                        <td class="thermo-td status-danger">
-                                            <div style="font-size: 0.65rem; opacity: 0.7; font-weight: 700; margin-bottom: 2px;">CP: 600</div>
-                                            <div style="font-size: 1.15rem; font-weight: 900; letter-spacing: -0.5px;">950</div>
-                                        </td>
-                                        <td class="thermo-td" style="background: rgba(255,255,255,0.02);"></td>
-                                        <td class="thermo-td" style="background: rgba(255,255,255,0.02);"></td>
-                                        <td class="thermo-td" style="background: rgba(255,255,255,0.02);"></td>
-                                        <td class="thermo-td" style="background: rgba(255,255,255,0.02);"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
 
-                        <!-- Panel Inferior (Resumen del Día / Configuración de Sesión) -->
-                        <div class="thermo-session-panel" style="background: #111111; padding: 24px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                            <h3 style="color: #fff; margin-bottom: 20px; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">Configuración de Solé <span style="color: var(--muted); font-size: 0.9rem; font-weight: normal; margin-left: 8px;">(Día Seleccionado)</span></h3>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
-                                <div>
-                                    <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 10px; font-weight: 600;">Enfoque del Día</label>
-                                    <select id="sole-enfoque" style="width: 100%; background: #1A1A1A; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px; border-radius: 8px; outline: none; font-family: 'Outfit', sans-serif; cursor: pointer; font-size: 1rem;">
-                                        <option value="Tensión" style="background: #1A1A1A;">Tensión</option>
-                                        <option value="Resistencia" style="background: #1A1A1A;">Resistencia</option>
-                                        <option value="Velocidad" style="background: #1A1A1A;">Velocidad</option>
-                                        <option value="Activación" style="background: #1A1A1A;">Activación</option>
-                                        <option value="Recuperación" style="background: #1A1A1A;">Recuperación</option>
-                                        <option value="Día Libre" style="background: #1A1A1A;">Día Libre</option>
-                                        <option value="Día Club" style="background: #1A1A1A;">Día Club</option>
-                                        <option value="Gimnasio" style="background: #1A1A1A;">Gimnasio</option>
-                                        <option value="ABP" style="background: #1A1A1A;">ABP</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 10px; font-weight: 600;">Volumen de la Sesión (Minutos)</label>
-                                    <input type="number" id="sole-volumen" placeholder="Ej: 90" style="width: 100%; background: #1A1A1A; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px; border-radius: 8px; outline: none; font-family: 'Outfit', sans-serif; font-size: 1rem;">
-                                </div>
-                                <div>
-                                    <label style="display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 10px; font-weight: 600;">Índice de Especificidad (Solé)</label>
-                                    <select id="sole-especificidad" style="width: 100%; background: #1A1A1A; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px; border-radius: 8px; outline: none; font-family: 'Outfit', sans-serif; cursor: pointer; font-size: 1rem;">
-                                        <option style="background: #1A1A1A;" value="0.4">0.4 - Tareas Generales (Preparación Base)</option>
-                                        <option style="background: #1A1A1A;" value="0.5">0.5 - Tareas Dirigidas (Orientadas)</option>
-                                        <option style="background: #1A1A1A;" value="0.6">0.6 - Tareas Especiales (Específicas de F. Física)</option>
-                                        <option style="background: #1A1A1A;" value="0.7">0.7 - Tareas Competitivas (Simulación de Juego)</option>
-                                        <option style="background: #1A1A1A;" value="0.9">0.9 - Competición Oficial</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button onclick="if(window.DTEngine) window.DTEngine.guardarConfiguracionSole()" style="margin-top: 24px; width: 100%; padding: 16px; background: #00F0FF; color: #080808; border: none; border-radius: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; font-size: 1rem;">GUARDAR PARÁMETROS DEL DÍA</button>
-                        </div>
-                    </section>
 
                     <section id="dt-calendar-view" class="dt-dashboard-view" style="display: none;">
 
@@ -909,7 +763,7 @@ window.DTEngine = {
 
                         <!-- ══ BLOQUE SUPERIOR: MACRO & SOLÉ ══ -->
                         <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06);">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end;">
                                 <div style="display: flex; flex-direction: column; gap: 5px;">
                                     <label style="color:#9ca3af; font-size:0.68rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Enfoque</label>
                                     <select id="drawer-enfoque" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff; padding:10px 8px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; cursor:pointer; font-size:0.85rem; box-sizing:border-box;">
@@ -933,13 +787,6 @@ window.DTEngine = {
                                         <option value="0.7">0.7 — Competitivo</option>
                                         <option value="0.9">0.9 — Oficial</option>
                                     </select>
-                                </div>
-                                <div style="display: flex; flex-direction: column; gap: 5px; align-items: center;">
-                                    <label style="color:#9ca3af; font-size:0.62rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; text-align:center; white-space:nowrap;">Match Day</label>
-                                    <label for="drawer-match" style="display:flex; align-items:center; justify-content:center; width:48px; height:40px; background:rgba(0,242,254,0.06); border:1px solid rgba(0,242,254,0.25); border-radius:8px; cursor:pointer; transition:background 0.2s, border-color 0.2s;" title="Día de Partido" onmouseover="this.style.background='rgba(0,242,254,0.12)'; this.style.borderColor='rgba(0,242,254,0.6)'" onmouseout="this.style.background=this.querySelector('input').checked?'rgba(0,242,254,0.22)':'rgba(0,242,254,0.06)'; this.style.borderColor=this.querySelector('input').checked?'#00F2FE':'rgba(0,242,254,0.25)'">
-                                        <span style="font-size:1.2rem; line-height:1; pointer-events:none;">⚽</span>
-                                        <input type="checkbox" id="drawer-match" style="position:absolute; opacity:0; width:0; height:0; pointer-events:none;" onchange="window.DTEngine.toggleDrawerMatchDay(this.checked); this.parentElement.style.background=this.checked?'rgba(0,242,254,0.22)':'rgba(0,242,254,0.06)'; this.parentElement.style.borderColor=this.checked?'#00F2FE':'rgba(0,242,254,0.25)';">
-                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -1301,13 +1148,21 @@ window.DTEngine = {
             const ptSuggestions = { "MD-4": "Tensión", "MD-3": "Duración", "MD-2": "Velocidad", "MD-1": "Activación", "MD+1": "Recup. Activa", "MD+2": "Descanso" };
             const sugBadge = (label && ptSuggestions[label]) ? `<span class="m-day-suggestion" style="font-size: 0.6rem; color: #a1a1aa; background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 4px; margin-top: 2px;">Sug: ${ptSuggestions[label]}</span>` : '';
 
+            const isMatch = this._matchDays.has(dateStr);
+            const matchBtnStyle = isMatch
+                ? 'background:rgba(0,242,254,0.25); border-color:#00F2FE; box-shadow:0 0 6px rgba(0,242,254,0.4);'
+                : 'background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.15);';
+
             html += `
                 <div class="macro-day ${typeClass ? typeClass : ''} ${pastClass}${hasTasks && isPast ? ' has-tasks' : ''}" data-date="${dateStr}" onclick="${isPast ? 'void(0)' : `DTEngine.openDrawer('${dateStr}')`}">
                     <div class="m-day-top">
                         <span class="m-day-num">${d}</span>
-                        <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                            <span class="m-day-label ${label === '' ? 'label-libre' : ''}">${label}</span>
-                            ${sugBadge}
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            ${!isPast ? `<button onclick="event.stopPropagation(); window.DTEngine.toggleCalendarMatchDay('${dateStr}', this)" title="Marcar como Día de Partido" style="width:22px; height:22px; border-radius:5px; border:1.5px solid; font-size:0.7rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; transition:all 0.2s; flex-shrink:0; ${matchBtnStyle}">⚽</button>` : ''}
+                            <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                <span class="m-day-label ${label === '' ? 'label-libre' : ''}">${label}</span>
+                                ${sugBadge}
+                            </div>
                         </div>
                         ${isPast && hasTasks ? '<span class="past-hist-badge">HIST</span>' : ''}
                     </div>
@@ -1393,20 +1248,11 @@ window.DTEngine = {
         // Resetear controles
         const enfoqueEl = document.getElementById('drawer-enfoque');
         const especEl = document.getElementById('drawer-especificidad');
-        const matchEl = document.getElementById('drawer-match');
         const volEl = document.getElementById('drawer-volumen');
         const saveBtn = document.getElementById('drawer-save-btn');
 
         if (enfoqueEl) enfoqueEl.value = 'Tensión';
         if (especEl) especEl.value = '0.4';
-        if (matchEl) {
-            matchEl.checked = this._matchDays.has(date);
-            const lbl = matchEl.parentElement;
-            if (lbl) {
-                lbl.style.background = matchEl.checked ? 'rgba(0,242,254,0.22)' : 'rgba(0,242,254,0.06)';
-                lbl.style.borderColor = matchEl.checked ? '#00F2FE' : 'rgba(0,242,254,0.25)';
-            }
-        }
         if (volEl) volEl.value = '';
         if (saveBtn) saveBtn.textContent = 'GUARDAR SESIÓN';
 
@@ -1428,13 +1274,8 @@ window.DTEngine = {
                 if (sessionData) {
                     if (enfoqueEl && sessionData.enfoque) enfoqueEl.value = sessionData.enfoque;
                     if (especEl && sessionData.indice_especificidad) especEl.value = sessionData.indice_especificidad;
-                    if (sessionData.es_partido) {
+                    if (sessionData.is_match_day) {
                         this._matchDays.add(date);
-                        if (matchEl) {
-                            matchEl.checked = true;
-                            const lbl = matchEl.parentElement;
-                            if (lbl) { lbl.style.background = 'rgba(0,242,254,0.22)'; lbl.style.borderColor = '#00F2FE'; }
-                        }
                     }
                     if (sessionData.actividades && Array.isArray(sessionData.actividades)) {
                         this._dayActivities = sessionData.actividades;
@@ -1446,14 +1287,43 @@ window.DTEngine = {
         }
     },
 
-    // ── TOGGLE MATCH DAY DESDE DRAWER ──
-    toggleDrawerMatchDay(isChecked) {
-        if (!this._selectedDate) return;
-        if (isChecked) {
-            this._matchDays.add(this._selectedDate);
+    // ── TOGGLE MATCH DAY DESDE CALENDARIO ──
+    async toggleCalendarMatchDay(dateStr, btnEl) {
+        const wasMatch = this._matchDays.has(dateStr);
+
+        // Toggle estado local
+        if (wasMatch) {
+            this._matchDays.delete(dateStr);
         } else {
-            this._matchDays.delete(this._selectedDate);
+            this._matchDays.add(dateStr);
         }
+
+        // Feedback visual inmediato en el botón
+        const isNowMatch = this._matchDays.has(dateStr);
+        if (btnEl) {
+            btnEl.style.background = isNowMatch ? 'rgba(0,242,254,0.25)' : 'rgba(255,255,255,0.06)';
+            btnEl.style.borderColor = isNowMatch ? '#00F2FE' : 'rgba(255,255,255,0.15)';
+            btnEl.style.boxShadow = isNowMatch ? '0 0 6px rgba(0,242,254,0.4)' : 'none';
+        }
+
+        // Sincronizar con CurrentTeam
+        if (window.CurrentTeam) {
+            window.CurrentTeam.match_dates = Array.from(this._matchDays);
+        }
+
+        // Persistir en Supabase
+        try {
+            await this.saveMatchDays();
+            console.log(`✅ Match Day ${isNowMatch ? 'activado' : 'desactivado'}: ${dateStr}`);
+        } catch (e) {
+            console.error('❌ Error guardando Match Day:', e);
+            // Rollback
+            if (wasMatch) this._matchDays.add(dateStr);
+            else this._matchDays.delete(dateStr);
+        }
+
+        // Re-renderizar calendario para actualizar etiquetas MD-x
+        this.generateCalendar();
     },
 
     // ── AGREGAR ACTIVIDAD AL DRAWER ──
@@ -1538,7 +1408,7 @@ window.DTEngine = {
 
         const enfoque = document.getElementById('drawer-enfoque')?.value || 'Tensión';
         const especificidad = document.getElementById('drawer-especificidad')?.value || '0.4';
-        const isMatch = document.getElementById('drawer-match')?.checked || false;
+        const isMatch = this._matchDays.has(dateStr);
         const volumen = document.getElementById('drawer-volumen')?.value || null;
 
         const payload = {
@@ -1547,7 +1417,7 @@ window.DTEngine = {
             enfoque: enfoque,
             volumen_minutos: volumen ? parseInt(volumen) : null,
             indice_especificidad: parseFloat(especificidad),
-            es_partido: isMatch,
+            is_match_day: isMatch,
             actividades: this._dayActivities
         };
 
@@ -2124,20 +1994,17 @@ window.DTEngine = {
     toggleView(viewName) {
         const home = document.getElementById('dt-home-view');
         const cal = document.getElementById('dt-calendar-view');
-        const thermo = document.getElementById('dt-thermo-view');
         const an = document.getElementById('dt-analytics-view');
         const prof = document.getElementById('view-profile');
         const board = document.getElementById('view-board');
 
-        [home, cal, thermo, an, prof, board].forEach(v => { if (v) v.style.display = 'none'; });
+        [home, cal, an, prof, board].forEach(v => { if (v) v.style.display = 'none'; });
 
         let targetView = null;
 
         if (viewName === 'home') {
             targetView = home;
             this.updateHomeUI();
-        } else if (viewName === 'thermo') {
-            targetView = thermo;
         } else if (viewName === 'analytics') {
             targetView = an;
             this.renderAnalytics();
