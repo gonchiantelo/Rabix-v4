@@ -612,10 +612,51 @@
             <button class="btn-primary" id="btn-save-wellness" onclick="saveWellness()" style="margin-top: 16px; background: #00F0FF; color: #080808; font-weight: 800; text-transform: uppercase; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; width: 100%;">REGISTRAR MI ESTADO</button>
         </div>
 
-        <div class="wellness-success" id="wellness-success-container">
+        <div class="wellness-success" id="wellness-success-container" style="display: none;">
             <div class="wellness-success-icon">✅</div>
             <div class="wellness-success-title">Check-in completado</div>
             <div style="color: var(--muted); font-size: 0.95rem;">Motor listo para la sesión de hoy.</div>
+        </div>
+
+        <!-- REPORTE POST-SESIÓN (Check-out) -->
+        <div class="section-header" style="margin-top: 32px;">
+            <span class="section-title">Reporte Post-Sesión (Check-out)</span>
+        </div>
+        
+        <div class="wellness-card" id="checkout-form-container">
+            <div class="wellness-item">
+                <div class="wellness-header">
+                    <span>RPE (Escala de Borg)</span>
+                    <span class="wellness-value" id="val-rpe" style="color: #CCFF00;">5</span>
+                </div>
+                <div style="display:flex; justify-content: space-between; font-size: 0.75rem; color: #888; margin-bottom: 5px;">
+                    <span>0: Reposo</span>
+                    <span>10: Exhaustivo</span>
+                </div>
+                <input type="range" id="slider-rpe" class="wellness-slider" min="0" max="10" step="1" value="5" oninput="document.getElementById('val-rpe').textContent=this.value" style="accent-color: #CCFF00;">
+            </div>
+
+            <div class="wellness-item">
+                <div class="wellness-header">
+                    <span>Duración (Minutos)</span>
+                </div>
+                <input type="number" id="input-duracion" class="form-input" placeholder="Ej: 90" min="1" max="300" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); width: 100%; border-radius: 8px; color: #fff; padding: 12px; font-size: 1rem; text-align: center; text-transform: none; letter-spacing: normal; font-weight: normal;">
+            </div>
+
+            <div class="wellness-item">
+                <div class="wellness-header">
+                    <span>FC Media (BPM) <span style="color:#888; font-weight:normal;">- Opcional</span></span>
+                </div>
+                <input type="number" id="input-fc" class="form-input" placeholder="Ej: 145" min="40" max="220" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); width: 100%; border-radius: 8px; color: #fff; padding: 12px; font-size: 1rem; text-align: center; text-transform: none; letter-spacing: normal; font-weight: normal;">
+            </div>
+            
+            <button class="btn-primary" id="btn-save-checkout" onclick="saveCheckout()" style="margin-top: 16px; background: #CCFF00; color: #080808; font-weight: 900; text-transform: uppercase; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; width: 100%;">ENVIAR REPORTE DE CARGA</button>
+        </div>
+
+        <div class="wellness-success" id="checkout-success-container" style="display: none; border-color: #CCFF00; background: rgba(204,255,0,0.05);">
+            <div class="wellness-success-icon" style="background: #CCFF00; color: #000;">⚡</div>
+            <div class="wellness-success-title" style="color: #CCFF00;">Reporte enviado</div>
+            <div id="checkout-feedback-text" style="color: #FFF; font-size: 1.1rem; font-weight: 700; margin-top: 8px;">Carga de la sesión: 0 Unidades Arbitrarias.</div>
         </div>
 
     </main>
@@ -1068,6 +1109,55 @@
             showToast('❌ Error al guardar check-in: ' + e.message);
             btn.disabled = false;
             btn.innerHTML = 'REGISTRAR MI ESTADO';
+        }
+    }
+
+    // ── CHECK-OUT SUBMIT ─────────────────────────────────────────────
+    async function saveCheckout() {
+        const btn = document.getElementById('btn-save-checkout');
+        btn.disabled = true;
+        btn.innerHTML = 'ENVIANDO...';
+        
+        try {
+            const { data: { session } } = await db.auth.getSession();
+            if (!session) throw new Error("Sesión expirada");
+            const uid = session.user.id;
+            
+            const rpe = parseInt(document.getElementById('slider-rpe').value) || 0;
+            const duracion = parseInt(document.getElementById('input-duracion').value) || 0;
+            const fcInput = document.getElementById('input-fc').value;
+            const fc_media = fcInput ? parseInt(fcInput) : null;
+            
+            if (!duracion) throw new Error("Ingresa la duración en minutos.");
+            
+            const offset = (new Date()).getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(Date.now() - offset)).toISOString().slice(0, 10);
+            
+            const payload = {
+                athlete_id: uid,
+                date: localISOTime,
+                rpe_sesion: rpe,
+                duracion_minutos: duracion
+            };
+            if (fc_media) payload.fc_media = fc_media;
+            
+            // Upsert: Si el Atleta no hizo el Check-in hoy, creará la fila. Si la hizo, la actualizará agregando la sesión.
+            const { error } = await db.from('daily_wellness').upsert([payload], { onConflict: 'athlete_id,date' });
+            if (error) throw error;
+            
+            const cargaUA = rpe * duracion;
+            
+            document.getElementById('checkout-form-container').style.display = 'none';
+            document.getElementById('checkout-feedback-text').textContent = `Carga de la sesión: ${cargaUA} Unidades Arbitrarias.`;
+            document.getElementById('checkout-success-container').style.display = 'block';
+            
+            showToast('⚡ Reporte de Carga enviado con éxito.');
+            
+        } catch (e) {
+            console.error('Error saving checkout:', e);
+            showToast('❌ Error al guardar reporte: ' + e.message);
+            btn.disabled = false;
+            btn.innerHTML = 'ENVIAR REPORTE DE CARGA';
         }
     }
 
