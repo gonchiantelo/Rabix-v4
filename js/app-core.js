@@ -590,14 +590,14 @@ window.App = {
             document.body.classList.add('mode-dt');
             document.body.classList.remove('mode-athlete', 'testing-athlete');
 
-            LOG('DT')(`Buscando perfil en users... id=${uid.slice(0, 8)}...`);
-            const { data: users, error: dtErr } = await window.supabase.from('users').select('*').eq('id', uid);
-            if (dtErr) throw new Error(`Error al leer tabla users: ${dtErr.message}`);
-            LOG('DT')(`Filas encontradas: ${users.length}. name="${users[0]?.name || 'vacío'}" team_id="${users[0]?.team_id || 'null'}"`);
+            LOG('DT')(`Buscando perfil en profiles_dt... id=${uid.slice(0, 8)}...`);
+            const { data: users, error: dtErr } = await window.supabase.from('profiles_dt').select('*').eq('id', uid);
+            if (dtErr) throw new Error(`Error al leer tabla profiles_dt: ${dtErr.message}`);
+            LOG('DT')(`Filas encontradas: ${users.length}. nombre="${users[0]?.nombre_completo || 'vacío'}" club_actual="${users[0]?.club_actual || 'null'}"`);
 
             if (!users.length) {
-                // El uid no tiene fila en users — probablemente es un atleta usando el portal DT
-                LOG('DT')('❌ Sin fila en users. Posible rol incorrecto seleccionado en el portal.');
+                // El uid no tiene fila en profiles_dt — probablemente es un atleta usando el portal DT
+                LOG('DT')('❌ Sin fila en profiles_dt. Posible rol incorrecto seleccionado en el portal.');
                 this._hideAllViews();
                 document.getElementById('view-portal').style.display = 'flex';
                 document.getElementById('view-portal').style.opacity = '';
@@ -612,7 +612,7 @@ window.App = {
             const isLocalComplete = localStorage.getItem('dt_onboarding_complete') === 'true';
             if (userData.is_profile_complete === true || isLocalComplete) {
                 LOG('DT')('Perfil completo validado. Pasando al dashboard...');
-            } else if (!userData.name || !userData.team_id) {
+            } else if (!userData.nombre_completo || !userData.club_actual) {
                 LOG('DT')('Perfil incompleto (sin nombre o equipo) → redirigiendo a Wizard DT');
                 this._hideAllViews();
                 window.Wizard.startFor('dt');
@@ -621,8 +621,8 @@ window.App = {
 
             LOG('DT')('Perfil completo. Cargando config de equipo...');
             const [{ data: configs }, { data: teams }] = await Promise.all([
-                window.supabase.from('team_configs').select('*').eq('team_id', userData.team_id),
-                window.supabase.from('teams').select('*').eq('id', userData.team_id)
+                window.supabase.from('team_configs').select('*').eq('team_id', userData.club_actual),
+                window.supabase.from('teams').select('*').eq('id', userData.club_actual)
             ]);
             window.CurrentTeam = teams?.[0] || null;
             LOG('DT')(`Team: "${window.CurrentTeam?.name || 'N/A'}" | Config: ${configs.length} registros`);
@@ -1415,14 +1415,14 @@ window.App.signUp = async function (email, pass, event) {
 
         // Inserción mínima en tabla correspondiente
         if (role === 'dt') {
-            const profilePayload = { id: uid, email: email, name: 'Staff RAVIX', role: 'dt' };
-            const { error: dbError } = await window.supabase.from('users').insert([profilePayload]);
+            const profilePayload = { id: uid, nombre_completo: 'Staff RAVIX', is_profile_complete: false };
+            const { error: dbError } = await window.supabase.from('profiles_dt').insert([profilePayload]);
             if (dbError) {
                 // Duplicate key = el DT ya existe, ignorar y avanzar al Wizard
                 if (!dbError.message?.includes('duplicate') && !dbError.code?.includes('23505')) {
                     throw dbError;
                 }
-                console.warn('[SIGNUP] Perfil ya existente en users — redirigiendo al Wizard.');
+                console.warn('[SIGNUP] Perfil ya existente en profiles_dt — redirigiendo al Wizard.');
             }
         }
         // Nota: La creación de la fila en profiles_athlete ocurre en el Onboarding (Paso 1).
@@ -1445,10 +1445,12 @@ window.ejecutarOnboardingFinal = async function() {
     // Reemplaza los IDs con los de tus inputs HTML
     const inputNombre = document.getElementById('ob-name');
     const inputEquipo = document.getElementById('ob-club-name');
+    const inputLicencia = document.getElementById('ob-license');
     
     const nombreDT = inputNombre ? inputNombre.value : 'DT';
     const nombreEquipo = inputEquipo ? inputEquipo.value : 'Mi Equipo';
-    const userId = localStorage.getItem('ravix_v5_uid'); 
+    const licenciaVal = inputLicencia ? inputLicencia.value : 'AFA / ATFA';
+    const userId = localStorage.getItem('ravix_v5_uid') || (await window.supabase.auth.getUser()).data.user?.id; 
 
     try {
         // PASO 1: Crear Equipo con código aleatorio
@@ -1467,14 +1469,17 @@ window.ejecutarOnboardingFinal = async function() {
         // PASO 2: Actualizar Perfil
         console.log("⏳ Vinculando perfil al equipo...");
         const { error: userError } = await window.supabase
-            .from('users') 
+            .from('profiles_dt') 
             .update({ 
-                name: nombreDT,
-                team_id: newTeam.id
+                nombre_completo: nombreDT,
+                club_actual: newTeam.id,
+                licencia: licenciaVal,
+                experiencia_anios: 0,
+                is_profile_complete: true
             })
             .eq('id', userId);
 
-        if (userError) throw new Error("Fallo en tabla usuarios: " + userError.message);
+        if (userError) throw new Error("Fallo en tabla perfiles: " + userError.message);
         console.log("✅ Perfil vinculado. Saliendo del Wizard...");
 
         // PASO 3: Redirección forzada al Dashboard
