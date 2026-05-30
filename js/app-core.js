@@ -1414,20 +1414,18 @@ window.App.signUp = async function (email, pass, event) {
         }
 
         // Inserción mínima en tabla correspondiente
-        // Para atletas: solo {id} — el Wizard completa el resto con upsert
-        const table = role === 'athlete' ? 'profiles_athlete' : 'users';
-        const profilePayload = role === 'athlete'
-            ? { id: uid }
-            : { id: uid, email: email, name: 'Staff RAVIX', role: 'dt' };
-
-        const { error: dbError } = await window.supabase.from(table).insert([profilePayload]);
-        if (dbError) {
-            // Duplicate key = el atleta ya existe, ignorar y avanzar al Wizard
-            if (!dbError.message?.includes('duplicate') && !dbError.code?.includes('23505')) {
-                throw dbError;
+        if (role === 'dt') {
+            const profilePayload = { id: uid, email: email, name: 'Staff RAVIX', role: 'dt' };
+            const { error: dbError } = await window.supabase.from('users').insert([profilePayload]);
+            if (dbError) {
+                // Duplicate key = el DT ya existe, ignorar y avanzar al Wizard
+                if (!dbError.message?.includes('duplicate') && !dbError.code?.includes('23505')) {
+                    throw dbError;
+                }
+                console.warn('[SIGNUP] Perfil ya existente en users — redirigiendo al Wizard.');
             }
-            console.warn('[SIGNUP] Perfil ya existente en', table, '— redirigiendo al Wizard.');
         }
+        // Nota: La creación de la fila en profiles_athlete ocurre en el Onboarding (Paso 1).
 
         // Transición al Wizard
         if (window.Wizard) window.Wizard.startFor(role);

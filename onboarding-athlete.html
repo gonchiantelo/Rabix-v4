@@ -558,23 +558,24 @@
         }
         const uid = session.user.id;
         
-        const updatePayload = {
-            full_name: athleteData.name,
-            sport: athleteData.sport,
-            position: athleteData.position
+        const insertPayload = {
+            id: uid,
+            nombre_completo: athleteData.name,
+            deporte: athleteData.sport,
+            posicion: athleteData.position,
+            is_profile_complete: false
         };
         
         if (teamId !== null) {
-            updatePayload.team_id = teamId;
+            insertPayload.team_id = teamId;
         }
         
-        const { error: updateErr } = await db
+        const { error: insertErr } = await db
             .from('profiles_athlete')
-            .update(updatePayload)
-            .eq('id', uid);
+            .upsert(insertPayload);
             
-        if (updateErr) {
-            console.error('[ONBOARDING] Update error:', updateErr);
+        if (insertErr) {
+            console.error('[ONBOARDING] Insert error:', insertErr);
             return false;
         }
         return true;

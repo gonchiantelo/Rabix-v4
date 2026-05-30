@@ -817,10 +817,10 @@
 
             const uid = session.user.id;
 
-            // 2. Fetch athlete profile — solo columnas base + muro biométrico
+            // 2. Fetch athlete profile — columnas nuevas de Supabase
             const { data: profile, error } = await db
                 .from('profiles_athlete')
-                .select('id, full_name, sport, position, is_profile_complete, weight_kg, height_cm, birth_date, dominant_side, strength_years, hours_club, hours_gym, neuromuscular_goal, commitment_level')
+                .select('id, nombre_completo, deporte, posicion, is_profile_complete, peso, altura, fecha_nacimiento, lado_dominante, anios_fuerza, horas_club, horas_gimnasio, objetivo_neuro, nivel_compromiso, team_id')
                 .eq('id', uid)
                 .maybeSingle();
 
@@ -888,8 +888,8 @@
     }
 
     function renderProfile(profile) {
-        const firstName = profile.full_name
-            ? profile.full_name.split(' ')[0]
+        const firstName = profile.nombre_completo
+            ? profile.nombre_completo.split(' ')[0]
             : 'Atleta';
         const teamName = profile.team_name || 'Tu Equipo';
 
@@ -897,14 +897,14 @@
         document.getElementById('topbar-athlete-name').textContent = firstName;
 
         // Sidebar
-        document.getElementById('sidebar-athlete-name').textContent = profile.full_name || 'Atleta';
+        document.getElementById('sidebar-athlete-name').textContent = profile.nombre_completo || 'Atleta';
         document.getElementById('sidebar-team-name').textContent = teamName.toUpperCase();
 
         // Welcome card
         document.getElementById('welcome-name').textContent = firstName;
         document.getElementById('welcome-team-line').textContent =
-            profile.sport
-                ? `${profile.sport}${profile.position ? ' · ' + profile.position : ''} — Motor de Rendimiento activo.`
+            profile.deporte
+                ? `${profile.deporte}${profile.posicion ? ' · ' + profile.posicion : ''} — Motor de Rendimiento activo.`
                 : 'Dashboard de Atleta. Completa tu perfil para acceder a todas las funciones.';
     }
 
