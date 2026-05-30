@@ -321,23 +321,20 @@ window.DTEngine = {
         } catch (e) { console.error('Error al cargar configuración de equipo:', e); }
     },
 
-    changeMonth(e, offset) {
+    changeWeek(e, offsetDays) {
         if (e) {
             e.preventDefault();
             e.stopPropagation();
         }
-        // Navegación pura: solo actualizar grilla, NO reconstruir el shell
         const nextDate = new Date(this._currentDate);
-        nextDate.setMonth(nextDate.getMonth() + offset);
+        nextDate.setDate(nextDate.getDate() + offsetDays);
         this._currentDate = nextDate;
 
-        // Actualizar solo el texto del mes visible
         const monthDisplay = document.querySelector('.current-month-display');
         if (monthDisplay) {
             monthDisplay.textContent = this._currentDate.toLocaleString('es', { month: 'long', year: 'numeric' }).toUpperCase();
         }
 
-        // Re-fetch y re-pintar solo la grilla del calendario
         this.fetchMonthLogs().then(() => {
             this.generateCalendar();
         });
@@ -928,6 +925,83 @@ window.DTEngine = {
                     </div>
                 </div>
 
+                <!-- Modal de Detalle de Día (Split View) -->
+                <div id="modal-day-detail" class="modal-overlay hidden" onclick="if(event.target===this) window.DTEngine.closeDayDetail()">
+                    <div class="day-detail-content" onclick="event.stopPropagation()" style="background:#080808; border:1px solid rgba(0,242,254,0.2); border-radius:16px; width:95vw; max-width:1200px; height:80vh; display:flex; flex-direction:row; overflow:hidden; color:#F5F5F5; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
+                        
+                        <!-- MÓDULO A: PLANIFICACIÓN (35%) -->
+                        <div style="width:35%; background:#111111; border-right:1px solid rgba(255,255,255,0.05); display:flex; flex-direction:column; padding:30px; box-sizing:border-box; overflow-y:auto;">
+                            <h2 style="margin:0 0 5px 0; color:#00F2FE; font-family:Outfit,sans-serif; font-size:1.4rem; letter-spacing:1px; text-transform:uppercase;" id="day-detail-title">FECHA</h2>
+                            <p style="margin:0 0 25px 0; font-size:0.8rem; color:#9ca3af;">Configura los parámetros de la sesión de este día.</p>
+
+                            <div style="flex-grow:1;">
+                                <label style="display:block; color:var(--muted); font-size:0.85rem; margin-bottom:10px; font-weight:600;">Enfoque del Día</label>
+                                <select id="day-detail-enfoque" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:14px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; cursor:pointer; font-size:1rem; margin-bottom:20px;">
+                                    <option value="Tensión">Tensión</option>
+                                    <option value="Resistencia">Resistencia</option>
+                                    <option value="Velocidad">Velocidad</option>
+                                    <option value="Activación">Activación</option>
+                                    <option value="Recuperación">Recuperación</option>
+                                    <option value="Día Libre">Día Libre</option>
+                                    <option value="Día Club">Día Club</option>
+                                    <option value="Gimnasio">Gimnasio</option>
+                                    <option value="ABP">ABP</option>
+                                </select>
+
+                                <label style="display:block; color:var(--muted); font-size:0.85rem; margin-bottom:10px; font-weight:600;">Volumen de la Sesión (Minutos)</label>
+                                <input type="number" id="day-detail-volumen" placeholder="Ej: 90" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:14px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; font-size:1rem; margin-bottom:20px;">
+
+                                <label style="display:block; color:var(--muted); font-size:0.85rem; margin-bottom:10px; font-weight:600;">Índice de Especificidad (Solé)</label>
+                                <select id="day-detail-especificidad" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:14px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; cursor:pointer; font-size:1rem; margin-bottom:20px;">
+                                    <option value="0.4">0.4 - Tareas Generales (Preparación Base)</option>
+                                    <option value="0.5">0.5 - Tareas Dirigidas (Orientadas)</option>
+                                    <option value="0.6">0.6 - Tareas Especiales (Específicas de F. Física)</option>
+                                    <option value="0.7">0.7 - Tareas Competitivas (Simulación de Juego)</option>
+                                    <option value="0.9">0.9 - Competición Oficial</option>
+                                </select>
+                            </div>
+
+                            <button id="day-detail-save-btn" onclick="if(window.DTEngine) window.DTEngine.guardarDayDetail()" style="width:100%; padding:16px; background:#00F2FE; color:#080808; border:none; border-radius:8px; font-weight:900; text-transform:uppercase; letter-spacing:1px; cursor:pointer; transition:all 0.2s; font-size:1rem;">GUARDAR PARÁMETROS</button>
+                        </div>
+
+                        <!-- MÓDULO B: TERMOGRAMA DEL DÍA (65%) -->
+                        <div style="width:65%; background:#080808; display:flex; flex-direction:column; position:relative;">
+                            <div style="padding:15px 30px; background:#111111; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
+                                <h3 style="margin:0; font-family:Outfit,sans-serif; color:#E5E7EB; font-size:1.1rem; display:flex; align-items:center; gap:10px;">
+                                    🔥 MATRIZ TERMOGRÁFICA <span style="font-size:0.75rem; background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-weight:600; color:#9ca3af;">CARGA PLANIFICADA vs CARGA REAL</span>
+                                </h3>
+                                <button onclick="window.DTEngine.closeDayDetail()" style="background:transparent; border:none; color:#F5F5F5; font-size:1.5rem; cursor:pointer; transition:color 0.2s;">✕</button>
+                            </div>
+
+                            <div style="flex-grow:1; overflow-y:auto; padding:20px 30px;">
+                                <style>
+                                    .day-thermo-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; }
+                                    .day-thermo-th { padding: 12px 16px; color: var(--muted); font-weight: 600; text-align: left; font-size: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); text-transform: uppercase; letter-spacing: 1px; }
+                                    .day-thermo-td { padding: 12px 16px; background: #111111; text-align: left; }
+                                    .day-thermo-td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+                                    .day-thermo-td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+                                    .status-optimal-bg { background: rgba(0, 242, 254, 0.05) !important; border-left: 3px solid #00F2FE; }
+                                    .status-danger-bg { background: rgba(255, 59, 48, 0.08) !important; border-left: 3px solid #FF3B30; }
+                                </style>
+                                <table class="day-thermo-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="day-thermo-th">Jugador</th>
+                                            <th class="day-thermo-th" style="text-align: center;">RPE Reportado</th>
+                                            <th class="day-thermo-th" style="text-align: center;">Minutos Reales</th>
+                                            <th class="day-thermo-th" style="text-align: center;">CR (Carga Real)</th>
+                                            <th class="day-thermo-th" style="text-align: center;">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="day-detail-athletes-list">
+                                        <!-- Inyección dinámica -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Modal de Tarea Personalizada PREMIUM V2 -->
                 <div id="modal-custom-task" class="modal-overlay hidden" onclick="DTEngine.closeCustomTaskModal()">
                     <div class="custom-task-content" onclick="event.stopPropagation()" style="background:#080808; border:1px solid rgba(0,240,255,0.2); border-radius:16px; width:90vw; max-width:1400px; height:85vh; display:flex; flex-direction:row; overflow:hidden; color:#F5F5F5; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
@@ -1136,14 +1210,14 @@ window.DTEngine = {
             if (bp) {
                 bp.onclick = (e) => {
                     e.preventDefault(); e.stopPropagation();
-                    this.changeMonth(e, -1);
+                    this.changeWeek(e, -7);
                     return false;
                 };
             }
             if (bn) {
                 bn.onclick = (e) => {
                     e.preventDefault(); e.stopPropagation();
-                    this.changeMonth(e, 1);
+                    this.changeWeek(e, 7);
                     return false;
                 };
             }
@@ -1172,93 +1246,86 @@ window.DTEngine = {
 
     // fetchExercises eliminada, integrada en App.fetchExercisesLibrary
 
-    generateCalendar() {
+    async generateCalendar() {
         const grid = document.getElementById('dt-calendar-grid');
         if (!grid) return;
 
-        const year = this._currentDate.getFullYear();
-        const month = this._currentDate.getMonth();
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const startOffset = firstDay === 0 ? 6 : firstDay - 1;
-
-        let html = '';
-        ['L', 'M', 'X', 'J', 'V', 'S', 'D'].forEach(n => html += `<div class="day-h">${n}</div>`);
-
-        for (let i = 0; i < startOffset; i++) html += `<div class="macro-day empty"></div>`;
+        grid.className = '';
+        grid.style.display = 'grid';
+        grid.style.gridTemplateColumns = 'repeat(7, 1fr)';
+        grid.style.gap = '16px';
+        grid.style.marginTop = '20px';
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        for (let d = 1; d <= daysInMonth; d++) {
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const current = new Date(this._currentDate);
+        const dayOfWeek = current.getDay();
+        const distanceToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        current.setDate(current.getDate() - distanceToMonday);
+
+        let html = '';
+        const dayNames = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO', 'DOMINGO'];
+
+        let microSessions = [];
+        
+        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id') || window.CurrentUser?.team_id;
+        if (teamId) {
+            const startStr = current.toISOString().slice(0, 10);
+            const end = new Date(current);
+            end.setDate(end.getDate() + 6);
+            const endStr = end.toISOString().slice(0, 10);
+            
+            try {
+                const { data } = await window.supabase
+                    .from('microcycle_sessions')
+                    .select('*')
+                    .eq('team_id', teamId)
+                    .gte('fecha', startStr)
+                    .lte('fecha', endStr);
+                if (data) microSessions = data;
+            } catch (e) { console.error('Error fetching week data:', e); }
+        }
+
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(current);
+            date.setDate(date.getDate() + i);
+            const dateStr = date.toISOString().slice(0, 10);
+            const dayNum = date.getDate();
             const label = this.calcularEtiquetaMD(dateStr, Array.from(this._matchDays));
-            const typeClass = this.getTypeClass(label);
-
-            const cellDate = new Date(dateStr + 'T00:00:00');
-            const isPast = cellDate < today;
-            const pastClass = isPast ? 'past-day' : '';
-
+            const isPast = date < today;
+            
+            const sessionData = microSessions.find(m => m.fecha === dateStr);
+            const enfoque = sessionData ? sessionData.enfoque : 'Sin Configurar';
+            
             const assignments = this._assignedTasks[dateStr] || [];
-
-            const renderBlock = (blockId, title) => {
-                const tasks = assignments.filter(a => a.block === blockId);
-                const tasksHtml = tasks.map((a) => {
-                    // Dual matching: numeric legacy ID OR UUID string (Supabase primary key)
-                    const findEx = (lib) => (lib || []).find(e =>
-                        String(e.numericId) === String(a.id) ||          
-                        String(e.id) === String(a.rawId || a.id)
-                    );
-                    const ex = findEx(window.ExercisesLibrary) || findEx(window.CustomExercises);
-                    if (!ex) return '';
-
-                    let timeBadge = '';
-                    const ser = ex.series || ex.blocks;
-                    const wrk = ex.work_time || ex.duration;
-                    const pse = ex.pause_time;
-                    if (ser && wrk) {
-                        const pausePart = pse ? ` (${pse}')` : '';
-                        timeBadge = `<span style="color:#00F2FE;font-size:0.6rem;font-weight:700;margin-right:3px;white-space:nowrap;">⏱ ${ser}x${wrk}'${pausePart}</span>`;
-                    } else if (wrk) {
-                        timeBadge = `<span style="color:#00F2FE;font-size:0.6rem;font-weight:700;margin-right:3px;">⏱ ${wrk}'</span>`;
-                    }
-                    return `
-                        <div class="task-chip" draggable="${!isPast}" ondragstart="event.dataTransfer.setData('text/plain', '${a.logId}|${a.block}|${dateStr}'); event.stopPropagation();" onclick="event.stopPropagation(); window.DTEngine.openTaskModal('${a.rawId || a.id}')">
-                            ${timeBadge}<span class="tc-name">${ex.title}</span>
-                            ${!isPast ? `<span class="tc-delete" onclick="event.stopPropagation(); window.DTEngine.removeTask('${dateStr}', ${assignments.indexOf(a)})">\u00d7</span>` : ''}
-                        </div>
-                    `;
-                }).join('');
-
-                return `
-                    <div class="session-block ${blockId}" ondragover="event.preventDefault();" ondrop="event.preventDefault(); event.stopPropagation(); window.DTEngine.handleTaskDrop(event, '${dateStr}', '${blockId}')">
-                        ${tasks.length > 0 ? `<span class="sb-title">${title}</span>` : ''}
-                        <div class="sb-tasks">${tasksHtml}</div>
-                    </div>
-                `;
-            };
-
             const hasTasks = assignments.length > 0;
 
-            const ptSuggestions = { "MD-4": "Tensión", "MD-3": "Duración", "MD-2": "Velocidad", "MD-1": "Activación", "MD+1": "Recup. Activa", "MD+2": "Descanso" };
-            const sugBadge = (label && ptSuggestions[label]) ? `<span class="m-day-suggestion" style="font-size: 0.6rem; color: #a1a1aa; background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 4px; margin-top: 2px;">Sug: ${ptSuggestions[label]}</span>` : '';
+            const bgColor = isPast ? '#0d0d0d' : '#111111';
+            const borderColor = 'rgba(255,255,255,0.05)';
 
             html += `
-                <div class="macro-day ${typeClass ? typeClass : ''} ${pastClass}${hasTasks && isPast ? ' has-tasks' : ''}" data-date="${dateStr}" onclick="${isPast ? 'void(0)' : `DTEngine.openDrawer('${dateStr}')`}">
-                    <div class="m-day-top">
-                        <span class="m-day-num">${d}</span>
-                        <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                            <span class="m-day-label ${label === '' ? 'label-libre' : ''}">${label}</span>
-                            ${sugBadge}
+                <div class="microcycle-day-card ${isPast ? 'past-day' : ''}" style="background: ${bgColor}; border: 1px solid ${borderColor}; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; display: flex; flex-direction: column;" onclick="DTEngine.openDayDetail('${dateStr}')" onmouseover="this.style.borderColor='#00F2FE'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='${borderColor}'; this.style.transform='translateY(0)'">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                        <div>
+                            <div style="font-size: 0.7rem; color: #6b7280; font-weight: 800; letter-spacing: 1px;">${dayNames[i]}</div>
+                            <div style="font-size: 2.2rem; font-weight: 900; color: ${isPast ? '#9ca3af' : '#fff'}; line-height: 1;">${dayNum}</div>
                         </div>
-                        ${isPast && hasTasks ? '<span class="past-hist-badge">HIST</span>' : ''}
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                            <span class="m-day-label ${label === '' ? 'label-libre' : ''}" style="padding: 4px 8px; font-size: 0.65rem;">${label}</span>
+                            ${hasTasks ? '<span style="font-size: 0.6rem; color: #00F2FE; font-weight: 800; background: rgba(0,242,254,0.1); padding: 2px 6px; border-radius: 4px;">TAREAS</span>' : ''}
+                        </div>
                     </div>
-                    <div class="m-day-content">
-                        ${renderBlock('gimnasio', 'Gimnasio')}
-                        ${renderBlock('entrada_calor', 'Entrada en Calor')}
-                        ${renderBlock('parte_principal', 'Parte Principal')}
-                        ${renderBlock('doble_turno', '2º Turno / Táctica')}
-                        ${renderBlock('vuelta_calma', 'Vuelta a la Calma')}
+                    
+                    <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 12px; flex-grow: 1; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 0.8rem; font-weight: 800; color: ${sessionData ? '#00F2FE' : '#6b7280'}; letter-spacing: 0.5px;">${enfoque.toUpperCase()}</span>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: #9ca3af; font-weight: 700; margin-bottom: 6px; padding: 0 4px;">
+                        <span>SALUD DEL PLANTEL</span>
+                    </div>
+                    <div style="height: 6px; width: 100%; background: #1a1a1a; border-radius: 3px; overflow: hidden;">
+                        <div style="height: 100%; width: ${sessionData ? '100' : '0'}%; background: ${sessionData ? 'linear-gradient(90deg, #00F2FE, #4facfe)' : 'transparent'}; box-shadow: ${sessionData ? '0 0 10px rgba(0,242,254,0.5)' : 'none'};"></div>
                     </div>
                 </div>
             `;
@@ -1322,6 +1389,167 @@ window.DTEngine = {
         if (label.includes('MD+1') || label.includes('MD+2') || label.includes('RECUPERACIÓN')) return 'type-recuperacion';
         if (label.includes('DESCANSO')) return 'type-descanso';
         return 'type-base';
+    },
+
+    async openDayDetail(dateStr) {
+        this._selectedDate = dateStr;
+        const modal = document.getElementById('modal-day-detail');
+        if (!modal) return;
+        
+        document.getElementById('day-detail-title').textContent = dateStr;
+        
+        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id') || window.CurrentUser?.team_id;
+        if (!teamId) return;
+
+        document.getElementById('day-detail-enfoque').value = 'Tensión';
+        document.getElementById('day-detail-volumen').value = '';
+        document.getElementById('day-detail-especificidad').value = '0.4';
+        document.getElementById('day-detail-save-btn').textContent = 'GUARDAR PARÁMETROS';
+        
+        const tbody = document.getElementById('day-detail-athletes-list');
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--muted);">Cargando termograma...</td></tr>';
+        
+        modal.classList.remove('hidden');
+
+        try {
+            const { data: sessionData } = await window.supabase
+                .from('microcycle_sessions')
+                .select('*')
+                .eq('team_id', teamId)
+                .eq('fecha', dateStr)
+                .maybeSingle();
+                
+            let cp = 0;
+            if (sessionData) {
+                document.getElementById('day-detail-enfoque').value = sessionData.enfoque;
+                if (sessionData.volumen_minutos) document.getElementById('day-detail-volumen').value = sessionData.volumen_minutos;
+                if (sessionData.indice_especificidad) document.getElementById('day-detail-especificidad').value = sessionData.indice_especificidad;
+                
+                if (sessionData.volumen_minutos && sessionData.indice_especificidad) {
+                    cp = sessionData.volumen_minutos * (sessionData.indice_especificidad * 10);
+                }
+            }
+            
+            const { data: athletes } = await window.supabase
+                .from('profiles_athlete')
+                .select('id, nombre_completo, posicion')
+                .eq('team_id', teamId);
+                
+            if (!athletes || athletes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--muted);">No hay atletas en el equipo.</td></tr>';
+                return;
+            }
+            
+            const athleteIds = athletes.map(a => a.id);
+            const { data: wellness } = await window.supabase
+                .from('daily_wellness')
+                .select('athlete_id, rpe_sesion, duracion_minutos')
+                .eq('date', dateStr)
+                .in('athlete_id', athleteIds);
+                
+            let html = '';
+            for (const ath of athletes) {
+                const w = (wellness || []).find(w => w.athlete_id === ath.id);
+                let cr = 0;
+                let rpe = '—';
+                let mins = '—';
+                let statusClass = '';
+                let statusBadge = '<span style="color:#6b7280; font-size:0.7rem; font-weight:700;">Sin datos</span>';
+                
+                if (w && w.rpe_sesion != null && w.duracion_minutos != null) {
+                    rpe = w.rpe_sesion;
+                    mins = w.duracion_minutos;
+                    cr = w.rpe_sesion * w.duracion_minutos;
+                    
+                    if (cp > 0) {
+                        if (cr > (cp * 1.20)) {
+                            statusClass = 'status-danger-bg';
+                            statusBadge = '<span style="color:#FF3B30; font-size:0.75rem; font-weight:800; background:rgba(255,59,48,0.1); padding:4px 8px; border-radius:4px;">SOBRECARGA</span>';
+                        } else {
+                            statusClass = 'status-optimal-bg';
+                            statusBadge = '<span style="color:#00F2FE; font-size:0.75rem; font-weight:800; background:rgba(0,242,254,0.1); padding:4px 8px; border-radius:4px;">ÓPTIMO</span>';
+                        }
+                    } else {
+                        statusBadge = '<span style="color:#e5e7eb; font-size:0.7rem; font-weight:700;">CR: ' + cr + '</span>';
+                    }
+                }
+                
+                const initial = ath.nombre_completo ? ath.nombre_completo.charAt(0).toUpperCase() : 'A';
+                
+                html += `
+                    <tr>
+                        <td class="day-thermo-td ${statusClass}">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="width:32px; height:32px; border-radius:50%; background:#1a1a1a; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:800; color:#fff;">${initial}</div>
+                                <div>
+                                    <div style="font-size:0.9rem; font-weight:700; color:#fff;">${ath.nombre_completo || 'Sin Nombre'}</div>
+                                    <div style="font-size:0.7rem; color:#6b7280; text-transform:uppercase;">${ath.posicion || 'Posición'}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="day-thermo-td ${statusClass}" style="text-align:center; font-weight:700; color:#fff;">${rpe}</td>
+                        <td class="day-thermo-td ${statusClass}" style="text-align:center; font-weight:700; color:#fff;">${mins}</td>
+                        <td class="day-thermo-td ${statusClass}" style="text-align:center;">
+                            <div style="font-size:0.6rem; color:#9ca3af; margin-bottom:2px; font-weight:600;">CP: ${cp}</div>
+                            <div style="font-size:1.1rem; font-weight:900; color:#fff;">${cr > 0 ? cr : '—'}</div>
+                        </td>
+                        <td class="day-thermo-td ${statusClass}" style="text-align:center;">
+                            ${statusBadge}
+                        </td>
+                    </tr>
+                `;
+            }
+            tbody.innerHTML = html;
+        } catch (e) {
+            console.error('Error fetching detail:', e);
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: #ef4444;">Error al cargar datos.</td></tr>';
+        }
+    },
+    
+    closeDayDetail() {
+        const modal = document.getElementById('modal-day-detail');
+        if (modal) modal.classList.add('hidden');
+    },
+    
+    async guardarDayDetail() {
+        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id') || window.CurrentUser?.team_id;
+        if (!teamId) return;
+
+        const dateStr = this._selectedDate;
+        const enfoque = document.getElementById('day-detail-enfoque').value;
+        const volumen = document.getElementById('day-detail-volumen').value || null;
+        const especificidad = document.getElementById('day-detail-especificidad').value;
+        
+        const payload = {
+            team_id: teamId,
+            fecha: dateStr,
+            enfoque: enfoque,
+            volumen_minutos: volumen ? parseInt(volumen) : null,
+            indice_especificidad: parseFloat(especificidad)
+        };
+
+        const btn = document.getElementById('day-detail-save-btn');
+        const oldText = btn.textContent;
+        btn.textContent = 'GUARDANDO...';
+
+        try {
+            const { error } = await window.supabase
+                .from('microcycle_sessions')
+                .upsert([payload], { onConflict: 'team_id,fecha' });
+
+            if (error) throw error;
+            
+            btn.textContent = '¡GUARDADO CON ÉXITO!';
+            
+            await this.openDayDetail(dateStr);
+            this.generateCalendar();
+            
+            setTimeout(() => { if (btn) btn.textContent = 'GUARDAR PARÁMETROS'; }, 2000);
+        } catch (e) {
+            console.error('Error al guardar sesión:', e);
+            btn.textContent = 'ERROR';
+            setTimeout(() => { if (btn) btn.textContent = oldText; }, 2000);
+        }
     },
 
     openDrawer(date) {
