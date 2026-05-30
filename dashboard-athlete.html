@@ -1001,6 +1001,80 @@
             profile.deporte
                 ? `${profile.deporte}${profile.posicion ? ' · ' + profile.posicion : ''} — Motor de Rendimiento activo.`
                 : 'Dashboard de Atleta. Completa tu perfil para acceder a todas las funciones.';
+                
+        if (profile.is_profile_complete) {
+            calcularRiesgoCometti(profile);
+        }
+    }
+
+    function calcularRiesgoCometti(perfil) {
+        const container = document.getElementById('cometti-badges');
+        if (!container) return;
+        
+        container.innerHTML = ''; // Limpiar
+        
+        const aniosFuerza = parseInt(perfil.anios_fuerza) || 0;
+        const hsClub = parseFloat(perfil.horas_club) || 0;
+        const hsGym = parseFloat(perfil.horas_gimnasio) || 0;
+        
+        // 1. Regla Capacidad Pliométrica
+        let plioBadge = document.createElement('div');
+        plioBadge.style.padding = '12px 16px';
+        plioBadge.style.borderRadius = '8px';
+        plioBadge.style.fontWeight = '700';
+        plioBadge.style.fontSize = '0.9rem';
+        
+        if (aniosFuerza < 1) {
+            plioBadge.style.background = 'rgba(255, 59, 48, 0.15)';
+            plioBadge.style.color = '#FF3B30';
+            plioBadge.style.border = '1px solid rgba(255, 59, 48, 0.3)';
+            plioBadge.textContent = '⛔ Riesgo Pliométrico: Fase de Adaptación Anatómica requerida.';
+        } else if (aniosFuerza >= 1 && aniosFuerza < 3) {
+            plioBadge.style.background = 'rgba(255, 204, 0, 0.15)';
+            plioBadge.style.color = '#FFCC00';
+            plioBadge.style.border = '1px solid rgba(255, 204, 0, 0.3)';
+            plioBadge.textContent = '⚠️ Pliometría Baja/Media permitida.';
+        } else {
+            plioBadge.style.background = '#CCFF00';
+            plioBadge.style.color = '#080808';
+            plioBadge.style.border = '1px solid #CCFF00';
+            plioBadge.textContent = '✅ Apto Alta Intensidad Neuromuscular.';
+        }
+        
+        // 2. Regla Balance Anabólico/Catabólico
+        let catBadge = document.createElement('div');
+        catBadge.style.padding = '12px 16px';
+        catBadge.style.borderRadius = '8px';
+        catBadge.style.fontWeight = '700';
+        catBadge.style.fontSize = '0.9rem';
+        catBadge.style.marginTop = '4px';
+        
+        if (hsClub > 0) {
+            const ratio = hsGym / hsClub;
+            if (ratio < 0.2) {
+                catBadge.style.background = 'linear-gradient(90deg, rgba(255, 59, 48, 0.15), rgba(255, 149, 0, 0.15))';
+                catBadge.style.color = '#FF9500';
+                catBadge.style.border = '1px solid rgba(255, 59, 48, 0.3)';
+                catBadge.textContent = '📉 Alerta Catabólica: Déficit de fuerza estructural. Riesgo de pérdida de masa.';
+            } else if (ratio >= 0.2 && ratio <= 0.4) {
+                catBadge.style.background = 'rgba(255, 255, 255, 0.05)';
+                catBadge.style.color = 'var(--text)';
+                catBadge.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+                catBadge.textContent = '⚖️ Balance de Cargas Aceptable.';
+            } else {
+                catBadge.style.background = '#00F0FF';
+                catBadge.style.color = '#080808';
+                catBadge.style.border = '1px solid #00F0FF';
+                catBadge.textContent = '📈 Perfil Anabólico Óptimo (Protección Articular).';
+            }
+        } else {
+            catBadge.style.background = 'rgba(255, 255, 255, 0.05)';
+            catBadge.style.color = 'var(--muted)';
+            catBadge.textContent = 'Faltan datos de horas de campo para calcular balance estructural.';
+        }
+        
+        container.appendChild(plioBadge);
+        container.appendChild(catBadge);
     }
 
     function setDate() {
