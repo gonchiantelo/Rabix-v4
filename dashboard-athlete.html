@@ -571,52 +571,7 @@
             </div>
         </div>
 
-        <!-- ENTRENAMIENTO INVISIBLE (Check-in) -->
-        <div class="section-header">
-            <span class="section-title">Entrenamiento Invisible (Check-in)</span>
-        </div>
-        
-        <div class="wellness-card" id="wellness-form-container">
-            <div class="wellness-item">
-                <div class="wellness-header">
-                    <span>Calidad de Sueño</span>
-                    <span class="wellness-value" id="val-sueno">3</span>
-                </div>
-                <input type="range" id="slider-sueno" class="wellness-slider" min="1" max="6" value="3" oninput="document.getElementById('val-sueno').textContent=this.value">
-            </div>
-            
-            <div class="wellness-item">
-                <div class="wellness-header">
-                    <span>Nivel de Estrés</span>
-                    <span class="wellness-value" id="val-estres">3</span>
-                </div>
-                <input type="range" id="slider-estres" class="wellness-slider" min="1" max="6" value="3" oninput="document.getElementById('val-estres').textContent=this.value">
-            </div>
 
-            <div class="wellness-item">
-                <div class="wellness-header">
-                    <span>Fatiga General</span>
-                    <span class="wellness-value" id="val-fatiga">3</span>
-                </div>
-                <input type="range" id="slider-fatiga" class="wellness-slider" min="1" max="6" value="3" oninput="document.getElementById('val-fatiga').textContent=this.value">
-            </div>
-
-            <div class="wellness-item">
-                <div class="wellness-header">
-                    <span>Dolor Muscular</span>
-                    <span class="wellness-value" id="val-dolor">3</span>
-                </div>
-                <input type="range" id="slider-dolor" class="wellness-slider" min="1" max="6" value="3" oninput="document.getElementById('val-dolor').textContent=this.value">
-            </div>
-            
-            <button class="btn-primary" id="btn-save-wellness" onclick="saveWellness()" style="margin-top: 16px; background: #00F0FF; color: #080808; font-weight: 800; text-transform: uppercase; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; width: 100%;">REGISTRAR MI ESTADO</button>
-        </div>
-
-        <div class="wellness-success" id="wellness-success-container" style="display: none;">
-            <div class="wellness-success-icon">✅</div>
-            <div class="wellness-success-title">Check-in completado</div>
-            <div style="color: var(--muted); font-size: 0.95rem;">Motor listo para la sesión de hoy.</div>
-        </div>
 
         <!-- REPORTE POST-SESIÓN (Check-out) -->
         <div class="section-header" style="margin-top: 32px;">
@@ -840,6 +795,51 @@
     </div>
 </div>
 
+<!-- Modal de Peaje Diario: Entrenamiento Invisible -->
+<div id="daily-wellness-modal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(8, 8, 8, 0.95); z-index: 9000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+    <div class="wellness-card" style="width: 100%; max-width: 440px; margin: 20px; background: var(--surface); padding: 32px; border: 1px solid rgba(0,240,255,0.2);">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <div style="font-size: 2.5rem; margin-bottom: 10px;">🔋</div>
+            <h2 style="font-size: 1.5rem; font-weight: 900; color: var(--text); text-transform: uppercase; letter-spacing: 1px;">Entrenamiento Invisible</h2>
+            <p style="color: var(--muted); font-size: 0.9rem; margin-top: 8px;">Antes de acceder al motor, reporta tu estado físico de hoy.</p>
+        </div>
+        
+        <div class="wellness-item">
+            <div class="wellness-header">
+                <span>Calidad de Sueño</span>
+                <span class="wellness-value" id="val-sueno">3</span>
+            </div>
+            <input type="range" id="slider-sueno" class="wellness-slider" min="1" max="6" value="3" oninput="document.getElementById('val-sueno').textContent=this.value">
+        </div>
+        
+        <div class="wellness-item">
+            <div class="wellness-header">
+                <span>Nivel de Estrés</span>
+                <span class="wellness-value" id="val-estres">3</span>
+            </div>
+            <input type="range" id="slider-estres" class="wellness-slider" min="1" max="6" value="3" oninput="document.getElementById('val-estres').textContent=this.value">
+        </div>
+
+        <div class="wellness-item">
+            <div class="wellness-header">
+                <span>Fatiga General</span>
+                <span class="wellness-value" id="val-fatiga">3</span>
+            </div>
+            <input type="range" id="slider-fatiga" class="wellness-slider" min="1" max="6" value="3" oninput="document.getElementById('val-fatiga').textContent=this.value">
+        </div>
+
+        <div class="wellness-item">
+            <div class="wellness-header">
+                <span>Dolor Muscular</span>
+                <span class="wellness-value" id="val-dolor">3</span>
+            </div>
+            <input type="range" id="slider-dolor" class="wellness-slider" min="1" max="6" value="3" oninput="document.getElementById('val-dolor').textContent=this.value">
+        </div>
+        
+        <button class="btn-primary" id="btn-save-wellness" onclick="saveWellness()" style="margin-top: 24px; background: #00F0FF; color: #080808; font-weight: 800; text-transform: uppercase; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; width: 100%;">REGISTRAR MI ESTADO</button>
+    </div>
+</div>
+
 <script>
     // ── Supabase setup ──────────────────────────────────────────
     window.SUPA_URL = 'https://rscdpwarzltozigfbmev.supabase.co';
@@ -898,16 +898,15 @@
                 
                 const { data: wellnessToday, error: wError } = await db
                     .from('daily_wellness')
-                    .select('id')
+                    .select('id, sueno')
                     .eq('athlete_id', uid)
                     .eq('date', localISOTime)
                     .maybeSingle();
 
-                if (wellnessToday) {
-                    const formContainer = document.getElementById('wellness-form-container');
-                    const successContainer = document.getElementById('wellness-success-container');
-                    if (formContainer) formContainer.style.display = 'none';
-                    if (successContainer) successContainer.style.display = 'block';
+                if (!wellnessToday || wellnessToday.sueno === null) {
+                    console.log('[DASHBOARD] Muro Diario activado (Check-in faltante).');
+                    document.getElementById('daily-wellness-modal').style.display = 'flex';
+                } else {
                     const statEl = document.getElementById('stat-wellness');
                     if (statEl) {
                         statEl.textContent = "Listo";
@@ -1090,11 +1089,10 @@
                 dolor_muscular: dolor
             };
             
-            const { error } = await db.from('daily_wellness').insert([payload]);
+            const { error } = await db.from('daily_wellness').upsert([payload], { onConflict: 'athlete_id,date' });
             if (error) throw error;
             
-            document.getElementById('wellness-form-container').style.display = 'none';
-            document.getElementById('wellness-success-container').style.display = 'block';
+            document.getElementById('daily-wellness-modal').style.display = 'none';
             
             const statEl = document.getElementById('stat-wellness');
             if (statEl) {
