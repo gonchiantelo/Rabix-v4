@@ -570,10 +570,10 @@ window.App = {
                 LOG('ATHLETE')(`Buscando perfil en profiles_athlete... id=${uid.slice(0, 8)}...`);
                 const { data: athData, error: athErr } = await window.supabase.from('profiles_athlete').select('*').eq('id', uid);
                 if (athErr) throw new Error(`Error al leer profiles_athlete: ${athErr.message}`);
-                LOG('ATHLETE')(`Filas encontradas: ${athData.length}. full_name="${athData[0]?.full_name || 'vacío'}"`);
+                LOG('ATHLETE')(`Filas encontradas: ${athData.length}. nombre="${athData[0]?.nombre_completo || 'vacío'}"`);
 
-                if (!athData.length || !athData[0].full_name || athData[0].full_name === 'vacío' || !athData[0].sport || !athData[0].position) {
-                    LOG('ATHLETE')('Perfil incompleto → redirigiendo a onboarding-athlete.html (V2)');
+                if (!athData.length || !athData[0].nombre_completo || athData[0].nombre_completo === 'vacío' || !athData[0].deporte || !athData[0].posicion) {
+                    LOG('ATHLETE')('Perfil incompleto o inexistente → redirigiendo a onboarding-athlete.html (V2)');
                     // ── V2: Redirección dura al archivo físico de onboarding ──
                     window.location.href = './onboarding-athlete.html';
                     return;
@@ -596,14 +596,11 @@ window.App = {
             LOG('DT')(`Filas encontradas: ${users.length}. nombre="${users[0]?.nombre_completo || 'vacío'}" club_actual="${users[0]?.club_actual || 'null'}"`);
 
             if (!users.length) {
-                // El uid no tiene fila en profiles_dt — probablemente es un atleta usando el portal DT
-                LOG('DT')('❌ Sin fila en profiles_dt. Posible rol incorrecto seleccionado en el portal.');
+                // Inteligencia Multi-Rol: El usuario existe en auth pero no tiene visado DT. 
+                // En lugar de bloquearlo, lo mandamos al Onboarding DT para crear su pasaporte táctico.
+                LOG('DT')('❌ Sin fila en profiles_dt. Usuario híbrido. Redirigiendo a Wizard DT para crear visado.');
                 this._hideAllViews();
-                document.getElementById('view-portal').style.display = 'flex';
-                document.getElementById('view-portal').style.opacity = '';
-                document.getElementById('view-portal').style.pointerEvents = '';
-                alert('No se encontró tu perfil de Staff. Si eres Atleta, vuelve al portal y selecciona "Mundo Atleta".');
-                localStorage.removeItem('ravix_active_role'); // limpiar rol incorrecto
+                window.Wizard.startFor('dt');
                 return;
             }
 
@@ -1390,8 +1387,16 @@ window.App.signUp = async function (email, pass, event) {
         // Supabase v2 devuelve error 422 como un objeto de error
         if (error) {
             if (error.message.toLowerCase().includes('already registered')) {
-                alert("Este email ya está registrado. Por favor, inicia sesión.");
+                // Inteligencia Multi-Rol: Si ya existe en auth, cambiar a login y mostrar mensaje premium.
                 window.App.toggleAuth('login');
+                const emailInput = document.getElementById('login-username');
+                if (emailInput) emailInput.value = email;
+                
+                if (window.LoginUI && typeof window.LoginUI.showSuccess === 'function') {
+                    window.LoginUI.showSuccess("Ya tienes una cuenta en RAVIX. Introduce tu contraseña para activar tu perfil en este sector.");
+                } else {
+                    alert("Ya tienes una cuenta en RAVIX. Introduce tu contraseña para activar tu perfil en este sector.");
+                }
                 return;
             }
             throw error;
@@ -1466,18 +1471,18 @@ window.ejecutarOnboardingFinal = async function() {
         if (teamError) throw new Error("Fallo en teams: " + teamError.message);
         console.log("✅ Equipo creado con ID:", newTeam.id);
 
-        // PASO 2: Actualizar Perfil
+        // PASO 2: Actualizar/Crear Perfil (Blindaje UPSERT)
         console.log("⏳ Vinculando perfil al equipo...");
         const { error: userError } = await window.supabase
             .from('profiles_dt') 
-            .update({ 
+            .upsert({ 
+                id: userId,
                 nombre_completo: nombreDT,
                 club_actual: newTeam.id,
                 licencia: licenciaVal,
                 experiencia_anios: 0,
                 is_profile_complete: true
-            })
-            .eq('id', userId);
+            });
 
         if (userError) throw new Error("Fallo en tabla perfiles: " + userError.message);
         console.log("✅ Perfil vinculado. Saliendo del Wizard...");
