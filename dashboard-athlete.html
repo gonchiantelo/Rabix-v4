@@ -884,42 +884,7 @@
             btn.innerHTML = 'ACTIVAR MI MOTOR';
         }
     }
-        const prev = document.getElementById('dash-toast');
-        if (prev) prev.remove();
 
-        const t = document.createElement('div');
-        t.id = 'dash-toast';
-        t.textContent = msg;
-        Object.assign(t.style, {
-            position: 'fixed',
-            bottom: '28px',
-            left: '50%',
-            transform: 'translateX(-50%) translateY(10px)',
-            background: '#1a1a1a',
-            color: '#fff',
-            padding: '12px 24px',
-            borderRadius: '40px',
-            fontSize: '13px',
-            fontWeight: '700',
-            fontFamily: "'Outfit', sans-serif",
-            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            zIndex: '9999',
-            opacity: '0',
-            transition: 'all 0.3s ease',
-            whiteSpace: 'nowrap',
-        });
-        document.body.appendChild(t);
-        requestAnimationFrame(() => {
-            t.style.opacity = '1';
-            t.style.transform = 'translateX(-50%) translateY(0)';
-        });
-        setTimeout(() => {
-            t.style.opacity = '0';
-            t.style.transform = 'translateX(-50%) translateY(8px)';
-            setTimeout(() => t.remove(), 300);
-        }, 3000);
-    }
 
     // ── Boot ────────────────────────────────────────────────────
     boot();
