@@ -547,7 +547,18 @@ window.App = {
             LOG('AUTH')('Verificando token con supabase.auth.getUser...');
             const { data: { user: authUser }, error: userErr } = await window.supabase.auth.getUser(token);
             if (userErr || !authUser) {
-                throw new Error(`Token inválido o expirado: ${userErr?.message || 'unauthorized'}`);
+                console.warn('[ROUTER] Sesión terminada o token inválido. Limpiando...');
+                localStorage.removeItem('ravix_token');
+                localStorage.removeItem('ravix_v5_uid');
+                localStorage.removeItem('ravix_active_role');
+                this._hideAllViews();
+                const portal = document.getElementById('view-portal');
+                if (portal) {
+                    portal.style.display = 'flex';
+                    portal.style.opacity = '';
+                    portal.style.pointerEvents = '';
+                }
+                return;
             }
             LOG('AUTH')(`Token válido. Email verificado: ${authUser.email}`);
 

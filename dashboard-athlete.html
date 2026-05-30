@@ -584,6 +584,108 @@
     </main>
 </div>
 
+<!-- ── MURO BIOMÉTRICO (Cometti) ── -->
+<style id="bio-styles">
+    #biometric-modal .form-label {
+        display: block; font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5);
+        text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-family: 'Outfit', sans-serif;
+    }
+    #biometric-modal .form-input.normal {
+        width: 100%; padding: 14px 16px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px; color: #fff; font-size: 1rem; font-family: 'Inter', sans-serif; transition: all 0.2s; margin-bottom:16px;
+    }
+    #biometric-modal .form-input.normal:focus {
+        border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(0,240,255,0.1); background: rgba(0,0,0,0.4);
+    }
+    #biometric-modal .btn-primary {
+        width: 100%; padding: 16px; background: var(--primary); color: #000; border: none; border-radius: 14px;
+        font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.05rem; cursor: pointer; transition: all 0.3s;
+        text-transform: uppercase; letter-spacing: 1px;
+    }
+    #biometric-modal .btn-primary:hover {
+        transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,240,255,0.3);
+    }
+    #biometric-modal .feedback { display:none; padding:12px; border-radius:8px; font-size:0.85rem; font-weight:500; text-align:center; }
+    #biometric-modal .feedback.error { background:rgba(255,68,68,0.1); color:#ff4444; border:1px solid rgba(255,68,68,0.2); }
+</style>
+
+<div id="biometric-modal" style="display:none; position:fixed; inset:0; background:rgba(8,8,8,0.95); z-index:9999; backdrop-filter:blur(10px); flex-direction:column; align-items:center; justify-content:center; padding:20px; overflow-y:auto;">
+    <div style="background:var(--surface); border:1px solid rgba(0,240,255,0.2); border-radius:16px; width:100%; max-width:560px; padding:32px; box-shadow:0 24px 60px rgba(0,240,255,0.05); margin:auto;">
+        <div style="text-align:center; margin-bottom:24px;">
+            <h2 style="font-size:1.8rem; font-weight:900; color:var(--text); margin-bottom:8px; font-family:'Outfit', sans-serif;">Laboratorio Biométrico</h2>
+            <p style="color:var(--muted); font-size:0.9rem; line-height:1.5;">Para activar el Motor de Rendimiento, necesitamos establecer tu línea base según las Leyes de Cometti.</p>
+        </div>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+            <div style="grid-column:1/-1;">
+                <label class="form-label">Fecha de Nacimiento *</label>
+                <input type="date" id="bio-birth" class="form-input normal" style="margin-bottom:0;">
+            </div>
+            
+            <div>
+                <label class="form-label">Peso (kg) *</label>
+                <input type="number" id="bio-weight" class="form-input normal" placeholder="Ej: 75" style="margin-bottom:0;">
+            </div>
+            
+            <div>
+                <label class="form-label">Altura (cm) *</label>
+                <input type="number" id="bio-height" class="form-input normal" placeholder="Ej: 180" style="margin-bottom:0;">
+            </div>
+            
+            <div style="grid-column:1/-1;">
+                <label class="form-label">Lado Dominante *</label>
+                <select id="bio-side" class="form-input normal" style="margin-bottom:0;">
+                    <option value="">Selecciona...</option>
+                    <option value="Diestro">Diestro</option>
+                    <option value="Zurdo">Zurdo</option>
+                    <option value="Ambidiestro">Ambidiestro</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="form-label">Años Entrenando Fuerza *</label>
+                <input type="number" id="bio-strength-years" class="form-input normal" placeholder="Ej: 2" style="margin-bottom:0;" min="0">
+            </div>
+            
+            <div>
+                <label class="form-label">Horas Gimnasio / semana *</label>
+                <input type="number" id="bio-gym-hours" class="form-input normal" placeholder="Ej: 3" style="margin-bottom:0;" min="0">
+            </div>
+            
+            <div style="grid-column:1/-1;">
+                <label class="form-label">Horas Club (Cancha) / semana *</label>
+                <input type="number" id="bio-club-hours" class="form-input normal" placeholder="Ej: 10" style="margin-bottom:0;" min="0">
+            </div>
+            
+            <div style="grid-column:1/-1;">
+                <label class="form-label">Objetivo Neuromuscular Principal *</label>
+                <select id="bio-goal" class="form-input normal" style="margin-bottom:0;">
+                    <option value="">Selecciona tu objetivo...</option>
+                    <option value="Fuerza Explosiva">Fuerza Explosiva (Aceleración y Potencia)</option>
+                    <option value="Resistencia">Resistencia (Capacidad Aeróbica)</option>
+                    <option value="Pliometría">Pliometría (Saltos y Reactividad)</option>
+                    <option value="Recuperación">Recuperación y Readaptación</option>
+                </select>
+            </div>
+            
+            <div style="grid-column:1/-1;">
+                <label class="form-label">Nivel de Compromiso *</label>
+                <select id="bio-commitment" class="form-input normal" style="margin-bottom:0;">
+                    <option value="">Selecciona...</option>
+                    <option value="Profesional">Profesional (Full-time)</option>
+                    <option value="Semi-Profesional">Semi-Profesional</option>
+                    <option value="Amateur Competitivo">Amateur Competitivo</option>
+                    <option value="Recreativo">Recreativo</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="bio-feedback" class="feedback" style="margin-bottom:16px;"></div>
+        
+        <button class="btn-primary" id="btn-activate-motor" onclick="saveBiometrics()">ACTIVAR MI MOTOR</button>
+    </div>
+</div>
+
 <script>
     // ── Supabase setup ──────────────────────────────────────────
     window.SUPA_URL = 'https://rscdpwarzltozigfbmev.supabase.co';
@@ -602,10 +704,10 @@
 
             const uid = session.user.id;
 
-            // 2. Fetch athlete profile — solo columnas base, sin join team
+            // 2. Fetch athlete profile — solo columnas base + muro biométrico
             const { data: profile, error } = await db
                 .from('profiles_athlete')
-                .select('id, full_name, sport, position')
+                .select('id, full_name, sport, position, is_profile_complete, weight_kg, height_cm, birth_date, dominant_side, strength_years, hours_club, hours_gym, neuromuscular_goal, commitment_level')
                 .eq('id', uid)
                 .maybeSingle();
 
@@ -618,11 +720,24 @@
             renderProfile(profile || {});
             setDate();
 
-            // 5. Ocultar loader, mostrar app
+            // 5. Ocultar loader
             const ls = document.getElementById('loading-screen');
             ls.classList.add('fade-out');
             setTimeout(() => ls.style.display = 'none', 400);
-            document.getElementById('app-shell').style.display = 'grid';
+
+            // 6. Muro Biométrico de Cometti
+            // Si faltan datos críticos o la flag no está, bloqueamos y mostramos el modal
+            if (profile && (!profile.weight_kg || !profile.height_cm || !profile.neuromuscular_goal)) {
+                console.log('[DASHBOARD] Muro Biométrico activado (faltan datos).');
+                document.getElementById('biometric-modal').style.display = 'flex';
+                // Precargar lo que ya tenga por las dudas
+                if (profile.birth_date) document.getElementById('bio-birth').value = profile.birth_date;
+                if (profile.weight_kg) document.getElementById('bio-weight').value = profile.weight_kg;
+                if (profile.height_cm) document.getElementById('bio-height').value = profile.height_cm;
+            } else {
+                console.log('[DASHBOARD] Perfil biométrico completo. Abriendo app.');
+                document.getElementById('app-shell').style.display = 'grid';
+            }
 
         } catch (err) {
             console.error('[DASHBOARD] Boot failed:', err);
@@ -685,6 +800,90 @@
 
     // ── Toast util ──────────────────────────────────────────────
     function showToast(msg) {
+        // ... (toast logic ya estaba abajo, pero me aseguro)
+        const t = document.createElement('div');
+        t.id = 'dash-toast';
+        t.textContent = msg;
+        Object.assign(t.style, {
+            position: 'fixed', bottom: '28px', left: '50%', transform: 'translateX(-50%) translateY(10px)',
+            background: '#1a1a1a', color: '#fff', padding: '12px 24px', borderRadius: '40px', fontSize: '13px',
+            fontWeight: '700', fontFamily: "'Outfit', sans-serif", boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+            border: '1px solid rgba(255,255,255,0.08)', zIndex: '9999', opacity: '0', transition: 'all 0.3s ease', whiteSpace: 'nowrap',
+        });
+        document.body.appendChild(t);
+        requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)'; });
+        setTimeout(() => {
+            t.style.opacity = '0'; t.style.transform = 'translateX(-50%) translateY(8px)';
+            setTimeout(() => t.remove(), 300);
+        }, 3000);
+    }
+
+    // ── BIOMETRICS SUBMIT ───────────────────────────────────────────
+    async function saveBiometrics() {
+        const birth = document.getElementById('bio-birth').value;
+        const weight = document.getElementById('bio-weight').value;
+        const height = document.getElementById('bio-height').value;
+        const side = document.getElementById('bio-side').value;
+        const strY = document.getElementById('bio-strength-years').value;
+        const gymH = document.getElementById('bio-gym-hours').value;
+        const clubH = document.getElementById('bio-club-hours').value;
+        const goal = document.getElementById('bio-goal').value;
+        const commitment = document.getElementById('bio-commitment').value;
+        const fb = document.getElementById('bio-feedback');
+        
+        if (!birth || !weight || !height || !side || !strY || !gymH || !clubH || !goal || !commitment) {
+            fb.className = 'feedback error';
+            fb.innerHTML = '⚠️ Por favor completa todos los campos del laboratorio.';
+            fb.style.display = 'block';
+            return;
+        }
+        
+        const btn = document.getElementById('btn-activate-motor');
+        btn.disabled = true;
+        btn.innerHTML = 'ACTIVANDO...';
+        fb.style.display = 'none';
+        
+        try {
+            const { data: { session } } = await db.auth.getSession();
+            if (!session) throw new Error("Sesión expirada");
+            const uid = session.user.id;
+            
+            const payload = {
+                birth_date: birth,
+                weight_kg: parseFloat(weight),
+                height_cm: parseFloat(height),
+                dominant_side: side,
+                strength_years: parseInt(strY),
+                hours_gym: parseFloat(gymH),
+                hours_club: parseFloat(clubH),
+                neuromuscular_goal: goal,
+                commitment_level: commitment,
+                is_profile_complete: true,
+                goal: goal // legacy
+            };
+            
+            const { error } = await db.from('profiles_athlete').update(payload).eq('id', uid);
+            if (error) throw error;
+            
+            document.getElementById('biometric-modal').style.display = 'none';
+            document.getElementById('app-shell').style.display = 'grid';
+            
+            // Actualizar vista
+            if (document.getElementById('profile-name')) {
+                // opcional: forzar re-render de perfil (renderProfile llamarlo con datos mixeados)
+            }
+            
+            showToast('✅ Motor activado con éxito. ¡Bienvenido al Laboratorio!');
+            
+        } catch (e) {
+            console.error('Error saving biometrics:', e);
+            fb.className = 'feedback error';
+            fb.innerHTML = '❌ Error al guardar datos: ' + e.message;
+            fb.style.display = 'block';
+            btn.disabled = false;
+            btn.innerHTML = 'ACTIVAR MI MOTOR';
+        }
+    }
         const prev = document.getElementById('dash-toast');
         if (prev) prev.remove();
 

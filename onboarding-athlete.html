@@ -350,20 +350,23 @@
         <input id="athlete-name" type="text" class="form-input normal" placeholder="Ej: Lucas Martínez">
 
         <label for="athlete-sport" class="form-label">Deporte Principal *</label>
-        <select id="athlete-sport" class="form-input normal">
+        <select id="athlete-sport" class="form-input normal" onchange="updatePositions()">
             <option value="">Selecciona un deporte...</option>
             <option value="Fútbol">Fútbol</option>
+            <option value="Voleibol">Voleibol</option>
+            <option value="Básquetbol">Básquetbol</option>
+            <option value="Rugby">Rugby</option>
             <option value="Natación">Natación</option>
             <option value="Atletismo">Atletismo</option>
-            <option value="Judo">Judo</option>
-            <option value="Rugby">Rugby</option>
-            <option value="Básquetbol">Básquetbol</option>
             <option value="Tenis">Tenis</option>
+            <option value="Judo">Judo</option>
             <option value="Otro">Otro</option>
         </select>
 
-        <label for="athlete-position" class="form-label">Posición / Especialidad</label>
-        <input id="athlete-position" type="text" class="form-input normal" placeholder="Ej: Pivote, 100m Libres..." style="margin-bottom: 16px;">
+        <label for="athlete-position" class="form-label">Posición / Especialidad *</label>
+        <select id="athlete-position" class="form-input normal" style="margin-bottom: 16px;">
+            <option value="">Primero elige un deporte...</option>
+        </select>
 
         <div id="feedback-step1" class="feedback" style="margin-bottom: 16px;"></div>
 
@@ -481,6 +484,38 @@
         if (e.key === 'Enter') joinTeam();
     });
 
+    // ── Dynamic Positions ───────────────────────────────────────
+    const positionMap = {
+        'Fútbol': ['Arquero', 'Defensor', 'Volante', 'Delantero'],
+        'Voleibol': ['Armador', 'Central', 'Punta', 'Líbero', 'Opuesto'],
+        'Básquetbol': ['Base', 'Escolta', 'Alero', 'Ala-Pívot', 'Pívot'],
+        'Rugby': ['Pilar', 'Hooker', 'Segunda Línea', 'Tercera Línea', 'Medio Scrum', 'Apertura', 'Centro', 'Wing', 'Fullback'],
+        'Natación': ['Libre', 'Espalda', 'Pecho', 'Mariposa', 'Combinado'],
+        'Atletismo': ['Velocidad', 'Fondo', 'Saltos', 'Lanzamientos', 'Pruebas Combinadas'],
+        'Tenis': ['Singles', 'Dobles'],
+        'Judo': ['-60kg', '-66kg', '-73kg', '-81kg', '-90kg', '-100kg', '+100kg'],
+        'Otro': ['General']
+    };
+
+    function updatePositions() {
+        const sport = document.getElementById('athlete-sport').value;
+        const posSelect = document.getElementById('athlete-position');
+        posSelect.innerHTML = '';
+        
+        if (!sport) {
+            posSelect.innerHTML = '<option value="">Primero elige un deporte...</option>';
+            return;
+        }
+        
+        const options = positionMap[sport] || ['General'];
+        
+        let html = '<option value="">Selecciona tu posición...</option>';
+        options.forEach(opt => {
+            html += `<option value="${opt}">${opt}</option>`;
+        });
+        posSelect.innerHTML = html;
+    }
+
     // ── Wizard Logic ────────────────────────────────────────────
     let athleteData = {
         name: '',
@@ -491,12 +526,12 @@
     function goToStep2() {
         const nameInput = document.getElementById('athlete-name').value.trim();
         const sportInput = document.getElementById('athlete-sport').value;
-        const posInput = document.getElementById('athlete-position').value.trim();
+        const posInput = document.getElementById('athlete-position').value;
         const feedback = document.getElementById('feedback-step1');
         
-        if (!nameInput || !sportInput) {
+        if (!nameInput || !sportInput || !posInput) {
             feedback.className = 'feedback error';
-            feedback.innerHTML = '⚠️ Completa tu nombre y deporte.';
+            feedback.innerHTML = '⚠️ Completa todos los campos (Nombre, Deporte y Posición).';
             feedback.style.display = 'flex';
             return;
         }
@@ -504,7 +539,7 @@
         feedback.style.display = 'none';
         athleteData.name = nameInput;
         athleteData.sport = sportInput;
-        athleteData.position = posInput || 'General';
+        athleteData.position = posInput;
         
         document.getElementById('step-1').style.display = 'none';
         document.getElementById('step-2').style.display = 'block';
