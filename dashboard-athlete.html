@@ -571,21 +571,136 @@
             </div>
         </div>
 
-        <!-- Wellness module placeholder -->
+        <!-- ENTRENAMIENTO INVISIBLE (Check-in) -->
         <div class="section-header">
-            <span class="section-title">Módulos Activos</span>
+            <span class="section-title">Entrenamiento Invisible (Check-in)</span>
         </div>
-        <div class="module-banner">
-            <div class="module-banner-icon">🚀</div>
-            <div class="module-banner-title">Módulos de Rendimiento — Próximamente</div>
-            <div class="module-banner-desc">Registro de wellness, carga de entrenamiento y estadísticas personales en construcción.</div>
+        
+        <div class="wellness-card" id="wellness-form-container">
+            <div class="wellness-item">
+                <div class="wellness-header">
+                    <span>Calidad de Sueño</span>
+                    <span class="wellness-value" id="val-sueno">3</span>
+                </div>
+                <input type="range" id="slider-sueno" class="wellness-slider" min="1" max="6" value="3" oninput="document.getElementById('val-sueno').textContent=this.value">
+            </div>
+            
+            <div class="wellness-item">
+                <div class="wellness-header">
+                    <span>Nivel de Estrés</span>
+                    <span class="wellness-value" id="val-estres">3</span>
+                </div>
+                <input type="range" id="slider-estres" class="wellness-slider" min="1" max="6" value="3" oninput="document.getElementById('val-estres').textContent=this.value">
+            </div>
+
+            <div class="wellness-item">
+                <div class="wellness-header">
+                    <span>Fatiga General</span>
+                    <span class="wellness-value" id="val-fatiga">3</span>
+                </div>
+                <input type="range" id="slider-fatiga" class="wellness-slider" min="1" max="6" value="3" oninput="document.getElementById('val-fatiga').textContent=this.value">
+            </div>
+
+            <div class="wellness-item">
+                <div class="wellness-header">
+                    <span>Dolor Muscular</span>
+                    <span class="wellness-value" id="val-dolor">3</span>
+                </div>
+                <input type="range" id="slider-dolor" class="wellness-slider" min="1" max="6" value="3" oninput="document.getElementById('val-dolor').textContent=this.value">
+            </div>
+            
+            <button class="btn-primary" id="btn-save-wellness" onclick="saveWellness()" style="margin-top: 16px; background: #00F0FF; color: #080808; font-weight: 800; text-transform: uppercase; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; width: 100%;">REGISTRAR MI ESTADO</button>
+        </div>
+
+        <div class="wellness-success" id="wellness-success-container">
+            <div class="wellness-success-icon">✅</div>
+            <div class="wellness-success-title">Check-in completado</div>
+            <div style="color: var(--muted); font-size: 0.95rem;">Motor listo para la sesión de hoy.</div>
         </div>
 
     </main>
 </div>
 
-<!-- ── MURO BIOMÉTRICO (Cometti) ── -->
+<!-- ── ESTILOS ADICIONALES (Wellness & Biometría) ── -->
 <style id="bio-styles">
+    /* Estilos para el Radar de Wellness */
+    .wellness-card {
+        background: var(--surface);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .wellness-item {
+        margin-bottom: 20px;
+    }
+    .wellness-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text);
+    }
+    .wellness-value {
+        color: #00F0FF;
+        font-weight: 800;
+        font-size: 1.1rem;
+    }
+    input[type=range].wellness-slider {
+        -webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+    }
+    input[type=range].wellness-slider:focus {
+        outline: none;
+    }
+    input[type=range].wellness-slider::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 8px;
+        cursor: pointer;
+        background: #1E1E1E;
+        border-radius: 4px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    input[type=range].wellness-slider::-webkit-slider-thumb {
+        height: 24px;
+        width: 24px;
+        border-radius: 50%;
+        background: #00F0FF;
+        cursor: pointer;
+        -webkit-appearance: none;
+        margin-top: -8px;
+        box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        transition: transform 0.1s;
+    }
+    input[type=range].wellness-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.1);
+    }
+    .wellness-success {
+        display: none;
+        background: rgba(0, 240, 255, 0.05);
+        border: 1px solid rgba(0, 240, 255, 0.2);
+        border-radius: 12px;
+        padding: 24px;
+        text-align: center;
+        color: var(--text);
+        font-family: 'Outfit', sans-serif;
+        margin-bottom: 24px;
+    }
+    .wellness-success-icon {
+        font-size: 2rem;
+        margin-bottom: 12px;
+    }
+    .wellness-success-title {
+        font-weight: 800;
+        color: #00F0FF;
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+    }
+    
+    /* Biometric modal styles */
     #biometric-modal .form-label {
         display: block; font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5);
         text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-family: 'Outfit', sans-serif;
@@ -735,6 +850,29 @@
             } else {
                 console.log('[DASHBOARD] Perfil biométrico completo. Abriendo app.');
                 document.getElementById('app-shell').style.display = 'grid';
+                
+                // 7. Radar Diario de Wellness (Check-in)
+                const offset = (new Date()).getTimezoneOffset() * 60000;
+                const localISOTime = (new Date(Date.now() - offset)).toISOString().slice(0, 10);
+                
+                const { data: wellnessToday, error: wError } = await db
+                    .from('daily_wellness')
+                    .select('id')
+                    .eq('athlete_id', uid)
+                    .eq('date', localISOTime)
+                    .maybeSingle();
+
+                if (wellnessToday) {
+                    const formContainer = document.getElementById('wellness-form-container');
+                    const successContainer = document.getElementById('wellness-success-container');
+                    if (formContainer) formContainer.style.display = 'none';
+                    if (successContainer) successContainer.style.display = 'block';
+                    const statEl = document.getElementById('stat-wellness');
+                    if (statEl) {
+                        statEl.textContent = "Listo";
+                        statEl.classList.add('accent');
+                    }
+                }
             }
 
         } catch (err) {
@@ -882,6 +1020,56 @@
         }
     }
 
+
+    // ── WELLNESS SUBMIT ──────────────────────────────────────────────
+    async function saveWellness() {
+        const btn = document.getElementById('btn-save-wellness');
+        btn.disabled = true;
+        btn.innerHTML = 'REGISTRANDO...';
+        
+        try {
+            const { data: { session } } = await db.auth.getSession();
+            if (!session) throw new Error("Sesión expirada");
+            const uid = session.user.id;
+            
+            const sueno = parseInt(document.getElementById('slider-sueno').value);
+            const estres = parseInt(document.getElementById('slider-estres').value);
+            const fatiga = parseInt(document.getElementById('slider-fatiga').value);
+            const dolor = parseInt(document.getElementById('slider-dolor').value);
+            
+            const offset = (new Date()).getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(Date.now() - offset)).toISOString().slice(0, 10);
+            
+            const payload = {
+                athlete_id: uid,
+                date: localISOTime,
+                sueno: sueno,
+                estres: estres,
+                fatiga: fatiga,
+                dolor_muscular: dolor
+            };
+            
+            const { error } = await db.from('daily_wellness').insert([payload]);
+            if (error) throw error;
+            
+            document.getElementById('wellness-form-container').style.display = 'none';
+            document.getElementById('wellness-success-container').style.display = 'block';
+            
+            const statEl = document.getElementById('stat-wellness');
+            if (statEl) {
+                statEl.textContent = "Listo";
+                statEl.classList.add('accent');
+            }
+            
+            showToast('✅ Check-in diario registrado exitosamente.');
+            
+        } catch (e) {
+            console.error('Error saving wellness:', e);
+            showToast('❌ Error al guardar check-in: ' + e.message);
+            btn.disabled = false;
+            btn.innerHTML = 'REGISTRAR MI ESTADO';
+        }
+    }
 
     // ── Boot ────────────────────────────────────────────────────
     boot();
