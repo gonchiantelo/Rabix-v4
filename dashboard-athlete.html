@@ -598,9 +598,7 @@
         border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(0,240,255,0.1); background: rgba(0,0,0,0.4);
     }
     #biometric-modal .btn-primary {
-        width: 100%; padding: 16px; background: var(--primary); color: #000; border: none; border-radius: 14px;
-        font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.05rem; cursor: pointer; transition: all 0.3s;
-        text-transform: uppercase; letter-spacing: 1px;
+        background: #00F0FF; color: #080808; font-weight: 800; text-transform: uppercase; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; width: 100%;
     }
     #biometric-modal .btn-primary:hover {
         transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,240,255,0.3);
@@ -726,15 +724,14 @@
             setTimeout(() => ls.style.display = 'none', 400);
 
             // 6. Muro Biométrico de Cometti
-            // Si faltan datos críticos o la flag no está, bloqueamos y mostramos el modal
-            const profileIncomplete = !profile || !profile.weight_kg || !profile.height_cm || !profile.birth_date;
-            if (profileIncomplete) {
-                console.log('[DASHBOARD] Muro Biométrico activado (faltan datos).');
+            // Gatillo basado estrictamente en la bandera de completitud
+            if (!profile || !profile.is_profile_complete) {
+                console.log('[DASHBOARD] Muro Biométrico activado (is_profile_complete = false).');
                 document.getElementById('biometric-modal').style.display = 'flex';
                 // Precargar lo que ya tenga por las dudas
-                if (profile && profile.birth_date) document.getElementById('bio-birth').value = profile.birth_date;
-                if (profile && profile.weight_kg) document.getElementById('bio-weight').value = profile.weight_kg;
-                if (profile && profile.height_cm) document.getElementById('bio-height').value = profile.height_cm;
+                if (profile && profile.fecha_nacimiento) document.getElementById('bio-birth').value = profile.fecha_nacimiento;
+                if (profile && profile.peso) document.getElementById('bio-weight').value = profile.peso;
+                if (profile && profile.altura) document.getElementById('bio-height').value = profile.altura;
             } else {
                 console.log('[DASHBOARD] Perfil biométrico completo. Abriendo app.');
                 document.getElementById('app-shell').style.display = 'grid';
@@ -850,17 +847,16 @@
             const uid = session.user.id;
             
             const payload = {
-                birth_date: birth,
-                weight_kg: parseFloat(weight),
-                height_cm: parseFloat(height),
-                dominant_side: side,
-                strength_years: parseInt(strY),
-                hours_gym: parseFloat(gymH),
-                hours_club: parseFloat(clubH),
-                neuromuscular_goal: goal,
-                commitment_level: commitment,
-                is_profile_complete: true,
-                goal: goal // legacy
+                fecha_nacimiento: birth,
+                peso: parseFloat(weight),
+                altura: parseFloat(height),
+                lado_dominante: side,
+                anios_fuerza: parseInt(strY),
+                horas_gimnasio: parseFloat(gymH),
+                horas_club: parseFloat(clubH),
+                objetivo_neuro: goal,
+                nivel_compromiso: commitment,
+                is_profile_complete: true
             };
             
             const { error } = await db.from('profiles_athlete').update(payload).eq('id', uid);
