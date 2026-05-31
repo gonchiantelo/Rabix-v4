@@ -468,33 +468,57 @@
     font-size: 14px;
 }
 
-/* ── Responsive ── */
+/* ── Responsive — Calendario Swipeable ── */
 @media (max-width: 768px) {
     .macro-calendar-grid {
-        grid-template-columns: repeat(7, 1fr);
-        gap: 6px;
+        /* Convertir el grid en carrusel swipeable */
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        gap: 10px;
+        padding: 10px 15px 20px;
+        /* Ocultar scrollbar pero mantener funcionalidad */
+        scrollbar-width: none;
+    }
+    .macro-calendar-grid::-webkit-scrollbar {
+        display: none;
     }
 
+    /* Cabeceras de día ocultas en modo swipe */
+    .day-h {
+        display: none;
+    }
+
+    /* Tarjeta individual ocupa casi toda la pantalla */
     .macro-day {
-        min-height: 120px;
+        min-width: 82vw;
+        flex: 0 0 auto;
+        scroll-snap-align: center;
+        min-height: 160px;
+        padding: 14px;
+    }
+    .macro-day.empty {
+        min-width: 0;
+        flex: 0 0 0;
+        display: none;
     }
 
     .m-day-num {
-        font-size: 12px;
-    }
-
-    .m-day-label {
-        display: none;
+        font-size: 14px;
     }
 
     .drawer-content {
         max-width: 100%;
+        padding: 20px 16px;
     }
 
     .modal-grid {
         grid-template-columns: 1fr;
     }
 }
+
 
 /* ── Phase 3.8: Navegación & Bloques Dinámicos ── */
 .month-nav {
@@ -744,41 +768,80 @@ body { background: #121212 !important; }
 
 /* ── RESPONSIVE DESIGN (Mobile First Adjustments) ── */
 @media (max-width: 768px) {
+    /* ── Header y Navbar ── */
     .app-header {
         flex-direction: column;
-        gap: 15px;
-        padding: 15px;
+        gap: 10px;
+        padding: 12px 15px;
         text-align: center;
     }
-    
+
+    .header-actions {
+        /* Scroll horizontal en vez de grid 2col para evitar wrap feo */
+        display: flex !important;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        gap: 6px;
+        width: 100%;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+    }
+    .header-actions::-webkit-scrollbar { display: none; }
+
+    .btn-logout {
+        flex-shrink: 0;
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+
     .month-nav {
         order: 3;
         width: 100%;
         justify-content: center;
+        padding: 8px 14px;
     }
 
-    .header-actions {
-        width: 100%;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-    }
+    /* ── Tipografía General ── */
+    .dt-main-title { font-size: 22px; }
+    .dt-main-subtitle { font-size: 12px; }
 
-    .macro-calendar-grid {
-        grid-template-columns: 1fr; /* Una columna en móvil para legibilidad */
-        padding: 10px;
-    }
-
-    .day-h { display: none; } /* Ocultar cabecera LMXJVSD en móvil si es vertical */
-
-    .macro-day {
-        min-height: auto;
+    /* ── Widgets / Home ── */
+    .dt-home-view {
         padding: 15px;
+        gap: 14px;
+    }
+    .lobby-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+    .lobby-card {
+        padding: 20px;
+        min-height: 160px;
+    }
+    .pw-content { gap: 14px; }
+    .dt-name { font-size: 20px; }
+    .pw-timeline { gap: 4px; }
+    .timeline-day { padding: 10px 6px; }
+    .pw-charts-row {
+        grid-template-columns: 1fr;
+        height: auto;
     }
 
-    .dt-main-title { font-size: 24px; }
+    /* ── Panels de configuración / Premium Inputs ── */
+    .premium-input {
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+    .platinum-widget { padding: 16px; }
 
-    /* Avatar Responsive Fix */
+    /* ── Analytics ── */
+    .dt-analytics-view { padding: 15px; }
+    .chart-card { padding: 18px; }
+
+    /* ── Avatar ── */
     .user-avatar-container {
         width: 60px !important;
         height: 60px !important;
@@ -789,6 +852,7 @@ body { background: #121212 !important; }
         margin: 0 auto;
     }
 }
+
 
 /* ── UX Estándar - Staging de Tareas ── */
 .ex-add-btn.staged {
