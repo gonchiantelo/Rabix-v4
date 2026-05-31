@@ -214,10 +214,18 @@ window.DTEngine = {
                 return;
             }
 
-            const [{ data, error }, { data: customData, error: customErr }] = await Promise.all([
+            const [{ data, error }, { data: customData }, { data: sessionData }] = await Promise.all([
                 window.supabase.from('training_logs').select('*').eq('team_id', teamId).gte('fecha', startDate).lte('fecha', endDate),
-                window.supabase.from('custom_exercises').select('*')
+                window.supabase.from('custom_exercises').select('*'),
+                window.supabase.from('microcycle_sessions').select('*').eq('team_id', teamId).gte('fecha', startDate).lte('fecha', endDate)
             ]);
+
+            this._microcycleSessions = {};
+            if (sessionData) {
+                sessionData.forEach(s => {
+                    this._microcycleSessions[s.fecha] = s;
+                });
+            }
 
             if (customData) {
                 window.CustomExercises = customData.map(ex => ({ ...ex, numericId: ex.id, isCustom: true }));
@@ -791,27 +799,13 @@ window.DTEngine = {
                             </div>
                         </div>
 
-                        <!-- ══ BLOQUE CENTRAL: CREADOR DE ACTIVIDADES ══ -->
-                        <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
-                            <h4 style="margin:0; color:#E5E7EB; font-family:Outfit,sans-serif; font-size:0.85rem; font-weight:800; letter-spacing:1px; text-transform:uppercase;">Actividades de la Sesión</h4>
-                            <div style="background:#161616; border:1px solid #2a2a2a; border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:8px; box-sizing:border-box;">
-                                <input type="text" id="drawer-act-name" placeholder="Nombre (ej. Rondo 4v4)" style="width:100%; background:#0d0d0d; border:1px solid #2e2e2e; color:#F5F5F5; padding:9px 10px; border-radius:7px; box-sizing:border-box; outline:none; font-family:Outfit,sans-serif; font-size:0.85rem; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F2FE'" onblur="this.style.borderColor='#2e2e2e'">
-                                <textarea id="drawer-act-desc" placeholder="Descripción breve..." rows="2" style="width:100%; background:#0d0d0d; border:1px solid #2e2e2e; color:#F5F5F5; padding:9px 10px; border-radius:7px; box-sizing:border-box; resize:vertical; min-height:44px; outline:none; font-family:Outfit,sans-serif; font-size:0.8rem; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F2FE'" onblur="this.style.borderColor='#2e2e2e'"></textarea>
-                                <div style="display:flex; gap:8px; align-items:stretch;">
-                                    <input type="number" id="drawer-act-dur" placeholder="Min" min="1" style="flex:1; background:#0d0d0d; border:1px solid #2e2e2e; color:#F5F5F5; padding:9px 10px; border-radius:7px; box-sizing:border-box; outline:none; font-family:Outfit,sans-serif; font-size:0.85rem; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F2FE'" onblur="this.style.borderColor='#2e2e2e'">
-                                    <button onclick="window.DTEngine.addDrawerActivity()" style="background:#00F2FE; color:#000; font-family:Outfit,sans-serif; font-weight:800; font-size:0.8rem; border:none; padding:9px 14px; border-radius:7px; cursor:pointer; white-space:nowrap; letter-spacing:0.5px; transition:filter 0.2s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">+ AGREGAR</button>
-                                </div>
-                            </div>
-                            <div id="drawer-activities-list" style="display:flex; flex-direction:column; gap:6px; min-height:30px;">
-                                <div style="color:#6b7280; font-size:0.8rem; text-align:center; padding:8px;">No hay actividades para esta sesión.</div>
-                            </div>
-                        </div>
+
 
                         <!-- ══ BLOQUE INFERIOR: MATEMÁTICA & GUARDADO ══ -->
                         <div style="padding: 16px 20px; display: flex; align-items: center; gap: 14px;">
                             <div style="display:flex; flex-direction:column; gap:3px; flex-shrink:0;">
                                 <label style="color:#00F2FE; font-size:0.65rem; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;">Volumen</label>
-                                <input type="number" id="drawer-volumen" placeholder="0" readonly style="width:90px; background:#0a0a0a; border:1.5px solid rgba(0,242,254,0.35); color:#00F2FE; padding:9px 6px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; font-size:1.2rem; font-weight:900; text-align:center; box-sizing:border-box; letter-spacing:1px;">
+                                <input type="number" id="drawer-volumen" class="premium-input" placeholder="Ej: 90" style="width:90px; background:#0a0a0a; border:1.5px solid rgba(0,242,254,0.35); color:#00F2FE; padding:9px 6px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; font-size:1.2rem; font-weight:900; text-align:center; box-sizing:border-box; letter-spacing:1px;">
                             </div>
                             <button id="drawer-save-btn" onclick="window.DTEngine.guardarDrawerSession()" style="flex:1; padding:13px 10px; background:#00F2FE; color:#080808; border:none; border-radius:8px; font-family:Outfit,sans-serif; font-weight:900; font-size:0.9rem; text-transform:uppercase; letter-spacing:1.5px; cursor:pointer; transition:filter 0.2s, transform 0.1s; white-space:nowrap;" onmouseover="this.style.filter='brightness(1.1)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.filter='brightness(1)'; this.style.transform='translateY(0)'">GUARDAR SESIÓN</button>
                         </div>
@@ -1153,15 +1147,21 @@ window.DTEngine = {
                 ? 'background:rgba(0,242,254,0.25); border-color:#00F2FE; box-shadow:0 0 6px rgba(0,242,254,0.4);'
                 : 'background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.15);';
 
+            const session = (this._microcycleSessions && this._microcycleSessions[dateStr]) || null;
+            const enfoqueBadge = (session && session.enfoque) ? `<span class="badge-enfoque" style="font-size: 0.65rem; font-weight: 700; color: #00F2FE; background: rgba(0,242,254,0.1); padding: 2px 6px; border-radius: 4px; margin-top: 4px;">${session.enfoque}</span>` : '';
+            const volumenText = (session && session.volumen_minutos) ? `<span class="text-muted" style="font-size: 0.7rem; color: #a1a1aa; font-weight: 600; margin-top: 2px;">⏱ ${session.volumen_minutos} min</span>` : '';
+
             html += `
                 <div class="macro-day ${typeClass ? typeClass : ''} ${pastClass}${hasTasks && isPast ? ' has-tasks' : ''}" data-date="${dateStr}" onclick="${isPast ? 'void(0)' : `DTEngine.openDrawer('${dateStr}')`}">
                     <div class="m-day-top">
                         <span class="m-day-num">${d}</span>
-                        <div style="display: flex; align-items: center; gap: 4px;">
+                        <div style="display: flex; align-items: flex-start; gap: 4px;">
                             ${!isPast ? `<button onclick="event.stopPropagation(); window.DTEngine.toggleCalendarMatchDay('${dateStr}', this)" title="Marcar como Día de Partido" style="width:22px; height:22px; border-radius:5px; border:1.5px solid; font-size:0.7rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; transition:all 0.2s; flex-shrink:0; ${matchBtnStyle}">⚽</button>` : ''}
                             <div style="display: flex; flex-direction: column; align-items: flex-end;">
                                 <span class="m-day-label ${label === '' ? 'label-libre' : ''}">${label}</span>
                                 ${sugBadge}
+                                ${enfoqueBadge}
+                                ${volumenText}
                             </div>
                         </div>
                         ${isPast && hasTasks ? '<span class="past-hist-badge">HIST</span>' : ''}
@@ -1237,10 +1237,8 @@ window.DTEngine = {
         return 'type-base';
     },
 
-    async openDrawer(date) {
         this._selectedDate = date;
         this._showAllExercises = false;
-        this._dayActivities = [];
 
         // Poblar título y etiqueta
         document.getElementById('drawer-date-title').innerText = date;
@@ -1256,7 +1254,6 @@ window.DTEngine = {
         if (volEl) volEl.value = '';
         if (saveBtn) saveBtn.textContent = 'GUARDAR SESIÓN';
 
-        this.renderDrawerActivities();
         this.updateDrawerUI();
         document.getElementById('dt-drawer').classList.remove('hidden');
 
@@ -1274,14 +1271,10 @@ window.DTEngine = {
                 if (sessionData) {
                     if (enfoqueEl && sessionData.enfoque) enfoqueEl.value = sessionData.enfoque;
                     if (especEl && sessionData.indice_especificidad) especEl.value = sessionData.indice_especificidad;
+                    if (volEl && sessionData.volumen_minutos) volEl.value = sessionData.volumen_minutos;
                     if (sessionData.is_match_day) {
                         this._matchDays.add(date);
                     }
-                    if (sessionData.actividades && Array.isArray(sessionData.actividades)) {
-                        this._dayActivities = sessionData.actividades;
-                    }
-                    this.renderDrawerActivities();
-                    this.calculateDrawerVolume();
                 }
             } catch (e) { console.error('Error cargando sesión del día:', e); }
         }
@@ -1326,77 +1319,7 @@ window.DTEngine = {
         this.generateCalendar();
     },
 
-    // ── AGREGAR ACTIVIDAD AL DRAWER ──
-    addDrawerActivity() {
-        const nameInput = document.getElementById('drawer-act-name');
-        const descInput = document.getElementById('drawer-act-desc');
-        const durInput = document.getElementById('drawer-act-dur');
 
-        if (!nameInput || !durInput) return;
-        if (!nameInput.value.trim() || !durInput.value) {
-            alert('El nombre y la duración son obligatorios.');
-            return;
-        }
-
-        const activity = {
-            id: Date.now().toString(),
-            nombre: nameInput.value.trim(),
-            descripcion: (descInput ? descInput.value.trim() : ''),
-            duracion: parseInt(durInput.value)
-        };
-
-        this._dayActivities.push(activity);
-
-        // Limpiar inputs
-        nameInput.value = '';
-        if (descInput) descInput.value = '';
-        durInput.value = '';
-        nameInput.focus();
-
-        this.renderDrawerActivities();
-        this.calculateDrawerVolume();
-    },
-
-    // ── ELIMINAR ACTIVIDAD DEL DRAWER ──
-    removeDrawerActivity(index) {
-        this._dayActivities.splice(index, 1);
-        this.renderDrawerActivities();
-        this.calculateDrawerVolume();
-    },
-
-    // ── RENDERIZAR LISTA DE ACTIVIDADES ──
-    renderDrawerActivities() {
-        const listDiv = document.getElementById('drawer-activities-list');
-        if (!listDiv) return;
-
-        if (this._dayActivities.length === 0) {
-            listDiv.innerHTML = '<div style="color:#6b7280; font-size:0.8rem; text-align:center; padding:8px;">No hay actividades para esta sesión.</div>';
-            return;
-        }
-
-        listDiv.innerHTML = '';
-        this._dayActivities.forEach((act, idx) => {
-            const actDiv = document.createElement('div');
-            actDiv.style.cssText = 'background:#111; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; transition:border-color 0.2s;';
-            actDiv.onmouseover = () => actDiv.style.borderColor = 'rgba(0,242,254,0.3)';
-            actDiv.onmouseout = () => actDiv.style.borderColor = 'rgba(255,255,255,0.08)';
-            actDiv.innerHTML = `
-                <div style="flex-grow:1; min-width:0;">
-                    <div style="color:#fff; font-weight:700; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${act.nombre} <span style="color:#00F2FE; font-size:0.75rem; margin-left:6px;">${act.duracion} min</span></div>
-                    ${act.descripcion ? `<div style="color:#9ca3af; font-size:0.72rem; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${act.descripcion}</div>` : ''}
-                </div>
-                <button onclick="window.DTEngine.removeDrawerActivity(${idx})" style="background:transparent; border:none; color:#ef4444; font-size:1.1rem; cursor:pointer; padding:4px 6px; transition:color 0.2s; flex-shrink:0;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#ef4444'">✕</button>
-            `;
-            listDiv.appendChild(actDiv);
-        });
-    },
-
-    // ── CÁLCULO AUTOMÁTICO DE VOLUMEN ──
-    calculateDrawerVolume() {
-        const total = this._dayActivities.reduce((sum, act) => sum + (act.duracion || 0), 0);
-        const volEl = document.getElementById('drawer-volumen');
-        if (volEl) volEl.value = total || '';
-    },
 
     // ── GUARDADO UNIFICADO (UPSERT) ──
     async guardarDrawerSession() {
@@ -1417,8 +1340,7 @@ window.DTEngine = {
             enfoque: enfoque,
             volumen_minutos: volumen ? parseInt(volumen) : null,
             indice_especificidad: parseFloat(especificidad),
-            is_match_day: isMatch,
-            actividades: this._dayActivities
+            is_match_day: isMatch
         };
 
         const btn = document.getElementById('drawer-save-btn');
