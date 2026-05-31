@@ -797,6 +797,11 @@ window.DTEngine = {
                                     </select>
                                 </div>
                             </div>
+                            
+                            <div id="rival-container" style="display: none; margin-top: 12px;">
+                                <label style="color:#9ca3af; font-size:0.68rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Rival</label>
+                                <input type="text" id="macro-rival" class="premium-input" placeholder="Nombre del Rival (ej. Nacional)" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff; padding:10px 8px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; font-size:0.85rem; box-sizing:border-box; transition: border-color 0.2s;" onfocus="this.style.borderColor='#00F2FE'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+                            </div>
                         </div>
 
 
@@ -1150,6 +1155,7 @@ window.DTEngine = {
             const session = (this._microcycleSessions && this._microcycleSessions[dateStr]) || null;
             const enfoqueBadge = (session && session.enfoque) ? `<span class="badge-enfoque" style="font-size: 0.65rem; font-weight: 700; color: #00F2FE; background: rgba(0,242,254,0.1); padding: 2px 6px; border-radius: 4px; margin-top: 4px;">${session.enfoque}</span>` : '';
             const volumenText = (session && session.volumen_minutos) ? `<span class="text-muted" style="font-size: 0.7rem; color: #a1a1aa; font-weight: 600; margin-top: 2px;">⏱ ${session.volumen_minutos} min</span>` : '';
+            const rivalBadge = (isMatch && session && session.rival) ? `<div class="rival-badge" style="font-size: 0.75rem; color: #fff; background: rgba(255,59,48,0.2); border: 1px solid rgba(255,59,48,0.5); padding: 3px 6px; border-radius: 4px; margin-top: 4px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center;">🆚 ${session.rival}</div>` : '';
 
             html += `
                 <div class="macro-day ${typeClass ? typeClass : ''} ${pastClass}${hasTasks && isPast ? ' has-tasks' : ''}" data-date="${dateStr}" onclick="${isPast ? 'void(0)' : `DTEngine.openDrawer('${dateStr}')`}">
@@ -1162,6 +1168,7 @@ window.DTEngine = {
                                 ${sugBadge}
                                 ${enfoqueBadge}
                                 ${volumenText}
+                                ${rivalBadge}
                             </div>
                         </div>
                         ${isPast && hasTasks ? '<span class="past-hist-badge">HIST</span>' : ''}
@@ -1254,6 +1261,13 @@ window.DTEngine = {
         if (especEl) especEl.value = '0.4';
         if (volEl) volEl.value = '';
         if (saveBtn) saveBtn.textContent = 'GUARDAR SESIÓN';
+        
+        const rivalContainer = document.getElementById('rival-container');
+        const rivalInput = document.getElementById('macro-rival');
+        const isMatch = this._matchDays.has(date);
+        
+        if (rivalContainer) rivalContainer.style.display = isMatch ? 'block' : 'none';
+        if (rivalInput) rivalInput.value = '';
 
         this.updateDrawerUI();
         document.getElementById('dt-drawer').classList.remove('hidden');
@@ -1275,6 +1289,10 @@ window.DTEngine = {
                     if (volEl && sessionData.volumen_minutos) volEl.value = sessionData.volumen_minutos;
                     if (sessionData.is_match_day) {
                         this._matchDays.add(date);
+                        if (rivalContainer) rivalContainer.style.display = 'block';
+                    }
+                    if (sessionData.rival && rivalInput) {
+                        rivalInput.value = sessionData.rival;
                     }
                 }
             } catch (e) { console.error('Error cargando sesión del día:', e); }
@@ -1298,6 +1316,18 @@ window.DTEngine = {
             btnEl.style.background = isNowMatch ? 'rgba(0,242,254,0.25)' : 'rgba(255,255,255,0.06)';
             btnEl.style.borderColor = isNowMatch ? '#00F2FE' : 'rgba(255,255,255,0.15)';
             btnEl.style.boxShadow = isNowMatch ? '0 0 6px rgba(0,242,254,0.4)' : 'none';
+        }
+
+        // Si el drawer está abierto para este mismo día, actualizar la UI del rival
+        if (this._selectedDate === dateStr) {
+            const rivalContainer = document.getElementById('rival-container');
+            const rivalInput = document.getElementById('macro-rival');
+            if (isNowMatch) {
+                if (rivalContainer) rivalContainer.style.display = 'block';
+            } else {
+                if (rivalContainer) rivalContainer.style.display = 'none';
+                if (rivalInput) rivalInput.value = '';
+            }
         }
 
         // Sincronizar con CurrentTeam
@@ -1334,6 +1364,9 @@ window.DTEngine = {
         const especificidad = document.getElementById('drawer-especificidad')?.value || '0.4';
         const isMatch = this._matchDays.has(dateStr);
         const volumen = document.getElementById('drawer-volumen')?.value || null;
+        
+        const rivalInput = document.getElementById('macro-rival');
+        const rival = (isMatch && rivalInput) ? rivalInput.value.trim() : null;
 
         const payload = {
             team_id: teamId,
@@ -1341,7 +1374,8 @@ window.DTEngine = {
             enfoque: enfoque,
             volumen_minutos: volumen ? parseInt(volumen) : null,
             indice_especificidad: parseFloat(especificidad),
-            is_match_day: isMatch
+            is_match_day: isMatch,
+            rival: rival || null
         };
 
         const btn = document.getElementById('drawer-save-btn');
