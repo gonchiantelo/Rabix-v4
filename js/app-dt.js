@@ -1237,6 +1237,7 @@ window.DTEngine = {
         return 'type-base';
     },
 
+    async openDrawer(date) {
         this._selectedDate = date;
         this._showAllExercises = false;
 
