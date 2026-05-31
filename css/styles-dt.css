@@ -2041,3 +2041,57 @@ body { background: #121212 !important; }
 .custom-task-content::-webkit-scrollbar-thumb:hover {
     background: rgba(0, 242, 254, 0.6);
 }
+
+/* ── FUERZA BRUTA - NATIVE APP MOBILE ── */
+@media (max-width: 768px) {
+    /* Cuerpo de la App */
+    html, body {
+        overflow-x: hidden !important;
+        width: 100vw !important;
+        max-width: 100% !important;
+    }
+
+    /* Menú Superior (Navbar) */
+    .app-header .header-actions,
+    .app-header {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .app-header button,
+    .app-header .btn-logout {
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Calendario Semanal (Swipeable Row) */
+    .macro-calendar-grid {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        scroll-snap-type: x mandatory !important;
+        padding-bottom: 20px !important;
+    }
+
+    /* Tarjetas de los Días */
+    .macro-day {
+        min-width: 85vw !important;
+        flex: 0 0 auto !important;
+        scroll-snap-align: center !important;
+    }
+
+    /* Paneles y Widgets */
+    .drawer-content,
+    .dt-home-view,
+    .analytics-grid,
+    .profile-view-container,
+    .modal-grid,
+    .spm-panel {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+}
