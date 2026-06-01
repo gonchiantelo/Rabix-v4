@@ -2206,7 +2206,8 @@ window.DTEngine = {
         const valTransDefAta = document.getElementById('dna-trans-of')?.value || null;
         
         const rulesInputEl = document.getElementById('reglas_propension');
-        const valReglasPropension = rulesInputEl ? rulesInputEl.value : (DTEngine.RulesTagInput.getTags().join(', ') || null);
+        const valReglasPropension = rulesInputEl ? rulesInputEl.value : (DTEngine.RulesTagInput.getTags().join(' | ') || null);
+        const valPrincipiosOperativos = DTEngine.TagInput.getTags().join(' | ') || null;
 
         // Inputs del 11 ideal
         const valArquero = document.getElementById('ideal_arquero')?.value || null;
@@ -2248,13 +2249,18 @@ window.DTEngine = {
                 ideal_interior_izquierdo: valInteriorIzquierdo,
                 ideal_extremo_derecho: valExtremoDerecho,
                 ideal_extremo_izquierdo: valExtremoIzquierdo,
-                ideal_delantero: valDelantero
+                ideal_delantero: valDelantero,
+                principios_operativos: valPrincipiosOperativos
             };
+
+            console.log('📦 PAYLOAD A ENVIAR A PROFILES_DT:', profilePayload);
 
             const { error: pErr } = await window.supabase
                 .from('profiles_dt')
                 .update(profilePayload)
                 .eq('id', uid);
+
+            if (pErr) throw pErr;
 
             const pRes = { ok: !pErr };
 
@@ -2288,8 +2294,8 @@ window.DTEngine = {
             } else {
                 throw new Error('Error al guardar en el servidor. Verifica tu conexión.');
             }
-        } catch (err) {
-            alert('🔴 ' + err.message);
+        } catch (error) {
+            console.error('🔴 ERROR SUPABASE:', error.message, error.details, error.hint);
         }
     },
 
