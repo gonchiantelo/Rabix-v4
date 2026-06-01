@@ -1731,6 +1731,7 @@ window.DTEngine = {
                         <button id="btn-add-c${ex.numericId}" class="ex-add-btn ${isStaged ? 'staged' : ''}" onclick="DTEngine.stageExercise('${ex.numericId}', true)">
                             ${isStaged ? '✓' : '+'}
                         </button>
+                        <button type="button" class="ex-del-btn" style="background:transparent; border:none; color:#ff4444; font-size:1.1rem; cursor:pointer; padding:0 5px;" onclick="DTEngine.deleteCustomTask('${ex.numericId}')" title="Eliminar de mi Biblioteca">🗑️</button>
                     </div>
                 </div>
             `;
@@ -1887,32 +1888,72 @@ window.DTEngine = {
             const task = this._assignedTasks[date][index];
             if (!task) return;
 
-            const teamId = window.CurrentTeam?.id;
-            const userId = localStorage.getItem('ravix_v5_uid');
-            const token = localStorage.getItem('ravix_token');
+            const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id') || window.CurrentUser?.team_id;
+            if (!teamId) return alert("Error: Equipo no identificado.");
 
-            if (!teamId || !userId || !token) {
-                alert("Error: Sesión no identificada.");
-                return;
+            console.log("🟡 Intentando desasignar tarea del calendario:", task);
+            
+            // 1. Lógica solicitada: Filtrar del array 'actividades' en microcycle_sessions
+            const session = this._microcycleSessions && this._microcycleSessions[date];
+            if (session) {
+                let arrayActualizado = session.actividades || [];
+                // Filtrar asegurando comparar id o ejercicio_id
+                arrayActualizado = arrayActualizado.filter(act => {
+                    const actId = String(act.id || act.ejercicio_id || act);
+                    return actId !== String(task.rawId) && actId !== String(task.id);
+                });
+
+                const { error: sessionError } = await window.supabase
+                    .from('microcycle_sessions')
+                    .update({ actividades: arrayActualizado })
+                    .eq('team_id', teamId)
+                    .eq('fecha', date);
+
+                if (sessionError) throw sessionError;
+                session.actividades = arrayActualizado;
             }
 
-            console.log("🟡 Intentando borrar vía RPC:", task);
+            // 2. Fallback de persistencia: Borrar también el registro en training_logs
+            if (task.logId) {
+                await window.supabase.from('training_logs').delete().eq('id', task.logId);
+            }
 
-            const { error } = await window.supabase.rpc('borrar_tarea_calendario', {
-                p_user_id: userId,
-                p_team_id: teamId,
-                p_fecha: date,
-                p_scenario: task.block,
-                p_task_id: task.id.toString()
-            });
-            if (error) throw error;
-
-            // Solo después de confirmar, refrescamos el estado global
+            // Refrescar el estado global de la UI
             await this.refreshState();
 
         } catch (error) {
-            console.error("🔴 Error crítico al borrar en RPC:", error);
+            console.error("🔴 Error crítico al borrar en removeTask:", error);
             alert("Error al borrar: " + (error.message || error));
+        }
+    },
+
+    async deleteCustomTask(taskId) {
+        try {
+            if (!confirm('¿Estás seguro de que deseas eliminar esta tarea de tu biblioteca para siempre?')) return;
+            
+            const uid = localStorage.getItem('ravix_v5_uid');
+            if (!uid) return;
+            
+            const { error } = await window.supabase
+                .from('custom_exercises')
+                .delete()
+                .eq('id', taskId)
+                .eq('user_id', uid);
+
+            if (error) throw error;
+            
+            // Eliminar del estado local
+            if (window.CustomExercises) {
+                window.CustomExercises = window.CustomExercises.filter(t => String(t.numericId) !== String(taskId) && String(t.id) !== String(taskId));
+            }
+            
+            // Re-renderizar la biblioteca usando la etiqueta actual
+            this.renderLibrary(this._stagedLabel || this.calcularEtiquetaMD(this._selectedDate, Array.from(this._matchDays)));
+            
+            if (this._showToast) this._showToast('🗑️ Tarea eliminada permanentemente', 'success');
+        } catch(err) {
+            console.error("🔴 Error al borrar custom task:", err);
+            alert("Error al borrar la tarea: " + err.message);
         }
     },
 
