@@ -2122,90 +2122,160 @@ window.DTEngine = {
         });
     },
 
-    loadProfile() {
+    async loadProfile() {
         const userData = window.CurrentUser;
         const teamData = window.CurrentTeam;
 
         // Inicializar el componente Tag Input (datalist + render)
         this.TagInput.init();
 
-        if (userData) {
+        if (userData && teamData) {
             const nameEl = document.getElementById('prof-name');
-            const licenseEl = document.getElementById('prof-license');
-            if (nameEl) nameEl.value = userData.name || '';
-            if (licenseEl) licenseEl.value = userData.license || 'UEFA PRO';
-        }
-
-        if (teamData) {
             const teamNameEl = document.getElementById('prof-team-name');
             const teamColorEl = document.getElementById('prof-team-color');
-            const methodologyEl = document.getElementById('prof-methodology');
+            if (nameEl) nameEl.value = userData.name || '';
             if (teamNameEl) teamNameEl.value = teamData.name || '';
             if (teamColorEl) teamColorEl.value = teamData.primary_color || '#079FA0';
-            if (methodologyEl) methodologyEl.value = teamData.methodology || 'Periodización Táctica';
 
-            // Cargar ADN Táctico desde tactical_dna
-            const dna = teamData.tactical_dna || {};
-            const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-            setVal('dna-ataque', dna.ataque);
-            DTEngine.TagInput.load(dna.principios || []);
-            setVal('dna-defensa', dna.defensa);
-            setVal('dna-bloque', dna.bloque);
-            setVal('dna-trans-of', dna.trans_of);
-            setVal('dna-trans-def', dna.trans_def);
-            DTEngine.RulesTagInput.load(dna.reglas_provocacion || []);
-            DTEngine.PitchEngine.load(dna.ideal_11 || {});
+            try {
+                // Cargar datos planos desde profiles_dt
+                const { data: pData, error } = await window.supabase
+                    .from('profiles_dt')
+                    .select('*')
+                    .eq('id', userData.id)
+                    .single();
+
+                if (pData) {
+                    const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== null && val !== undefined) el.value = val; };
+                    
+                    setVal('prof-license', pData.licencia);
+                    setVal('prof-methodology', pData.metodologia);
+                    setVal('dna-esquema', pData.esquema_base);
+                    setVal('dna-ataque', pData.organizacion_ofensiva);
+                    setVal('altura_bloque_ofensivo', pData.altura_bloque_ofensivo);
+                    setVal('dna-defensa', pData.organizacion_defensiva);
+                    setVal('dna-bloque', pData.altura_bloque_defensivo);
+                    setVal('dna-trans-def', pData.transicion_ata_def);
+                    setVal('dna-trans-of', pData.transicion_def_ata);
+                    
+                    setVal('reglas_propension', pData.reglas_propension);
+                    if (pData.reglas_propension && document.getElementById('rules-tag-input-wrapper')) {
+                        DTEngine.RulesTagInput.load(pData.reglas_propension.split(',').map(s => s.trim()));
+                    }
+
+                    // Inputs del 11 ideal
+                    setVal('ideal_arquero', pData.ideal_arquero);
+                    setVal('ideal_lateral_derecho', pData.ideal_lateral_derecho);
+                    setVal('ideal_central_derecho', pData.ideal_central_derecho);
+                    setVal('ideal_central_izquierdo', pData.ideal_central_izquierdo);
+                    setVal('ideal_lateral_izquierdo', pData.ideal_lateral_izquierdo);
+                    setVal('ideal_pivote', pData.ideal_pivote);
+                    setVal('ideal_interior_derecho', pData.ideal_interior_derecho);
+                    setVal('ideal_interior_izquierdo', pData.ideal_interior_izquierdo);
+                    setVal('ideal_extremo_derecho', pData.ideal_extremo_derecho);
+                    setVal('ideal_extremo_izquierdo', pData.ideal_extremo_izquierdo);
+                    setVal('ideal_delantero', pData.ideal_delantero);
+
+                    // Reflejar cambios visuales en caso de usar el canvas antiguo temporalmente
+                    if (teamData.tactical_dna?.ideal_11) {
+                        DTEngine.PitchEngine.load(teamData.tactical_dna.ideal_11);
+                    }
+                }
+            } catch (err) {
+                console.error("Error cargando profiles_dt plano:", err);
+            }
         }
     },
 
     async saveProfile() {
-        const uid = localStorage.getItem('ravix_v5_uid');
-        const token = localStorage.getItem('ravix_token');
+        const uid = window.CurrentUser?.id || localStorage.getItem('ravix_v5_uid');
+        
+        const name = document.getElementById('prof-name')?.value;
+        const teamName = document.getElementById('prof-team-name')?.value;
+        const color = document.getElementById('prof-team-color')?.value;
+        
+        // 1. Captura de Datos Planos (DOM a variables individuales)
+        const valLicencia = document.getElementById('prof-license')?.value || null;
+        const valMetodologia = document.getElementById('prof-methodology')?.value || null;
+        const valEsquemaBase = document.getElementById('dna-esquema')?.value || null;
+        const valOrgOfensiva = document.getElementById('dna-ataque')?.value || null;
+        const valAlturaOfensiva = document.getElementById('altura_bloque_ofensivo')?.value || null;
+        const valOrgDefensiva = document.getElementById('dna-defensa')?.value || null;
+        const valAlturaDefensiva = document.getElementById('dna-bloque')?.value || null;
+        const valTransAtaDef = document.getElementById('dna-trans-def')?.value || null;
+        const valTransDefAta = document.getElementById('dna-trans-of')?.value || null;
+        
+        const rulesInputEl = document.getElementById('reglas_propension');
+        const valReglasPropension = rulesInputEl ? rulesInputEl.value : (DTEngine.RulesTagInput.getTags().join(', ') || null);
 
-        const name = document.getElementById('prof-name').value;
-        const license = document.getElementById('prof-license').value;
-        const teamName = document.getElementById('prof-team-name').value;
-        const color = document.getElementById('prof-team-color').value;
-        const methodology = document.getElementById('prof-methodology').value;
-
-        // Construir objeto ADN Táctico
-        const tactical_dna = {
-            ataque: document.getElementById('dna-ataque')?.value,
-            principios: DTEngine.TagInput.getTags(),
-            defensa: document.getElementById('dna-defensa')?.value,
-            bloque: document.getElementById('dna-bloque')?.value,
-            trans_of: document.getElementById('dna-trans-of')?.value,
-            trans_def: document.getElementById('dna-trans-def')?.value,
-            reglas_provocacion: DTEngine.RulesTagInput.getTags(),
-            ideal_11: DTEngine.PitchEngine.getData(),
-        };
+        // Inputs del 11 ideal
+        const valArquero = document.getElementById('ideal_arquero')?.value || null;
+        const valLateralDerecho = document.getElementById('ideal_lateral_derecho')?.value || null;
+        const valCentralDerecho = document.getElementById('ideal_central_derecho')?.value || null;
+        const valCentralIzquierdo = document.getElementById('ideal_central_izquierdo')?.value || null;
+        const valLateralIzquierdo = document.getElementById('ideal_lateral_izquierdo')?.value || null;
+        const valPivote = document.getElementById('ideal_pivote')?.value || null;
+        const valInteriorDerecho = document.getElementById('ideal_interior_derecho')?.value || null;
+        const valInteriorIzquierdo = document.getElementById('ideal_interior_izquierdo')?.value || null;
+        const valExtremoDerecho = document.getElementById('ideal_extremo_derecho')?.value || null;
+        const valExtremoIzquierdo = document.getElementById('ideal_extremo_izquierdo')?.value || null;
+        const valDelantero = document.getElementById('ideal_delantero')?.value || null;
 
         if (!name || !teamName) return alert('Nombre y Equipo son obligatorios.');
 
         try {
-            console.log('💾 Guardando cambios en perfil, equipo y ADN táctico...');
+            console.log('💾 Guardando perfil plano y conexiones de equipo...');
 
-            // 1. Actualizar Usuario
-            const { error: uErr } = await window.supabase.from('users').update({ name, license }).eq('id', uid);
+            // 2. Guardado Plano en Supabase
+            const profilePayload = {
+                licencia: valLicencia,
+                metodologia: valMetodologia,
+                esquema_base: valEsquemaBase,
+                organizacion_ofensiva: valOrgOfensiva,
+                altura_bloque_ofensivo: valAlturaOfensiva,
+                organizacion_defensiva: valOrgDefensiva,
+                altura_bloque_defensivo: valAlturaDefensiva,
+                transicion_ata_def: valTransAtaDef,
+                transicion_def_ata: valTransDefAta,
+                reglas_propension: valReglasPropension,
+                ideal_arquero: valArquero,
+                ideal_lateral_derecho: valLateralDerecho,
+                ideal_central_derecho: valCentralDerecho,
+                ideal_central_izquierdo: valCentralIzquierdo,
+                ideal_lateral_izquierdo: valLateralIzquierdo,
+                ideal_pivote: valPivote,
+                ideal_interior_derecho: valInteriorDerecho,
+                ideal_interior_izquierdo: valInteriorIzquierdo,
+                ideal_extremo_derecho: valExtremoDerecho,
+                ideal_extremo_izquierdo: valExtremoIzquierdo,
+                ideal_delantero: valDelantero
+            };
+
+            const { error: pErr } = await window.supabase
+                .from('profiles_dt')
+                .update(profilePayload)
+                .eq('id', uid);
+
+            const pRes = { ok: !pErr };
+
+            // Actualizar datos base (Usuarios y Equipos)
+            const { error: uErr } = await window.supabase.from('users').update({ name, license: valLicencia }).eq('id', uid);
             const uRes = { ok: !uErr };
 
-            // 2. Actualizar Equipo
             const teamId = window.CurrentTeam?.id;
             const { error: tErr } = await window.supabase.from('teams').update({ name: teamName }).eq('id', teamId);
             const tRes = { ok: !tErr };
 
-            // 3. Actualizar Config Táctica (incluyendo tactical_dna)
-            const { error: cErr } = await window.supabase.from('team_configs').update({ primary_color: color, methodology, tactical_dna }).eq('team_id', teamId);
+            const { error: cErr } = await window.supabase.from('team_configs').update({ primary_color: color, methodology: valMetodologia }).eq('team_id', teamId);
             const cRes = { ok: !cErr };
 
-            if (uRes.ok && tRes.ok && cRes.ok) {
+            if (uRes.ok && tRes.ok && cRes.ok && pRes.ok) {
                 // Actualizar Memoria Global
-                if (window.CurrentUser) { window.CurrentUser.name = name; window.CurrentUser.license = license; }
+                if (window.CurrentUser) { window.CurrentUser.name = name; window.CurrentUser.license = valLicencia; }
                 if (window.CurrentTeam) {
                     window.CurrentTeam.name = teamName;
                     window.CurrentTeam.primary_color = color;
-                    window.CurrentTeam.methodology = methodology;
-                    window.CurrentTeam.tactical_dna = tactical_dna;
+                    window.CurrentTeam.methodology = valMetodologia;
                 }
 
                 // Actualizar CSS
