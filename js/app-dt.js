@@ -2131,9 +2131,12 @@ window.DTEngine = {
 
         if (userData && teamData) {
             const nameEl = document.getElementById('prof-name');
+            const dtNameInputEl = document.getElementById('dt-name-input');
             const teamNameEl = document.getElementById('prof-team-name');
             const teamColorEl = document.getElementById('prof-team-color');
+            
             if (nameEl) nameEl.value = userData.name || '';
+            if (dtNameInputEl) dtNameInputEl.value = userData.name || '';
             if (teamNameEl) teamNameEl.value = teamData.name || '';
             if (teamColorEl) teamColorEl.value = teamData.primary_color || '#079FA0';
 
@@ -2158,9 +2161,11 @@ window.DTEngine = {
                     setVal('dna-trans-def', pData.transicion_ata_def);
                     setVal('dna-trans-of', pData.transicion_def_ata);
                     
-                    setVal('reglas_propension', pData.reglas_propension);
-                    if (pData.reglas_propension && document.getElementById('rules-tag-input-wrapper')) {
-                        DTEngine.RulesTagInput.load(pData.reglas_propension.split(',').map(s => s.trim()));
+                    // Manejo de reglas de acción y provocación (Sincronizado con esquema BD)
+                    const reglasVal = pData.reglas_accion_provocacion || pData.reglas_accion || pData.reglas_propension || '';
+                    setVal('reglas_propension', reglasVal);
+                    if (reglasVal && document.getElementById('rules-tag-input-wrapper')) {
+                        DTEngine.RulesTagInput.load(reglasVal.split('|').map(s => s.trim()));
                     }
 
                     // Inputs del 11 ideal
@@ -2208,6 +2213,7 @@ window.DTEngine = {
         const rulesInputEl = document.getElementById('reglas_propension');
         const valReglasPropension = rulesInputEl ? rulesInputEl.value : (DTEngine.RulesTagInput.getTags().join(' | ') || null);
         const valPrincipiosOperativos = DTEngine.TagInput.getTags().join(' | ') || null;
+        const valReglasAccion = document.getElementById('reglas_accion')?.value || null;
 
         // Inputs del 11 ideal
         const valArquero = document.getElementById('ideal_arquero')?.value || null;
@@ -2227,8 +2233,9 @@ window.DTEngine = {
         try {
             console.log('💾 Guardando perfil plano y conexiones de equipo...');
 
-            // 2. Guardado Plano en Supabase
+            // 2. Guardado Plano en Supabase con esquema estricto y upsert
             const profilePayload = {
+                id: uid,
                 licencia: valLicencia,
                 metodologia: valMetodologia,
                 esquema_base: valEsquemaBase,
@@ -2238,7 +2245,9 @@ window.DTEngine = {
                 altura_bloque_defensivo: valAlturaDefensiva,
                 transicion_ata_def: valTransAtaDef,
                 transicion_def_ata: valTransDefAta,
-                reglas_propension: valReglasPropension,
+                principios_operativos: valPrincipiosOperativos,
+                reglas_accion: valReglasAccion,
+                reglas_accion_provocacion: valReglasPropension,
                 ideal_arquero: valArquero,
                 ideal_lateral_derecho: valLateralDerecho,
                 ideal_central_derecho: valCentralDerecho,
@@ -2249,16 +2258,14 @@ window.DTEngine = {
                 ideal_interior_izquierdo: valInteriorIzquierdo,
                 ideal_extremo_derecho: valExtremoDerecho,
                 ideal_extremo_izquierdo: valExtremoIzquierdo,
-                ideal_delantero: valDelantero,
-                principios_operativos: valPrincipiosOperativos
+                ideal_delantero: valDelantero
             };
 
-            console.log('📦 PAYLOAD A ENVIAR A PROFILES_DT:', profilePayload);
+            console.log('📦 PAYLOAD A ENVIAR A PROFILES_DT (UPSERT):', profilePayload);
 
             const { error: pErr } = await window.supabase
                 .from('profiles_dt')
-                .update(profilePayload)
-                .eq('id', uid);
+                .upsert(profilePayload);
 
             if (pErr) throw pErr;
 
