@@ -812,7 +812,10 @@ window.DTEngine = {
                                 <label style="color:#00F2FE; font-size:0.65rem; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;">Volumen</label>
                                 <input type="number" id="drawer-volumen" class="premium-input" placeholder="Ej: 90" style="width:90px; background:#0a0a0a; border:1.5px solid rgba(0,242,254,0.35); color:#00F2FE; padding:9px 6px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; font-size:1.2rem; font-weight:900; text-align:center; box-sizing:border-box; letter-spacing:1px;">
                             </div>
-                            <button id="drawer-save-btn" onclick="window.DTEngine.guardarDrawerSession()" style="flex:1; padding:13px 10px; background:#00F2FE; color:#080808; border:none; border-radius:8px; font-family:Outfit,sans-serif; font-weight:900; font-size:0.9rem; text-transform:uppercase; letter-spacing:1.5px; cursor:pointer; transition:filter 0.2s, transform 0.1s; white-space:nowrap;" onmouseover="this.style.filter='brightness(1.1)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.filter='brightness(1)'; this.style.transform='translateY(0)'">GUARDAR SESIÓN</button>
+                            <div style="display:flex; flex:1; gap:8px;">
+                                <button id="drawer-save-btn" onclick="window.DTEngine.guardarDrawerSession()" style="flex:1; padding:13px 10px; background:#00F2FE; color:#080808; border:none; border-radius:8px; font-family:Outfit,sans-serif; font-weight:900; font-size:0.9rem; text-transform:uppercase; letter-spacing:1.5px; cursor:pointer; transition:filter 0.2s, transform 0.1s; white-space:nowrap;" onmouseover="this.style.filter='brightness(1.1)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.filter='brightness(1)'; this.style.transform='translateY(0)'">GUARDAR SESIÓN</button>
+                                <button type="button" id="btn-delete-session" onclick="window.DTEngine.eliminarDrawerSession()" style="background: transparent; border: 1px solid #FF3B30; color: #FF3B30; padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family:Outfit,sans-serif; font-weight:900; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,59,48,0.1)'" onmouseout="this.style.background='transparent'" title="Eliminar Sesión">🗑️ BORRAR</button>
+                            </div>
                         </div>
 
                         <!-- ══ BIBLIOTECA DE TAREAS (Cajón colapsable) ══ -->
@@ -1406,6 +1409,54 @@ window.DTEngine = {
             console.error('❌ Error al guardar sesión:', e);
             alert('Error al guardar la sesión.');
             if (btn) btn.textContent = oldText;
+        }
+    },
+
+    async eliminarDrawerSession() {
+        const teamId = window.CurrentTeam?.id;
+        const dateStr = this._selectedDate;
+        if (!teamId || !dateStr) return;
+
+        if (!confirm('¿Seguro que deseas eliminar la planificación de este día?')) return;
+
+        try {
+            const { error } = await window.supabase
+                .from('microcycle_sessions')
+                .delete()
+                .match({ team_id: teamId, fecha: dateStr });
+
+            if (error) throw error;
+
+            console.log('✅ Sesión eliminada:', dateStr);
+            
+            // Limpiar estado local
+            if (this._microcycleSessions && this._microcycleSessions[dateStr]) {
+                delete this._microcycleSessions[dateStr];
+            }
+            if (this._matchDays.has(dateStr)) {
+                this._matchDays.delete(dateStr);
+                if (window.CurrentTeam) window.CurrentTeam.match_dates = Array.from(this._matchDays);
+                await this.saveMatchDays();
+            }
+
+            // Limpiar UI
+            const enfoqueEl = document.getElementById('drawer-enfoque');
+            const especEl = document.getElementById('drawer-especificidad');
+            const volEl = document.getElementById('drawer-volumen');
+            const rivalInput = document.getElementById('macro-rival');
+            if (enfoqueEl) enfoqueEl.value = 'Tensión';
+            if (especEl) especEl.value = '0.4';
+            if (volEl) volEl.value = '';
+            if (rivalInput) rivalInput.value = '';
+
+            // Refrescar calendario y cerrar
+            this.generateCalendar();
+            this.closeDrawer();
+            
+            alert('Sesión eliminada correctamente.');
+        } catch (e) {
+            console.error('❌ Error al eliminar sesión:', e);
+            alert('Error al eliminar la sesión.');
         }
     },
 
