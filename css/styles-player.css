@@ -985,3 +985,108 @@
     .adp-btn-cluster { gap: 10px; }
 }
 
+/* ── NEW SEGMENTED CONTROL ── */
+.adp-segmented-control {
+    display: flex;
+    background: rgba(0,0,0,0.05);
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
+}
+.adp-seg-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 10px 0;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.adp-seg-btn.active {
+    background: #ffffff;
+    color: #1C1C1E;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ── NEW DURATION WRAP ── */
+.adp-duration-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.adp-dur-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.05);
+    border: none;
+    font-size: 16px;
+    font-weight: 800;
+    color: #1C1C1E;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.adp-dur-btn:active { transform: scale(0.95); }
+.adp-dur-input {
+    flex: 1;
+    height: 44px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    background: #fafafa;
+    text-align: center;
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #1C1C1E;
+    outline: none;
+}
+.adp-dur-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+/* ── NEW HOOPER BLOCKS ── */
+.adp-hooper-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.adp-hooper-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.adp-hooper-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1C1C1E;
+}
+.adp-hooper-scale {
+    display: flex;
+    gap: 8px;
+}
+.adp-h-btn {
+    flex: 1;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid #e8e8ea;
+    background: #fafafa;
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+/* Colors: 1=Red, 5=Green */
+.adp-h-btn[data-val="1"].active { background: #ef4444; color: #fff; border-color: #ef4444; }
+.adp-h-btn[data-val="2"].active { background: #f97316; color: #fff; border-color: #f97316; }
+.adp-h-btn[data-val="3"].active { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+.adp-h-btn[data-val="4"].active { background: #84cc16; color: #fff; border-color: #84cc16; }
+.adp-h-btn[data-val="5"].active { background: #10b981; color: #fff; border-color: #10b981; }
+

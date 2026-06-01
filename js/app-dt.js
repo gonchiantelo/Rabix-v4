@@ -2439,15 +2439,22 @@ window.DTEngine = {
                 
                 // Cargar team_load_settings
                 if (teamData) {
-                    const { data: loadData } = await window.supabase.from('team_load_settings').select('*').eq('team_id', teamData.id).single();
+                    const { data: loadData } = await window.supabase.from('team_load_settings').select('*').eq('team_id', teamData.id).maybeSingle();
+                    const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== null && val !== undefined) el.value = val; };
+                    const cbVal = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+                    
                     if (loadData) {
-                        const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== null && val !== undefined) el.value = val; };
-                        const cbVal = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
                         cbVal('load-rpe-diff', loadData.rpe_diferenciado);
                         setVal('load-ac-ratio', loadData.umbral_ac_ratio);
                         setVal('load-monotony', loadData.umbral_monotonia);
                         cbVal('load-assistant', loadData.asistente_fisiologico);
                         setVal('load-wellness-freq', loadData.frecuencia_wellness);
+                    } else {
+                        cbVal('load-rpe-diff', false);
+                        setVal('load-ac-ratio', 1.5);
+                        setVal('load-monotony', 2.0);
+                        cbVal('load-assistant', false);
+                        setVal('load-wellness-freq', 'Solo Días de Entrenamiento');
                     }
                 }
 

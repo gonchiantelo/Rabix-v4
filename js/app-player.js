@@ -151,8 +151,16 @@ window.AthleteApp = {
 
     /* ── Estado interno del día ── */
     state: {
-        wellness: { sleep: 3, stress: 3, hooper: 2, submitted: false },
-        load:     { duration: null, rpe: null, submitted: false },
+        dailyLog: {
+            session_type: 'Entrenamiento Club',
+            duration_min: 90,
+            rpe_score: 5,
+            sleep_quality: 3,
+            stress_level: 3,
+            fatigue: 3,
+            muscle_soreness: 3,
+            mood: 3
+        },
         strength: { sets: [], totalTonnage: 0 },
         readiness: null,
         currentRegime: 'Concéntrico',
@@ -184,8 +192,7 @@ window.AthleteApp = {
 
         this.setupDate();
         this.setupUserProfile();
-        this.setupWellnessInteractions();
-        this.setupLoadInteractions();
+        this.setupDailyLogInteractions();
         this.setupStrengthInteractions();
 
         // Readiness inicial animado con delay
@@ -292,169 +299,116 @@ window.AthleteApp = {
     },
 
     /* ════════════════════
-       WELLNESS — SETUP
+       DAILY LOG — SETUP & SUBMIT
     ═══════════════════ */
-    setupWellnessInteractions: function() {
-        // Sleep buttons cluster
-        const sleepBtns = document.querySelectorAll('#wellness-sleep .adp-cluster-btn');
-        sleepBtns.forEach(btn => {
+    setupDailyLogInteractions: function() {
+        // Segmented Control (Tipo de Sesión)
+        const segBtns = document.querySelectorAll('#session-type-group .adp-seg-btn');
+        segBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                sleepBtns.forEach(b => b.classList.remove('adp-cluster-btn--active'));
-                btn.classList.add('adp-cluster-btn--active');
-                this.state.wellness.sleep = parseInt(btn.dataset.value);
-
-                const labels = ['', 'Mala', 'Regular', 'Buena', 'Excelente'];
-                const disp = document.getElementById('sleep-display');
-                if (disp) disp.textContent = labels[this.state.wellness.sleep] || '';
+                segBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.state.dailyLog.session_type = btn.dataset.type;
             });
         });
 
-        // Stress range
-        const stressRange = document.getElementById('wellness-stress');
-        if (stressRange) {
-            stressRange.addEventListener('input', () => {
-                const val = parseInt(stressRange.value);
-                this.state.wellness.stress = val;
-                this.updateRangeDisplay('wellness-stress', 'stress-display', val, '/ 10');
+        // Hooper Blocks
+        const hooperRows = document.querySelectorAll('.adp-hooper-row');
+        hooperRows.forEach(row => {
+            const metric = row.dataset.metric;
+            const btns = row.querySelectorAll('.adp-h-btn');
+            btns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.state.dailyLog[metric] = parseInt(btn.dataset.val);
+                });
+            });
+        });
+        
+        // Duration Input Sync
+        const durationInput = document.getElementById('input-duration');
+        if (durationInput) {
+            durationInput.addEventListener('input', () => {
+                this.state.dailyLog.duration_min = parseInt(durationInput.value) || 0;
             });
         }
+    },
 
-        // Hooper dots
-        const hooperDots = document.querySelectorAll('#wellness-hooper-dots .adp-hooper-dot');
-        hooperDots.forEach(dot => {
-            dot.addEventListener('click', () => {
-                hooperDots.forEach(d => d.classList.remove('adp-hooper-dot--active'));
-                dot.classList.add('adp-hooper-dot--active');
-                const val = parseInt(dot.dataset.val);
-                this.state.wellness.hooper = val;
-                const disp = document.getElementById('hooper-display');
-                if (disp) disp.textContent = `${val} / 7`;
-            });
-        });
+    adjustDuration: function(diff) {
+        const input = document.getElementById('input-duration');
+        if (input) {
+            let current = parseInt(input.value) || 0;
+            current = Math.max(0, current + diff);
+            input.value = current;
+            this.state.dailyLog.duration_min = current;
+        }
     },
 
     updateRangeDisplay: function(rangeId, displayId, value, suffix) {
         const disp = document.getElementById(displayId);
         if (disp) disp.textContent = `${value} ${suffix}`;
-    },
-
-    saveWellness: function() {
-        const w = this.state.wellness;
-        w.submitted = true;
-
-        // Calcular readiness
-        const readiness = this._calcReadiness();
-        this.updateReadiness(readiness);
-
-        // Actualizar badge
-        const badge = document.getElementById('wellness-badge');
-        if (badge) {
-            badge.textContent = 'COMPLETADO ✓';
-            badge.className = 'adp-badge adp-badge--done';
-        }
-
-        // Actualizar chip header
-        this._updateChip('chip-wellness', 'chip-wellness-val', 'Readiness: ' + readiness, true);
-
-        // Feedback visual en el card
-        const card = document.getElementById('widget-wellness');
-        if (card) {
-            card.style.transition = 'transform 0.3s, box-shadow 0.3s';
-            card.style.transform = 'scale(1.01)';
-            card.style.boxShadow = '0 12px 40px rgba(16,185,129,0.12)';
-            setTimeout(() => {
-                card.style.transform = '';
-                card.style.boxShadow = '';
-            }, 500);
-        }
-
-        this._showToast('✅ Wellness registrado. Readiness calculado.');
-    },
-
-    /* ════════════════════
-       CARGA — SETUP
-    ═══════════════════ */
-    setupLoadInteractions: function() {
-        // RPE visual scale: click para sincronizar con input
-        const rpeDots = document.querySelectorAll('#rpe-dots .adp-rpe-dot');
-        const rpeInput = document.getElementById('load-rpe');
-
-        rpeDots.forEach(dot => {
-            dot.addEventListener('click', () => {
-                const val = parseInt(dot.dataset.rpe);
-                if (rpeInput) {
-                    rpeInput.value = val;
-                    this.calculateLoad();
-                }
-                this._highlightRpeDots(val);
-            });
-        });
-
-        // Sync rpe input → visual dots
-        if (rpeInput) {
-            rpeInput.addEventListener('input', () => {
-                const val = parseInt(rpeInput.value);
-                if (val >= 1 && val <= 10) this._highlightRpeDots(val);
-                else this._highlightRpeDots(null);
-            });
+        if (rangeId === 'input-rpe') {
+            this.state.dailyLog.rpe_score = parseInt(value);
         }
     },
 
-    _highlightRpeDots: function(activeVal) {
-        document.querySelectorAll('#rpe-dots .adp-rpe-dot').forEach(dot => {
-            const v = parseInt(dot.dataset.rpe);
-            dot.className = 'adp-rpe-dot';
-            if (activeVal !== null && v <= activeVal) {
-                dot.classList.add(`rpe-${v}`);
+    submitDailyLog: async function() {
+        const btn = document.getElementById('btn-submit-daily');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Enviando...`;
+            btn.style.opacity = '0.7';
+        }
+
+        try {
+            // Get from window.CurrentUser or window.App.currentUser
+            const user = window.CurrentUser || window.App?.currentUser;
+            if (!user) throw new Error("No hay usuario logueado.");
+
+            const teamId = user.team_id || window.CurrentTeam?.id; 
+
+            const payload = {
+                player_id: user.id,
+                team_id: teamId,
+                fecha: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+                session_type: this.state.dailyLog.session_type,
+                duration_min: this.state.dailyLog.duration_min,
+                rpe_score: this.state.dailyLog.rpe_score,
+                sleep_quality: this.state.dailyLog.sleep_quality,
+                stress_level: this.state.dailyLog.stress_level,
+                fatigue: this.state.dailyLog.fatigue,
+                muscle_soreness: this.state.dailyLog.muscle_soreness,
+                mood: this.state.dailyLog.mood
+            };
+
+            const { error } = await window.supabase
+                .from('player_daily_logs')
+                .insert([payload]);
+
+            if (error) throw error;
+
+            this._showToast('✅ ¡Reporte enviado con éxito!');
+            
+            // Update chip manually as feedback
+            this._updateChip('chip-load', 'chip-load-val', `${payload.duration_min * payload.rpe_score} UA`, true);
+            this._updateChip('chip-wellness', 'chip-wellness-val', 'Completado', true);
+
+            if (btn) {
+                btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Reporte Enviado ✓`;
+                btn.style.opacity = '1';
+                btn.style.background = '#10B981';
             }
-        });
-    },
 
-    calculateLoad: function() {
-        const dur  = parseInt(document.getElementById('load-duration')?.value) || 0;
-        const rpe  = parseInt(document.getElementById('load-rpe')?.value) || 0;
-        const load = dur * rpe;
-
-        // Actualizar previews de fórmula
-        const durPrev = document.getElementById('load-dur-preview');
-        const rpePrev = document.getElementById('load-rpe-preview');
-        const result  = document.getElementById('load-result');
-
-        if (durPrev) durPrev.textContent = dur || '—';
-        if (rpePrev) rpePrev.textContent = rpe || '—';
-        if (result) {
-            result.textContent = load;
-            // micro-bump animation
-            result.style.transform = 'scale(1.1)';
-            setTimeout(() => { result.style.transform = ''; }, 180);
+        } catch (err) {
+            console.error("Error submitDailyLog:", err);
+            this._showToast('⚠️ Hubo un error al enviar el reporte.', 'warn');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Reintentar Envío`;
+                btn.style.opacity = '1';
+            }
         }
-
-        this.state.load.duration = dur;
-        this.state.load.rpe      = rpe;
-    },
-
-    saveLoad: function() {
-        const dur  = this.state.load.duration || 0;
-        const rpe  = this.state.load.rpe || 0;
-        const load = dur * rpe;
-
-        if (!dur || !rpe) {
-            this._showToast('⚠️ Ingresa la duración y el RPE antes de registrar.', 'warn');
-            return;
-        }
-
-        this.state.load.submitted = true;
-
-        // Chip update
-        this._updateChip('chip-load', 'chip-load-val', `${load} UA`, true);
-
-        // Limpiar
-        document.getElementById('load-duration').value = '';
-        document.getElementById('load-rpe').value = '';
-        this.calculateLoad();
-        this._highlightRpeDots(null);
-
-        this._showToast(`🔥 Sesión registrada · Carga: ${load} UA`);
     },
 
     /* ════════════════════
