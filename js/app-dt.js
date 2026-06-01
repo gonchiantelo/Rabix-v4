@@ -566,6 +566,38 @@ window.DTEngine = {
                                 </div>
                             </div>
 
+                            <!-- BLOQUE 1.5: MOTOR DE CARGAS Y RENDIMIENTO -->
+                            <div class="profile-card" style="margin-top: 20px;">
+                                <h3 class="profile-section-title">⚡ MOTOR DE CARGAS Y RENDIMIENTO</h3>
+                                <div class="profile-form-grid">
+                                    <div class="profile-input-group" style="grid-column: span 2; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 8px;">
+                                        <label style="margin:0; font-size: 13px;">Separar RPE Cardiovascular y Muscular</label>
+                                        <input type="checkbox" id="load-rpe-diff" style="width:20px; height:20px; accent-color:#00F0FF; cursor:pointer;">
+                                    </div>
+                                    <div class="profile-input-group">
+                                        <label>LÍMITE RIESGO LESIÓN (A/C)</label>
+                                        <input type="number" step="0.1" id="load-ac-ratio" class="profile-input" value="1.5">
+                                    </div>
+                                    <div class="profile-input-group">
+                                        <label>LÍMITE DE MONOTONÍA SEMANAL</label>
+                                        <input type="number" step="0.1" id="load-monotony" class="profile-input" value="2.0">
+                                    </div>
+                                    <div class="profile-input-group" style="grid-column: span 2; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 8px;">
+                                        <label style="margin:0; font-size: 13px;">Activar alertas visuales de riesgo en Calendario</label>
+                                        <input type="checkbox" id="load-assistant" style="width:20px; height:20px; accent-color:#00F0FF; cursor:pointer;">
+                                    </div>
+                                    <div class="profile-input-group" style="grid-column: span 2;">
+                                        <label>FRECUENCIA DE CUESTIONARIO HOOPER</label>
+                                        <select id="load-wellness-freq" class="profile-input">
+                                            <option value="Diario">Diario</option>
+                                            <option value="Solo Días de Entrenamiento">Solo Días de Entrenamiento</option>
+                                            <option value="Apagado">Apagado</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+
                             <!-- BLOQUE 2: ADN TÁCTICO -->
                             <div class="profile-card" style="margin-top: 20px;">
                                 <h3 class="profile-section-title">⚙️ ADN TÁCTICO — MODELO DE JUEGO</h3>
@@ -2237,6 +2269,12 @@ window.DTEngine = {
 
         const weeklyMinutes = [0, 0, 0, 0, 0, 0, 0];
         const weeklySRPE = [0, 0, 0, 0, 0, 0, 0];
+        
+        // PREPARACIÓN FASE 2: Estructuras para "CARGA REAL" devuelta por los jugadores.
+        // Se usarán para superponer un segundo dataset en las gráficas semanales.
+        const weeklyRealMinutes = [0, 0, 0, 0, 0, 0, 0]; // TODO Phase 2
+        const weeklyRealSRPE = [0, 0, 0, 0, 0, 0, 0];    // TODO Phase 2
+
         const moments = { 'ATAQUE': 0, 'DEFENSA': 0, 'TRANSICIONES': 0, 'OTROS': 0 };
         const spaceData = [0, 0, 0, 0, 0, 0, 0];
 
@@ -2276,22 +2314,24 @@ window.DTEngine = {
             }
         };
 
-        // 1. Volumen
+        // 1. Volumen (Planificado vs Real en Fase 2)
         this._charts.carga = new Chart(document.getElementById('canvas-carga-semanal'), {
             type: 'bar',
             data: {
                 labels: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
-                datasets: [{ label: 'Minutos', data: weeklyMinutes, backgroundColor: '#079FA0', borderRadius: 5 }]
+                // TODO Phase 2: Agregar un segundo objeto a 'datasets' para "Volumen Real"
+                datasets: [{ label: 'Minutos (Volumen Proyectado)', data: weeklyMinutes, backgroundColor: '#079FA0', borderRadius: 5 }]
             },
             options: chartOptions
         });
 
-        // 2. sRPE (Línea)
+        // 2. sRPE (Línea) - Carga Proyectada
         this._charts.srpe = new Chart(document.getElementById('canvas-srpe'), {
             type: 'line',
             data: {
                 labels: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
-                datasets: [{ label: 'sRPE (Intensidad x Duración)', data: weeklySRPE, borderColor: '#F58B01', tension: 0.4 }]
+                // TODO Phase 2: Agregar un segundo objeto a 'datasets' para "Carga Real (sRPE Reportado)"
+                datasets: [{ label: 'Carga Proyectada (sRPE Planificado)', data: weeklySRPE, borderColor: '#F58B01', tension: 0.4 }]
             },
             options: chartOptions
         });
@@ -2381,8 +2421,23 @@ window.DTEngine = {
                         DTEngine.PitchEngine.load(teamData.tactical_dna.ideal_11);
                     }
                 }
+                
+                // Cargar team_load_settings
+                if (teamData) {
+                    const { data: loadData } = await window.supabase.from('team_load_settings').select('*').eq('team_id', teamData.id).single();
+                    if (loadData) {
+                        const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== null && val !== undefined) el.value = val; };
+                        const cbVal = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+                        cbVal('load-rpe-diff', loadData.rpe_diferenciado);
+                        setVal('load-ac-ratio', loadData.umbral_ac_ratio);
+                        setVal('load-monotony', loadData.umbral_monotonia);
+                        cbVal('load-assistant', loadData.asistente_fisiologico);
+                        setVal('load-wellness-freq', loadData.frecuencia_wellness);
+                    }
+                }
+
             } catch (err) {
-                console.error("Error cargando profiles_dt plano:", err);
+                console.error("Error cargando profiles_dt o team_load_settings:", err);
             }
         }
     },
@@ -2476,6 +2531,18 @@ window.DTEngine = {
 
             const { error: cErr } = await window.supabase.from('team_configs').update({ primary_color: color, methodology: valMetodologia }).eq('team_id', teamId);
             const cRes = { ok: !cErr };
+
+            // Upsert a team_load_settings
+            const teamLoadPayload = {
+                team_id: teamId,
+                rpe_diferenciado: document.getElementById('load-rpe-diff')?.checked || false,
+                umbral_ac_ratio: parseFloat(document.getElementById('load-ac-ratio')?.value) || 1.5,
+                umbral_monotonia: parseFloat(document.getElementById('load-monotony')?.value) || 2.0,
+                asistente_fisiologico: document.getElementById('load-assistant')?.checked || false,
+                frecuencia_wellness: document.getElementById('load-wellness-freq')?.value || 'Solo Días de Entrenamiento'
+            };
+            const { error: loadErr } = await window.supabase.from('team_load_settings').upsert(teamLoadPayload, { onConflict: 'team_id' });
+            if (loadErr) console.error("Error guardando team_load_settings", loadErr);
 
             if (uRes.ok && tRes.ok && cRes.ok && pRes.ok) {
                 // Actualizar Memoria Global
