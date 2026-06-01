@@ -835,72 +835,182 @@ window.DTEngine = {
                     </div>
                 </div>
 
-                <!-- Modal de Tarea Personalizada PREMIUM V2 -->
+                <!-- Modal de Tarea Personalizada PREMIUM V3 — exercises_library -->
                 <div id="modal-custom-task" class="modal-overlay hidden" onclick="DTEngine.closeCustomTaskModal()">
-                    <div class="custom-task-content" onclick="event.stopPropagation()" style="background:#080808; border:1px solid rgba(0,240,255,0.2); border-radius:16px; width:90vw; max-width:1400px; height:85vh; display:flex; flex-direction:row; overflow:hidden; color:#F5F5F5; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
-                        
-                        <!-- Columna Izquierda: Formularios (30%) -->
-                        <div style="width:30%; background:#1A1A1A; border-right:1px solid rgba(255,255,255,0.1); display:flex; flex-direction:column; padding:30px; box-sizing:border-box;">
-                            <h2 style="margin:0 0 5px 0; color:#00F0FF; font-family:Outfit,sans-serif; font-size:1.6rem; letter-spacing:1px;">DETALLES DE LA TAREA</h2>
-                            <p style="margin:0 0 25px 0; font-size:0.8rem; color:#9ca3af;">Configura los metadatos de tu ejercicio.</p>
+                    <div class="custom-task-content" onclick="event.stopPropagation()" style="background:#080808; border:1px solid rgba(0,240,255,0.2); border-radius:16px; width:92vw; max-width:1440px; height:88vh; display:flex; flex-direction:row; overflow:hidden; color:#F5F5F5; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
 
-                            <div style="flex-grow:1; overflow-y:auto; padding-right:10px;">
-                                <label style="font-size:0.75rem; color:#9ca3af; font-weight:bold; display:block; margin-bottom:5px;">TÍTULO</label>
-                                <input type="text" id="custom-task-name" placeholder="Ej: Rondo de pressing 4v4+3" style="width:100%; padding:14px; margin-bottom:20px; background:#080808; border:1px solid #333; border-radius:8px; color:#F5F5F5; font-size:1rem; outline:none; box-sizing:border-box; transition:border 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#333'">
-
-                                <label style="font-size:0.75rem; color:#9ca3af; font-weight:bold; display:block; margin-bottom:5px;">OBJETIVO / S.S.P.</label>
-                                <textarea id="ex-ssp" rows="3" placeholder="Ej: Ante ataque posicional del rival, presionar tras pérdida..." style="width:100%; padding:14px; margin-bottom:20px; background:#080808; border:1px solid #333; border-radius:8px; color:#F5F5F5; font-size:0.95rem; outline:none; resize:none; box-sizing:border-box; transition:border 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#333'"></textarea>
-
-                                <label style="font-size:0.75rem; color:#9ca3af; font-weight:bold; display:block; margin-bottom:5px;">DIMENSIONES</label>
-                                <input type="text" id="ex-dimensions" placeholder="Ej: 20x20m (400m²)" style="width:100%; padding:14px; margin-bottom:20px; background:#080808; border:1px solid #333; border-radius:8px; color:#F5F5F5; font-size:0.95rem; outline:none; box-sizing:border-box; transition:border 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#333'">
-
-                                <label style="font-size:0.75rem; color:#00F0FF; font-weight:bold; display:block; margin-bottom:5px;">TAGS TÁCTICOS</label>
-                                <input type="text" id="exercise-tags" placeholder="pressing, posesion, amplitud" style="width:100%; padding:14px; margin-bottom:20px; background:#080808; border:1px solid rgba(0,240,255,0.4); border-radius:8px; color:#00F0FF; font-size:0.95rem; font-weight:bold; outline:none; box-sizing:border-box; transition:border 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='rgba(0,240,255,0.4)'">
+                        <!-- ═══ COLUMNA IZQUIERDA: FORMULARIO exercises_library (35%) ═══ -->
+                        <div style="width:35%; background:#111111; border-right:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden;">
+                            <div style="padding:24px 24px 0; flex-shrink:0;">
+                                <h2 style="margin:0 0 4px 0; color:#00F0FF; font-family:Outfit,sans-serif; font-size:1.4rem; letter-spacing:1px;">📋 NUEVA TAREA</h2>
+                                <p style="margin:0 0 16px 0; font-size:0.75rem; color:#6b7280;">exercises_library · Todos los campos sincronizados con Supabase</p>
                             </div>
 
-                            <div style="margin-top:20px;">
-                                <button onclick="DTEngine.saveCustomTask()" style="width:100%; padding:16px; background:#00F0FF; color:#000; border:none; border-radius:8px; font-weight:900; font-family:Outfit,sans-serif; font-size:1.1rem; cursor:pointer; letter-spacing:1px; text-transform:uppercase; transition:transform 0.1s, filter 0.2s;" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">GUARDAR TAREA</button>
+                            <!-- Scroll form body -->
+                            <div style="flex:1; overflow-y:auto; padding:0 24px 24px; scrollbar-width:thin; scrollbar-color:#333 transparent;">
+
+                                <!-- TÍTULO -->
+                                <div style="margin-bottom:14px;">
+                                    <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px;">Título *</label>
+                                    <input type="text" id="ct-title" placeholder="Ej: Rondo de pressing 4v4+3" style="width:100%; padding:11px 12px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; font-size:0.9rem; outline:none; box-sizing:border-box; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#2a2a2a'">
+                                </div>
+
+                                <!-- DESCRIPCIÓN -->
+                                <div style="margin-bottom:14px;">
+                                    <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px;">Descripción</label>
+                                    <textarea id="ct-description" rows="2" placeholder="Explicación general de la tarea..." style="width:100%; padding:11px 12px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; font-size:0.85rem; outline:none; resize:none; box-sizing:border-box; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#2a2a2a'"></textarea>
+                                </div>
+
+                                <!-- MORFOCICLO PHASE + SSP TYPE -->
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+                                    <div>
+                                        <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px;">Morfociclo</label>
+                                        <select id="ct-morfociclo" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; font-family:Outfit,sans-serif; font-size:0.82rem; cursor:pointer; box-sizing:border-box;">
+                                            <option value="">—</option>
+                                            <option value="MD-5">MD-5</option>
+                                            <option value="MD-4">MD-4</option>
+                                            <option value="MD-3">MD-3</option>
+                                            <option value="MD-2">MD-2</option>
+                                            <option value="MD-1">MD-1</option>
+                                            <option value="MD">MD (Partido)</option>
+                                            <option value="MD+1">MD+1</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px;">Tipo SSP</label>
+                                        <select id="ct-ssp-type" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; font-family:Outfit,sans-serif; font-size:0.82rem; cursor:pointer; box-sizing:border-box;">
+                                            <option value="">—</option>
+                                            <option value="General">General</option>
+                                            <option value="Dirigida">Dirigida</option>
+                                            <option value="Especial">Especial</option>
+                                            <option value="Competitiva">Competitiva</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- MOMENTO DE JUEGO -->
+                                <div style="margin-bottom:14px;">
+                                    <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px;">Momento de Juego</label>
+                                    <select id="ct-game-moment" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; font-family:Outfit,sans-serif; font-size:0.82rem; cursor:pointer; box-sizing:border-box;">
+                                        <option value="">—</option>
+                                        <option value="ataque_organizado">Ataque Organizado</option>
+                                        <option value="defensa_organizada">Defensa Organizada</option>
+                                        <option value="transicion_off">Transición Ofensiva</option>
+                                        <option value="transicion_def">Transición Defensiva</option>
+                                    </select>
+                                </div>
+
+                                <!-- JUGADORES + DENSIDAD -->
+                                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px;">
+                                    <div>
+                                        <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; display:block; margin-bottom:5px;">Min Jug.</label>
+                                        <input type="number" id="ct-min-players" min="2" max="22" placeholder="6" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; box-sizing:border-box; font-size:0.85rem; text-align:center;">
+                                    </div>
+                                    <div>
+                                        <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; display:block; margin-bottom:5px;">Max Jug.</label>
+                                        <input type="number" id="ct-max-players" min="2" max="22" placeholder="11" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; box-sizing:border-box; font-size:0.85rem; text-align:center;">
+                                    </div>
+                                    <div>
+                                        <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; display:block; margin-bottom:5px;">Dens. m²/jug</label>
+                                        <input type="number" id="ct-density" step="0.1" placeholder="36.0" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; box-sizing:border-box; font-size:0.85rem; text-align:center;">
+                                    </div>
+                                </div>
+
+                                <!-- DIMENSIONES -->
+                                <div style="margin-bottom:14px;">
+                                    <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px;">Dimensiones</label>
+                                    <input type="text" id="ct-dimensions" placeholder="Ej: 20x40m" style="width:100%; padding:11px 12px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; font-size:0.85rem; outline:none; box-sizing:border-box; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#2a2a2a'">
+                                </div>
+
+                                <!-- MATERIALES -->
+                                <div style="margin-bottom:14px;">
+                                    <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px;">Materiales <span style="color:#6b7280;">(separados por coma)</span></label>
+                                    <input type="text" id="ct-materials" placeholder="petos, balones, conos" style="width:100%; padding:11px 12px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; font-size:0.85rem; outline:none; box-sizing:border-box; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#2a2a2a'">
+                                </div>
+
+                                <!-- REGLAS -->
+                                <div style="margin-bottom:14px; padding:12px; background:rgba(0,240,255,0.04); border:1px solid rgba(0,240,255,0.1); border-radius:10px;">
+                                    <p style="margin:0 0 10px 0; font-size:0.68rem; color:#00F0FF; font-weight:700; letter-spacing:1px; text-transform:uppercase;">⚡ REGLAS TÁCTICAS</p>
+                                    <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; display:block; margin-bottom:4px;">PROVOCACIÓN</label>
+                                    <input type="text" id="ct-rule-provocation" placeholder="Ej: Presión al primer toque del portero..." style="width:100%; padding:9px 10px; margin-bottom:8px; background:#080808; border:1px solid #2a2a2a; border-radius:6px; color:#F5F5F5; font-size:0.82rem; outline:none; box-sizing:border-box;">
+                                    <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; display:block; margin-bottom:4px;">PROPENSIÓN</label>
+                                    <input type="text" id="ct-rule-propension" placeholder="Ej: Juego interior por líneas..." style="width:100%; padding:9px 10px; margin-bottom:8px; background:#080808; border:1px solid #2a2a2a; border-radius:6px; color:#F5F5F5; font-size:0.82rem; outline:none; box-sizing:border-box;">
+                                    <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; display:block; margin-bottom:4px;">CONTINUIDAD</label>
+                                    <input type="text" id="ct-rule-continuity" placeholder="Ej: Rotar posesión sin perder balón..." style="width:100%; padding:9px 10px; background:#080808; border:1px solid #2a2a2a; border-radius:6px; color:#F5F5F5; font-size:0.82rem; outline:none; box-sizing:border-box;">
+                                </div>
+
+                                <!-- CONOS COMO ARCO + SUPERFICIE -->
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+                                    <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:#080808; border:1px solid #2a2a2a; border-radius:8px;">
+                                        <input type="checkbox" id="ct-cones-goals" style="width:16px; height:16px; accent-color:#00F0FF; cursor:pointer; flex-shrink:0;">
+                                        <label for="ct-cones-goals" style="font-size:0.75rem; color:#9ca3af; font-weight:600; cursor:pointer; line-height:1.2;">Conos como arcos</label>
+                                    </div>
+                                    <div>
+                                        <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; display:block; margin-bottom:5px;">Superficie</label>
+                                        <select id="ct-pitch-suitability" multiple style="width:100%; padding:6px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; font-family:Outfit,sans-serif; font-size:0.8rem; cursor:pointer; box-sizing:border-box; height:60px;">
+                                            <option value="grass">Grass</option>
+                                            <option value="synthetic">Sintético</option>
+                                            <option value="futsal">Futsal</option>
+                                            <option value="dirt">Tierra</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div><!-- /scroll body -->
+
+                            <!-- GUARDAR -->
+                            <div style="padding:16px 24px; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0;">
+                                <button id="ct-save-btn" onclick="DTEngine.saveCustomTask()" style="width:100%; padding:15px; background:linear-gradient(135deg,#00F0FF,#0088cc); color:#000; border:none; border-radius:10px; font-weight:900; font-family:Outfit,sans-serif; font-size:1rem; cursor:pointer; letter-spacing:1.5px; text-transform:uppercase; transition:transform 0.1s, filter 0.2s; box-shadow:0 4px 20px rgba(0,240,255,0.25);" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter='brightness(1)'">💾 GUARDAR EN BIBLIOTECA</button>
                             </div>
                         </div>
 
-                        <!-- Columna Derecha: Pizarra (70%) -->
-                        <div style="width:70%; background:#080808; display:flex; flex-direction:column; position:relative;">
-                            
+                        <!-- ═══ COLUMNA DERECHA: PIZARRA TÁCTICA NATIVA HTML5 (65%) ═══ -->
+                        <div style="width:65%; background:#080808; display:flex; flex-direction:column; position:relative;">
+
                             <!-- Header de la Cancha -->
-                            <div style="padding:15px 30px; background:#1A1A1A; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
-                                <div style="display:flex; gap:10px;">
-                                    <button style="padding:8px 16px; background:#080808; border:1px solid #333; border-radius:6px; color:#F5F5F5; font-size:0.85rem; cursor:pointer; font-weight:bold; transition:all 0.2s;" onmouseover="this.style.borderColor='#00F0FF'; this.style.color='#00F0FF'" onmouseout="this.style.borderColor='#333'; this.style.color='#F5F5F5'">Cancha Completa</button>
-                                    <button style="padding:8px 16px; background:#080808; border:1px solid #333; border-radius:6px; color:#F5F5F5; font-size:0.85rem; cursor:pointer; font-weight:bold; transition:all 0.2s;" onmouseover="this.style.borderColor='#00F0FF'; this.style.color='#00F0FF'" onmouseout="this.style.borderColor='#333'; this.style.color='#F5F5F5'">Media Cancha</button>
-                                    <button style="padding:8px 16px; background:#080808; border:1px solid #333; border-radius:6px; color:#F5F5F5; font-size:0.85rem; cursor:pointer; font-weight:bold; transition:all 0.2s;" onmouseover="this.style.borderColor='#00F0FF'; this.style.color='#00F0FF'" onmouseout="this.style.borderColor='#333'; this.style.color='#F5F5F5'">Área Penal</button>
+                            <div style="padding:12px 20px; background:#111111; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <span style="font-size:0.75rem; color:#00F0FF; font-weight:700; letter-spacing:1px; text-transform:uppercase;">🎨 PIZARRA TÁCTICA</span>
+                                    <span style="font-size:0.65rem; color:#4b5563; background:#1a1a1a; padding:3px 8px; border-radius:20px; border:1px solid #2a2a2a;">Dibuja libremente con mouse o dedo</span>
                                 </div>
-                                <button onclick="DTEngine.closeCustomTaskModal()" style="background:transparent; border:none; color:#F5F5F5; font-size:1.5rem; cursor:pointer; padding:0 10px; transition:color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#F5F5F5'">✕</button>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <!-- Color picker -->
+                                    <label style="font-size:0.65rem; color:#6b7280;">Color</label>
+                                    <input type="color" id="ct-brush-color" value="#00F0FF" style="width:32px; height:32px; border:none; border-radius:6px; cursor:pointer; background:transparent; padding:2px;" title="Color del trazo" onchange="DTEngine.DrawEngine.setColor(this.value)">
+                                    <!-- Grosor -->
+                                    <label style="font-size:0.65rem; color:#6b7280;">Grosor</label>
+                                    <input type="range" id="ct-brush-size" min="1" max="12" value="3" style="width:64px; accent-color:#00F0FF; cursor:pointer;" title="Grosor del trazo" oninput="DTEngine.DrawEngine.setSize(this.value)">
+                                    <!-- Limpiar -->
+                                    <button onclick="DTEngine.clearCanvas()" style="padding:7px 12px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.35); border-radius:7px; color:#ef4444; cursor:pointer; font-size:0.75rem; font-weight:700; font-family:Outfit,sans-serif; transition:background 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.22)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'" title="Limpiar Pizarra">💣 Limpiar</button>
+                                    <button onclick="DTEngine.closeCustomTaskModal()" style="background:transparent; border:none; color:#9ca3af; font-size:1.4rem; cursor:pointer; padding:0 8px; transition:color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#9ca3af'">✕</button>
+                                </div>
                             </div>
 
-                            <!-- Contenedor del Canvas -->
-                            <div id="premium-tactical-board-container" style="flex-grow:1; position:relative; width:100%; height:100%; overflow:hidden;">
-                                <canvas id="premium-tactical-board" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:10; pointer-events:auto; touch-action:none; background-color:#2E7D32; background-image:linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px); background-size:30px 30px; cursor:crosshair;"></canvas>
-                                
-                                <!-- Caja Flotante de Herramientas -->
-                                <div style="position:absolute; top:20px; right:20px; width:60px; background:rgba(26,26,26,0.95); border:1px solid rgba(0,240,255,0.3); border-radius:12px; z-index:20; display:flex; flex-direction:column; align-items:center; padding:10px 0; box-shadow:0 8px 32px rgba(0,0,0,0.5); backdrop-filter:blur(4px);">
-                                    <!-- Elementos -->
-                                    <button onclick="window.DTEngine.Board.addPlayerBlue()" style="width:40px; height:40px; margin-bottom:8px; border-radius:50%; background:#0088ff; border:2px solid #fff; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.5); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'" title="Jugador Base"></button>
-                                    <button onclick="window.DTEngine.Board.addPlayerRed()" style="width:40px; height:40px; margin-bottom:8px; border-radius:50%; background:#ff4444; border:2px solid #fff; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.5); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'" title="Jugador Rival"></button>
-                                    <button onclick="window.DTEngine.Board.addBall()" style="width:24px; height:24px; margin-bottom:15px; border-radius:50%; background:#fff; border:1px solid #000; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.5); transition:transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'" title="Balón"></button>
-                                    
-                                    <div style="width:40px; height:1px; background:rgba(255,255,255,0.1); margin-bottom:15px;"></div>
-                                    
-                                    <!-- Formas & Trazos (Placeholders por ahora) -->
-                                    <button onclick="console.log('Implementar Cuadrado')" style="width:40px; height:40px; margin-bottom:8px; border-radius:8px; background:transparent; border:none; color:#F5F5F5; cursor:pointer; font-size:1.2rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'" title="Cuadrado">⬜</button>
-                                    <button onclick="console.log('Implementar Flecha')" style="width:40px; height:40px; margin-bottom:15px; border-radius:8px; background:transparent; border:none; color:#F5F5F5; cursor:pointer; font-size:1.2rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'" title="Flecha">↗️</button>
-                                    
-                                    <div style="width:40px; height:1px; background:rgba(255,255,255,0.1); margin-bottom:15px;"></div>
-                                    
-                                    <!-- Borrador -->
-                                    <button onclick="window.DTEngine.Board.deleteActive()" style="width:40px; height:40px; margin-bottom:8px; border-radius:8px; background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'" title="Borrar Selección">🗑️</button>
-                                    <button onclick="DTEngine.clearCanvas()" style="width:40px; height:40px; border-radius:8px; background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'" title="Limpiar Pizarra">💣</button>
-                                </div>
+                            <!-- Canvas container -->
+                            <div id="premium-tactical-board-container" style="flex:1; position:relative; overflow:hidden;">
+                                <!-- Campo SVG (fondo decorativo) -->
+                                <svg id="ct-pitch-svg" viewBox="0 0 105 68" preserveAspectRatio="none" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none;">
+                                    <rect width="105" height="68" fill="#1a4a1a"/>
+                                    <!-- Líneas de campo -->
+                                    <rect x="0" y="0" width="105" height="68" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
+                                    <line x1="52.5" y1="0" x2="52.5" y2="68" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
+                                    <circle cx="52.5" cy="34" r="9.15" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
+                                    <circle cx="52.5" cy="34" r="0.5" fill="rgba(255,255,255,0.4)"/>
+                                    <!-- Área izquierda -->
+                                    <rect x="0" y="13.84" width="16.5" height="40.32" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
+                                    <rect x="0" y="26.84" width="5.5" height="14.32" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
+                                    <!-- Área derecha -->
+                                    <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
+                                    <rect x="99.5" y="26.84" width="5.5" height="14.32" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
+                                    <!-- Punto penal -->
+                                    <circle cx="11" cy="34" r="0.5" fill="rgba(255,255,255,0.4)"/>
+                                    <circle cx="94" cy="34" r="0.5" fill="rgba(255,255,255,0.4)"/>
+                                </svg>
+                                <!-- Canvas de dibujo nativo -->
+                                <canvas id="premium-tactical-board" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:10; cursor:crosshair; touch-action:none;"></canvas>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
@@ -2306,56 +2416,154 @@ window.DTEngine = {
         }
     },
 
+    // ══════════════════════════════════════════════════════
+    // MOTOR DE DIBUJO NATIVO HTML5 CANVAS — DrawEngine
+    // ══════════════════════════════════════════════════════
+    DrawEngine: {
+        _canvas: null,
+        _ctx: null,
+        _drawing: false,
+        _color: '#00F0FF',
+        _size: 3,
+
+        init() {
+            const canvasEl = document.getElementById('premium-tactical-board');
+            if (!canvasEl) return;
+
+            // Destruir listeners anteriores clonando el nodo
+            const fresh = canvasEl.cloneNode(true);
+            canvasEl.parentNode.replaceChild(fresh, canvasEl);
+            this._canvas = fresh;
+
+            // Ajustar resolución física al contenedor
+            const container = document.getElementById('premium-tactical-board-container');
+            const w = container ? container.clientWidth : 800;
+            const h = container ? container.clientHeight : 500;
+            fresh.width = w;
+            fresh.height = h;
+
+            this._ctx = fresh.getContext('2d');
+            this._applyDefaults();
+            this._bindEvents();
+        },
+
+        _applyDefaults() {
+            const ctx = this._ctx;
+            ctx.strokeStyle = this._color;
+            ctx.lineWidth = this._size;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        },
+
+        _bindEvents() {
+            const c = this._canvas;
+            const self = this;
+
+            // ── Mouse ──
+            c.addEventListener('mousedown', (e) => { self._startDraw(self._getPos(e, c)); });
+            c.addEventListener('mousemove', (e) => { if (self._drawing) self._continueDraw(self._getPos(e, c)); });
+            c.addEventListener('mouseup',   () => { self._stopDraw(); });
+            c.addEventListener('mouseleave', () => { self._stopDraw(); });
+
+            // ── Touch ──
+            c.addEventListener('touchstart', (e) => { e.preventDefault(); self._startDraw(self._getPos(e.touches[0], c)); }, { passive: false });
+            c.addEventListener('touchmove',  (e) => { e.preventDefault(); if (self._drawing) self._continueDraw(self._getPos(e.touches[0], c)); }, { passive: false });
+            c.addEventListener('touchend',   (e) => { e.preventDefault(); self._stopDraw(); }, { passive: false });
+        },
+
+        _getPos(e, canvas) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width  / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top)  * scaleY
+            };
+        },
+
+        _startDraw(pos) {
+            this._drawing = true;
+            this._ctx.beginPath();
+            this._ctx.moveTo(pos.x, pos.y);
+        },
+
+        _continueDraw(pos) {
+            this._ctx.lineTo(pos.x, pos.y);
+            this._ctx.stroke();
+        },
+
+        _stopDraw() {
+            if (!this._drawing) return;
+            this._drawing = false;
+            this._ctx.closePath();
+        },
+
+        clear() {
+            if (!this._ctx || !this._canvas) return;
+            this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+        },
+
+        setColor(hex) {
+            this._color = hex;
+            if (this._ctx) this._ctx.strokeStyle = hex;
+        },
+
+        setSize(px) {
+            this._size = Number(px);
+            if (this._ctx) this._ctx.lineWidth = this._size;
+        },
+
+        toDataURL() {
+            if (!this._canvas) return null;
+            return this._canvas.toDataURL('image/png');
+        }
+    },
+
     initCanvas() {
-        const container = document.getElementById('premium-tactical-board-container');
-        const rect = container ? container.getBoundingClientRect() : { width: 800, height: 600 };
-        const canvasEl = document.getElementById('premium-tactical-board');
-
-        // Destruir por completo la instancia anterior para evitar corrupción de eventos o de coordenadas
-        if (window.tacticalCanvas) {
-            window.tacticalCanvas.dispose();
-            window.tacticalCanvas = null;
-        }
-
-        // Forzar dimensiones internas DOM antes de inicializar
-        if (canvasEl) {
-            canvasEl.width = canvasEl.offsetWidth || rect.width || 800;
-            canvasEl.height = canvasEl.offsetHeight || rect.height || 600;
-        }
-
-        // Crear una instancia 100% fresca ahora que el contenedor ya es visible
-        window.tacticalCanvas = new fabric.Canvas('premium-tactical-board', {
-            selection: false // No permite seleccionar grupos por ahora
-        });
-
-        // Asignar dimensiones basadas en el DOM renderizado
-        window.tacticalCanvas.setWidth(rect.width || 800);
-        window.tacticalCanvas.setHeight(rect.height || 600);
-        window.tacticalCanvas.calcOffset();
-        window.tacticalCanvas.renderAll();
+        // Delegate completely to the native DrawEngine
+        this.DrawEngine.init();
     },
 
     clearCanvas() {
-        if (window.tacticalCanvas) {
-            window.tacticalCanvas.clear();
-        }
+        this.DrawEngine.clear();
     },
 
     // --- BÓVEDA DE TAREAS PERSONALIZADAS ---
     openCustomTaskModal() {
-        document.getElementById('custom-task-name').value = '';
-        document.getElementById('ex-ssp').value = '';
-        document.getElementById('ex-dimensions').value = '';
-        document.getElementById('exercise-tags').value = '';
+        // Limpiar todos los campos del formulario
+        ['ct-title','ct-description','ct-dimensions','ct-materials',
+         'ct-rule-provocation','ct-rule-propension','ct-rule-continuity',
+         'ct-density','ct-min-players','ct-max-players'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        const conesChk = document.getElementById('ct-cones-goals');
+        if (conesChk) conesChk.checked = false;
+        const morphSel = document.getElementById('ct-morfociclo');
+        if (morphSel) morphSel.value = '';
+        const sspSel = document.getElementById('ct-ssp-type');
+        if (sspSel) sspSel.value = '';
+        const momentSel = document.getElementById('ct-game-moment');
+        if (momentSel) momentSel.value = '';
+        // Deseleccionar pitch_suitability
+        const pitchSel = document.getElementById('ct-pitch-suitability');
+        if (pitchSel) Array.from(pitchSel.options).forEach(o => o.selected = false);
 
-        // 1. Mostrar el modal primero para que los contenedores tengan dimensiones reales en el DOM
+        // Reset brush controls
+        const colorInput = document.getElementById('ct-brush-color');
+        if (colorInput) colorInput.value = '#00F0FF';
+        const sizeInput = document.getElementById('ct-brush-size');
+        if (sizeInput) sizeInput.value = '3';
+
+        // Mostrar modal
         document.getElementById('modal-custom-task').classList.remove('hidden');
 
-        // 2. Inicializar la pizarra un instante después para asegurar que el BoundingClientRect sea correcto
+        // Inicializar motor de dibujo tras render DOM
         setTimeout(() => {
-            this.initCanvas();
-            this.clearCanvas();
-        }, 100);
+            this.DrawEngine.init();
+            this.DrawEngine.setColor('#00F0FF');
+            this.DrawEngine.setSize(3);
+        }, 120);
     },
 
     closeCustomTaskModal() {
@@ -2364,70 +2572,82 @@ window.DTEngine = {
 
     async saveCustomTask() {
         const uid = localStorage.getItem('ravix_v5_uid');
-        const token = localStorage.getItem('ravix_token');
-        const name = document.getElementById('custom-task-name').value.trim();
-        const phase = ''; // Universal (Desacoplado)
+        if (!uid) return alert('Sesión no encontrada. Por favor vuelve a iniciar sesión.');
 
-        // Nuevos campos V2
-        const sspContext = document.getElementById('ex-ssp').value.trim();
-        const dimensionsDensity = document.getElementById('ex-dimensions').value.trim();
-        const tagsRaw = document.getElementById('exercise-tags').value;
-        const tags = tagsRaw.split(',').map(t => t.trim()).filter(t => t !== '');
+        // ── Recoger todos los campos del formulario ──
+        const title = (document.getElementById('ct-title')?.value || '').trim();
+        if (!title) return alert('Por favor, ingresa un título para la tarea.');
 
-        // Campos legacy o eliminados del DOM (pasamos null o vacío para no romper la BD)
-        const tacticalPrinciples = '';
-        const ruleProvocation = '';
-        const rulePropension = '';
-        const ruleContinuity = '';
-        const moment = '';
-        const ssp = '';
-        const blocks = null;
-        const workTime = null;
-        const pauseTime = null;
-        const materials = '';
+        const description       = (document.getElementById('ct-description')?.value || '').trim();
+        const morfociclo_phase  = (document.getElementById('ct-morfociclo')?.value || null) || null;
+        const ssp_type          = (document.getElementById('ct-ssp-type')?.value || null) || null;
+        const game_moment       = (document.getElementById('ct-game-moment')?.value || null) || null;
+        const dimensions        = (document.getElementById('ct-dimensions')?.value || '').trim() || null;
+        const rule_provocation  = (document.getElementById('ct-rule-provocation')?.value || '').trim() || null;
+        const rule_propension   = (document.getElementById('ct-rule-propension')?.value || '').trim() || null;
+        const rule_continuity   = (document.getElementById('ct-rule-continuity')?.value || '').trim() || null;
+        const can_use_cones_as_goals = !!(document.getElementById('ct-cones-goals')?.checked);
 
-        if (!name) {
-            return alert('Por favor, ingresa al menos un título para la tarea.');
+        // Numéricos
+        const minPlayersRaw = document.getElementById('ct-min-players')?.value;
+        const maxPlayersRaw = document.getElementById('ct-max-players')?.value;
+        const densityRaw    = document.getElementById('ct-density')?.value;
+        const min_players   = minPlayersRaw ? parseInt(minPlayersRaw, 10)   : null;
+        const max_players   = maxPlayersRaw ? parseInt(maxPlayersRaw, 10)   : null;
+        const density_m2_player = densityRaw ? parseFloat(densityRaw)      : null;
+
+        // Arrays (JSONB)
+        const materialsRaw = (document.getElementById('ct-materials')?.value || '');
+        const materials    = materialsRaw ? materialsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+        const pitchEl    = document.getElementById('ct-pitch-suitability');
+        const pitch_suitability = pitchEl
+            ? Array.from(pitchEl.selectedOptions).map(o => o.value)
+            : [];
+
+        // ── Exportar pizarra táctica a Base64 PNG ──
+        let ical_diagram_url = null;
+        try {
+            ical_diagram_url = this.DrawEngine.toDataURL();
+        } catch(e) {
+            console.warn('⚠️ No se pudo exportar el canvas:', e);
         }
 
-        const totalMinutes = null;
-
-        // Capturar Pizarra
-        let diagramDataUrl = null;
-        if (window.tacticalCanvas) {
-            diagramDataUrl = window.tacticalCanvas.toDataURL({
-                format: 'png',
-                quality: 1
-            });
-        }
+        // ── Deshabilitar botón durante el guardado ──
+        const btn = document.getElementById('ct-save-btn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
 
         try {
-            console.log('💾 Guardando ficha técnica en bóveda...');
-            const { data, error } = await window.supabase.from('custom_exercises').insert({
+            console.log('💾 Insertando en exercises_library...');
+            const payload = {
                 user_id: uid,
-                title: name,
-                morfociclo_phase: phase,
-                ssp_context: sspContext,
-                tactical_principles: tacticalPrinciples,
-                rule_provocation: ruleProvocation,
-                rule_propension: rulePropension,
-                rule_continuity: ruleContinuity,
-                dimensions: dimensionsDensity,
-                tactical_diagram_url: diagramDataUrl,
-                tags: tags,
-                description: sspContext, // Fallback legacy
-                game_moment: moment,
-                ssp_type: ssp,
-                series: blocks,
-                duration: totalMinutes,
-                work_time: workTime,
-                pause_time: pauseTime,
-                materials: materials
-            }).select();
+                title,
+                description,
+                morfociclo_phase,
+                ssp_type,
+                game_moment,
+                dimensions,
+                min_players,
+                max_players,
+                density_m2_player,
+                materials,
+                rule_provocation,
+                rule_propension,
+                rule_continuity,
+                can_use_cones_as_goals,
+                pitch_suitability,
+                ical_diagram_url
+            };
 
-            if (error) throw new Error('Error al guardar en Supabase: ' + error.message);
+            const { data, error } = await window.supabase
+                .from('exercises_library')
+                .insert(payload)
+                .select();
+
+            if (error) throw new Error(error.message);
             const newTask = data[0];
 
+            // Añadir localmente para que aparezca sin recargar
             if (!window.CustomExercises) window.CustomExercises = [];
             window.CustomExercises.unshift({
                 ...newTask,
@@ -2438,9 +2658,12 @@ window.DTEngine = {
             this.closeCustomTaskModal();
             const etiquetaReal = this.calcularEtiquetaMD(this._selectedDate, Array.from(this._matchDays));
             this.renderLibrary(etiquetaReal);
-            console.log('✅ Tarea personalizada guardada y priorizada en biblioteca.');
+            console.log('✅ Tarea guardada en exercises_library:', newTask.id);
         } catch (err) {
-            alert('🔴 Error: ' + err.message);
+            console.error('🔴 Error al guardar:', err);
+            alert('Error al guardar: ' + err.message);
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = '💾 GUARDAR EN BIBLIOTECA'; }
         }
     },
 
