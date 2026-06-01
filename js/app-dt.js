@@ -964,50 +964,94 @@ window.DTEngine = {
                             </div>
                         </div>
 
-                        <!-- ═══ COLUMNA DERECHA: PIZARRA TÁCTICA NATIVA HTML5 (65%) ═══ -->
+                        <!-- ═══ COLUMNA DERECHA: PIZARRA TÁCTICA FABRIC.JS (65%) ═══ -->
                         <div style="width:65%; background:#080808; display:flex; flex-direction:column; position:relative;">
 
-                            <!-- Header de la Cancha -->
-                            <div style="padding:12px 20px; background:#111111; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
-                                <div style="display:flex; gap:8px; align-items:center;">
-                                    <span style="font-size:0.75rem; color:#00F0FF; font-weight:700; letter-spacing:1px; text-transform:uppercase;">🎨 PIZARRA TÁCTICA</span>
-                                    <span style="font-size:0.65rem; color:#4b5563; background:#1a1a1a; padding:3px 8px; border-radius:20px; border:1px solid #2a2a2a;">Dibuja libremente con mouse o dedo</span>
-                                </div>
-                                <div style="display:flex; gap:8px; align-items:center;">
-                                    <!-- Color picker -->
-                                    <label style="font-size:0.65rem; color:#6b7280;">Color</label>
-                                    <input type="color" id="ct-brush-color" value="#00F0FF" style="width:32px; height:32px; border:none; border-radius:6px; cursor:pointer; background:transparent; padding:2px;" title="Color del trazo" onchange="DTEngine.DrawEngine.setColor(this.value)">
-                                    <!-- Grosor -->
-                                    <label style="font-size:0.65rem; color:#6b7280;">Grosor</label>
-                                    <input type="range" id="ct-brush-size" min="1" max="12" value="3" style="width:64px; accent-color:#00F0FF; cursor:pointer;" title="Grosor del trazo" oninput="DTEngine.DrawEngine.setSize(this.value)">
-                                    <!-- Limpiar -->
-                                    <button onclick="DTEngine.clearCanvas()" style="padding:7px 12px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.35); border-radius:7px; color:#ef4444; cursor:pointer; font-size:0.75rem; font-weight:700; font-family:Outfit,sans-serif; transition:background 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.22)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'" title="Limpiar Pizarra">💣 Limpiar</button>
-                                    <button onclick="DTEngine.closeCustomTaskModal()" style="background:transparent; border:none; color:#9ca3af; font-size:1.4rem; cursor:pointer; padding:0 8px; transition:color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#9ca3af'">✕</button>
-                                </div>
+                            <!-- ── BARRA DE HERRAMIENTAS TÁCTICA ── -->
+                            <div id="tactical-toolbar" style="padding:10px 16px; background:#0d0d0d; border-bottom:1px solid rgba(0,240,255,0.12); display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex-shrink:0;">
+
+                                <!-- Etiqueta -->
+                                <span style="font-size:0.65rem; color:#00F0FF; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; white-space:nowrap; margin-right:4px;">🎨 HERRAMIENTAS</span>
+                                <div style="width:1px; height:28px; background:rgba(255,255,255,0.08); margin:0 4px;"></div>
+
+                                <!-- TRAZO LIBRE -->
+                                <button id="tool-draw" onclick="DTEngine.FabricEngine.setTool('draw')" title="Trazo Libre"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:rgba(0,240,255,0.15); border:1.5px solid #00F0FF; border-radius:8px; color:#00F0FF; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
+                                    <span style="font-size:1.1rem;">✏️</span>Trazo
+                                </button>
+
+                                <!-- JUGADOR AZUL -->
+                                <button id="tool-player-blue" onclick="DTEngine.FabricEngine.setTool('player-blue')" title="Jugador Titular"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
+                                    <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:#0088ff; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,136,255,0.5);"></span>Local
+                                </button>
+
+                                <!-- JUGADOR ROJO -->
+                                <button id="tool-player-red" onclick="DTEngine.FabricEngine.setTool('player-red')" title="Jugador Rival"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
+                                    <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:#ef4444; border:2px solid #fff; box-shadow:0 2px 6px rgba(239,68,68,0.5);"></span>Rival
+                                </button>
+
+                                <!-- BALÓN -->
+                                <button id="tool-ball" onclick="DTEngine.FabricEngine.setTool('ball')" title="Balón"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
+                                    <span style="font-size:1.1rem;">⚽</span>Balón
+                                </button>
+
+                                <!-- ZONA SÓLIDA -->
+                                <button id="tool-zone-solid" onclick="DTEngine.FabricEngine.setTool('zone-solid')" title="Zona Sólida"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
+                                    <span style="display:inline-block; width:20px; height:14px; border:2px solid #fff; border-radius:2px;"></span>Zona
+                                </button>
+
+                                <!-- ZONA PUNTEADA -->
+                                <button id="tool-zone-dashed" onclick="DTEngine.FabricEngine.setTool('zone-dashed')" title="Zona Punteada"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
+                                    <span style="display:inline-block; width:20px; height:14px; border:2px dashed rgba(255,255,255,0.7); border-radius:2px;"></span>Punteado
+                                </button>
+
+                                <!-- Spacer -->
+                                <div style="flex:1;"></div>
+                                <div style="width:1px; height:28px; background:rgba(255,255,255,0.08);"></div>
+
+                                <!-- BORRAR SELECCIONADO -->
+                                <button onclick="DTEngine.FabricEngine.deleteSelected()" title="Borrar seleccionado"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:rgba(239,68,68,0.06); border:1.5px solid rgba(239,68,68,0.3); border-radius:8px; color:#ef4444; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;" onmouseover="this.style.background='rgba(239,68,68,0.15)'" onmouseout="this.style.background='rgba(239,68,68,0.06)'">
+                                    <span style="font-size:1.1rem;">🗑️</span>Borrar
+                                </button>
+
+                                <!-- LIMPIAR TODO -->
+                                <button onclick="DTEngine.clearCanvas()" title="Limpiar toda la pizarra"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:rgba(239,68,68,0.06); border:1.5px solid rgba(239,68,68,0.3); border-radius:8px; color:#ef4444; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;" onmouseover="this.style.background='rgba(239,68,68,0.15)'" onmouseout="this.style.background='rgba(239,68,68,0.06)'">
+                                    <span style="font-size:1.1rem;">💣</span>Limpiar
+                                </button>
+
+                                <!-- CERRAR -->
+                                <button onclick="DTEngine.closeCustomTaskModal()"
+                                    style="padding:8px; background:transparent; border:none; color:#6b7280; font-size:1.3rem; cursor:pointer; transition:color 0.15s; line-height:1; border-radius:6px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#6b7280'">✕</button>
                             </div>
 
-                            <!-- Canvas container -->
+                            <!-- Canvas container (Fabric.js) -->
                             <div id="premium-tactical-board-container" style="flex:1; position:relative; overflow:hidden;">
-                                <!-- Campo SVG (fondo decorativo) -->
+                                <!-- Campo SVG (fondo decorativo — z-index:1, bajo el canvas Fabric) -->
                                 <svg id="ct-pitch-svg" viewBox="0 0 105 68" preserveAspectRatio="none" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none;">
                                     <rect width="105" height="68" fill="#1a4a1a"/>
-                                    <!-- Líneas de campo -->
-                                    <rect x="0" y="0" width="105" height="68" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
-                                    <line x1="52.5" y1="0" x2="52.5" y2="68" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
-                                    <circle cx="52.5" cy="34" r="9.15" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
-                                    <circle cx="52.5" cy="34" r="0.5" fill="rgba(255,255,255,0.4)"/>
-                                    <!-- Área izquierda -->
-                                    <rect x="0" y="13.84" width="16.5" height="40.32" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
-                                    <rect x="0" y="26.84" width="5.5" height="14.32" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
-                                    <!-- Área derecha -->
-                                    <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
-                                    <rect x="99.5" y="26.84" width="5.5" height="14.32" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
-                                    <!-- Punto penal -->
-                                    <circle cx="11" cy="34" r="0.5" fill="rgba(255,255,255,0.4)"/>
-                                    <circle cx="94" cy="34" r="0.5" fill="rgba(255,255,255,0.4)"/>
+                                    <rect x="0" y="0" width="105" height="68" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.6"/>
+                                    <line x1="52.5" y1="0" x2="52.5" y2="68" stroke="rgba(255,255,255,0.3)" stroke-width="0.6"/>
+                                    <circle cx="52.5" cy="34" r="9.15" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.6"/>
+                                    <circle cx="52.5" cy="34" r="0.7" fill="rgba(255,255,255,0.5)"/>
+                                    <rect x="0" y="13.84" width="16.5" height="40.32" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.6"/>
+                                    <rect x="0" y="26.84" width="5.5" height="14.32" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.6"/>
+                                    <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.6"/>
+                                    <rect x="99.5" y="26.84" width="5.5" height="14.32" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.6"/>
+                                    <circle cx="11" cy="34" r="0.5" fill="rgba(255,255,255,0.5)"/>
+                                    <circle cx="94" cy="34" r="0.5" fill="rgba(255,255,255,0.5)"/>
+                                    <!-- Arcos -->
+                                    <path d="M 16.5 24.84 A 9.15 9.15 0 0 1 16.5 43.16" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.6"/>
+                                    <path d="M 88.5 24.84 A 9.15 9.15 0 0 0 88.5 43.16" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.6"/>
                                 </svg>
-                                <!-- Canvas de dibujo nativo -->
-                                <canvas id="premium-tactical-board" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:10; cursor:crosshair; touch-action:none;"></canvas>
+                                <!-- Canvas Fabric.js — transparent background, z-index:10 -->
+                                <canvas id="premium-tactical-board" style="position:absolute; top:0; left:0; z-index:10;"></canvas>
                             </div>
                         </div>
 
@@ -2417,115 +2461,220 @@ window.DTEngine = {
     },
 
     // ══════════════════════════════════════════════════════
-    // MOTOR DE DIBUJO NATIVO HTML5 CANVAS — DrawEngine
+    // MOTOR FABRIC.JS — FabricEngine
     // ══════════════════════════════════════════════════════
-    DrawEngine: {
-        _canvas: null,
-        _ctx: null,
-        _drawing: false,
-        _color: '#00F0FF',
-        _size: 3,
+    FabricEngine: {
+        _fc: null,           // instancia fabric.Canvas
+        _activeTool: 'draw', // herramienta activa
+
+        // Lista de IDs de botones de herramientas para resalte
+        _toolBtns: ['tool-draw','tool-player-blue','tool-player-red',
+                    'tool-ball','tool-zone-solid','tool-zone-dashed'],
 
         init() {
+            // Destruir instancia anterior si existe
+            if (this._fc) {
+                try { this._fc.dispose(); } catch(e) {}
+                this._fc = null;
+            }
+
+            const container = document.getElementById('premium-tactical-board-container');
+            if (!container) return;
+            const w = container.clientWidth  || 800;
+            const h = container.clientHeight || 500;
+
+            // Asignar dimensiones físicas al elemento canvas
             const canvasEl = document.getElementById('premium-tactical-board');
             if (!canvasEl) return;
+            canvasEl.width  = w;
+            canvasEl.height = h;
 
-            // Destruir listeners anteriores clonando el nodo
-            const fresh = canvasEl.cloneNode(true);
-            canvasEl.parentNode.replaceChild(fresh, canvasEl);
-            this._canvas = fresh;
+            // Inicializar Fabric — fondo transparente para que el SVG sea visible
+            this._fc = new fabric.Canvas('premium-tactical-board', {
+                selection: true,
+                backgroundColor: null,
+                enableRetinaScaling: false
+            });
+            this._fc.setWidth(w);
+            this._fc.setHeight(h);
 
-            // Ajustar resolución física al contenedor
-            const container = document.getElementById('premium-tactical-board-container');
-            const w = container ? container.clientWidth : 800;
-            const h = container ? container.clientHeight : 500;
-            fresh.width = w;
-            fresh.height = h;
+            // Activar trazo libre por defecto
+            this.setTool('draw');
 
-            this._ctx = fresh.getContext('2d');
-            this._applyDefaults();
-            this._bindEvents();
+            // Click en canvas vacío => añadir objeto según herramienta activa
+            this._fc.on('mouse:down', (opt) => {
+                if (this._activeTool === 'draw') return; // fabric maneja freehand
+                if (opt.target) return;                  // click sobre objeto existente
+                const ptr = this._fc.getPointer(opt.e);
+                this._placeObject(ptr.x, ptr.y);
+            });
         },
 
-        _applyDefaults() {
-            const ctx = this._ctx;
-            ctx.strokeStyle = this._color;
-            ctx.lineWidth = this._size;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
+        // ── Seleccionar herramienta y actualizar resalte de botones ──
+        setTool(tool) {
+            this._activeTool = tool;
+            if (!this._fc) return;
+
+            // Resaltar botón activo
+            this._toolBtns.forEach(id => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                const isActive = id === ('tool-' + tool);
+                btn.style.background = isActive ? 'rgba(0,240,255,0.18)' : 'transparent';
+                btn.style.borderColor = isActive ? '#00F0FF' : '#334155';
+                btn.style.color = isActive ? '#00F0FF' : '#9ca3af';
+            });
+
+            if (tool === 'draw') {
+                this._fc.isDrawingMode = true;
+                this._fc.freeDrawingBrush.color = '#00F0FF';
+                this._fc.freeDrawingBrush.width = 3;
+                this._fc.defaultCursor = 'crosshair';
+            } else {
+                this._fc.isDrawingMode = false;
+                this._fc.defaultCursor = 'copy';
+                this._fc.renderAll();
+            }
         },
 
-        _bindEvents() {
-            const c = this._canvas;
-            const self = this;
+        // ── Colocar objeto en (x, y) según herramienta ──
+        _placeObject(x, y) {
+            let obj;
+            const t = this._activeTool;
 
-            // ── Mouse ──
-            c.addEventListener('mousedown', (e) => { self._startDraw(self._getPos(e, c)); });
-            c.addEventListener('mousemove', (e) => { if (self._drawing) self._continueDraw(self._getPos(e, c)); });
-            c.addEventListener('mouseup',   () => { self._stopDraw(); });
-            c.addEventListener('mouseleave', () => { self._stopDraw(); });
+            if (t === 'player-blue') {
+                obj = new fabric.Circle({
+                    radius: 15, left: x - 15, top: y - 15,
+                    fill: '#0088ff', stroke: '#ffffff', strokeWidth: 2.5,
+                    selectable: true, hasControls: true,
+                    shadow: new fabric.Shadow({ color: 'rgba(0,136,255,0.6)', blur: 10 })
+                });
+            } else if (t === 'player-red') {
+                obj = new fabric.Circle({
+                    radius: 15, left: x - 15, top: y - 15,
+                    fill: '#ef4444', stroke: '#ffffff', strokeWidth: 2.5,
+                    selectable: true, hasControls: true,
+                    shadow: new fabric.Shadow({ color: 'rgba(239,68,68,0.6)', blur: 10 })
+                });
+            } else if (t === 'ball') {
+                obj = new fabric.Text('⚽', {
+                    left: x - 14, top: y - 14,
+                    fontSize: 28, selectable: true, hasControls: true,
+                    fontFamily: 'Segoe UI Emoji, Apple Color Emoji, sans-serif'
+                });
+            } else if (t === 'zone-solid') {
+                obj = new fabric.Rect({
+                    left: x - 50, top: y - 35, width: 100, height: 70,
+                    fill: 'rgba(0,240,255,0.08)', stroke: '#ffffff',
+                    strokeWidth: 2, selectable: true, hasControls: true,
+                    rx: 4, ry: 4
+                });
+            } else if (t === 'zone-dashed') {
+                obj = new fabric.Rect({
+                    left: x - 50, top: y - 35, width: 100, height: 70,
+                    fill: 'rgba(255,200,0,0.07)', stroke: '#fbbf24',
+                    strokeWidth: 2, strokeDashArray: [8, 5],
+                    selectable: true, hasControls: true, rx: 4, ry: 4
+                });
+            }
 
-            // ── Touch ──
-            c.addEventListener('touchstart', (e) => { e.preventDefault(); self._startDraw(self._getPos(e.touches[0], c)); }, { passive: false });
-            c.addEventListener('touchmove',  (e) => { e.preventDefault(); if (self._drawing) self._continueDraw(self._getPos(e.touches[0], c)); }, { passive: false });
-            c.addEventListener('touchend',   (e) => { e.preventDefault(); self._stopDraw(); }, { passive: false });
+            if (obj) {
+                this._fc.add(obj);
+                this._fc.setActiveObject(obj);
+                this._fc.renderAll();
+            }
         },
 
-        _getPos(e, canvas) {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width  / rect.width;
-            const scaleY = canvas.height / rect.height;
-            return {
-                x: (e.clientX - rect.left) * scaleX,
-                y: (e.clientY - rect.top)  * scaleY
-            };
+        // ── Borrar objeto seleccionado ──
+        deleteSelected() {
+            if (!this._fc) return;
+            const active = this._fc.getActiveObject();
+            if (!active) return;
+            if (active.type === 'activeSelection') {
+                active.forEachObject(obj => this._fc.remove(obj));
+                this._fc.discardActiveObject();
+            } else {
+                this._fc.remove(active);
+            }
+            this._fc.renderAll();
         },
 
-        _startDraw(pos) {
-            this._drawing = true;
-            this._ctx.beginPath();
-            this._ctx.moveTo(pos.x, pos.y);
-        },
-
-        _continueDraw(pos) {
-            this._ctx.lineTo(pos.x, pos.y);
-            this._ctx.stroke();
-        },
-
-        _stopDraw() {
-            if (!this._drawing) return;
-            this._drawing = false;
-            this._ctx.closePath();
-        },
-
+        // ── Limpiar todo ──
         clear() {
-            if (!this._ctx || !this._canvas) return;
-            this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+            if (!this._fc) return;
+            this._fc.clear();
+            // Restaurar background null (transparente)
+            this._fc.backgroundColor = null;
+            this._fc.renderAll();
         },
 
-        setColor(hex) {
-            this._color = hex;
-            if (this._ctx) this._ctx.strokeStyle = hex;
-        },
-
-        setSize(px) {
-            this._size = Number(px);
-            if (this._ctx) this._ctx.lineWidth = this._size;
-        },
-
+        // ── Exportar PNG compuesto (campo SVG + objetos Fabric) ──
         toDataURL() {
-            if (!this._canvas) return null;
-            return this._canvas.toDataURL('image/png');
+            if (!this._fc) return null;
+
+            const w = this._fc.getWidth();
+            const h = this._fc.getHeight();
+
+            // 1. Renderizar el SVG del campo en un canvas offscreen
+            const offscreen = document.createElement('canvas');
+            offscreen.width  = w;
+            offscreen.height = h;
+            const octx = offscreen.getContext('2d');
+
+            // Dibujar fondo verde + líneas del SVG
+            octx.fillStyle = '#1a4a1a';
+            octx.fillRect(0, 0, w, h);
+
+            // Helper para dibujar las líneas tácticas del campo en escala
+            const sx = w / 105;
+            const sy = h / 68;
+            octx.strokeStyle = 'rgba(255,255,255,0.3)';
+            octx.lineWidth = 1;
+
+            // Borde campo
+            octx.strokeRect(0, 0, w, h);
+            // Línea media
+            octx.beginPath(); octx.moveTo(52.5*sx, 0); octx.lineTo(52.5*sx, h); octx.stroke();
+            // Círculo central
+            octx.beginPath(); octx.arc(52.5*sx, 34*sy, 9.15*sx, 0, Math.PI*2); octx.stroke();
+            // Punto central
+            octx.fillStyle = 'rgba(255,255,255,0.5)';
+            octx.beginPath(); octx.arc(52.5*sx, 34*sy, 2, 0, Math.PI*2); octx.fill();
+            // Áreas
+            octx.strokeStyle = 'rgba(255,255,255,0.3)';
+            octx.strokeRect(0, 13.84*sy, 16.5*sx, 40.32*sy);
+            octx.strokeRect(0, 26.84*sy, 5.5*sx,  14.32*sy);
+            octx.strokeRect(88.5*sx, 13.84*sy, 16.5*sx, 40.32*sy);
+            octx.strokeRect(99.5*sx, 26.84*sy, 5.5*sx,  14.32*sy);
+            // Puntos penales
+            ['rgba(255,255,255,0.5)'].forEach(c => { octx.fillStyle = c;
+                octx.beginPath(); octx.arc(11*sx, 34*sy, 2, 0, Math.PI*2); octx.fill();
+                octx.beginPath(); octx.arc(94*sx, 34*sy, 2, 0, Math.PI*2); octx.fill();
+            });
+            // Arcos
+            octx.beginPath(); octx.arc(16.5*sx, 34*sy, 9.15*sx, -Math.PI/3, Math.PI/3); octx.stroke();
+            octx.beginPath(); octx.arc(88.5*sx, 34*sy, 9.15*sx, Math.PI*2/3, Math.PI*4/3); octx.stroke();
+
+            // 2. Componer encima los objetos de Fabric
+            const fabricDataURL = this._fc.toDataURL({ format: 'png', multiplier: 1 });
+            return new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => {
+                    octx.drawImage(img, 0, 0);
+                    resolve(offscreen.toDataURL('image/png'));
+                };
+                img.onerror = () => resolve(offscreen.toDataURL('image/png'));
+                img.src = fabricDataURL;
+            });
         }
     },
 
     initCanvas() {
-        // Delegate completely to the native DrawEngine
-        this.DrawEngine.init();
+        this.FabricEngine.init();
     },
 
     clearCanvas() {
-        this.DrawEngine.clear();
+        this.FabricEngine.clear();
     },
 
     // --- BÓVEDA DE TAREAS PERSONALIZADAS ---
@@ -2558,12 +2707,10 @@ window.DTEngine = {
         // Mostrar modal
         document.getElementById('modal-custom-task').classList.remove('hidden');
 
-        // Inicializar motor de dibujo tras render DOM
+        // Inicializar Fabric.js tras render DOM
         setTimeout(() => {
-            this.DrawEngine.init();
-            this.DrawEngine.setColor('#00F0FF');
-            this.DrawEngine.setSize(3);
-        }, 120);
+            this.FabricEngine.init();
+        }, 150);
     },
 
     closeCustomTaskModal() {
@@ -2605,10 +2752,16 @@ window.DTEngine = {
             ? Array.from(pitchEl.selectedOptions).map(o => o.value)
             : [];
 
-        // ── Exportar pizarra táctica a Base64 PNG ──
+        // ── Exportar pizarra táctica a Base64 PNG (Fabric composited) ──
         let ical_diagram_url = null;
         try {
-            ical_diagram_url = this.DrawEngine.toDataURL();
+            const result = this.FabricEngine.toDataURL();
+            // toDataURL devuelve una Promise (composición con SVG) o null
+            if (result && typeof result.then === 'function') {
+                ical_diagram_url = await result;
+            } else {
+                ical_diagram_url = result;
+            }
         } catch(e) {
             console.warn('⚠️ No se pudo exportar el canvas:', e);
         }
