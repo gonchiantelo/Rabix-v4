@@ -2721,105 +2721,126 @@ window.DTEngine = {
         const uid = localStorage.getItem('ravix_v5_uid');
         if (!uid) return alert('Sesión no encontrada. Por favor vuelve a iniciar sesión.');
 
-        // ── Recoger todos los campos del formulario ──
+        // ════════════════════════════════════════════════════
+        // 1. CAPTURA DE CAMPOS — mapeo 1:1 con exercises_library
+        // ════════════════════════════════════════════════════
         const title = (document.getElementById('ct-title')?.value || '').trim();
         if (!title) return alert('Por favor, ingresa un título para la tarea.');
 
-        const description       = (document.getElementById('ct-description')?.value || '').trim();
-        const morfociclo_phase  = (document.getElementById('ct-morfociclo')?.value || null) || null;
-        const ssp_type          = (document.getElementById('ct-ssp-type')?.value || null) || null;
-        const game_moment       = (document.getElementById('ct-game-moment')?.value || null) || null;
-        const dimensions        = (document.getElementById('ct-dimensions')?.value || '').trim() || null;
-        const rule_provocation  = (document.getElementById('ct-rule-provocation')?.value || '').trim() || null;
-        const rule_propension   = (document.getElementById('ct-rule-propension')?.value || '').trim() || null;
-        const rule_continuity   = (document.getElementById('ct-rule-continuity')?.value || '').trim() || null;
-        const can_use_cones_as_goals = !!(document.getElementById('ct-cones-goals')?.checked);
+        const description      = (document.getElementById('ct-description')?.value || '').trim() || null;
+        const morfociclo_phase = (document.getElementById('ct-morfociclo')?.value || '').trim()  || null;
+        const ssp_type         = (document.getElementById('ct-ssp-type')?.value || '').trim()    || null;
+        const game_moment      = (document.getElementById('ct-game-moment')?.value || '').trim() || null;
+        const dimensions       = (document.getElementById('ct-dimensions')?.value || '').trim()  || null;
 
-        // Numéricos
-        const minPlayersRaw = document.getElementById('ct-min-players')?.value;
-        const maxPlayersRaw = document.getElementById('ct-max-players')?.value;
-        const densityRaw    = document.getElementById('ct-density')?.value;
-        const min_players   = minPlayersRaw ? parseInt(minPlayersRaw, 10)   : null;
-        const max_players   = maxPlayersRaw ? parseInt(maxPlayersRaw, 10)   : null;
-        const density_m2_player = densityRaw ? parseFloat(densityRaw)      : null;
+        // Numéricos — parseInt / parseFloat estrictos
+        const _minRaw = document.getElementById('ct-min-players')?.value;
+        const _maxRaw = document.getElementById('ct-max-players')?.value;
+        const _denRaw = document.getElementById('ct-density')?.value;
+        const min_players       = _minRaw ? parseInt(_minRaw, 10)   : null;
+        const max_players       = _maxRaw ? parseInt(_maxRaw, 10)   : null;
+        const density_m2_player = _denRaw ? parseFloat(_denRaw)     : null;
 
-        // Arrays (JSONB)
-        const materialsRaw = (document.getElementById('ct-materials')?.value || '');
-        const materials    = materialsRaw ? materialsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
-
-        const pitchEl    = document.getElementById('ct-pitch-suitability');
-        const pitch_suitability = pitchEl
-            ? Array.from(pitchEl.selectedOptions).map(o => o.value)
+        // Arrays JSONB — separados por coma desde el DOM
+        const _matRaw = document.getElementById('ct-materials')?.value || '';
+        const materials = _matRaw
+            ? _matRaw.split(',').map(m => m.trim()).filter(Boolean)
             : [];
 
-        // ── Exportar pizarra táctica a Base64 PNG (Fabric composited) ──
-        let ical_diagram_url = null;
+        // Reglas tácticas
+        const rule_provocation = (document.getElementById('ct-rule-provocation')?.value || '').trim() || null;
+        const rule_propension  = (document.getElementById('ct-rule-propension')?.value  || '').trim() || null;
+        const rule_continuity  = (document.getElementById('ct-rule-continuity')?.value  || '').trim() || null;
+
+        // ════════════════════════════════════════════════════
+        // 2. EXPORTAR DIAGRAMA TÁCTICO → tactical_diagram_url
+        //    Columna exacta de la DB. Usa Fabric canvas.toDataURL.
+        // ════════════════════════════════════════════════════
+        let tactical_diagram_url = null;
         try {
-            const result = this.FabricEngine.toDataURL();
-            // toDataURL devuelve una Promise (composición con SVG) o null
-            if (result && typeof result.then === 'function') {
-                ical_diagram_url = await result;
-            } else {
-                ical_diagram_url = result;
+            if (this.FabricEngine._fc) {
+                tactical_diagram_url = this.FabricEngine._fc.toDataURL({ format: 'png', multiplier: 1 });
             }
         } catch(e) {
-            console.warn('⚠️ No se pudo exportar el canvas:', e);
         }
 
-        // ── Deshabilitar botón durante el guardado ──
+        // ─── 3. Deshabilitar botón durante guardado ───
         const btn = document.getElementById('ct-save-btn');
         if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
 
         try {
-            console.log('💾 Insertando en exercises_library...');
+            // ════════════════════════════════════════════════════
+            // 3. INSERT → exercises_library (keys exactas, sin extras)
+            // ════════════════════════════════════════════════════
             const payload = {
-                user_id: uid,
+                user_id:             uid,
                 title,
                 description,
                 morfociclo_phase,
                 ssp_type,
                 game_moment,
-                dimensions,
                 min_players,
                 max_players,
                 density_m2_player,
+                dimensions,
                 materials,
                 rule_provocation,
                 rule_propension,
                 rule_continuity,
-                can_use_cones_as_goals,
-                pitch_suitability,
-                ical_diagram_url
+                tactical_diagram_url
             };
+
+            console.log('💾 Payload exercises_library:', payload);
 
             const { data, error } = await window.supabase
                 .from('exercises_library')
-                .insert(payload)
+                .insert([payload])
                 .select();
 
             if (error) throw new Error(error.message);
             const newTask = data[0];
 
-            // Añadir localmente para que aparezca sin recargar
-            if (!window.CustomExercises) window.CustomExercises = [];
-            window.CustomExercises.unshift({
-                ...newTask,
-                numericId: newTask.id,
-                isCustom: true
-            });
-
+            // ── Éxito: limpiar canvas y cerrar modal ──
+            this.FabricEngine.clear();
             this.closeCustomTaskModal();
+
+            // Actualizar lista local sin recargar
+            if (!window.CustomExercises) window.CustomExercises = [];
+            window.CustomExercises.unshift({ ...newTask, numericId: newTask.id, isCustom: true });
             const etiquetaReal = this.calcularEtiquetaMD(this._selectedDate, Array.from(this._matchDays));
             this.renderLibrary(etiquetaReal);
-            console.log('✅ Tarea guardada en exercises_library:', newTask.id);
+
+            // ── Toast de éxito ──
+            this._showToast('✅ Tarea guardada en la Biblioteca', 'success');
+            console.log('✅ Tarea guardada en exercises_library → id:', newTask.id);
+
         } catch (err) {
-            console.error('🔴 Error al guardar:', err);
-            alert('Error al guardar: ' + err.message);
+            console.error('🔴 Error al guardar en exercises_library:', err);
+            this._showToast('❌ Error: ' + err.message, 'error');
         } finally {
             if (btn) { btn.disabled = false; btn.textContent = '💾 GUARDAR EN BIBLIOTECA'; }
         }
     },
 
+    // ─── Toast de notificación (no bloquea como alert) ───
+    _showToast(message, type = 'success') {
+        const existing = document.getElementById('ravix-toast');
+        if (existing) existing.remove();
+        const toast = document.createElement('div');
+        toast.id = 'ravix-toast';
+        toast.textContent = message;
+        const bg     = type === 'success' ? 'linear-gradient(135deg,rgba(0,240,255,0.12),rgba(0,136,204,0.18))' : 'linear-gradient(135deg,rgba(239,68,68,0.12),rgba(220,38,38,0.18))';
+        const border = type === 'success' ? '#00F0FF' : '#ef4444';
+        toast.style.cssText = `position:fixed;bottom:32px;right:32px;z-index:99999;padding:14px 22px;border-radius:12px;background:${bg};border:1px solid ${border};color:#F5F5F5;font-family:Outfit,sans-serif;font-size:0.9rem;font-weight:700;backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:ravix-toast-in 0.3s ease;`;
+        if (!document.getElementById('ravix-toast-style')) {
+            const s = document.createElement('style');
+            s.id = 'ravix-toast-style';
+            s.textContent = `@keyframes ravix-toast-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}`;
+            document.head.appendChild(s);
+        }
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.4s'; setTimeout(() => toast.remove(), 400); }, 3500);
+    },
 
     // ══════════════════════════════════════════════════════
     // MÓDULO RULES TAG INPUT — Reglas de Acción y Provocación
