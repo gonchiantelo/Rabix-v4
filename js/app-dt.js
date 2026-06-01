@@ -2722,7 +2722,7 @@ window.DTEngine = {
         if (!uid) return alert('Sesión no encontrada. Por favor vuelve a iniciar sesión.');
 
         // ════════════════════════════════════════════════════
-        // 1. CAPTURA DE CAMPOS — mapeo 1:1 con exercises_library
+        // 1. CAPTURA DE CAMPOS — mapeo 1:1 con custom_exercises
         // ════════════════════════════════════════════════════
         const title = (document.getElementById('ct-title')?.value || '').trim();
         if (!title) return alert('Por favor, ingresa un título para la tarea.');
@@ -2733,13 +2733,11 @@ window.DTEngine = {
         const game_moment      = (document.getElementById('ct-game-moment')?.value || '').trim() || null;
         const dimensions       = (document.getElementById('ct-dimensions')?.value || '').trim()  || null;
 
-        // Numéricos — parseInt / parseFloat estrictos
+        // Concatenar Min, Max y Densidad en un solo string
         const _minRaw = document.getElementById('ct-min-players')?.value;
         const _maxRaw = document.getElementById('ct-max-players')?.value;
         const _denRaw = document.getElementById('ct-density')?.value;
-        const min_players       = _minRaw ? parseInt(_minRaw, 10)   : null;
-        const max_players       = _maxRaw ? parseInt(_maxRaw, 10)   : null;
-        const density_m2_player = _denRaw ? parseFloat(_denRaw)     : null;
+        const dimensions_density = `Min: ${_minRaw || '-'} | Max: ${_maxRaw || '-'} | Dens: ${_denRaw || '-'}`;
 
         // Arrays JSONB — separados por coma desde el DOM
         const _matRaw = document.getElementById('ct-materials')?.value || '';
@@ -2754,7 +2752,6 @@ window.DTEngine = {
 
         // ════════════════════════════════════════════════════
         // 2. EXPORTAR DIAGRAMA TÁCTICO → tactical_diagram_url
-        //    Columna exacta de la DB. Usa Fabric canvas.toDataURL.
         // ════════════════════════════════════════════════════
         let tactical_diagram_url = null;
         try {
@@ -2770,30 +2767,28 @@ window.DTEngine = {
 
         try {
             // ════════════════════════════════════════════════════
-            // 3. INSERT → exercises_library (keys exactas, sin extras)
+            // 3. INSERT → custom_exercises
             // ════════════════════════════════════════════════════
             const payload = {
-                user_id:             uid,
+                user_id: uid,
                 title,
                 description,
                 morfociclo_phase,
                 ssp_type,
                 game_moment,
-                min_players,
-                max_players,
-                density_m2_player,
                 dimensions,
                 materials,
                 rule_provocation,
                 rule_propension,
                 rule_continuity,
-                tactical_diagram_url
+                tactical_diagram_url,
+                dimensions_density
             };
 
-            console.log('💾 Payload exercises_library:', payload);
+            console.log('💾 Payload custom_exercises:', payload);
 
             const { data, error } = await window.supabase
-                .from('exercises_library')
+                .from('custom_exercises')
                 .insert([payload])
                 .select();
 
@@ -2812,10 +2807,10 @@ window.DTEngine = {
 
             // ── Toast de éxito ──
             this._showToast('✅ Tarea guardada en la Biblioteca', 'success');
-            console.log('✅ Tarea guardada en exercises_library → id:', newTask.id);
+            console.log('✅ Tarea guardada en custom_exercises → id:', newTask.id);
 
         } catch (err) {
-            console.error('🔴 Error al guardar en exercises_library:', err);
+            console.error('🔴 Error al guardar en custom_exercises:', err);
             this._showToast('❌ Error: ' + err.message, 'error');
         } finally {
             if (btn) { btn.disabled = false; btn.textContent = '💾 GUARDAR EN BIBLIOTECA'; }
