@@ -522,224 +522,239 @@ window.DTEngine = {
                         </div>
                     </section>
 
-                    <!-- SECCIÓN PERFIL DEL DT (#view-profile) -->
-                    <section id="view-profile" class="view-section" style="display: none;">
-                        <div class="profile-view-container">
-
-                            <!-- BLOQUE 1: IDENTIDAD -->
-                            <div class="profile-card">
-                                <h3 class="profile-section-title">IDENTIDAD STAFF</h3>
-                                <div class="profile-form-grid">
-                                    <div class="profile-input-group">
-                                        <label>NOMBRE COMPLETO</label>
-                                        <input type="text" id="prof-name" class="profile-input" placeholder="Nombre del DT">
-                                    </div>
-                                    <div class="profile-input-group">
-                                        <label>LICENCIA</label>
-                                        <select id="prof-license" class="profile-input">
-                                            <option value="UEFA PRO">UEFA PRO</option>
-                                            <option value="CONMEBOL PRO">CONMEBOL PRO</option>
-                                            <option value="AFA / ATFA">AFA / ATFA</option>
-                                            <option value="AMATEUR">AMATEUR</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <h3 class="profile-section-title">CONFIGURACIÓN DEL CLUB</h3>
-                                <div class="profile-form-grid">
-                                    <div class="profile-input-group">
-                                        <label>NOMBRE DEL EQUIPO</label>
-                                        <input type="text" id="prof-team-name" class="profile-input" placeholder="Nombre del Club">
-                                    </div>
-                                    <div class="profile-input-group">
-                                        <label>COLOR PRINCIPAL</label>
-                                        <input type="color" id="prof-team-color" class="profile-input" style="height: 48px; padding: 5px;">
-                                    </div>
-                                    <div class="profile-input-group" style="grid-column: span 2;">
-                                        <label>METODOLOGÍA</label>
-                                        <select id="prof-methodology" class="profile-input">
-                                            <option value="Periodización Táctica">Periodización Táctica</option>
-                                            <option value="Microciclo Estructurado">Microciclo Estructurado</option>
-                                            <option value="Entrenamiento Integrado">Entrenamiento Integrado</option>
-                                        </select>
-                                    </div>
-                                </div>
+                    <!-- SECCIÓN CENTRO DE AJUSTES (#view-profile) -->
+                    <style>
+                        .settings-tab-btn { background: transparent; color: #9ca3af; border: none; text-align: left; padding: 12px 15px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+                        .settings-tab-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+                        .settings-tab-btn.active { background: rgba(0, 242, 254, 0.1); color: #00F2FE; }
+                    </style>
+                    <section id="view-profile" class="view-section" style="display: none; width: 100%; box-sizing: border-box;">
+                        <div style="display: flex; gap: 30px; align-items: flex-start; max-width: 1200px; margin: 0 auto;">
+                            
+                            <!-- Sidebar -->
+                            <div style="width: 250px; flex-shrink: 0; background: #111827; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 8px;">
+                                <h2 style="font-family:'Outfit'; font-size:18px; color:#fff; margin:0 0 15px 5px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.05);">CENTRO DE AJUSTES</h2>
+                                
+                                <button class="settings-tab-btn active" id="tab-btn-dt" onclick="DTEngine.switchSettingsTab('dt')">👤 Perfil del DT</button>
+                                <button class="settings-tab-btn" id="tab-btn-club" onclick="DTEngine.switchSettingsTab('club')">🛡️ Club y Plantel</button>
+                                <button class="settings-tab-btn" id="tab-btn-load" onclick="DTEngine.switchSettingsTab('load')">⚡ Motor de Rendimiento</button>
+                                <button class="settings-tab-btn" id="tab-btn-sys" onclick="DTEngine.switchSettingsTab('sys')">⚙️ Sistema</button>
                             </div>
 
-                            <!-- BLOQUE 1.5: MOTOR DE CARGAS Y RENDIMIENTO -->
-                            <div class="profile-card" style="margin-top: 20px;">
-                                <h3 class="profile-section-title">⚡ MOTOR DE CARGAS Y RENDIMIENTO</h3>
-                                <div class="profile-form-grid">
-                                    <div class="profile-input-group" style="grid-column: span 2; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 8px;">
-                                        <label style="margin:0; font-size: 13px;">Separar RPE Cardiovascular y Muscular</label>
-                                        <input type="checkbox" id="load-rpe-diff" style="width:20px; height:20px; accent-color:#00F0FF; cursor:pointer;">
-                                    </div>
-                                    <div class="profile-input-group">
-                                        <label>LÍMITE RIESGO LESIÓN (A/C)</label>
-                                        <input type="number" step="0.1" id="load-ac-ratio" class="profile-input" value="1.5">
-                                    </div>
-                                    <div class="profile-input-group">
-                                        <label>LÍMITE DE MONOTONÍA SEMANAL</label>
-                                        <input type="number" step="0.1" id="load-monotony" class="profile-input" value="2.0">
-                                    </div>
-                                    <div class="profile-input-group" style="grid-column: span 2; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 8px;">
-                                        <label style="margin:0; font-size: 13px;">Activar alertas visuales de riesgo en Calendario</label>
-                                        <input type="checkbox" id="load-assistant" style="width:20px; height:20px; accent-color:#00F0FF; cursor:pointer;">
-                                    </div>
-                                    <div class="profile-input-group" style="grid-column: span 2;">
-                                        <label>FRECUENCIA DE CUESTIONARIO HOOPER</label>
-                                        <select id="load-wellness-freq" class="profile-input">
-                                            <option value="Diario">Diario</option>
-                                            <option value="Solo Días de Entrenamiento">Solo Días de Entrenamiento</option>
-                                            <option value="Apagado">Apagado</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            <!-- BLOQUE 2: ADN TÁCTICO -->
-                            <div class="profile-card" style="margin-top: 20px;">
-                                <h3 class="profile-section-title">⚙️ ADN TÁCTICO — MODELO DE JUEGO</h3>
-
-                                <div class="dna-section-label">ORGANIZACIÓN OFENSIVA</div>
-                                <div class="profile-form-grid">
-                                    <div class="profile-input-group">
-                                        <label>MÉTODO OFENSIVO</label>
-                                        <select id="dna-ataque" class="profile-input">
-                                            <option value="Ataque Posicional">Ataque Posicional</option>
-                                            <option value="Ataque Directo">Ataque Directo</option>
-                                            <option value="Ataque Rápido">Ataque Rápido</option>
-                                        </select>
-                                    </div>
-                                    <div class="profile-input-group" style="grid-column: span 2;">
-                                        <label>PRINCIPIOS OPERATIVOS</label>
-                                        <div class="tag-input-wrapper" id="tag-input-wrapper">
-                                            <div class="tag-chips" id="tag-chips"></div>
-                                            <div class="tag-input-row">
-                                                <input
-                                                    type="text"
-                                                    id="tag-input"
-                                                    class="tag-input-field"
-                                                    list="tag-suggestions"
-                                                    placeholder="Buscar o escribir un principio..."
-                                                    autocomplete="off"
-                                                    onkeydown="DTEngine.TagInput.onKeyDown(event)"
-                                                >
-                                                <datalist id="tag-suggestions"></datalist>
-                                                <button type="button" class="tag-add-btn" onclick="DTEngine.TagInput.addFromInput()">+</button>
+                            <!-- Contenido -->
+                            <div style="flex: 1; background: #0f172a; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; min-height: 500px; padding: 30px;">
+                                
+                                <!-- Tab 1: Perfil DT -->
+                                <div id="settings-tab-dt" class="settings-tab-content" style="display: block;">
+                                    <div class="profile-card">
+                                        <h3 class="profile-section-title">IDENTIDAD STAFF</h3>
+                                        <div class="profile-form-grid">
+                                            <div class="profile-input-group">
+                                                <label>NOMBRE COMPLETO</label>
+                                                <input type="text" id="prof-name" class="profile-input" placeholder="Nombre del DT">
+                                            </div>
+                                            <div class="profile-input-group">
+                                                <label>LICENCIA</label>
+                                                <select id="prof-license" class="profile-input">
+                                                    <option value="UEFA PRO">UEFA PRO</option>
+                                                    <option value="CONMEBOL PRO">CONMEBOL PRO</option>
+                                                    <option value="AFA / ATFA">AFA / ATFA</option>
+                                                    <option value="AMATEUR">AMATEUR</option>
+                                                </select>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                    
+                                    <div class="profile-card" style="margin-top: 20px;">
+                                        <h3 class="profile-section-title">⚙️ ADN TÁCTICO — MODELO DE JUEGO</h3>
+                                        <div class="dna-section-label">ORGANIZACIÓN OFENSIVA</div>
+                                        <div class="profile-form-grid">
+                                            <div class="profile-input-group">
+                                                <label>MÉTODO OFENSIVO</label>
+                                                <select id="dna-ataque" class="profile-input">
+                                                    <option value="Ataque Posicional">Ataque Posicional</option>
+                                                    <option value="Ataque Directo">Ataque Directo</option>
+                                                    <option value="Ataque Rápido">Ataque Rápido</option>
+                                                </select>
+                                            </div>
+                                            <div class="profile-input-group" style="grid-column: span 2;">
+                                                <label>PRINCIPIOS OPERATIVOS</label>
+                                                <div class="tag-input-wrapper" id="tag-input-wrapper">
+                                                    <div class="tag-chips" id="tag-chips"></div>
+                                                    <div class="tag-input-row">
+                                                        <input type="text" id="tag-input" class="tag-input-field" list="tag-suggestions" placeholder="Buscar o escribir un principio..." autocomplete="off" onkeydown="DTEngine.TagInput.onKeyDown(event)">
+                                                        <datalist id="tag-suggestions"></datalist>
+                                                        <button type="button" class="tag-add-btn" onclick="DTEngine.TagInput.addFromInput()">+</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                                <div class="dna-section-label">ORGANIZACIÓN DEFENSIVA</div>
-                                <div class="profile-form-grid">
-                                    <div class="profile-input-group">
-                                        <label>MÉTODO DEFENSIVO</label>
-                                        <select id="dna-defensa" class="profile-input">
-                                            <option value="Defensa Zonal">Defensa Zonal</option>
-                                            <option value="Hombre a Hombre">Hombre a Hombre</option>
-                                            <option value="Individual">Individual</option>
-                                            <option value="Combinada">Combinada</option>
-                                            <option value="Presión Alta">Presión Alta</option>
-                                        </select>
-                                    </div>
-                                    <div class="profile-input-group">
-                                        <label>ALTURA DEL BLOQUE</label>
-                                        <select id="dna-bloque" class="profile-input">
-                                            <option value="Alto">Bloque Alto</option>
-                                            <option value="Medio">Bloque Medio</option>
-                                            <option value="Bajo">Bloque Bajo</option>
-                                        </select>
-                                    </div>
-                                </div>
+                                        <div class="dna-section-label">ORGANIZACIÓN DEFENSIVA</div>
+                                        <div class="profile-form-grid">
+                                            <div class="profile-input-group">
+                                                <label>MÉTODO DEFENSIVO</label>
+                                                <select id="dna-defensa" class="profile-input">
+                                                    <option value="Defensa Zonal">Defensa Zonal</option>
+                                                    <option value="Hombre a Hombre">Hombre a Hombre</option>
+                                                    <option value="Individual">Individual</option>
+                                                    <option value="Combinada">Combinada</option>
+                                                    <option value="Presión Alta">Presión Alta</option>
+                                                </select>
+                                            </div>
+                                            <div class="profile-input-group">
+                                                <label>ALTURA DEL BLOQUE</label>
+                                                <select id="dna-bloque" class="profile-input">
+                                                    <option value="Alto">Bloque Alto</option>
+                                                    <option value="Medio">Bloque Medio</option>
+                                                    <option value="Bajo">Bloque Bajo</option>
+                                                </select>
+                                            </div>
+                                        </div>
 
-                                <div class="dna-section-label">TRANSICIONES</div>
-                                <div class="profile-form-grid">
-                                    <div class="profile-input-group">
-                                        <label>TRANSICIÓN OFENSIVA (DEF→AT)</label>
-                                        <select id="dna-trans-of" class="profile-input">
-                                            <option value="Contraataque">Contraataque</option>
-                                            <option value="Conservación">Conservación</option>
-                                        </select>
-                                    </div>
-                                    <div class="profile-input-group">
-                                        <label>TRANSICIÓN DEFENSIVA (AT→DEF)</label>
-                                        <select id="dna-trans-def" class="profile-input">
-                                            <option value="Presión tras pérdida">Presión tras pérdida</option>
-                                            <option value="Repliegue Medio">Repliegue Medio</option>
-                                            <option value="Repliegue Bajo">Repliegue Bajo</option>
-                                        </select>
-                                    </div>
-                                </div>
+                                        <div class="dna-section-label">TRANSICIONES</div>
+                                        <div class="profile-form-grid">
+                                            <div class="profile-input-group">
+                                                <label>TRANSICIÓN OFENSIVA (DEF→AT)</label>
+                                                <select id="dna-trans-of" class="profile-input">
+                                                    <option value="Contraataque">Contraataque</option>
+                                                    <option value="Conservación">Conservación</option>
+                                                </select>
+                                            </div>
+                                            <div class="profile-input-group">
+                                                <label>TRANSICIÓN DEFENSIVA (AT→DEF)</label>
+                                                <select id="dna-trans-def" class="profile-input">
+                                                    <option value="Presión tras pérdida">Presión tras pérdida</option>
+                                                    <option value="Repliegue Medio">Repliegue Medio</option>
+                                                    <option value="Repliegue Bajo">Repliegue Bajo</option>
+                                                </select>
+                                            </div>
+                                        </div>
 
-                                <div class="dna-section-label">REGLAS DE ACCIÓN Y PROVOCACIÓN</div>
-                                <div class="profile-input-group" style="grid-column: span 2; margin-top: 10px;">
-                                    <label>ATRACTORES Y CONSTREÑIMIENTOS DEL DT</label>
-                                    <div class="tag-input-wrapper" id="rules-tag-input-wrapper">
-                                        <div class="tag-chips" id="rules-tag-chips"></div>
-                                        <div class="tag-input-row">
-                                            <input
-                                                type="text"
-                                                id="rules-tag-input"
-                                                class="tag-input-field"
-                                                list="rules-tag-suggestions"
-                                                placeholder="Buscar o escribir una regla..."
-                                                autocomplete="off"
-                                                onkeydown="DTEngine.RulesTagInput.onKeyDown(event)"
-                                            >
-                                            <datalist id="rules-tag-suggestions"></datalist>
-                                            <button type="button" class="tag-add-btn" onclick="DTEngine.RulesTagInput.addFromInput()">+</button>
+                                        <div class="dna-section-label">REGLAS DE ACCIÓN Y PROVOCACIÓN</div>
+                                        <div class="profile-input-group" style="grid-column: span 2; margin-top: 10px;">
+                                            <label>ATRACTORES Y CONSTREÑIMIENTOS DEL DT</label>
+                                            <div class="tag-input-wrapper" id="rules-tag-input-wrapper">
+                                                <div class="tag-chips" id="rules-tag-chips"></div>
+                                                <div class="tag-input-row">
+                                                    <input type="text" id="rules-tag-input" class="tag-input-field" list="rules-tag-suggestions" placeholder="Buscar o escribir una regla..." autocomplete="off" onkeydown="DTEngine.RulesTagInput.onKeyDown(event)">
+                                                    <datalist id="rules-tag-suggestions"></datalist>
+                                                    <button type="button" class="tag-add-btn" onclick="DTEngine.RulesTagInput.addFromInput()">+</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+
+                                    <div class="profile-card" style="margin-top: 20px;">
+                                        <h3 class="profile-section-title">⚽ ESTRUCTURA Y PERFILES DEL 11 IDEAL</h3>
+                                        <div class="profile-input-group">
+                                            <label>ESQUEMA BASE</label>
+                                            <select id="dna-esquema" class="profile-input" onchange="DTEngine.PitchEngine.renderPitch(this.value)">
+                                                <option value="1-4-3-3">1-4-3-3</option>
+                                                <option value="1-4-4-2">1-4-4-2</option>
+                                                <option value="1-3-5-2">1-3-5-2</option>
+                                                <option value="1-4-2-3-1">1-4-2-3-1</option>
+                                            </select>
+                                        </div>
+                                        <div id="tactical-pitch" class="pitch-container"></div>
+                                        
+                                        <!-- Modal inline de Perfil de Posición -->
+                                        <div id="position-modal" class="position-modal hidden">
+                                            <div class="position-modal-inner">
+                                                <div class="position-modal-header">
+                                                    <span id="position-modal-title" class="position-modal-title">GK</span>
+                                                    <button type="button" class="tag-chip-remove" onclick="DTEngine.PitchEngine.closePositionModal()" style="width:22px;height:22px;font-size:16px;">×</button>
+                                                </div>
+                                                <div id="position-modal-content" style="max-height: 400px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px;">
+                                                    <div class="scouting-group">
+                                                        <label style="font-size:10px;color:var(--dt-accent);font-weight:900;letter-spacing:1px;display:block;margin-bottom:8px;">ROL TÁCTICO BASE (Elige 1)</label>
+                                                        <div id="options-rol" class="role-options-grid"></div>
+                                                    </div>
+                                                    <div class="scouting-group" style="margin-top:15px;">
+                                                        <label style="font-size:10px;color:var(--dt-accent);font-weight:900;letter-spacing:1px;display:block;margin-bottom:8px;">FÍSICO IDEAL (1 a 3 opciones)</label>
+                                                        <div id="options-fisicos" class="role-options-grid"></div>
+                                                    </div>
+                                                    <div class="scouting-group" style="margin-top:15px;">
+                                                        <label style="font-size:10px;color:var(--dt-accent);font-weight:900;letter-spacing:1px;display:block;margin-bottom:8px;">TÉCNICO / COGNITIVO (1 a 3 opciones)</label>
+                                                        <div id="options-tacticos" class="role-options-grid"></div>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="btn-save-profile" onclick="DTEngine.PitchEngine.savePositionProfile()" style="margin-top:12px;padding:10px 20px;font-size:11px;">GUARDAR PERFIL SCOUTING</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn-save-profile" onclick="DTEngine.saveDTProfile()" style="margin-top: 25px;">GUARDAR PERFIL DEL DT</button>
                                 </div>
+
+                                <!-- Tab 2: Club y Plantel -->
+                                <div id="settings-tab-club" class="settings-tab-content" style="display: none;">
+                                    <div class="profile-card">
+                                        <h3 class="profile-section-title">🛡️ CONFIGURACIÓN DEL CLUB</h3>
+                                        <div class="profile-form-grid">
+                                            <div class="profile-input-group">
+                                                <label>NOMBRE DEL EQUIPO</label>
+                                                <input type="text" id="prof-team-name" class="profile-input" placeholder="Nombre del Club">
+                                            </div>
+                                            <div class="profile-input-group">
+                                                <label>COLOR PRINCIPAL</label>
+                                                <input type="color" id="prof-team-color" class="profile-input" style="height: 48px; padding: 5px;">
+                                            </div>
+                                            <div class="profile-input-group" style="grid-column: span 2;">
+                                                <label>METODOLOGÍA</label>
+                                                <select id="prof-methodology" class="profile-input">
+                                                    <option value="Periodización Táctica">Periodización Táctica</option>
+                                                    <option value="Microciclo Estructurado">Microciclo Estructurado</option>
+                                                    <option value="Entrenamiento Integrado">Entrenamiento Integrado</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn-save-profile" onclick="DTEngine.saveClubSettings()" style="margin-top: 25px;">GUARDAR CLUB Y PLANTEL</button>
+                                </div>
+
+                                <!-- Tab 3: Motor de Rendimiento -->
+                                <div id="settings-tab-load" class="settings-tab-content" style="display: none;">
+                                    <div class="profile-card">
+                                        <h3 class="profile-section-title">⚡ MOTOR DE CARGAS Y RENDIMIENTO</h3>
+                                        <div class="profile-form-grid">
+                                            <div class="profile-input-group" style="grid-column: span 2; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 8px;">
+                                                <label style="margin:0; font-size: 13px;">Separar RPE Cardiovascular y Muscular</label>
+                                                <input type="checkbox" id="load-rpe-diff" style="width:20px; height:20px; accent-color:#00F0FF; cursor:pointer;">
+                                            </div>
+                                            <div class="profile-input-group">
+                                                <label>LÍMITE RIESGO LESIÓN (A/C)</label>
+                                                <input type="number" step="0.1" id="load-ac-ratio" class="profile-input" value="1.5">
+                                            </div>
+                                            <div class="profile-input-group">
+                                                <label>LÍMITE DE MONOTONÍA SEMANAL</label>
+                                                <input type="number" step="0.1" id="load-monotony" class="profile-input" value="2.0">
+                                            </div>
+                                            <div class="profile-input-group" style="grid-column: span 2; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 8px;">
+                                                <label style="margin:0; font-size: 13px;">Activar alertas visuales de riesgo en Calendario</label>
+                                                <input type="checkbox" id="load-assistant" style="width:20px; height:20px; accent-color:#00F0FF; cursor:pointer;">
+                                            </div>
+                                            <div class="profile-input-group" style="grid-column: span 2;">
+                                                <label>FRECUENCIA DE CUESTIONARIO HOOPER</label>
+                                                <select id="load-wellness-freq" class="profile-input">
+                                                    <option value="Diario">Diario</option>
+                                                    <option value="Solo Días de Entrenamiento">Solo Días de Entrenamiento</option>
+                                                    <option value="Apagado">Apagado</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn-save-profile" onclick="DTEngine.saveLoadEngineSettings()" style="margin-top: 25px;">GUARDAR MOTOR DE RENDIMIENTO</button>
+                                </div>
+
+                                <!-- Tab 4: Sistema -->
+                                <div id="settings-tab-sys" class="settings-tab-content" style="display: none;">
+                                    <div class="profile-card">
+                                        <h3 class="profile-section-title">⚙️ SISTEMA</h3>
+                                        <p style="color:#888; font-size: 14px;">Ajustes generales del sistema próximamente (Notificaciones, Exportación, Privacidad)...</p>
+                                    </div>
+                                </div>
+
                             </div>
-
-                            <!-- BLOQUE 3: 11 IDEAL -->
-                            <div class="profile-card" style="margin-top: 20px;">
-                                <h3 class="profile-section-title">⚽ ESTRUCTURA Y PERFILES DEL 11 IDEAL</h3>
-
-                                <div class="profile-input-group">
-                                    <label>ESQUEMA BASE</label>
-                                    <select id="dna-esquema" class="profile-input" onchange="DTEngine.PitchEngine.renderPitch(this.value)">
-                                        <option value="1-4-3-3">1-4-3-3</option>
-                                        <option value="1-4-4-2">1-4-4-2</option>
-                                        <option value="1-3-5-2">1-3-5-2</option>
-                                        <option value="1-4-2-3-1">1-4-2-3-1</option>
-                                    </select>
-                                </div>
-
-                                <div id="tactical-pitch" class="pitch-container"></div>
-
-                                <!-- Modal inline de Perfil de Posición -->
-                                <div id="position-modal" class="position-modal hidden">
-                                    <div class="position-modal-inner">
-                                        <div class="position-modal-header">
-                                            <span id="position-modal-title" class="position-modal-title">GK</span>
-                                            <button type="button" class="tag-chip-remove" onclick="DTEngine.PitchEngine.closePositionModal()" style="width:22px;height:22px;font-size:16px;">×</button>
-                                        </div>
-                                        <div id="position-modal-content" style="max-height: 400px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px;">
-                                            <div class="scouting-group">
-                                                <label style="font-size:10px;color:var(--dt-accent);font-weight:900;letter-spacing:1px;display:block;margin-bottom:8px;">ROL TÁCTICO BASE (Elige 1)</label>
-                                                <div id="options-rol" class="role-options-grid"></div>
-                                            </div>
-                                            <div class="scouting-group" style="margin-top:15px;">
-                                                <label style="font-size:10px;color:var(--dt-accent);font-weight:900;letter-spacing:1px;display:block;margin-bottom:8px;">FÍSICO IDEAL (1 a 3 opciones)</label>
-                                                <div id="options-fisicos" class="role-options-grid"></div>
-                                            </div>
-                                            <div class="scouting-group" style="margin-top:15px;">
-                                                <label style="font-size:10px;color:var(--dt-accent);font-weight:900;letter-spacing:1px;display:block;margin-bottom:8px;">TÉCNICO / COGNITIVO (1 a 3 opciones)</label>
-                                                <div id="options-tacticos" class="role-options-grid"></div>
-                                            </div>
-                                        </div>
-                                        <button type="button" class="btn-save-profile" onclick="DTEngine.PitchEngine.savePositionProfile()" style="margin-top:12px;padding:10px 20px;font-size:11px;">GUARDAR PERFIL SCOUTING</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button class="btn-save-profile" onclick="DTEngine.saveProfile()" style="margin-top: 25px;">GUARDAR CONFIGURACIÓN COMPLETA</button>
-
                         </div>
                     </section>
                     
@@ -2442,16 +2457,23 @@ window.DTEngine = {
         }
     },
 
-    async saveProfile() {
+    switchSettingsTab(tabId) {
+        document.querySelectorAll('.settings-tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.settings-tab-content').forEach(content => content.style.display = 'none');
+        
+        const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+        const activeContent = document.getElementById(`settings-tab-${tabId}`);
+        
+        if (activeBtn) activeBtn.classList.add('active');
+        if (activeContent) activeContent.style.display = 'block';
+    },
+
+    async saveDTProfile() {
         const uid = window.CurrentUser?.id || localStorage.getItem('ravix_v5_uid');
-        
+        if (!uid) return alert('Error: Usuario no identificado.');
+
         const name = document.getElementById('prof-name')?.value;
-        const teamName = document.getElementById('prof-team-name')?.value;
-        const color = document.getElementById('prof-team-color')?.value;
-        
-        // 1. Captura de Datos Planos (DOM a variables individuales)
         const valLicencia = document.getElementById('prof-license')?.value || null;
-        const valMetodologia = document.getElementById('prof-methodology')?.value || null;
         const valEsquemaBase = document.getElementById('dna-esquema')?.value || null;
         const valOrgOfensiva = document.getElementById('dna-ataque')?.value || null;
         const valAlturaOfensiva = document.getElementById('altura_bloque_ofensivo')?.value || null;
@@ -2465,7 +2487,6 @@ window.DTEngine = {
         const valPrincipiosOperativos = DTEngine.TagInput.getTags().join(' | ') || null;
         const valReglasAccion = document.getElementById('reglas_accion')?.value || null;
 
-        // Inputs del 11 ideal
         const valArquero = document.getElementById('ideal_arquero')?.value || null;
         const valLateralDerecho = document.getElementById('ideal_lateral_derecho')?.value || null;
         const valCentralDerecho = document.getElementById('ideal_central_derecho')?.value || null;
@@ -2478,16 +2499,13 @@ window.DTEngine = {
         const valExtremoIzquierdo = document.getElementById('ideal_extremo_izquierdo')?.value || null;
         const valDelantero = document.getElementById('ideal_delantero')?.value || null;
 
-        if (!name || !teamName) return alert('Nombre y Equipo son obligatorios.');
+        if (!name) return alert('El nombre es obligatorio.');
 
         try {
-            console.log('💾 Guardando perfil plano y conexiones de equipo...');
-
-            // 2. Guardado Plano en Supabase con esquema estricto y upsert
+            console.log('💾 Guardando Perfil DT...');
             const profilePayload = {
                 id: uid,
                 licencia: valLicencia,
-                metodologia: valMetodologia,
                 esquema_base: valEsquemaBase,
                 organizacion_ofensiva: valOrgOfensiva,
                 altura_bloque_ofensivo: valAlturaOfensiva,
@@ -2511,60 +2529,80 @@ window.DTEngine = {
                 ideal_delantero: valDelantero
             };
 
-            console.log('📦 PAYLOAD A ENVIAR A PROFILES_DT (UPSERT):', profilePayload);
-
-            const { error: pErr } = await window.supabase
-                .from('profiles_dt')
-                .upsert(profilePayload);
-
+            const { error: pErr } = await window.supabase.from('profiles_dt').upsert(profilePayload);
             if (pErr) throw pErr;
 
-            const pRes = { ok: !pErr };
-
-            // Actualizar datos base (Usuarios y Equipos)
             const { error: uErr } = await window.supabase.from('users').update({ name, license: valLicencia }).eq('id', uid);
-            const uRes = { ok: !uErr };
+            if (uErr) throw uErr;
 
-            const teamId = window.CurrentTeam?.id;
+            if (window.CurrentUser) {
+                window.CurrentUser.name = name;
+                window.CurrentUser.license = valLicencia;
+            }
+
+            alert('✅ Perfil y ADN Táctico guardados.');
+        } catch (error) {
+            console.error('🔴 ERROR SUPABASE:', error.message);
+            alert('Error al guardar Perfil.');
+        }
+    },
+
+    async saveClubSettings() {
+        const teamId = window.CurrentTeam?.id;
+        if (!teamId) return alert('Error: Equipo no identificado.');
+
+        const teamName = document.getElementById('prof-team-name')?.value;
+        const color = document.getElementById('prof-team-color')?.value;
+        const valMetodologia = document.getElementById('prof-methodology')?.value || null;
+
+        if (!teamName) return alert('El nombre del equipo es obligatorio.');
+
+        try {
+            console.log('💾 Guardando Ajustes del Club...');
             const { error: tErr } = await window.supabase.from('teams').update({ name: teamName }).eq('id', teamId);
-            const tRes = { ok: !tErr };
+            if (tErr) throw tErr;
 
             const { error: cErr } = await window.supabase.from('team_configs').update({ primary_color: color, methodology: valMetodologia }).eq('team_id', teamId);
-            const cRes = { ok: !cErr };
+            if (cErr) throw cErr;
 
-            // Upsert a team_load_settings
-            const teamLoadPayload = {
-                team_id: teamId,
-                rpe_diferenciado: document.getElementById('load-rpe-diff')?.checked || false,
-                umbral_ac_ratio: parseFloat(document.getElementById('load-ac-ratio')?.value) || 1.5,
-                umbral_monotonia: parseFloat(document.getElementById('load-monotony')?.value) || 2.0,
-                asistente_fisiologico: document.getElementById('load-assistant')?.checked || false,
-                frecuencia_wellness: document.getElementById('load-wellness-freq')?.value || 'Solo Días de Entrenamiento'
-            };
-            const { error: loadErr } = await window.supabase.from('team_load_settings').upsert(teamLoadPayload, { onConflict: 'team_id' });
-            if (loadErr) console.error("Error guardando team_load_settings", loadErr);
-
-            if (uRes.ok && tRes.ok && cRes.ok && pRes.ok) {
-                // Actualizar Memoria Global
-                if (window.CurrentUser) { window.CurrentUser.name = name; window.CurrentUser.license = valLicencia; }
-                if (window.CurrentTeam) {
-                    window.CurrentTeam.name = teamName;
-                    window.CurrentTeam.primary_color = color;
-                    window.CurrentTeam.methodology = valMetodologia;
-                }
-
-                // Actualizar CSS
-                document.documentElement.style.setProperty('--primary-color', color);
-                document.documentElement.style.setProperty('--primary', color);
-
-                alert('✅ Perfil, Club y ADN Táctico actualizados.');
-                this.renderDashboard();
-                this.toggleView('home');
-            } else {
-                throw new Error('Error al guardar en el servidor. Verifica tu conexión.');
+            if (window.CurrentTeam) {
+                window.CurrentTeam.name = teamName;
+                window.CurrentTeam.primary_color = color;
+                window.CurrentTeam.methodology = valMetodologia;
             }
+
+            document.documentElement.style.setProperty('--primary-color', color);
+            document.documentElement.style.setProperty('--primary', color);
+
+            alert('✅ Configuración del Club guardada.');
+            this.renderDashboard();
         } catch (error) {
-            console.error('🔴 ERROR SUPABASE:', error.message, error.details, error.hint);
+            console.error('🔴 ERROR SUPABASE:', error.message);
+            alert('Error al guardar Club.');
+        }
+    },
+
+    async saveLoadEngineSettings() {
+        const teamId = window.CurrentTeam?.id;
+        if (!teamId) return alert('Error: Equipo no identificado.');
+
+        const teamLoadPayload = {
+            team_id: teamId,
+            rpe_diferenciado: document.getElementById('load-rpe-diff')?.checked || false,
+            umbral_ac_ratio: parseFloat(document.getElementById('load-ac-ratio')?.value) || 1.5,
+            umbral_monotonia: parseFloat(document.getElementById('load-monotony')?.value) || 2.0,
+            asistente_fisiologico: document.getElementById('load-assistant')?.checked || false,
+            frecuencia_wellness: document.getElementById('load-wellness-freq')?.value || 'Solo Días de Entrenamiento'
+        };
+
+        try {
+            console.log('💾 Guardando Motor de Rendimiento...');
+            const { error: loadErr } = await window.supabase.from('team_load_settings').upsert(teamLoadPayload, { onConflict: 'team_id' });
+            if (loadErr) throw loadErr;
+            alert('✅ Motor de Rendimiento guardado.');
+        } catch (error) {
+            console.error('🔴 ERROR SUPABASE:', error.message);
+            alert('Error al guardar Motor de Rendimiento.');
         }
     },
 
