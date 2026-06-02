@@ -2432,10 +2432,17 @@ window.DTEngine = {
             
             const emailEl = document.getElementById('prof-email');
             if (emailEl) emailEl.value = userData.email || '';
+            
+            // Pre-hidratación estricta desde variables globales para evitar vacíos visuales (Fallback)
+            const teamNameEl = document.getElementById('prof-team-name');
+            const teamColorEl = document.getElementById('prof-team-color');
+            if (teamNameEl) teamNameEl.value = teamData.name || '';
+            if (teamColorEl) teamColorEl.value = teamData.primary_color || '#079FA0';
+            
 
             try {
                 // Cargar datos del DT
-                const { data: pData } = await window.supabase.from('profiles_dt').select('*').eq('id', userData.id).single();
+                const { data: pData } = await window.supabase.from('profiles_dt').select('*').eq('id', userData.id).maybeSingle();
 
                 if (pData) {
                     setVal('prof-license', pData.licencia);
@@ -2457,7 +2464,7 @@ window.DTEngine = {
                 }
                 
                 // Cargar datos del Club y Táctica (de la tabla teams)
-                const { data: tData } = await window.supabase.from('teams').select('*').eq('id', teamData.id).single();
+                const { data: tData } = await window.supabase.from('teams').select('*').eq('id', teamData.id).maybeSingle();
                 if (tData) {
                     setVal('prof-team-name', tData.name || '');
                     setVal('prof-team-category', tData.category || tData.categoria || '');
@@ -2645,7 +2652,10 @@ window.DTEngine = {
         const valExtremoIzquierdo = document.getElementById('ideal_extremo_izquierdo')?.value || null;
         const valDelantero = document.getElementById('ideal_delantero')?.value || null;
 
-        if (!teamName) return alert('El nombre del equipo es obligatorio.');
+        if (!teamName || teamName.trim() === '') {
+            alert('⚠️ El nombre del equipo es obligatorio. Por favor, completa este campo para evitar sobreescrituras.');
+            return;
+        }
 
         try {
             console.log('💾 Guardando Ajustes del Club y Táctica...');
