@@ -911,7 +911,7 @@ window.DTEngine = {
                                 <summary style="cursor:pointer; color:#9ca3af; font-size:0.75rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:8px 0; user-select:none;">📚 Biblioteca de Tareas</summary>
                                 <div style="margin-top: 8px;">
                                     <button class="btn-add-custom-task" onclick="DTEngine.openCustomTaskModal()" style="width:100%; margin-bottom:8px;">+ CREAR TAREA</button>
-                                    <div id="library-list" class="exercise-list-container"></div>
+                                    <div id="library-list" class="exercise-list-container" style="max-height: 70vh; overflow-y: auto; scrollbar-width: thin;"></div>
                                 </div>
                             </details>
                         </div>
@@ -1026,6 +1026,18 @@ window.DTEngine = {
                                     <input type="text" id="ct-rule-continuity" placeholder="Ej: Rotar posesión sin perder balón..." style="width:100%; padding:9px 10px; background:#080808; border:1px solid #2a2a2a; border-radius:6px; color:#F5F5F5; font-size:0.82rem; outline:none; box-sizing:border-box;">
                                 </div>
 
+                                <!-- SUB-GRUPOS -->
+                                <div style="margin-bottom:14px; padding:12px; background:rgba(0,240,255,0.04); border:1px solid rgba(0,240,255,0.1); border-radius:10px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin:0;">Dividir en Sub-Grupos</label>
+                                        <input type="checkbox" id="ct-is-grouped" style="width:18px; height:18px; accent-color:#00F0FF; cursor:pointer;" onchange="document.getElementById('ct-group-count-container').style.display = this.checked ? 'block' : 'none'">
+                                    </div>
+                                    <div id="ct-group-count-container" style="display:none; margin-top:10px;">
+                                        <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; display:block; margin-bottom:5px;">Cantidad de Grupos (ej. 2, 3, 4)</label>
+                                        <input type="number" id="ct-group-count" min="2" max="10" placeholder="Ej: 3" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; box-sizing:border-box; font-size:0.85rem; text-align:center;">
+                                    </div>
+                                </div>
+
                                 <!-- CONOS COMO ARCO + SUPERFICIE -->
                                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
                                     <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:#080808; border:1px solid #2a2a2a; border-radius:8px;">
@@ -1079,10 +1091,52 @@ window.DTEngine = {
                                     <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:#ef4444; border:2px solid #fff; box-shadow:0 2px 6px rgba(239,68,68,0.5);"></span>Rival
                                 </button>
 
+                                <!-- JUGADOR AMARILLO -->
+                                <button id="tool-player-yellow" onclick="DTEngine.FabricEngine.setTool('player-yellow')" title="Comodín/Amarillo"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
+                                    <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:#eab308; border:2px solid #fff; box-shadow:0 2px 6px rgba(234,179,8,0.5);"></span>Amarillo
+                                </button>
+
+                                <!-- JUGADOR VERDE -->
+                                <button id="tool-player-green" onclick="DTEngine.FabricEngine.setTool('player-green')" title="Verde"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
+                                    <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:#22c55e; border:2px solid #fff; box-shadow:0 2px 6px rgba(34,197,94,0.5);"></span>Verde
+                                </button>
+
+                                <!-- JUGADOR NEGRO -->
+                                <button id="tool-player-black" onclick="DTEngine.FabricEngine.setTool('player-black')" title="Negro"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
+                                    <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:#171717; border:2px solid #fff; box-shadow:0 2px 6px rgba(23,23,23,0.5);"></span>Negro
+                                </button>
+
                                 <!-- BALÓN -->
                                 <button id="tool-ball" onclick="DTEngine.FabricEngine.setTool('ball')" title="Balón"
                                     style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
                                     <span style="font-size:1.1rem;">⚽</span>Balón
+                                </button>
+
+                                <!-- CONO -->
+                                <button id="tool-cone" onclick="DTEngine.FabricEngine.setTool('cone')" title="Cono"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
+                                    <span style="display:inline-block; width:0; height:0; border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:14px solid #f97316;"></span>Cono
+                                </button>
+
+                                <!-- TEXTO -->
+                                <button id="tool-text" onclick="DTEngine.FabricEngine.setTool('text')" title="Texto"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
+                                    <span style="font-size:1.1rem;">T</span>Texto
+                                </button>
+
+                                <!-- LÍNEA -->
+                                <button id="tool-line" onclick="DTEngine.FabricEngine.setTool('line')" title="Línea Continua"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
+                                    <span style="display:inline-block; width:18px; height:2px; background:#fff; margin:6px 0;"></span>Línea
+                                </button>
+
+                                <!-- LÍNEA PUNTEADA -->
+                                <button id="tool-line-dashed" onclick="DTEngine.FabricEngine.setTool('line-dashed')" title="Línea Punteada"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
+                                    <span style="display:inline-block; width:18px; height:2px; border-bottom:2px dashed #fff; margin:5px 0;"></span>Punteada
                                 </button>
 
                                 <!-- ZONA SÓLIDA -->
@@ -2837,6 +2891,50 @@ window.DTEngine = {
                     fontSize: 28, selectable: true, hasControls: true,
                     fontFamily: 'Segoe UI Emoji, Apple Color Emoji, sans-serif'
                 });
+            } else if (t === 'player-yellow') {
+                obj = new fabric.Circle({
+                    radius: 15, left: x - 15, top: y - 15,
+                    fill: '#eab308', stroke: '#ffffff', strokeWidth: 2.5,
+                    selectable: true, hasControls: true,
+                    shadow: new fabric.Shadow({ color: 'rgba(234,179,8,0.6)', blur: 10 })
+                });
+            } else if (t === 'player-green') {
+                obj = new fabric.Circle({
+                    radius: 15, left: x - 15, top: y - 15,
+                    fill: '#22c55e', stroke: '#ffffff', strokeWidth: 2.5,
+                    selectable: true, hasControls: true,
+                    shadow: new fabric.Shadow({ color: 'rgba(34,197,94,0.6)', blur: 10 })
+                });
+            } else if (t === 'player-black') {
+                obj = new fabric.Circle({
+                    radius: 15, left: x - 15, top: y - 15,
+                    fill: '#171717', stroke: '#ffffff', strokeWidth: 2.5,
+                    selectable: true, hasControls: true,
+                    shadow: new fabric.Shadow({ color: 'rgba(23,23,23,0.6)', blur: 10 })
+                });
+            } else if (t === 'cone') {
+                obj = new fabric.Triangle({
+                    width: 14, height: 20, left: x - 7, top: y - 10,
+                    fill: '#f97316', selectable: true, hasControls: true
+                });
+            } else if (t === 'text') {
+                obj = new fabric.IText('Texto...', {
+                    left: x - 20, top: y - 10,
+                    fontFamily: 'Outfit, sans-serif', fill: '#ffffff',
+                    fontSize: 20, selectable: true, hasControls: true
+                });
+            } else if (t === 'line') {
+                obj = new fabric.Line([x - 30, y, x + 30, y], {
+                    stroke: '#ffffff', strokeWidth: 3,
+                    selectable: true, hasControls: true, hasBorders: true,
+                    padding: 10
+                });
+            } else if (t === 'line-dashed') {
+                obj = new fabric.Line([x - 30, y, x + 30, y], {
+                    stroke: '#ffffff', strokeWidth: 3, strokeDashArray: [8, 5],
+                    selectable: true, hasControls: true, hasBorders: true,
+                    padding: 10
+                });
             } else if (t === 'zone-solid') {
                 obj = new fabric.Rect({
                     left: x - 50, top: y - 35, width: 100, height: 70,
@@ -3025,6 +3123,9 @@ window.DTEngine = {
         const rule_propension  = (document.getElementById('ct-rule-propension')?.value  || '').trim() || null;
         const rule_continuity  = (document.getElementById('ct-rule-continuity')?.value  || '').trim() || null;
 
+        const is_grouped       = document.getElementById('ct-is-grouped')?.checked || false;
+        const group_count      = is_grouped ? parseInt(document.getElementById('ct-group-count')?.value || '2', 10) : null;
+
         // ════════════════════════════════════════════════════
         // 2. EXPORTAR DIAGRAMA TÁCTICO → tactical_diagram_url
         // ════════════════════════════════════════════════════
@@ -3057,7 +3158,9 @@ window.DTEngine = {
                 rule_propension,
                 rule_continuity,
                 tactical_diagram_url,
-                dimensions_density
+                dimensions_density,
+                is_grouped,
+                group_count
             };
 
             console.log('💾 Payload custom_exercises:', payload);
