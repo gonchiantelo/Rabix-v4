@@ -996,7 +996,18 @@ window.DTEngine = {
                                 <!-- MATERIALES -->
                                 <div style="margin-bottom:14px;">
                                     <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px;">Materiales <span style="color:#6b7280;">(separados por coma)</span></label>
-                                    <input type="text" id="ct-materials" placeholder="petos, balones, conos" style="width:100%; padding:11px 12px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; font-size:0.85rem; outline:none; box-sizing:border-box; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#2a2a2a'">
+                                    <input type="text" id="ct-materials" list="materials-suggestions" placeholder="Chalecos, balones, conos" style="width:100%; padding:11px 12px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; font-size:0.85rem; outline:none; box-sizing:border-box; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#2a2a2a'">
+                                    <datalist id="materials-suggestions">
+                                        <option value="Chalecos"></option>
+                                        <option value="Balones"></option>
+                                        <option value="Conos"></option>
+                                        <option value="Picas"></option>
+                                        <option value="Vallas"></option>
+                                        <option value="Aros"></option>
+                                        <option value="Mini porterías"></option>
+                                        <option value="Arcos móviles"></option>
+                                        <option value="Cintas"></option>
+                                    </datalist>
                                 </div>
 
                                 <!-- REGLAS -->
@@ -1132,6 +1143,12 @@ window.DTEngine = {
                                 <button id="tool-cone" onclick="DTEngine.FabricEngine.setTool('cone')" title="Cono"
                                     style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
                                     <span style="display:inline-block; width:0; height:0; border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:14px solid #f97316;"></span>Cono
+                                </button>
+
+                                <!-- MINI ARCO -->
+                                <button id="tool-minigoal" onclick="DTEngine.FabricEngine.setTool('minigoal')" title="Mini Arco"
+                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
+                                    <span style="font-size:1.1rem;">🥅</span>Arco
                                 </button>
 
                                 <!-- TEXTO -->
@@ -2929,6 +2946,12 @@ window.DTEngine = {
                 obj = new fabric.Triangle({
                     width: 14, height: 20, left: x - 7, top: y - 10,
                     fill: '#f97316', selectable: true, hasControls: true
+                });
+            } else if (t === 'minigoal') {
+                obj = new fabric.Rect({
+                    width: 35, height: 10, left: x - 17.5, top: y - 5,
+                    fill: 'transparent', stroke: '#ffffff', strokeWidth: 3, rx: 2, ry: 2,
+                    selectable: true, hasControls: true
                 });
             } else if (t === 'text') {
                 obj = new fabric.IText('Texto...', {
