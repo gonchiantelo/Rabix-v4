@@ -2434,8 +2434,6 @@ window.DTEngine = {
             if (emailEl) emailEl.value = userData.email || '';
             
             // Pre-hidratación estricta desde variables globales para evitar vacíos visuales (Fallback)
-            const teamNameEl = document.getElementById('prof-team-name');
-            const teamColorEl = document.getElementById('prof-team-color');
             if (teamNameEl) teamNameEl.value = teamData.name || '';
             if (teamColorEl) teamColorEl.value = teamData.primary_color || '#079FA0';
             
