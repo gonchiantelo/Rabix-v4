@@ -1026,15 +1026,44 @@ window.DTEngine = {
                                     <input type="text" id="ct-rule-continuity" placeholder="Ej: Rotar posesión sin perder balón..." style="width:100%; padding:9px 10px; background:#080808; border:1px solid #2a2a2a; border-radius:6px; color:#F5F5F5; font-size:0.82rem; outline:none; box-sizing:border-box;">
                                 </div>
 
-                                <!-- SUB-GRUPOS -->
+                                <!-- DISPOSICIÓN TÁCTICA -->
                                 <div style="margin-bottom:14px; padding:12px; background:rgba(0,240,255,0.04); border:1px solid rgba(0,240,255,0.1); border-radius:10px;">
-                                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                                        <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin:0;">Dividir en Sub-Grupos</label>
-                                        <input type="checkbox" id="ct-is-grouped" style="width:18px; height:18px; accent-color:#00F0FF; cursor:pointer;" onchange="document.getElementById('ct-group-count-container').style.display = this.checked ? 'block' : 'none'">
+                                    <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:10px; border-bottom:1px solid rgba(0,240,255,0.1); padding-bottom:5px;">Disposición Táctica</label>
+                                    
+                                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                                        <div>
+                                            <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; display:block; margin-bottom:4px;">FORMATO</label>
+                                            <select id="ct-tactical-format" onchange="window.DTEngine.calcTacticalGroups()" style="width:100%; padding:9px 10px; background:#080808; border:1px solid #2a2a2a; border-radius:6px; color:#F5F5F5; font-size:0.82rem; outline:none; box-sizing:border-box;">
+                                                <option value="Grupos / Estaciones">Grupos / Estaciones</option>
+                                                <option value="Equipos Enfrentados">Equipos Enfrentados</option>
+                                                <option value="Todo el Plantel">Todo el Plantel</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; display:block; margin-bottom:4px;">JUGADORES IDEALES</label>
+                                            <input type="number" id="ct-ideal-players" min="1" max="50" placeholder="Ej: 22" oninput="window.DTEngine.calcTacticalGroups()" style="width:100%; padding:9px 10px; background:#080808; border:1px solid #2a2a2a; border-radius:6px; color:#F5F5F5; font-size:0.82rem; outline:none; box-sizing:border-box;">
+                                        </div>
                                     </div>
-                                    <div id="ct-group-count-container" style="display:none; margin-top:10px;">
-                                        <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; display:block; margin-bottom:5px;">Cantidad de Grupos (ej. 2, 3, 4)</label>
-                                        <input type="number" id="ct-group-count" min="2" max="10" placeholder="Ej: 3" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; box-sizing:border-box; font-size:0.85rem; text-align:center;">
+
+                                    <div id="ct-group-qty-container" style="margin-bottom:10px;">
+                                        <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; display:block; margin-bottom:4px;">CANTIDAD DE GRUPOS</label>
+                                        <input type="number" id="ct-group-qty" min="1" max="10" placeholder="Ej: 2" oninput="window.DTEngine.calcTacticalGroups()" style="width:100%; padding:9px 10px; background:#080808; border:1px solid #2a2a2a; border-radius:6px; color:#F5F5F5; font-size:0.82rem; outline:none; box-sizing:border-box;">
+                                    </div>
+
+                                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                                        <div style="display:flex; justify-content:space-between; align-items:center; background:#080808; padding:8px 10px; border-radius:6px; border:1px solid #2a2a2a;">
+                                            <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; margin:0;">USA GOLEROS</label>
+                                            <input type="checkbox" id="ct-use-gks" style="width:16px; height:16px; accent-color:#00F0FF; cursor:pointer;" onchange="window.DTEngine.calcTacticalGroups()">
+                                        </div>
+                                        <div style="display:flex; justify-content:space-between; align-items:center; background:#080808; padding:8px 10px; border-radius:6px; border:1px solid #2a2a2a;">
+                                            <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; margin:0;">USA COMODINES</label>
+                                            <input type="checkbox" id="ct-use-wildcards" style="width:16px; height:16px; accent-color:#00F0FF; cursor:pointer;" onchange="window.DTEngine.calcTacticalGroups()">
+                                        </div>
+                                    </div>
+
+                                    <!-- CALC HELPER -->
+                                    <div id="ct-calc-helper" style="font-size:0.7rem; color:#00F0FF; font-weight:600; text-align:center; padding:6px; background:rgba(0,240,255,0.05); border-radius:6px; display:none;">
+                                        <!-- Calculado dinámicamente -->
                                     </div>
                                 </div>
 
@@ -3050,6 +3079,44 @@ window.DTEngine = {
         this.FabricEngine.clear();
     },
 
+    calcTacticalGroups() {
+        const formatEl = document.getElementById('ct-tactical-format');
+        const idealEl = document.getElementById('ct-ideal-players');
+        const groupsEl = document.getElementById('ct-group-qty');
+        const helperEl = document.getElementById('ct-calc-helper');
+        const groupContainer = document.getElementById('ct-group-qty-container');
+
+        if (!formatEl || !idealEl || !groupsEl || !helperEl || !groupContainer) return;
+
+        const format = formatEl.value;
+        const ideal = parseInt(idealEl.value, 10);
+        const groups = parseInt(groupsEl.value, 10);
+
+        if (format === 'Todo el Plantel') {
+            groupContainer.style.display = 'none';
+            if (!isNaN(ideal)) {
+                helperEl.style.display = 'block';
+                helperEl.innerHTML = `Resultado: 1 grupo de ${ideal} jugadores`;
+            } else {
+                helperEl.style.display = 'none';
+            }
+        } else {
+            groupContainer.style.display = 'block';
+            if (!isNaN(ideal) && !isNaN(groups) && groups > 0) {
+                helperEl.style.display = 'block';
+                const perGroup = Math.floor(ideal / groups);
+                const remainder = ideal % groups;
+                let text = `Resultado: ${groups} grupos de ${perGroup} jugadores`;
+                if (remainder > 0) {
+                    text += `<br><span style="color:#fbbf24;">(Sobran ${remainder} jugador(es) para comodines/rotación)</span>`;
+                }
+                helperEl.innerHTML = text;
+            } else {
+                helperEl.style.display = 'none';
+            }
+        }
+    },
+
     // --- BÓVEDA DE TAREAS PERSONALIZADAS ---
     openCustomTaskModal() {
         // Limpiar todos los campos del formulario
@@ -3123,8 +3190,11 @@ window.DTEngine = {
         const rule_propension  = (document.getElementById('ct-rule-propension')?.value  || '').trim() || null;
         const rule_continuity  = (document.getElementById('ct-rule-continuity')?.value  || '').trim() || null;
 
-        const is_grouped       = document.getElementById('ct-is-grouped')?.checked || false;
-        const group_count      = is_grouped ? parseInt(document.getElementById('ct-group-count')?.value || '2', 10) : null;
+        const tactical_format = document.getElementById('ct-tactical-format')?.value || 'Grupos / Estaciones';
+        const ideal_players   = parseInt(document.getElementById('ct-ideal-players')?.value || '0', 10) || null;
+        const group_qty       = tactical_format !== 'Todo el Plantel' ? (parseInt(document.getElementById('ct-group-qty')?.value || '0', 10) || null) : null;
+        const use_gks         = document.getElementById('ct-use-gks')?.checked || false;
+        const use_wildcards   = document.getElementById('ct-use-wildcards')?.checked || false;
 
         // ════════════════════════════════════════════════════
         // 2. EXPORTAR DIAGRAMA TÁCTICO → tactical_diagram_url
@@ -3159,8 +3229,11 @@ window.DTEngine = {
                 rule_continuity,
                 tactical_diagram_url,
                 dimensions_density,
-                is_grouped,
-                group_count
+                tactical_format,
+                ideal_players,
+                group_qty,
+                use_gks,
+                use_wildcards
             };
 
             console.log('💾 Payload custom_exercises:', payload);
