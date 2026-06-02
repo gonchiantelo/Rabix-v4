@@ -948,59 +948,43 @@ window.DTEngine = {
                                     <textarea id="ct-description" rows="2" placeholder="Explicación general de la tarea..." style="width:100%; padding:11px 12px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; font-size:0.85rem; outline:none; resize:none; box-sizing:border-box; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#2a2a2a'"></textarea>
                                 </div>
 
-                                <!-- MORFOCICLO PHASE + SSP TYPE -->
+                                <!-- OBJETIVO TÁCTICO Y FÍSICO -->
                                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
                                     <div>
-                                        <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px;">Morfociclo</label>
-                                        <select id="ct-morfociclo" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; font-family:Outfit,sans-serif; font-size:0.82rem; cursor:pointer; box-sizing:border-box;">
-                                            <option value="">—</option>
-                                            <option value="MD-5">MD-5</option>
-                                            <option value="MD-4">MD-4</option>
-                                            <option value="MD-3">MD-3</option>
-                                            <option value="MD-2">MD-2</option>
-                                            <option value="MD-1">MD-1</option>
-                                            <option value="MD">MD (Partido)</option>
-                                            <option value="MD+1">MD+1</option>
-                                        </select>
+                                        <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px;">Objetivo Táctico</label>
+                                        <input type="text" id="ct-objetivo-tactico" placeholder="Ej: Posesión" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; font-size:0.82rem; outline:none; box-sizing:border-box;">
                                     </div>
                                     <div>
-                                        <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px;">Tipo SSP</label>
-                                        <select id="ct-ssp-type" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; font-family:Outfit,sans-serif; font-size:0.82rem; cursor:pointer; box-sizing:border-box;">
+                                        <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px;">Objetivo Físico</label>
+                                        <select id="ct-objetivo-fisico" onchange="window.DTEngine.autoFillM2()" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; font-family:Outfit,sans-serif; font-size:0.82rem; cursor:pointer; box-sizing:border-box;">
                                             <option value="">—</option>
-                                            <option value="General">General</option>
-                                            <option value="Dirigida">Dirigida</option>
-                                            <option value="Especial">Especial</option>
-                                            <option value="Competitiva">Competitiva</option>
+                                            <option value="Fuerza">Fuerza</option>
+                                            <option value="Resistencia">Resistencia</option>
+                                            <option value="Velocidad">Velocidad</option>
+                                            <option value="Activación">Activación</option>
                                         </select>
                                     </div>
                                 </div>
 
-                                <!-- MOMENTO DE JUEGO -->
-                                <div style="margin-bottom:14px;">
-                                    <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px;">Momento de Juego</label>
-                                    <select id="ct-game-moment" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; font-family:Outfit,sans-serif; font-size:0.82rem; cursor:pointer; box-sizing:border-box;">
-                                        <option value="">—</option>
-                                        <option value="ataque_organizado">Ataque Organizado</option>
-                                        <option value="defensa_organizada">Defensa Organizada</option>
-                                        <option value="transicion_off">Transición Ofensiva</option>
-                                        <option value="transicion_def">Transición Defensiva</option>
-                                    </select>
-                                </div>
-
-                                <!-- JUGADORES + DENSIDAD -->
+                                <!-- TIEMPOS, ESPACIOS Y DENSIDAD -->
                                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px;">
                                     <div>
-                                        <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; display:block; margin-bottom:5px;">Min Jug.</label>
-                                        <input type="number" id="ct-min-players" min="2" max="22" placeholder="6" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; box-sizing:border-box; font-size:0.85rem; text-align:center;">
+                                        <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; display:block; margin-bottom:5px;">Vol (min)</label>
+                                        <input type="number" id="ct-volumen" placeholder="4" oninput="window.DTEngine.calcDensity()" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; box-sizing:border-box; font-size:0.85rem; text-align:center;">
                                     </div>
                                     <div>
-                                        <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; display:block; margin-bottom:5px;">Max Jug.</label>
-                                        <input type="number" id="ct-max-players" min="2" max="22" placeholder="11" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; box-sizing:border-box; font-size:0.85rem; text-align:center;">
+                                        <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; display:block; margin-bottom:5px;">Pausa (min)</label>
+                                        <input type="number" id="ct-pausa" placeholder="2" oninput="window.DTEngine.calcDensity()" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; box-sizing:border-box; font-size:0.85rem; text-align:center;">
                                     </div>
                                     <div>
-                                        <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; display:block; margin-bottom:5px;">Dens. m²/jug</label>
-                                        <input type="number" id="ct-density" step="0.1" placeholder="36.0" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; box-sizing:border-box; font-size:0.85rem; text-align:center;">
+                                        <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; display:block; margin-bottom:5px;">m² por Jug</label>
+                                        <input type="number" id="ct-m2-jugador" placeholder="75" style="width:100%; padding:10px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; box-sizing:border-box; font-size:0.85rem; text-align:center;">
                                     </div>
+                                </div>
+
+                                <!-- DENSIDAD HELPER -->
+                                <div id="ct-density-helper" style="font-size:0.75rem; color:#eab308; font-weight:600; text-align:center; padding:6px; background:rgba(234,179,8,0.05); border:1px solid rgba(234,179,8,0.2); border-radius:6px; display:none; margin-bottom:14px;">
+                                    <!-- Calculado dinámicamente -->
                                 </div>
 
                                 <!-- DIMENSIONES -->
@@ -2860,12 +2844,12 @@ window.DTEngine = {
             this.setTool('draw');
 
             // Click en canvas vacío => añadir objeto según herramienta activa
-            this._fc.on('mouse:down', (opt) => {
+            this._fc.on('mouse:down', function(opt) {
                 if (this._activeTool === 'draw') return; // fabric maneja freehand
                 if (opt.target) return;                  // click sobre objeto existente
                 const ptr = this._fc.getPointer(opt.e);
                 this._placeObject(ptr.x, ptr.y);
-            });
+            }.bind(this));
         },
 
         // ── Seleccionar herramienta y actualizar resalte de botones ──
@@ -3079,6 +3063,30 @@ window.DTEngine = {
         this.FabricEngine.clear();
     },
 
+    autoFillM2() {
+        const objFisico = document.getElementById('ct-objetivo-fisico')?.value;
+        const m2Input = document.getElementById('ct-m2-jugador');
+        if (!m2Input) return;
+        if (objFisico === 'Fuerza') m2Input.value = 75;
+        else if (objFisico === 'Resistencia') m2Input.value = 150;
+        else if (objFisico === 'Velocidad') m2Input.value = 250;
+        else if (objFisico === 'Activación') m2Input.value = 30;
+    },
+
+    calcDensity() {
+        const vol = parseFloat(document.getElementById('ct-volumen')?.value);
+        const pausa = parseFloat(document.getElementById('ct-pausa')?.value);
+        const helper = document.getElementById('ct-density-helper');
+        if (!helper) return;
+        
+        if (!isNaN(vol) && !isNaN(pausa)) {
+            helper.style.display = 'block';
+            helper.innerHTML = `Densidad ${vol}:${pausa}`;
+        } else {
+            helper.style.display = 'none';
+        }
+    },
+
     calcTacticalGroups() {
         const formatEl = document.getElementById('ct-tactical-format');
         const idealEl = document.getElementById('ct-ideal-players');
@@ -3168,16 +3176,12 @@ window.DTEngine = {
         if (!title) return alert('Por favor, ingresa un título para la tarea.');
 
         const description      = (document.getElementById('ct-description')?.value || '').trim() || null;
-        const morfociclo_phase = (document.getElementById('ct-morfociclo')?.value || '').trim()  || null;
-        const ssp_type         = (document.getElementById('ct-ssp-type')?.value || '').trim()    || null;
-        const game_moment      = (document.getElementById('ct-game-moment')?.value || '').trim() || null;
-        const dimensions       = (document.getElementById('ct-dimensions')?.value || '').trim()  || null;
-
-        // Concatenar Min, Max y Densidad en un solo string
-        const _minRaw = document.getElementById('ct-min-players')?.value;
-        const _maxRaw = document.getElementById('ct-max-players')?.value;
-        const _denRaw = document.getElementById('ct-density')?.value;
-        const dimensions_density = `Min: ${_minRaw || '-'} | Max: ${_maxRaw || '-'} | Dens: ${_denRaw || '-'}`;
+        const objetivo_tactico = document.getElementById('ct-objetivo-tactico')?.value || null;
+        const objetivo_fisico  = document.getElementById('ct-objetivo-fisico')?.value || null;
+        const volumen          = parseFloat(document.getElementById('ct-volumen')?.value) || null;
+        const pausa            = parseFloat(document.getElementById('ct-pausa')?.value) || null;
+        const m2_jugador       = parseFloat(document.getElementById('ct-m2-jugador')?.value) || null;
+        const densidad         = (!isNaN(volumen) && !isNaN(pausa)) ? `${volumen}:${pausa}` : null;
 
         // Arrays JSONB — separados por coma desde el DOM
         const _matRaw = document.getElementById('ct-materials')?.value || '';
@@ -3219,21 +3223,18 @@ window.DTEngine = {
                 user_id: uid,
                 title,
                 description,
-                morfociclo_phase,
-                ssp_type,
-                game_moment,
-                dimensions,
-                materials,
-                rule_provocation,
-                rule_propension,
-                rule_continuity,
-                tactical_diagram_url,
-                dimensions_density,
-                tactical_format,
-                ideal_players,
-                group_qty,
-                use_gks,
-                use_wildcards
+                objetivo_tactico,
+                objetivo_fisico,
+                volumen,
+                pausa,
+                densidad,
+                m2_jugador,
+                formato: tactical_format,
+                jugadores_total: ideal_players,
+                cantidad_grupos: group_qty,
+                usa_goleros,
+                usa_comodines,
+                tactical_diagram_url
             };
 
             console.log('💾 Payload custom_exercises:', payload);
