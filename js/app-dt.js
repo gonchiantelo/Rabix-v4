@@ -2862,7 +2862,11 @@ window.DTEngine = {
 
             const container = document.getElementById('premium-tactical-board')?.parentElement;
             if (container) {
-                container.addEventListener('mouseenter', () => { if (this._fc) this._fc.calcOffset(); });
+                container.addEventListener('mouseenter', () => {
+                    if (this._fc && typeof this._fc.calcOffset === 'function') {
+                        this._fc.calcOffset();
+                    }
+                });
             }
 
             // Click en canvas vacío => añadir objeto según herramienta activa
