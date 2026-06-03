@@ -2862,9 +2862,15 @@ window.DTEngine = {
 
             const container = document.getElementById('premium-tactical-board')?.parentElement;
             if (container) {
-                container.addEventListener('mouseenter', () => {
-                    if (this._fc && typeof this._fc.calcOffset === 'function') {
-                        this._fc.calcOffset();
+                container.addEventListener('mouseenter', function() {
+                    try {
+                        // Usamos la ruta global absoluta para evitar problemas de contexto del 'this'
+                        if (window.DTEngine && window.DTEngine.FabricEngine && window.DTEngine.FabricEngine._fc) {
+                            window.DTEngine.FabricEngine._fc.calcOffset();
+                        }
+                    } catch (err) {
+                        // Fallo silencioso, no bloqueamos la UI
+                        console.warn('Advertencia de FabricJS silenciada:', err);
                     }
                 });
             }
