@@ -927,7 +927,7 @@ window.DTEngine = {
                     <div class="custom-task-content" onclick="event.stopPropagation()" style="background:#080808; border:1px solid rgba(0,240,255,0.2); border-radius:16px; width:92vw; max-width:1440px; height:88vh; display:flex; flex-direction:row; overflow:hidden; color:#F5F5F5; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
 
                         <!-- ═══ COLUMNA IZQUIERDA: FORMULARIO exercises_library (35%) ═══ -->
-                        <div style="width:35%; background:#111111; border-right:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden;">
+                        <div style="width:35%; background:#111111; border-right:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; z-index:1;">
                             <div style="padding:24px 24px 0; flex-shrink:0;">
                                 <h2 style="margin:0 0 4px 0; color:#00F0FF; font-family:Outfit,sans-serif; font-size:1.4rem; letter-spacing:1px;">📋 NUEVA TAREA</h2>
                                 <p style="margin:0 0 16px 0; font-size:0.75rem; color:#6b7280;">exercises_library · Todos los campos sincronizados con Supabase</p>
@@ -1088,7 +1088,7 @@ window.DTEngine = {
                         </div>
 
                         <!-- ═══ COLUMNA DERECHA: PIZARRA TÁCTICA FABRIC.JS (65%) ═══ -->
-                        <div style="width:65%; background:#080808; display:flex; flex-direction:column; position:relative;">
+                        <div style="width:65%; background:#080808; display:flex; flex-direction:column; position:relative; z-index:10; pointer-events:auto;">
 
                             <!-- ── BARRA DE HERRAMIENTAS TÁCTICA ── -->
                             <div id="tactical-toolbar" style="padding:10px 16px; background:#0d0d0d; border-bottom:1px solid rgba(0,240,255,0.12); display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex-shrink:0;">
@@ -2860,6 +2860,11 @@ window.DTEngine = {
             // Activar trazo libre por defecto
             this.setTool('draw');
 
+            const container = document.getElementById('premium-tactical-board')?.parentElement;
+            if (container) {
+                container.addEventListener('mouseenter', () => { if (this._fc) this._fc.calcOffset(); });
+            }
+
             // Click en canvas vacío => añadir objeto según herramienta activa
             this._fc.on('mouse:down', function(opt) {
                 if (this._activeTool === 'draw') return; // fabric maneja freehand
@@ -2919,7 +2924,8 @@ window.DTEngine = {
                 obj = new fabric.Text('⚽', {
                     left: x - 14, top: y - 14,
                     fontSize: 28, selectable: true, hasControls: true,
-                    fontFamily: 'Segoe UI Emoji, Apple Color Emoji, sans-serif'
+                    fontFamily: 'Segoe UI Emoji, Apple Color Emoji, sans-serif',
+                    textBaseline: 'top'
                 });
             } else if (t === 'player-yellow') {
                 obj = new fabric.Circle({
@@ -2957,7 +2963,8 @@ window.DTEngine = {
                 obj = new fabric.IText('Texto...', {
                     left: x - 20, top: y - 10,
                     fontFamily: 'Outfit, sans-serif', fill: '#ffffff',
-                    fontSize: 20, selectable: true, hasControls: true
+                    fontSize: 20, selectable: true, hasControls: true,
+                    textBaseline: 'top'
                 });
             } else if (t === 'line') {
                 obj = new fabric.Line([x - 30, y, x + 30, y], {
@@ -3094,6 +3101,8 @@ window.DTEngine = {
         else if (objFisico === 'Resistencia') m2Input.value = 150;
         else if (objFisico === 'Velocidad') m2Input.value = 250;
         else if (objFisico === 'Activación') m2Input.value = 30;
+        
+        window.DTEngine?.FabricEngine?._fc?.calcOffset();
     },
 
     calcDensity() {
@@ -3104,10 +3113,11 @@ window.DTEngine = {
         
         if (!isNaN(vol) && !isNaN(pausa)) {
             helper.style.display = 'block';
-            helper.innerHTML = `Densidad ${vol}:${pausa}`;
+            helper.textContent = `Densidad ${vol}:${pausa}`;
         } else {
             helper.style.display = 'none';
         }
+        window.DTEngine?.FabricEngine?._fc?.calcOffset();
     },
 
     calcTacticalGroups() {
@@ -3127,7 +3137,7 @@ window.DTEngine = {
             groupContainer.style.display = 'none';
             if (!isNaN(ideal)) {
                 helperEl.style.display = 'block';
-                helperEl.innerHTML = `Resultado: 1 grupo de ${ideal} jugadores`;
+                helperEl.textContent = `Resultado: 1 grupo de ${ideal} jugadores`;
             } else {
                 helperEl.style.display = 'none';
             }
@@ -3139,13 +3149,14 @@ window.DTEngine = {
                 const remainder = ideal % groups;
                 let text = `Resultado: ${groups} grupos de ${perGroup} jugadores`;
                 if (remainder > 0) {
-                    text += `<br><span style="color:#fbbf24;">(Sobran ${remainder} jugador(es) para comodines/rotación)</span>`;
+                    text += ` (Sobran ${remainder} jugador(es) para comodines/rotación)`;
                 }
-                helperEl.innerHTML = text;
+                helperEl.textContent = text;
             } else {
                 helperEl.style.display = 'none';
             }
         }
+        window.DTEngine?.FabricEngine?._fc?.calcOffset();
     },
 
     // --- BÓVEDA DE TAREAS PERSONALIZADAS ---
