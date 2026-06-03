@@ -2860,13 +2860,13 @@ window.DTEngine = {
             // Activar trazo libre por defecto
             this.setTool('draw');
 
-            const container = document.getElementById('premium-tactical-board')?.parentElement;
-            if (container) {
-                container.addEventListener('mouseenter', function() {
+            const boardContainer = document.getElementById('premium-tactical-board')?.parentElement;
+            if (boardContainer) {
+                boardContainer.addEventListener('mouseenter', () => {
                     try {
-                        // Usamos la ruta global absoluta para evitar problemas de contexto del 'this'
-                        if (window.DTEngine && window.DTEngine.FabricEngine && window.DTEngine.FabricEngine._fc) {
-                            window.DTEngine.FabricEngine._fc.calcOffset();
+                        // Verificación estricta con arrow function para mantener el contexto 'this'
+                        if (this && this._fc && typeof this._fc.calcOffset === 'function') {
+                            this._fc.calcOffset();
                         }
                     } catch (err) {
                         // Fallo silencioso, no bloqueamos la UI
@@ -3112,7 +3112,9 @@ window.DTEngine = {
         else if (objFisico === 'Velocidad') m2Input.value = 250;
         else if (objFisico === 'Activación') m2Input.value = 30;
         
-        window.DTEngine?.FabricEngine?._fc?.calcOffset();
+        if (window.DTEngine?.FabricEngine?._fc && typeof window.DTEngine.FabricEngine._fc.calcOffset === 'function') {
+            window.DTEngine.FabricEngine._fc.calcOffset();
+        }
     },
 
     calcDensity() {
@@ -3127,7 +3129,9 @@ window.DTEngine = {
         } else {
             helper.style.display = 'none';
         }
-        window.DTEngine?.FabricEngine?._fc?.calcOffset();
+        if (window.DTEngine?.FabricEngine?._fc && typeof window.DTEngine.FabricEngine._fc.calcOffset === 'function') {
+            window.DTEngine.FabricEngine._fc.calcOffset();
+        }
     },
 
     calcTacticalGroups() {
@@ -3166,7 +3170,9 @@ window.DTEngine = {
                 helperEl.style.display = 'none';
             }
         }
-        window.DTEngine?.FabricEngine?._fc?.calcOffset();
+        if (window.DTEngine?.FabricEngine?._fc && typeof window.DTEngine.FabricEngine._fc.calcOffset === 'function') {
+            window.DTEngine.FabricEngine._fc.calcOffset();
+        }
     },
 
     // --- BÓVEDA DE TAREAS PERSONALIZADAS ---
