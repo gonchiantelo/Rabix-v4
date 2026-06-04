@@ -993,21 +993,20 @@ window.DTEngine = {
                                     <input type="text" id="ct-dimensions" placeholder="Ej: 20x40m" style="width:100%; padding:11px 12px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; font-size:0.85rem; outline:none; box-sizing:border-box; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#2a2a2a'">
                                 </div>
 
-                                <!-- MATERIALES -->
+                                <!-- MATERIALES (Tags) -->
                                 <div style="margin-bottom:14px;">
-                                    <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px;">Materiales <span style="color:#6b7280;">(separados por coma)</span></label>
-                                    <input type="text" id="ct-materials" list="materials-suggestions" placeholder="Chalecos, balones, conos" style="width:100%; padding:11px 12px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; font-size:0.85rem; outline:none; box-sizing:border-box; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#2a2a2a'">
-                                    <datalist id="materials-suggestions">
-                                        <option value="Chalecos"></option>
-                                        <option value="Balones"></option>
-                                        <option value="Conos"></option>
-                                        <option value="Picas"></option>
-                                        <option value="Vallas"></option>
-                                        <option value="Aros"></option>
-                                        <option value="Mini porterías"></option>
-                                        <option value="Arcos móviles"></option>
-                                        <option value="Cintas"></option>
-                                    </datalist>
+                                    <label style="font-size:0.68rem; color:#9ca3af; font-weight:700; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px;">Materiales</label>
+                                    <div id="ct-materials-tags-container" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;"></div>
+                                    <input type="text" id="ct-materials-input" placeholder="Escribe y presiona Enter..." style="width:100%; padding:11px 12px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; font-size:0.85rem; outline:none; box-sizing:border-box; transition:border-color 0.2s;" onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#2a2a2a'" onkeydown="if(event.key==='Enter'){event.preventDefault(); window.DTEngine.addMaterialTag(this.value); this.value='';}">
+                                    <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">
+                                        <button type="button" onclick="window.DTEngine.addMaterialTag('Chalecos')" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; padding:4px 8px; border-radius:12px; font-size:0.7rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='#9ca3af'">+ Chalecos</button>
+                                        <button type="button" onclick="window.DTEngine.addMaterialTag('Conos')" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; padding:4px 8px; border-radius:12px; font-size:0.7rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='#9ca3af'">+ Conos</button>
+                                        <button type="button" onclick="window.DTEngine.addMaterialTag('Mini porterías')" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; padding:4px 8px; border-radius:12px; font-size:0.7rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='#9ca3af'">+ Mini porterías</button>
+                                        <button type="button" onclick="window.DTEngine.addMaterialTag('Portería móvil F11')" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; padding:4px 8px; border-radius:12px; font-size:0.7rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='#9ca3af'">+ Portería móvil F11</button>
+                                        <button type="button" onclick="window.DTEngine.addMaterialTag('Portería móvil F8')" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; padding:4px 8px; border-radius:12px; font-size:0.7rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='#9ca3af'">+ Portería móvil F8</button>
+                                        <button type="button" onclick="window.DTEngine.addMaterialTag('Balones')" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; padding:4px 8px; border-radius:12px; font-size:0.7rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='#9ca3af'">+ Balones</button>
+                                        <button type="button" onclick="window.DTEngine.addMaterialTag('Cintas')" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; padding:4px 8px; border-radius:12px; font-size:0.7rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='#9ca3af'">+ Cintas</button>
+                                    </div>
                                 </div>
 
                                 <!-- REGLAS -->
@@ -1062,22 +1061,7 @@ window.DTEngine = {
                                     </div>
                                 </div>
 
-                                <!-- CONOS COMO ARCO + SUPERFICIE -->
-                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
-                                    <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:#080808; border:1px solid #2a2a2a; border-radius:8px;">
-                                        <input type="checkbox" id="ct-cones-goals" style="width:16px; height:16px; accent-color:#00F0FF; cursor:pointer; flex-shrink:0;">
-                                        <label for="ct-cones-goals" style="font-size:0.75rem; color:#9ca3af; font-weight:600; cursor:pointer; line-height:1.2;">Conos como arcos</label>
-                                    </div>
-                                    <div>
-                                        <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; display:block; margin-bottom:5px;">Superficie</label>
-                                        <select id="ct-pitch-suitability" multiple style="width:100%; padding:6px 8px; background:#080808; border:1px solid #2a2a2a; border-radius:8px; color:#F5F5F5; outline:none; font-family:Outfit,sans-serif; font-size:0.8rem; cursor:pointer; box-sizing:border-box; height:60px;">
-                                            <option value="grass">Grass</option>
-                                            <option value="synthetic">Sintético</option>
-                                            <option value="futsal">Futsal</option>
-                                            <option value="dirt">Tierra</option>
-                                        </select>
-                                    </div>
-                                </div>
+                                <!-- Removed 'Conos como arcos' y 'Superficie' -->
 
                             </div><!-- /scroll body -->
 
@@ -3197,26 +3181,56 @@ window.DTEngine = {
         }
     },
 
+    materialTags: [],
+
+    addMaterialTag(tag) {
+        if (!tag || tag.trim() === '') return;
+        tag = tag.trim();
+        if (!this.materialTags.includes(tag)) {
+            this.materialTags.push(tag);
+            this.renderMaterialTags();
+        }
+    },
+
+    removeMaterialTag(tag) {
+        this.materialTags = this.materialTags.filter(t => t !== tag);
+        this.renderMaterialTags();
+    },
+
+    renderMaterialTags() {
+        const container = document.getElementById('ct-materials-tags-container');
+        if (!container) return;
+        container.innerHTML = '';
+        this.materialTags.forEach(tag => {
+            const el = document.createElement('div');
+            el.style.cssText = 'background:rgba(0,240,255,0.1); color:#00F0FF; border:1px solid rgba(0,240,255,0.3); padding:4px 10px; border-radius:12px; font-size:0.75rem; display:flex; align-items:center; gap:6px;';
+            el.innerHTML = `
+                <span>${tag}</span>
+                <span onclick="window.DTEngine.removeMaterialTag('${tag}')" style="cursor:pointer; font-weight:bold; font-size:0.8rem; margin-left:4px;">&times;</span>
+            `;
+            container.appendChild(el);
+        });
+    },
+
     // --- BÓVEDA DE TAREAS PERSONALIZADAS ---
     openCustomTaskModal() {
         // Limpiar todos los campos del formulario
-        ['ct-title','ct-description','ct-dimensions','ct-materials',
+        ['ct-title','ct-description','ct-dimensions','ct-materials-input',
          'ct-rule-provocation','ct-rule-propension','ct-rule-continuity',
          'ct-density','ct-min-players','ct-max-players'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.value = '';
         });
-        const conesChk = document.getElementById('ct-cones-goals');
-        if (conesChk) conesChk.checked = false;
+        
+        this.materialTags = [];
+        this.renderMaterialTags();
+
         const morphSel = document.getElementById('ct-morfociclo');
         if (morphSel) morphSel.value = '';
         const sspSel = document.getElementById('ct-ssp-type');
         if (sspSel) sspSel.value = '';
         const momentSel = document.getElementById('ct-game-moment');
         if (momentSel) momentSel.value = '';
-        // Deseleccionar pitch_suitability
-        const pitchSel = document.getElementById('ct-pitch-suitability');
-        if (pitchSel) Array.from(pitchSel.options).forEach(o => o.selected = false);
 
         // Reset brush controls
         const colorInput = document.getElementById('ct-brush-color');
@@ -3255,11 +3269,8 @@ window.DTEngine = {
         const m2_jugador       = parseFloat(document.getElementById('ct-m2-jugador')?.value) || null;
         const densidad         = (!isNaN(volumen) && !isNaN(pausa)) ? `${volumen}:${pausa}` : null;
 
-        // Arrays JSONB — separados por coma desde el DOM
-        const _matRaw = document.getElementById('ct-materials')?.value || '';
-        const materials = _matRaw
-            ? _matRaw.split(',').map(m => m.trim()).filter(Boolean)
-            : [];
+        // Etiquetas visuales unificadas a string
+        const materials = this.materialTags.length > 0 ? this.materialTags.join(', ') : null;
 
         // Reglas tácticas
         const rule_provocation = (document.getElementById('ct-rule-provocation')?.value || '').trim() || null;
