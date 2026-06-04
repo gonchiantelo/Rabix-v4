@@ -3258,8 +3258,7 @@ window.DTEngine = {
         // ════════════════════════════════════════════════════
         // 1. CAPTURA DE CAMPOS — mapeo 1:1 con custom_exercises
         // ════════════════════════════════════════════════════
-        const title = (document.getElementById('ct-title')?.value || '').trim();
-        if (!title) return alert('Por favor, ingresa un título para la tarea.');
+        const title = (document.getElementById('ct-title')?.value || '').trim() || null;
 
         const description      = (document.getElementById('ct-description')?.value || '').trim() || null;
         const objetivo_tactico = document.getElementById('ct-objetivo-tactico')?.value || null;
@@ -3280,8 +3279,8 @@ window.DTEngine = {
         const tactical_format = document.getElementById('ct-tactical-format')?.value || 'Grupos / Estaciones';
         const ideal_players   = parseInt(document.getElementById('ct-ideal-players')?.value || '0', 10) || null;
         const group_qty       = tactical_format !== 'Todo el Plantel' ? (parseInt(document.getElementById('ct-group-qty')?.value || '0', 10) || null) : null;
-        const use_gks         = document.getElementById('ct-use-gks')?.value?.trim() || null;
-        const use_wildcards   = document.getElementById('ct-use-wildcards')?.value?.trim() || null;
+        const usa_goleros     = document.getElementById('ct-use-gks')?.value?.trim() || null;
+        const usa_comodines   = document.getElementById('ct-use-wildcards')?.value?.trim() || null;
 
         // Capturar nuevos campos para el DB estricto
         const _tagsRaw = document.getElementById('ct-tags')?.value || '';
