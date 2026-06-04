@@ -1048,11 +1048,11 @@ window.DTEngine = {
                                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
                                         <div style="display:flex; justify-content:space-between; align-items:center; background:#080808; padding:8px 10px; border-radius:6px; border:1px solid #2a2a2a;">
                                             <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; margin:0;">USA GOLEROS</label>
-                                            <input type="checkbox" id="ct-use-gks" style="width:16px; height:16px; accent-color:#00F0FF; cursor:pointer;" onchange="window.DTEngine.calcTacticalGroups()">
+                                            <input type="number" id="ct-use-gks" placeholder="0" style="width:45px; padding:4px; background:#1A1A1A; border:1px solid #2a2a2a; border-radius:4px; color:#F5F5F5; font-size:0.8rem; outline:none; text-align:center;" oninput="window.DTEngine.calcTacticalGroups()">
                                         </div>
                                         <div style="display:flex; justify-content:space-between; align-items:center; background:#080808; padding:8px 10px; border-radius:6px; border:1px solid #2a2a2a;">
                                             <label style="font-size:0.65rem; color:#9ca3af; font-weight:700; margin:0;">USA COMODINES</label>
-                                            <input type="checkbox" id="ct-use-wildcards" style="width:16px; height:16px; accent-color:#00F0FF; cursor:pointer;" onchange="window.DTEngine.calcTacticalGroups()">
+                                            <input type="number" id="ct-use-wildcards" placeholder="0" style="width:45px; padding:4px; background:#1A1A1A; border:1px solid #2a2a2a; border-radius:4px; color:#F5F5F5; font-size:0.8rem; outline:none; text-align:center;" oninput="window.DTEngine.calcTacticalGroups()">
                                         </div>
                                     </div>
 
@@ -2863,8 +2863,8 @@ window.DTEngine = {
                 if (!svgData.includes('xmlns=')) {
                     svgData = svgData.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
                 }
-                const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
-                const url = URL.createObjectURL(svgBlob);
+                const base64 = btoa(unescape(encodeURIComponent(svgData)));
+                const url = 'data:image/svg+xml;base64,' + base64;
                 fabric.Image.fromURL(url, (img) => {
                     img.set({
                         scaleX: this._fc.width / img.width,
@@ -3269,8 +3269,8 @@ window.DTEngine = {
         const tactical_format = document.getElementById('ct-tactical-format')?.value || 'Grupos / Estaciones';
         const ideal_players   = parseInt(document.getElementById('ct-ideal-players')?.value || '0', 10) || null;
         const group_qty       = tactical_format !== 'Todo el Plantel' ? (parseInt(document.getElementById('ct-group-qty')?.value || '0', 10) || null) : null;
-        const use_gks         = document.getElementById('ct-use-gks')?.checked || false;
-        const use_wildcards   = document.getElementById('ct-use-wildcards')?.checked || false;
+        const use_gks         = document.getElementById('ct-use-gks')?.value?.trim() || null;
+        const use_wildcards   = document.getElementById('ct-use-wildcards')?.value?.trim() || null;
 
         // Capturar nuevos campos para el DB estricto
         const _tagsRaw = document.getElementById('ct-tags')?.value || '';
