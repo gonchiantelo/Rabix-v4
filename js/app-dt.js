@@ -2857,6 +2857,23 @@ window.DTEngine = {
             this._fc.setWidth(w);
             this._fc.setHeight(h);
 
+            const pitchSvg = document.getElementById('ct-pitch-svg');
+            if (pitchSvg) {
+                let svgData = new XMLSerializer().serializeToString(pitchSvg);
+                if (!svgData.includes('xmlns=')) {
+                    svgData = svgData.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+                }
+                const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+                const url = URL.createObjectURL(svgBlob);
+                fabric.Image.fromURL(url, (img) => {
+                    img.set({ originX: 'left', originY: 'top' });
+                    img.scaleToWidth(w);
+                    img.scaleToHeight(h);
+                    this._fc.setBackgroundImage(img, this._fc.renderAll.bind(this._fc));
+                });
+                pitchSvg.style.opacity = '0'; // Hide the original SVG so it doesn't double-render
+            }
+
             // Activar trazo libre por defecto
             this.setTool('draw');
 
@@ -3005,7 +3022,9 @@ window.DTEngine = {
             }
 
             if (obj) {
+                obj.set({ opacity: 1 });
                 this._fc.add(obj);
+                this._fc.bringToFront(obj);
                 this._fc.setActiveObject(obj);
                 this._fc.renderAll();
             }
@@ -3250,15 +3269,24 @@ window.DTEngine = {
         const use_gks         = document.getElementById('ct-use-gks')?.checked || false;
         const use_wildcards   = document.getElementById('ct-use-wildcards')?.checked || false;
 
+        // Capturar nuevos campos para el DB estricto
+        const _tagsRaw = document.getElementById('ct-tags')?.value || '';
+        const tags = _tagsRaw ? _tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+        const series = parseInt(document.getElementById('ct-series')?.value, 10) || null;
+        const blocks = parseInt(document.getElementById('ct-blocks')?.value, 10) || null;
+
         // ════════════════════════════════════════════════════
         // 2. EXPORTAR DIAGRAMA TÁCTICO → tactical_diagram_url
         // ════════════════════════════════════════════════════
         let tactical_diagram_url = null;
         try {
             if (this.FabricEngine._fc) {
+                // Ensure everything is rendered
+                this.FabricEngine._fc.renderAll();
                 tactical_diagram_url = this.FabricEngine._fc.toDataURL({ format: 'png', multiplier: 1 });
             }
         } catch(e) {
+            console.error('Error exportando diagrama:', e);
         }
 
         // ─── 3. Deshabilitar botón durante guardado ───
@@ -3270,11 +3298,10 @@ window.DTEngine = {
             // 3. INSERT → custom_exercises
             // ════════════════════════════════════════════════════
             const payload = {
-                user_id: uid,
                 title,
                 description,
-                objetivo_tactico,
                 objetivo_fisico,
+                objetivo_tactico,
                 volumen,
                 pausa,
                 densidad,
@@ -3284,7 +3311,11 @@ window.DTEngine = {
                 cantidad_grupos: group_qty,
                 usa_goleros,
                 usa_comodines,
-                tactical_diagram_url
+                materials,
+                tactical_diagram_url,
+                tags,
+                series,
+                blocks
             };
 
             console.log('💾 Payload custom_exercises:', payload);
