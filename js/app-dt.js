@@ -1203,7 +1203,7 @@ window.DTEngine = {
                             </div>
 
                             <!-- Canvas container (Fabric.js) -->
-                            <div id="premium-tactical-board-container" style="flex:1; position:relative; overflow:hidden;">
+                            <div id="premium-tactical-board-container" style="width:100%; aspect-ratio: 105 / 68; position:relative; overflow:hidden;">
                                 <!-- Campo SVG (fondo decorativo — z-index:1, bajo el canvas Fabric) -->
                                 <svg id="ct-pitch-svg" viewBox="0 0 105 68" preserveAspectRatio="none" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none;">
                                     <rect width="105" height="68" fill="#1a4a1a"/>
@@ -2866,9 +2866,12 @@ window.DTEngine = {
                 const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
                 const url = URL.createObjectURL(svgBlob);
                 fabric.Image.fromURL(url, (img) => {
-                    img.set({ originX: 'left', originY: 'top' });
-                    img.scaleToWidth(w);
-                    img.scaleToHeight(h);
+                    img.set({
+                        scaleX: this._fc.width / img.width,
+                        scaleY: this._fc.height / img.height,
+                        originX: 'left',
+                        originY: 'top'
+                    });
                     this._fc.setBackgroundImage(img, this._fc.renderAll.bind(this._fc));
                 });
                 pitchSvg.style.opacity = '0'; // Hide the original SVG so it doesn't double-render
