@@ -961,10 +961,14 @@ window.DTEngine = {
                                             <option value="Fuerza">Fuerza</option>
                                             <option value="Resistencia">Resistencia</option>
                                             <option value="Velocidad">Velocidad</option>
+                                            <option value="Táctica">Táctica / Cuadrados Reducidos</option>
                                             <option value="Activación">Activación</option>
                                         </select>
                                     </div>
                                 </div>
+
+                                <!-- ASISTENTE FISIOLÓGICO — helper text Juegos Reducidos -->
+                                <div id="ct-fisiologico-helper" style="display:none; font-size:0.78rem; color:#34d399; font-weight:600; padding:9px 12px; background:rgba(52,211,153,0.07); border:1px solid rgba(52,211,153,0.25); border-radius:8px; margin-bottom:14px; line-height:1.5;"></div>
 
                                 <!-- TIEMPOS, ESPACIOS Y DENSIDAD -->
                                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px;">
@@ -2815,7 +2819,7 @@ window.DTEngine = {
                     'tool-ball','tool-zone-solid','tool-zone-dashed'],
 
         init() {
-            // Destruir instancia anterior si existe
+            // ── FIX 1: CANVAS FIELD — Destruir instancia anterior si existe ──
             if (this._fc) {
                 try { this._fc.dispose(); } catch(e) {}
                 this._fc = null;
@@ -2832,34 +2836,74 @@ window.DTEngine = {
             canvasEl.width  = w;
             canvasEl.height = h;
 
-            // Inicializar Fabric — fondo transparente para que el SVG sea visible
+            // Inicializar Fabric
             this._fc = new fabric.Canvas('premium-tactical-board', {
                 selection: true,
-                backgroundColor: null,
+                backgroundColor: '#1a4a1a',
                 enableRetinaScaling: false
             });
             this._fc.setWidth(w);
             this._fc.setHeight(h);
 
-            const pitchSvg = document.getElementById('ct-pitch-svg');
-            if (pitchSvg) {
-                let svgData = new XMLSerializer().serializeToString(pitchSvg);
-                if (!svgData.includes('xmlns=')) {
-                    svgData = svgData.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
-                }
-                const base64 = btoa(unescape(encodeURIComponent(svgData)));
-                const url = 'data:image/svg+xml;base64,' + base64;
-                fabric.Image.fromURL(url, (img) => {
-                    img.set({
-                        scaleX: this._fc.width / img.width,
-                        scaleY: this._fc.height / img.height,
-                        originX: 'left',
-                        originY: 'top'
-                    });
-                    this._fc.setBackgroundImage(img, this._fc.renderAll.bind(this._fc));
+            // ── DIBUJAR CAMPO DIRECTAMENTE EN CANVAS OFFSCREEN → fondo robusto ──
+            const offscreen = document.createElement('canvas');
+            offscreen.width  = w;
+            offscreen.height = h;
+            const octx = offscreen.getContext('2d');
+
+            // Fondo verde
+            octx.fillStyle = '#1a4a1a';
+            octx.fillRect(0, 0, w, h);
+
+            const sx = w / 105;
+            const sy = h / 68;
+            octx.strokeStyle = 'rgba(255,255,255,0.35)';
+            octx.lineWidth = 1.5;
+
+            // Borde campo
+            octx.strokeRect(1, 1, w - 2, h - 2);
+            // Línea media
+            octx.beginPath(); octx.moveTo(52.5*sx, 0); octx.lineTo(52.5*sx, h); octx.stroke();
+            // Círculo central
+            octx.beginPath(); octx.arc(52.5*sx, 34*sy, 9.15*sx, 0, Math.PI*2); octx.stroke();
+            // Punto central
+            octx.fillStyle = 'rgba(255,255,255,0.6)';
+            octx.beginPath(); octx.arc(52.5*sx, 34*sy, 3, 0, Math.PI*2); octx.fill();
+            // Área grande izquierda
+            octx.strokeStyle = 'rgba(255,255,255,0.35)';
+            octx.strokeRect(0, 13.84*sy, 16.5*sx, 40.32*sy);
+            // Área chica izquierda
+            octx.strokeRect(0, 26.84*sy, 5.5*sx,  14.32*sy);
+            // Área grande derecha
+            octx.strokeRect(w - 16.5*sx, 13.84*sy, 16.5*sx, 40.32*sy);
+            // Área chica derecha
+            octx.strokeRect(w - 5.5*sx, 26.84*sy, 5.5*sx, 14.32*sy);
+            // Puntos penales
+            octx.fillStyle = 'rgba(255,255,255,0.6)';
+            octx.beginPath(); octx.arc(11*sx, 34*sy, 3, 0, Math.PI*2); octx.fill();
+            octx.beginPath(); octx.arc(94*sx, 34*sy, 3, 0, Math.PI*2); octx.fill();
+            // Arcos de penales
+            octx.strokeStyle = 'rgba(255,255,255,0.35)';
+            octx.beginPath(); octx.arc(16.5*sx, 34*sy, 9.15*sx, -Math.PI/3, Math.PI/3); octx.stroke();
+            octx.beginPath(); octx.arc((w - 16.5*sx), 34*sy, 9.15*sx, Math.PI*2/3, Math.PI*4/3); octx.stroke();
+
+            const fieldDataUrl = offscreen.toDataURL('image/png');
+            fabric.Image.fromURL(fieldDataUrl, (img) => {
+                if (!this._fc) return;
+                img.set({
+                    scaleX: this._fc.getWidth() / img.width,
+                    scaleY: this._fc.getHeight() / img.height,
+                    originX: 'left',
+                    originY: 'top',
+                    selectable: false,
+                    evented: false
                 });
-                pitchSvg.style.opacity = '0'; // Hide the original SVG so it doesn't double-render
-            }
+                this._fc.setBackgroundImage(img, this._fc.renderAll.bind(this._fc));
+            });
+
+            // Ocultar el SVG decorativo (ahora el fondo lo maneja Fabric)
+            const pitchSvg = document.getElementById('ct-pitch-svg');
+            if (pitchSvg) pitchSvg.style.opacity = '0';
 
             // Activar trazo libre por defecto
             this.setTool('draw');
@@ -2868,12 +2912,10 @@ window.DTEngine = {
             if (boardContainer) {
                 boardContainer.addEventListener('mouseenter', () => {
                     try {
-                        // Verificación estricta con arrow function para mantener el contexto 'this'
                         if (this && this._fc && typeof this._fc.calcOffset === 'function') {
                             this._fc.calcOffset();
                         }
                     } catch (err) {
-                        // Fallo silencioso, no bloqueamos la UI
                         console.warn('Advertencia de FabricJS silenciada:', err);
                     }
                 });
@@ -2881,8 +2923,8 @@ window.DTEngine = {
 
             // Click en canvas vacío => añadir objeto según herramienta activa
             this._fc.on('mouse:down', function(opt) {
-                if (this._activeTool === 'draw') return; // fabric maneja freehand
-                if (opt.target) return;                  // click sobre objeto existente
+                if (this._activeTool === 'draw') return;
+                if (opt.target) return;
                 const ptr = this._fc.getPointer(opt.e);
                 this._placeObject(ptr.x, ptr.y);
             }.bind(this));
@@ -3031,12 +3073,15 @@ window.DTEngine = {
             this._fc.renderAll();
         },
 
-        // ── Limpiar todo ──
+        // ── FIX 2: Limpiar objetos SIN destruir el fondo de la cancha ──
         clear() {
             if (!this._fc) return;
-            this._fc.clear();
-            // Restaurar background null (transparente)
-            this._fc.backgroundColor = null;
+            // Iterar en reversa para remover SOLO objetos, preservando el backgroundImage
+            const objetos = this._fc.getObjects();
+            for (let i = objetos.length - 1; i >= 0; i--) {
+                this._fc.remove(objetos[i]);
+            }
+            this._fc.discardActiveObject();
             this._fc.renderAll();
         },
 
@@ -3109,15 +3154,71 @@ window.DTEngine = {
         this.FabricEngine.clear();
     },
 
+    // ── FIX 4: ASISTENTE FISIOLÓGICO Y TÁCTICO (Juegos Reducidos) ──
     autoFillM2() {
         const objFisico = document.getElementById('ct-objetivo-fisico')?.value;
-        const m2Input = document.getElementById('ct-m2-jugador');
-        if (!m2Input) return;
-        if (objFisico === 'Fuerza') m2Input.value = 75;
-        else if (objFisico === 'Resistencia') m2Input.value = 150;
-        else if (objFisico === 'Velocidad') m2Input.value = 250;
-        else if (objFisico === 'Activación') m2Input.value = 30;
-        
+        const m2Input    = document.getElementById('ct-m2-jugador');
+        const volInput   = document.getElementById('ct-volumen');
+        const pausaInput = document.getElementById('ct-pausa');
+        const helperEl   = document.getElementById('ct-fisiologico-helper');
+
+        // ── Tabla paramétrica basada en teoría de Juegos Reducidos ──
+        const presets = {
+            'Fuerza': {
+                m2: 60,
+                volumen: '2',
+                pausa: '1',
+                texto: 'Info: A menor espacio y n° de jugadores aumenta el ritmo, cambios de dirección, regates y contactos. Se sugieren bloques cortos de alta intensidad.'
+            },
+            'Resistencia': {
+                m2: 125,
+                volumen: '6',
+                pausa: '2',
+                texto: 'Info: A mayor espacio y jugadores (ej. 50x40m) aumenta la Vel. Máxima, aceleraciones y distancia a alta intensidad, pero baja el ritmo de juego.'
+            },
+            'Velocidad': {
+                m2: 220,
+                volumen: '1',
+                pausa: '3',
+                texto: 'Info: Espacios largos y bloques muy cortos (1 min) con pausa extensa (3 min) para garantizar recuperación neuromuscular completa.'
+            },
+            'Táctica': {
+                m2: 80,
+                volumen: '5',
+                pausa: '2',
+                texto: 'Info: Ideal para mejorar posesiones, ritmo y toma de decisiones. Cuadrados reducidos (ej. 6v6 en 30x50) fomentan la circulación y el pressing organizado.'
+            },
+            'Activación': {
+                m2: 30,
+                volumen: '3',
+                pausa: '1',
+                texto: 'Info: Espacios muy reducidos para activación neuromuscular pre-partido. Baja exigencia aeróbica, alta densidad de contactos.'
+            }
+        };
+
+        const preset = presets[objFisico];
+
+        if (preset) {
+            if (m2Input)    m2Input.value    = preset.m2;
+            if (volInput)   volInput.value   = preset.volumen;
+            if (pausaInput) pausaInput.value = preset.pausa;
+
+            // Mostrar texto de ayuda fisiológico
+            if (helperEl) {
+                helperEl.textContent = preset.texto;
+                helperEl.style.display = 'block';
+            }
+
+            // Actualizar helper de densidad
+            this.calcDensity();
+        } else {
+            // Sin selección: limpiar helper
+            if (helperEl) {
+                helperEl.textContent = '';
+                helperEl.style.display = 'none';
+            }
+        }
+
         if (window.DTEngine?.FabricEngine?._fc && typeof window.DTEngine.FabricEngine._fc.calcOffset === 'function') {
             window.DTEngine.FabricEngine._fc.calcOffset();
         }
@@ -3266,7 +3367,7 @@ window.DTEngine = {
         const volumen          = parseFloat(document.getElementById('ct-volumen')?.value) || null;
         const pausa            = parseFloat(document.getElementById('ct-pausa')?.value) || null;
         const m2_jugador       = parseFloat(document.getElementById('ct-m2-jugador')?.value) || null;
-        const densidad         = (!isNaN(volumen) && !isNaN(pausa)) ? `${volumen}:${pausa}` : null;
+        const densidad         = (volumen !== null && pausa !== null) ? `${volumen}:${pausa}` : null;
 
         // Etiquetas visuales unificadas a string
         const materials = this.materialTags.length > 0 ? this.materialTags.join(', ') : null;
