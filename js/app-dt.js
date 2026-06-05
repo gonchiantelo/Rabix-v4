@@ -1233,7 +1233,7 @@ window.DTEngine = {
 
 
                             <!-- Canvas container (Fabric.js) -->
-                            <div id="premium-tactical-board-container" style="width:100%; aspect-ratio: 105 / 68; position:relative; overflow:hidden;">
+                            <div id="premium-tactical-board-container" style="width:100%; aspect-ratio: 105 / 68; position:relative; overflow:hidden; min-height: 500px;">
                                 <!-- Campo SVG (fondo decorativo — z-index:1, bajo el canvas Fabric) -->
                                 <svg id="ct-pitch-svg" viewBox="0 0 105 68" preserveAspectRatio="none" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none;">
                                     <rect width="105" height="68" fill="#1a4a1a"/>
@@ -2900,9 +2900,13 @@ window.DTEngine = {
                 return;
             }
 
-            const encodedData = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgString)));
+            const encodedData = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgString);
 
-            fabric.Image.fromURL(encodedData, (img) => {
+            fabric.Image.fromURL(encodedData, (img, isError) => {
+                if (isError || !img) {
+                    this._fc.setBackgroundColor('#2e7d32', this._fc.renderAll.bind(this._fc));
+                    return;
+                }
                 img.set({
                     id: 'cancha_bg',
                     originX: 'left',
@@ -3572,6 +3576,7 @@ window.DTEngine = {
         // Inicializar Fabric.js tras render DOM
         setTimeout(() => {
             this.FabricEngine.init();
+            window.DTEngine.FabricEngine.setBackground('futbol11');
         }, 150);
     },
 
