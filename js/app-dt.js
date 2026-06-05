@@ -2818,8 +2818,84 @@ window.DTEngine = {
         _toolBtns: ['tool-draw','tool-player-blue','tool-player-red',
                     'tool-ball','tool-zone-solid','tool-zone-dashed'],
 
+        // ─────────────────────────────────────────────────────────────────
+        // _drawField(ctx, w, h)
+        // Dibuja el césped y las líneas del campo directamente sobre un
+        // CanvasRenderingContext2D. Al conectarse a 'before:render', este
+        // método se ejecuta en CADA ciclo de render de Fabric, lo que hace
+        // que el campo sea arquitecturalmente indestructible: ningún clear(),
+        // remove() ni setBackgroundImage puede eliminarlo.
+        // ─────────────────────────────────────────────────────────────────
+        _drawField(ctx, w, h) {
+            const sx = w / 105;
+            const sy = h / 68;
+
+            // Fondo verde
+            ctx.save();
+            ctx.fillStyle = '#1e5c1e';
+            ctx.fillRect(0, 0, w, h);
+
+            // Franjas decorativas de césped (alternadas)
+            ctx.fillStyle = 'rgba(0,0,0,0.06)';
+            for (let i = 0; i < 7; i++) {
+                ctx.fillRect(i * (w / 7) * (i % 2 === 0 ? 1 : 0), 0, w / 7, h);
+            }
+
+            // Líneas del campo
+            ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([]);
+
+            // Borde exterior
+            ctx.strokeRect(2, 2, w - 4, h - 4);
+
+            // Línea media
+            ctx.beginPath();
+            ctx.moveTo(52.5 * sx, 2);
+            ctx.lineTo(52.5 * sx, h - 2);
+            ctx.stroke();
+
+            // Círculo central
+            ctx.beginPath();
+            ctx.arc(52.5 * sx, 34 * sy, 9.15 * sx, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Punto central
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.beginPath();
+            ctx.arc(52.5 * sx, 34 * sy, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Área grande izquierda
+            ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+            ctx.strokeRect(2, 13.84 * sy, 16.5 * sx, 40.32 * sy);
+            // Área chica izquierda
+            ctx.strokeRect(2, 26.84 * sy, 5.5 * sx, 14.32 * sy);
+
+            // Área grande derecha
+            ctx.strokeRect(w - 2 - 16.5 * sx, 13.84 * sy, 16.5 * sx, 40.32 * sy);
+            // Área chica derecha
+            ctx.strokeRect(w - 2 - 5.5 * sx, 26.84 * sy, 5.5 * sx, 14.32 * sy);
+
+            // Puntos penales
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.beginPath(); ctx.arc(11 * sx, 34 * sy, 3, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(94 * sx, 34 * sy, 3, 0, Math.PI * 2); ctx.fill();
+
+            // Arcos de penales
+            ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+            ctx.beginPath();
+            ctx.arc(16.5 * sx, 34 * sy, 9.15 * sx, -Math.PI / 3, Math.PI / 3);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(w - 2 - 16.5 * sx, 34 * sy, 9.15 * sx, Math.PI * 2 / 3, Math.PI * 4 / 3);
+            ctx.stroke();
+
+            ctx.restore();
+        },
+
         init() {
-            // ── FIX 1: CANVAS FIELD — Destruir instancia anterior si existe ──
+            // Destruir instancia anterior si existe
             if (this._fc) {
                 try { this._fc.dispose(); } catch(e) {}
                 this._fc = null;
@@ -2836,74 +2912,34 @@ window.DTEngine = {
             canvasEl.width  = w;
             canvasEl.height = h;
 
-            // Inicializar Fabric
+            // Inicializar Fabric — fondo transparente (el campo lo pinta _drawField)
             this._fc = new fabric.Canvas('premium-tactical-board', {
                 selection: true,
-                backgroundColor: '#1a4a1a',
+                backgroundColor: 'transparent',
                 enableRetinaScaling: false
             });
             this._fc.setWidth(w);
             this._fc.setHeight(h);
 
-            // ── DIBUJAR CAMPO DIRECTAMENTE EN CANVAS OFFSCREEN → fondo robusto ──
-            const offscreen = document.createElement('canvas');
-            offscreen.width  = w;
-            offscreen.height = h;
-            const octx = offscreen.getContext('2d');
-
-            // Fondo verde
-            octx.fillStyle = '#1a4a1a';
-            octx.fillRect(0, 0, w, h);
-
-            const sx = w / 105;
-            const sy = h / 68;
-            octx.strokeStyle = 'rgba(255,255,255,0.35)';
-            octx.lineWidth = 1.5;
-
-            // Borde campo
-            octx.strokeRect(1, 1, w - 2, h - 2);
-            // Línea media
-            octx.beginPath(); octx.moveTo(52.5*sx, 0); octx.lineTo(52.5*sx, h); octx.stroke();
-            // Círculo central
-            octx.beginPath(); octx.arc(52.5*sx, 34*sy, 9.15*sx, 0, Math.PI*2); octx.stroke();
-            // Punto central
-            octx.fillStyle = 'rgba(255,255,255,0.6)';
-            octx.beginPath(); octx.arc(52.5*sx, 34*sy, 3, 0, Math.PI*2); octx.fill();
-            // Área grande izquierda
-            octx.strokeStyle = 'rgba(255,255,255,0.35)';
-            octx.strokeRect(0, 13.84*sy, 16.5*sx, 40.32*sy);
-            // Área chica izquierda
-            octx.strokeRect(0, 26.84*sy, 5.5*sx,  14.32*sy);
-            // Área grande derecha
-            octx.strokeRect(w - 16.5*sx, 13.84*sy, 16.5*sx, 40.32*sy);
-            // Área chica derecha
-            octx.strokeRect(w - 5.5*sx, 26.84*sy, 5.5*sx, 14.32*sy);
-            // Puntos penales
-            octx.fillStyle = 'rgba(255,255,255,0.6)';
-            octx.beginPath(); octx.arc(11*sx, 34*sy, 3, 0, Math.PI*2); octx.fill();
-            octx.beginPath(); octx.arc(94*sx, 34*sy, 3, 0, Math.PI*2); octx.fill();
-            // Arcos de penales
-            octx.strokeStyle = 'rgba(255,255,255,0.35)';
-            octx.beginPath(); octx.arc(16.5*sx, 34*sy, 9.15*sx, -Math.PI/3, Math.PI/3); octx.stroke();
-            octx.beginPath(); octx.arc((w - 16.5*sx), 34*sy, 9.15*sx, Math.PI*2/3, Math.PI*4/3); octx.stroke();
-
-            const fieldDataUrl = offscreen.toDataURL('image/png');
-            fabric.Image.fromURL(fieldDataUrl, (img) => {
-                if (!this._fc) return;
-                img.set({
-                    scaleX: this._fc.getWidth() / img.width,
-                    scaleY: this._fc.getHeight() / img.height,
-                    originX: 'left',
-                    originY: 'top',
-                    selectable: false,
-                    evented: false
-                });
-                this._fc.setBackgroundImage(img, this._fc.renderAll.bind(this._fc));
+            // ───────────────────────────────────────────────────────────────
+            // ARQUITECTURA INDESTRUCTIBLE: conectar _drawField al ciclo
+            // 'before:render' de Fabric. Esto garantiza que el césped se
+            // repinta en CADA frame, ANTES de que Fabric pinte cualquier
+            // objeto. Ningún clear(), remove(), setBackgroundImage(null)
+            // ni race condition async puede borrar el campo.
+            // ───────────────────────────────────────────────────────────────
+            const self = this;
+            this._fc.on('before:render', function() {
+                const ctx = self._fc.getContext();
+                self._drawField(ctx, w, h);
             });
 
-            // Ocultar el SVG decorativo (ahora el fondo lo maneja Fabric)
+            // Ocultar el SVG decorativo
             const pitchSvg = document.getElementById('ct-pitch-svg');
             if (pitchSvg) pitchSvg.style.opacity = '0';
+
+            // Forzar primer render
+            this._fc.renderAll();
 
             // Activar trazo libre por defecto
             this.setTool('draw');
@@ -2912,8 +2948,8 @@ window.DTEngine = {
             if (boardContainer) {
                 boardContainer.addEventListener('mouseenter', () => {
                     try {
-                        if (this && this._fc && typeof this._fc.calcOffset === 'function') {
-                            this._fc.calcOffset();
+                        if (self._fc && typeof self._fc.calcOffset === 'function') {
+                            self._fc.calcOffset();
                         }
                     } catch (err) {
                         console.warn('Advertencia de FabricJS silenciada:', err);
@@ -2923,11 +2959,11 @@ window.DTEngine = {
 
             // Click en canvas vacío => añadir objeto según herramienta activa
             this._fc.on('mouse:down', function(opt) {
-                if (this._activeTool === 'draw') return;
+                if (self._activeTool === 'draw') return;
                 if (opt.target) return;
-                const ptr = this._fc.getPointer(opt.e);
-                this._placeObject(ptr.x, ptr.y);
-            }.bind(this));
+                const ptr = self._fc.getPointer(opt.e);
+                self._placeObject(ptr.x, ptr.y);
+            });
         },
 
         // ── Seleccionar herramienta y actualizar resalte de botones ──
@@ -3073,16 +3109,18 @@ window.DTEngine = {
             this._fc.renderAll();
         },
 
-        // ── FIX 2: Limpiar objetos SIN destruir el fondo de la cancha ──
+        // ── LIMPIAR: elimina todos los objetos del usuario, el campo SIEMPRE sobrevive
+        // porque está pintado en el hook 'before:render', no como un objeto Fabric.
         clear() {
             if (!this._fc) return;
-            // Iterar en reversa para remover SOLO objetos, preservando el backgroundImage
-            const objetos = this._fc.getObjects();
-            for (let i = objetos.length - 1; i >= 0; i--) {
-                this._fc.remove(objetos[i]);
+            // Eliminar todos los objetos (trazos, jugadores, zonas, etc.)
+            this._fc.getObjects().slice().forEach(obj => this._fc.remove(obj));
+            // Limpiar trazos libres que puedan quedar en el buffer
+            if (this._fc.freeDrawingBrush) {
+                this._fc._isCurrentlyDrawing = false;
             }
             this._fc.discardActiveObject();
-            this._fc.renderAll();
+            this._fc.renderAll(); // before:render repinta el campo automáticamente
         },
 
         // ── Exportar PNG compuesto (campo SVG + objetos Fabric) ──
