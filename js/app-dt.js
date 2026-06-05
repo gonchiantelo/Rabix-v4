@@ -2915,7 +2915,7 @@ window.DTEngine = {
             const h = this._fc.height || 600;
 
             if (type === 'futbol11') {
-                svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 100 65">
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 65">
                     <rect width="100" height="65" fill="#2e7d32"/>
                     <rect x="5" y="5" width="90" height="55" fill="none" stroke="white" stroke-width="0.5"/>
                     <line x1="50" y1="5" x2="50" y2="60" stroke="white" stroke-width="0.5"/>
@@ -2924,7 +2924,7 @@ window.DTEngine = {
                     <rect x="79" y="15" width="16" height="35" fill="none" stroke="white" stroke-width="0.5"/>
                 </svg>`;
             } else if (type === 'basquetbol' || type === 'basketball') {
-                svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 100 50">
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50">
                     <rect width="100" height="50" fill="#d2884a"/>
                     <rect x="5" y="5" width="90" height="40" fill="none" stroke="white" stroke-width="0.8"/>
                     <line x1="50" y1="5" x2="50" y2="45" stroke="white" stroke-width="0.8"/>
@@ -2936,6 +2936,8 @@ window.DTEngine = {
             }
 
             const encodedData = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgString);
+
+            this._fc.setBackgroundColor('#1e293b', this._fc.renderAll.bind(this._fc));
 
             fabric.Image.fromURL(encodedData, (img, isError) => {
                 if (isError || !img) {
@@ -3170,16 +3172,28 @@ window.DTEngine = {
                         self._placeObject(pointer.x, pointer.y);
                     }
                 });
+                boardContainer.addEventListener('mouseleave', () => {
+                    self._isDrawingShape = false;
+                    self._fc.selection = true;
+                    self.updateMeasurementHUD(0, 0, '', false);
+                    if (self._tempShape) {
+                        self._fc.remove(self._tempShape);
+                        self._tempShape = null;
+                        self._fc.renderAll();
+                    }
+                });
             }
 
             // Click en canvas vacío => añadir objeto según herramienta activa
             this._fc.on('mouse:down', function(opt) {
-                if (self._activeTool === 'draw') return;
+                const tool = self._activeTool || '';
+                if (tool === 'draw') return;
                 
                 // Dibujo dinámico para Zonas y Líneas
-                if (self._activeTool.startsWith('zone-') || self._activeTool.startsWith('arrow-')) {
+                if (tool.startsWith('zone-') || tool.startsWith('arrow-')) {
                     if (opt.target) return; // Si clica en un objeto existente, no dibujar
                     
+                    self._fc.selection = false;
                     const ptr = self._fc.getPointer(opt.e);
                     self._isDrawingShape = true;
                     self._drawStartX = ptr.x;
@@ -3205,12 +3219,12 @@ window.DTEngine = {
                         });
                     } else if (self._activeTool.startsWith('arrow-')) {
                         let color = '#ffffff', dash = [];
-                        if (self._activeTool === 'arrow-pass') { dash = [8, 5]; color = '#ffffff'; }
-                        else if (self._activeTool === 'arrow-run') { dash = []; color = '#facc15'; }
+                        if (tool === 'arrow-pass') { dash = [8, 5]; color = '#ffffff'; }
+                        else if (tool === 'arrow-run') { dash = []; color = '#facc15'; }
                         else { dash = []; color = '#00F0FF'; }
 
                         self._tempShape = new fabric.Line([ptr.x, ptr.y, ptr.x, ptr.y], {
-                            stroke: color, strokeWidth: self._activeTool === 'arrow-solid' ? 3 : 2.5,
+                            stroke: color, strokeWidth: tool === 'arrow-solid' ? 3 : 2.5,
                             strokeDashArray: dash, selectable: false, evented: false
                         });
                     }
@@ -3227,7 +3241,8 @@ window.DTEngine = {
             });
 
             this._fc.on('mouse:move', function(opt) {
-                if (!self._isDrawingShape || !self._tempShape) return;
+                if (!self._isDrawingShape) return;
+                if (!self._tempShape) return;
                 const ptr = self._fc.getPointer(opt.e);
                 const scale = 68 / self._fc.width; // Asumiendo ancho de cancha = 68m
                 
@@ -3259,9 +3274,11 @@ window.DTEngine = {
             });
 
             this._fc.on('mouse:up', function(opt) {
-                if (self._isDrawingShape && self._tempShape) {
-                    self._isDrawingShape = false;
-                    self.updateMeasurementHUD(0, 0, '', false);
+                self._isDrawingShape = false;
+                self._fc.selection = true;
+                self.updateMeasurementHUD(0, 0, '', false);
+
+                if (self._tempShape) {
                     
                     // Si el tamaño es muy pequeño (clic accidental), eliminar
                     let isTooSmall = false;
