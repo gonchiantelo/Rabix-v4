@@ -2871,256 +2871,49 @@ window.DTEngine = {
             'tool-zone-solid','tool-zone-dashed','tool-zone-red'
         ],
 
-        // ═══════════════════════════════════════════════════════════════
-        // MOTOR DE FONDOS MULTI-DEPORTE
-        // _drawField(ctx, w, h) — renderizado puro en canvas 2D.
-        // Se ejecuta via 'before:render', INDESTRUCTIBLE por clear().
-        // ═══════════════════════════════════════════════════════════════
-        _drawField(ctx, w, h) {
-            const bg = this._background || 'futbol11';
-            if      (bg === 'futbol11')    this._drawSoccerFull(ctx, w, h);
-            else if (bg === 'futbol-media') this._drawSoccerHalf(ctx, w, h);
-            else if (bg === 'basketball')  this._drawBasketball(ctx, w, h);
-            else if (bg === 'parquet')     this._drawParquet(ctx, w, h);
-            else                           this._drawBlank(ctx, w, h);
-
-            // Opcional: dibujar cuadrícula de snap
-            if (this._snapGrid) this._drawSnapGrid(ctx, w, h);
-        },
-
-        // ── CAMPO FÚTBOL 11 (cancha completa horizontal) ──
-        _drawSoccerFull(ctx, w, h) {
-            const sx = w / 105, sy = h / 68;
-            ctx.save();
-
-            // Franjas decorativas de césped
-            for (let i = 0; i < 7; i++) {
-                ctx.fillStyle = i % 2 === 0 ? '#1e5c1e' : '#1a5218';
-                ctx.fillRect(i * w / 7, 0, w / 7, h);
-            }
-
-            ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-            ctx.lineWidth = 1.8;
-            ctx.setLineDash([]);
-
-            // Borde
-            ctx.strokeRect(3, 3, w - 6, h - 6);
-            // Línea media
-            ctx.beginPath(); ctx.moveTo(52.5*sx, 3); ctx.lineTo(52.5*sx, h-3); ctx.stroke();
-            // Círculo central
-            ctx.beginPath(); ctx.arc(52.5*sx, 34*sy, 9.15*sx, 0, Math.PI*2); ctx.stroke();
-            // Punto central
-            ctx.fillStyle = 'rgba(255,255,255,0.8)';
-            ctx.beginPath(); ctx.arc(52.5*sx, 34*sy, 3.5, 0, Math.PI*2); ctx.fill();
-
-            // Área grande izquierda
-            ctx.strokeRect(3, 13.84*sy, 16.5*sx, 40.32*sy);
-            ctx.strokeRect(3, 26.84*sy, 5.5*sx, 14.32*sy);
-            // Área grande derecha
-            ctx.strokeRect(w-3-16.5*sx, 13.84*sy, 16.5*sx, 40.32*sy);
-            ctx.strokeRect(w-3-5.5*sx, 26.84*sy, 5.5*sx, 14.32*sy);
-
-            // Puntos penales
-            ctx.fillStyle = 'rgba(255,255,255,0.8)';
-            ctx.beginPath(); ctx.arc(11*sx, 34*sy, 3, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(94*sx, 34*sy, 3, 0, Math.PI*2); ctx.fill();
-
-            // Arcos
-            ctx.beginPath(); ctx.arc(3+16.5*sx, 34*sy, 9.15*sx, -Math.PI/3, Math.PI/3); ctx.stroke();
-            ctx.beginPath(); ctx.arc(w-3-16.5*sx, 34*sy, 9.15*sx, Math.PI*2/3, Math.PI*4/3); ctx.stroke();
-
-            // Porterías
-            ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-            ctx.lineWidth = 2.5;
-            ctx.strokeRect(0, 29.5*sy, 2.5, 9*sy);   // izquierda
-            ctx.strokeRect(w-2.5, 29.5*sy, 2.5, 9*sy); // derecha
-
-            ctx.restore();
-        },
-
-        // ── MEDIA CANCHA ──
-        _drawSoccerHalf(ctx, w, h) {
-            const sx = w / 52.5, sy = h / 68;
-            ctx.save();
-
-            for (let i = 0; i < 5; i++) {
-                ctx.fillStyle = i % 2 === 0 ? '#1e5c1e' : '#1a5218';
-                ctx.fillRect(i * w / 5, 0, w / 5, h);
-            }
-
-            ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-            ctx.lineWidth = 1.8;
-            ctx.setLineDash([]);
-
-            ctx.strokeRect(3, 3, w - 6, h - 6);
-            // Línea de medio campo (derecha)
-            ctx.beginPath(); ctx.moveTo(w-3, 3); ctx.lineTo(w-3, h-3); ctx.stroke();
-
-            // Semicírculo central
-            ctx.beginPath();
-            ctx.arc(w-3, 34*sy, 9.15*sx, Math.PI/2, Math.PI*3/2);
-            ctx.stroke();
-
-            // Área grande
-            ctx.strokeRect(3, 13.84*sy, 16.5*sx, 40.32*sy);
-            ctx.strokeRect(3, 26.84*sy, 5.5*sx, 14.32*sy);
-
-            // Punto penal
-            ctx.fillStyle = 'rgba(255,255,255,0.8)';
-            ctx.beginPath(); ctx.arc(11*sx, 34*sy, 3, 0, Math.PI*2); ctx.fill();
-
-            // Arco penal
-            ctx.beginPath(); ctx.arc(3+16.5*sx, 34*sy, 9.15*sx, -Math.PI/3, Math.PI/3); ctx.stroke();
-
-            // Portería
-            ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-            ctx.lineWidth = 2.5;
-            ctx.strokeRect(0, 29.5*sy, 2.5, 9*sy);
-
-            ctx.restore();
-        },
-
-        // ── BÁSQUETBOL ──
-        _drawBasketball(ctx, w, h) {
-            ctx.save();
-            ctx.fillStyle = '#8b4513';
-            ctx.fillRect(0, 0, w, h);
-
-            // Líneas del parquet
-            ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-            ctx.lineWidth = 1;
-            for (let i = 0; i <= 10; i++) {
-                ctx.beginPath();
-                ctx.moveTo(i * w / 10, 0); ctx.lineTo(i * w / 10, h);
-                ctx.stroke();
-            }
-
-            ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([]);
-
-            // Borde
-            ctx.strokeRect(4, 4, w-8, h-8);
-            // Línea media
-            ctx.beginPath(); ctx.moveTo(w/2, 4); ctx.lineTo(w/2, h-4); ctx.stroke();
-            // Círculo central
-            ctx.beginPath(); ctx.arc(w/2, h/2, h*0.12, 0, Math.PI*2); ctx.stroke();
-            // Punto central
-            ctx.fillStyle = 'rgba(255,255,255,0.8)';
-            ctx.beginPath(); ctx.arc(w/2, h/2, 4, 0, Math.PI*2); ctx.fill();
-
-            const lw = w * 0.14; // zona libre
-            const lh = h * 0.55;
-            const lT = (h - lh) / 2;
-
-            // Zona izquierda (pintura)
-            ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-            ctx.strokeRect(4, lT, lw, lh);
-            // Semicírculo tiro libre izquierdo
-            ctx.beginPath(); ctx.arc(4+lw, h/2, lh/2, Math.PI/2, Math.PI*3/2); ctx.stroke();
-
-            // Zona derecha
-            ctx.strokeRect(w-4-lw, lT, lw, lh);
-            ctx.beginPath(); ctx.arc(w-4-lw, h/2, lh/2, -Math.PI/2, Math.PI/2); ctx.stroke();
-
-            // Arco de 3 izquierdo
-            ctx.beginPath();
-            ctx.arc(4, h/2, w*0.32, -Math.PI*0.48, Math.PI*0.48);
-            ctx.stroke();
-            // Arco de 3 derecho
-            ctx.beginPath();
-            ctx.arc(w-4, h/2, w*0.32, Math.PI*0.52, Math.PI*1.48);
-            ctx.stroke();
-
-            // Backboards
-            ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(4, h/2-h*0.1, 4, h*0.2); // izquierdo
-            ctx.strokeRect(w-8, h/2-h*0.1, 4, h*0.2); // derecho
-
-            ctx.restore();
-        },
-
-        // ── PARQUET (pizarra de líneas) ──
-        _drawParquet(ctx, w, h) {
-            ctx.save();
-            ctx.fillStyle = '#c8860a';
-            ctx.fillRect(0, 0, w, h);
-
-            ctx.strokeStyle = 'rgba(180,100,10,0.6)';
-            ctx.lineWidth = 1;
-            const gs = 40;
-            for (let x = 0; x < w; x += gs) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
-            for (let y = 0; y < h; y += gs) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
-
-            ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(6, 6, w-12, h-12);
-
-            ctx.restore();
-        },
-
-        // ── PIZARRA LISA ──
-        _drawBlank(ctx, w, h) {
-            ctx.save();
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(0, 0, w, h);
-            ctx.strokeStyle = 'rgba(0,240,255,0.06)';
-            ctx.lineWidth = 1;
-            const g = 30;
-            for (let x = 0; x < w; x += g) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
-            for (let y = 0; y < h; y += g) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
-            ctx.restore();
-        },
-
-        // ── SNAP GRID (visual overlay) ──
-        _drawSnapGrid(ctx, w, h) {
-            ctx.save();
-            ctx.strokeStyle = 'rgba(0,240,255,0.15)';
-            ctx.lineWidth = 0.5;
-            ctx.setLineDash([2, 4]);
-            const g = this._snapSize;
-            for (let x = 0; x < w; x += g) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
-            for (let y = 0; y < h; y += g) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
-            ctx.restore();
-        },
-
-        // ── CAMBIAR FONDO DINÁMICAMENTE ──
-        setBackground(type) {
-            this._background = type;
-            if (this._fc) this._fc.renderAll(); // before:render se encarga del resto
-            // Ajustar aspect-ratio del contenedor según deporte
-            const container = document.getElementById('premium-tactical-board-container');
-            if (!container) return;
-            const ratios = {
-                'futbol11':    '105 / 68',
-                'futbol-media':'52.5 / 68',
-                'basketball':  '94 / 50',
-                'parquet':     '4 / 3',
-                'blank':       '16 / 9'
-            };
-            container.style.aspectRatio = ratios[type] || '105 / 68';
-            // Re-init canvas para adaptar dimensiones
-            setTimeout(() => this.init(), 50);
-        },
-
-        // ── TOGGLE SNAP-TO-GRID ──
-        toggleSnapGrid(enabled) {
-            this._snapGrid = enabled;
+        setBackground: function(type) {
             if (!this._fc) return;
-            if (enabled) {
-                const snap = this._snapSize;
-                this._fc.on('object:moving', (e) => {
-                    const obj = e.target;
-                    obj.set({
-                        left: Math.round(obj.left / snap) * snap,
-                        top:  Math.round(obj.top  / snap) * snap
-                    });
-                });
+            this._fc.setBackgroundImage(null, this._fc.renderAll.bind(this._fc));
+            
+            let svgString = '';
+            const w = this._fc.width || 800;
+            const h = this._fc.height || 600;
+
+            if (type === 'futbol11') {
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 100 65">
+                    <rect width="100" height="65" fill="#2e7d32"/>
+                    <rect x="5" y="5" width="90" height="55" fill="none" stroke="white" stroke-width="0.5"/>
+                    <line x1="50" y1="5" x2="50" y2="60" stroke="white" stroke-width="0.5"/>
+                    <circle cx="50" cy="32.5" r="9" fill="none" stroke="white" stroke-width="0.5"/>
+                    <rect x="5" y="15" width="16" height="35" fill="none" stroke="white" stroke-width="0.5"/>
+                    <rect x="79" y="15" width="16" height="35" fill="none" stroke="white" stroke-width="0.5"/>
+                </svg>`;
+            } else if (type === 'basquetbol' || type === 'basketball') {
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 100 50">
+                    <rect width="100" height="50" fill="#d2884a"/>
+                    <rect x="5" y="5" width="90" height="40" fill="none" stroke="white" stroke-width="0.8"/>
+                    <line x1="50" y1="5" x2="50" y2="45" stroke="white" stroke-width="0.8"/>
+                    <circle cx="50" cy="25" r="6" fill="none" stroke="white" stroke-width="0.8"/>
+                </svg>`;
             } else {
-                this._fc.off('object:moving');
+                this._fc.setBackgroundColor('#1e293b', this._fc.renderAll.bind(this._fc));
+                return;
             }
-            this._fc.renderAll();
+
+            const encodedData = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgString)));
+
+            fabric.Image.fromURL(encodedData, (img) => {
+                img.set({
+                    id: 'cancha_bg',
+                    originX: 'left',
+                    originY: 'top',
+                    scaleX: this._fc.width / img.width,
+                    scaleY: this._fc.height / img.height,
+                    selectable: false,
+                    evented: false
+                });
+                this._fc.setBackgroundImage(img, this._fc.renderAll.bind(this._fc));
+            });
         },
 
         // ── CREAR FICHA NUMERADA (fabric.Group) ──
@@ -3304,22 +3097,8 @@ window.DTEngine = {
             this._fc.setWidth(w);
             this._fc.setHeight(h);
 
-            // ───────────────────────────────────────────────────────────────
-            // ARQUITECTURA INDESTRUCTIBLE: conectar _drawField al ciclo
-            // 'before:render' de Fabric. Esto garantiza que el césped se
-            // repinta en CADA frame, ANTES de que Fabric pinte cualquier
-            // objeto. Ningún clear(), remove(), setBackgroundImage(null)
-            // ni race condition async puede borrar el campo.
-            // ───────────────────────────────────────────────────────────────
-            const self = this;
-            this._fc.on('before:render', function() {
-                const ctx = self._fc.getContext();
-                self._drawField(ctx, w, h);
-            });
-
-            // Ocultar el SVG decorativo
-            const pitchSvg = document.getElementById('ct-pitch-svg');
-            if (pitchSvg) pitchSvg.style.opacity = '0';
+            // ── Fondo multi-deporte via setBackgroundImage (estable, no bloquea el hilo) ──
+            this._applyBackground(w, h);
 
             // Forzar primer render
             this._fc.renderAll();
@@ -4723,3 +4502,15 @@ window.DTEngine = {
 
 };
 
+
+// Board Background Selector Binding
+document.addEventListener("DOMContentLoaded", () => {
+    const bgSelector = document.getElementById('board-background-selector');
+    if (bgSelector) {
+        bgSelector.addEventListener('change', (e) => {
+            if (window.DTEngine && window.DTEngine.FabricEngine) {
+                window.DTEngine.FabricEngine.setBackground(e.target.value);
+            }
+        });
+    }
+});
