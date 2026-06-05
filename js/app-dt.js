@@ -1140,19 +1140,19 @@ window.DTEngine = {
                                 <!-- ─── GRUPO 3: JUGADORES NUMERADOS ─── -->
                                 <div class="tb-group">
                                     <span class="tb-label">👤 Local</span>
-                                    <button id="tool-player-blue" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('player-blue')" title="Local (Azul)">
+                                    <button id="tool-player-blue" class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'player-blue')" onclick="DTEngine.FabricEngine.setTool('player-blue')" title="Local (Azul)">
                                         <span class="tb-dot tb-player-blue"></span>Local
                                     </button>
-                                    <button id="tool-player-red" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('player-red')" title="Rival (Rojo)">
+                                    <button id="tool-player-red" class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'player-red')" onclick="DTEngine.FabricEngine.setTool('player-red')" title="Rival (Rojo)">
                                         <span class="tb-dot tb-player-red"></span>Rival
                                     </button>
-                                    <button id="tool-player-yellow" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('player-yellow')" title="Comodín">
+                                    <button id="tool-player-yellow" class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'player-yellow')" onclick="DTEngine.FabricEngine.setTool('player-yellow')" title="Comodín">
                                         <span class="tb-dot tb-player-yel"></span>Comod.
                                     </button>
-                                    <button id="tool-player-green" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('player-green')" title="Verde">
+                                    <button id="tool-player-green" class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'player-green')" onclick="DTEngine.FabricEngine.setTool('player-green')" title="Verde">
                                         <span class="tb-dot tb-player-grn"></span>Verde
                                     </button>
-                                    <button id="tool-player-black" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('player-black')" title="Negro">
+                                    <button id="tool-player-black" class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'player-black')" onclick="DTEngine.FabricEngine.setTool('player-black')" title="Negro">
                                         <span class="tb-dot tb-player-blk"></span>Negro
                                     </button>
                                     <!-- Contador de número de ficha -->
@@ -1166,13 +1166,13 @@ window.DTEngine = {
                                 <!-- ─── GRUPO 4: ELEMENTOS ─── -->
                                 <div class="tb-group">
                                     <span class="tb-label">🧩</span>
-                                    <button id="tool-ball" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('ball')" title="Balón">
+                                    <button id="tool-ball" class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'ball')" onclick="DTEngine.FabricEngine.setTool('ball')" title="Balón">
                                         <span class="tb-icon">⚽</span>Balón
                                     </button>
-                                    <button id="tool-cone" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('cone')" title="Cono">
+                                    <button id="tool-cone" class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'cone')" onclick="DTEngine.FabricEngine.setTool('cone')" title="Cono">
                                         <span class="tb-icon">🔺</span>Cono
                                     </button>
-                                    <button id="tool-minigoal" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('minigoal')" title="Mini Arco">
+                                    <button id="tool-minigoal" class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'minigoal')" onclick="DTEngine.FabricEngine.setTool('minigoal')" title="Mini Arco">
                                         <span class="tb-icon">🥅</span>Arco
                                     </button>
                                     <button id="tool-text" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('text')" title="Texto libre">
@@ -2862,6 +2862,12 @@ window.DTEngine = {
         _canvasH: 0,
         _playerCounter: { blue:0, red:0, yellow:0, green:0, black:0 }, // auto-incremento de fichas
 
+        // --- Estado de dibujo dinámico ---
+        _isDrawingShape: false,
+        _drawStartX: 0,
+        _drawStartY: 0,
+        _tempShape: null,
+
         // Todos los IDs de botones de herramientas
         _toolBtns: [
             'tool-draw',
@@ -2870,6 +2876,35 @@ window.DTEngine = {
             'tool-arrow-pass','tool-arrow-run','tool-arrow-solid',
             'tool-zone-solid','tool-zone-dashed','tool-zone-red'
         ],
+
+        updateMeasurementHUD: function(x, y, text, visible) {
+            let hud = document.getElementById('tactical-measurement-hud');
+            if (!hud) {
+                hud = document.createElement('div');
+                hud.id = 'tactical-measurement-hud';
+                hud.style.position = 'fixed';
+                hud.style.pointerEvents = 'none';
+                hud.style.background = 'rgba(15, 23, 42, 0.9)';
+                hud.style.color = '#00F0FF';
+                hud.style.border = '1px solid #1e293b';
+                hud.style.padding = '4px 8px';
+                hud.style.borderRadius = '6px';
+                hud.style.fontFamily = 'Outfit, sans-serif';
+                hud.style.fontSize = '0.85rem';
+                hud.style.fontWeight = '700';
+                hud.style.zIndex = '9999';
+                hud.style.boxShadow = '0 4px 12px rgba(0,0,0,0.5)';
+                document.body.appendChild(hud);
+            }
+            if (visible) {
+                hud.style.display = 'block';
+                hud.innerText = text;
+                hud.style.left = (x + 15) + 'px';
+                hud.style.top = (y + 15) + 'px';
+            } else {
+                hud.style.display = 'none';
+            }
+        },
 
         setBackground: function(type) {
             if (!this._fc) return;
@@ -3121,14 +3156,161 @@ window.DTEngine = {
                         console.warn('Advertencia de FabricJS silenciada:', err);
                     }
                 });
+
+                // Drag & Drop
+                boardContainer.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+                boardContainer.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const tool = e.dataTransfer.getData('tool');
+                    if (tool) {
+                        const pointer = self._fc.getPointer(e);
+                        self._activeTool = tool;
+                        self._placeObject(pointer.x, pointer.y);
+                    }
+                });
             }
 
             // Click en canvas vacío => añadir objeto según herramienta activa
             this._fc.on('mouse:down', function(opt) {
                 if (self._activeTool === 'draw') return;
+                
+                // Dibujo dinámico para Zonas y Líneas
+                if (self._activeTool.startsWith('zone-') || self._activeTool.startsWith('arrow-')) {
+                    if (opt.target) return; // Si clica en un objeto existente, no dibujar
+                    
+                    const ptr = self._fc.getPointer(opt.e);
+                    self._isDrawingShape = true;
+                    self._drawStartX = ptr.x;
+                    self._drawStartY = ptr.y;
+                    
+                    if (self._activeTool === 'zone-solid') {
+                        self._tempShape = new fabric.Rect({
+                            left: ptr.x, top: ptr.y, width: 0, height: 0,
+                            fill: 'rgba(0,240,255,0.1)', stroke: '#00F0FF',
+                            strokeWidth: 2, rx: 4, ry: 4, selectable: false, evented: false
+                        });
+                    } else if (self._activeTool === 'zone-dashed') {
+                        self._tempShape = new fabric.Rect({
+                            left: ptr.x, top: ptr.y, width: 0, height: 0,
+                            fill: 'rgba(251,191,36,0.08)', stroke: '#fbbf24',
+                            strokeWidth: 2, strokeDashArray: [8, 5], rx: 4, ry: 4, selectable: false, evented: false
+                        });
+                    } else if (self._activeTool === 'zone-red') {
+                        self._tempShape = new fabric.Rect({
+                            left: ptr.x, top: ptr.y, width: 0, height: 0,
+                            fill: 'rgba(239,68,68,0.1)', stroke: '#ef4444',
+                            strokeWidth: 2, rx: 4, ry: 4, selectable: false, evented: false
+                        });
+                    } else if (self._activeTool.startsWith('arrow-')) {
+                        let color = '#ffffff', dash = [];
+                        if (self._activeTool === 'arrow-pass') { dash = [8, 5]; color = '#ffffff'; }
+                        else if (self._activeTool === 'arrow-run') { dash = []; color = '#facc15'; }
+                        else { dash = []; color = '#00F0FF'; }
+
+                        self._tempShape = new fabric.Line([ptr.x, ptr.y, ptr.x, ptr.y], {
+                            stroke: color, strokeWidth: self._activeTool === 'arrow-solid' ? 3 : 2.5,
+                            strokeDashArray: dash, selectable: false, evented: false
+                        });
+                    }
+                    
+                    if (self._tempShape) {
+                        self._fc.add(self._tempShape);
+                    }
+                    return;
+                }
+
                 if (opt.target) return;
                 const ptr = self._fc.getPointer(opt.e);
                 self._placeObject(ptr.x, ptr.y);
+            });
+
+            this._fc.on('mouse:move', function(opt) {
+                if (!self._isDrawingShape || !self._tempShape) return;
+                const ptr = self._fc.getPointer(opt.e);
+                const scale = 68 / self._fc.width; // Asumiendo ancho de cancha = 68m
+                
+                if (self._tempShape.type === 'rect') {
+                    const w = Math.abs(ptr.x - self._drawStartX);
+                    const h = Math.abs(ptr.y - self._drawStartY);
+                    self._tempShape.set({
+                        left: Math.min(ptr.x, self._drawStartX),
+                        top: Math.min(ptr.y, self._drawStartY),
+                        width: w,
+                        height: h
+                    });
+                    
+                    const mX = (w * scale).toFixed(1);
+                    const mY = (h * scale).toFixed(1);
+                    self.updateMeasurementHUD(opt.e.clientX, opt.e.clientY, `${mX}m x ${mY}m`, true);
+                    
+                } else if (self._tempShape.type === 'line') {
+                    self._tempShape.set({ x2: ptr.x, y2: ptr.y });
+                    
+                    const dx = ptr.x - self._drawStartX;
+                    const dy = ptr.y - self._drawStartY;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    const mDist = (dist * scale).toFixed(1);
+                    self.updateMeasurementHUD(opt.e.clientX, opt.e.clientY, `${mDist}m`, true);
+                }
+                
+                self._fc.renderAll();
+            });
+
+            this._fc.on('mouse:up', function(opt) {
+                if (self._isDrawingShape && self._tempShape) {
+                    self._isDrawingShape = false;
+                    self.updateMeasurementHUD(0, 0, '', false);
+                    
+                    // Si el tamaño es muy pequeño (clic accidental), eliminar
+                    let isTooSmall = false;
+                    if (self._tempShape.type === 'rect' && (self._tempShape.width < 5 && self._tempShape.height < 5)) isTooSmall = true;
+                    if (self._tempShape.type === 'line') {
+                        const dx = self._tempShape.x2 - self._tempShape.x1;
+                        const dy = self._tempShape.y2 - self._tempShape.y1;
+                        if (Math.sqrt(dx*dx + dy*dy) < 5) isTooSmall = true;
+                    }
+                    
+                    if (isTooSmall) {
+                        self._fc.remove(self._tempShape);
+                        self._tempShape = null;
+                        self._fc.renderAll();
+                        return;
+                    }
+
+                    self._tempShape.set({ selectable: true, evented: true, hasControls: true });
+                    
+                    // Para líneas, necesitamos agregar la cabeza de la flecha y agrupar
+                    if (self._tempShape.type === 'line') {
+                        const x1 = self._drawStartX, y1 = self._drawStartY;
+                        const x2 = self._tempShape.x2, y2 = self._tempShape.y2;
+                        const dx = x2 - x1, dy = y2 - y1;
+                        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                        
+                        const color = self._tempShape.stroke;
+                        const head = new fabric.Triangle({
+                            width: 14, height: 16, fill: color,
+                            left: x2, top: y2, angle: angle + 90,
+                            originX: 'center', originY: 'center',
+                            selectable: false, evented: false
+                        });
+                        
+                        const lineObj = new fabric.Line([x1, y1, x2, y2], {
+                            stroke: color, strokeWidth: self._tempShape.strokeWidth, strokeDashArray: self._tempShape.strokeDashArray,
+                            selectable: true, hasControls: true, hasBorders: true, padding: 8
+                        });
+                        
+                        const grp = new fabric.Group([lineObj, head], { selectable: true, hasControls: true });
+                        self._fc.remove(self._tempShape);
+                        self._fc.add(grp);
+                        self._fc.setActiveObject(grp);
+                    } else {
+                        self._fc.setActiveObject(self._tempShape);
+                    }
+                    self._tempShape = null;
+                    self._fc.renderAll();
+                }
             });
         },
 
