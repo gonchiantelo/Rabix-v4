@@ -1078,117 +1078,159 @@ window.DTEngine = {
                         <!-- ═══ COLUMNA DERECHA: PIZARRA TÁCTICA FABRIC.JS (65%) ═══ -->
                         <div style="width:65%; background:#080808; display:flex; flex-direction:column; position:relative; z-index:10; pointer-events:auto;">
 
-                            <!-- ── BARRA DE HERRAMIENTAS TÁCTICA ── -->
-                            <div id="tactical-toolbar" style="padding:10px 16px; background:#0d0d0d; border-bottom:1px solid rgba(0,240,255,0.12); display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex-shrink:0;">
+                            <!-- ══════════════════════════════════════════════════
+                                 TACTICAL BOARD 2.0 — BARRA DE HERRAMIENTAS
+                            ══════════════════════════════════════════════════ -->
+                            <style>
+                                #tactical-toolbar { padding:8px 14px; background:#080808; border-bottom:1px solid rgba(0,240,255,0.1); display:flex; align-items:center; gap:6px; flex-wrap:wrap; flex-shrink:0; }
+                                .tb-group { display:flex; align-items:center; gap:4px; padding:0 8px; border-right:1px solid rgba(255,255,255,0.07); }
+                                .tb-group:last-child { border-right:none; }
+                                .tb-label { font-size:0.55rem; color:#4b5563; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; white-space:nowrap; padding-right:4px; }
+                                .tb-btn {
+                                    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+                                    padding:6px 9px; border-radius:8px; border:1.5px solid #1f2937;
+                                    background:transparent; color:#6b7280; cursor:pointer;
+                                    font-size:0.6rem; font-weight:700; min-width:46px;
+                                    transition:all 0.15s ease; font-family:Outfit,sans-serif; line-height:1;
+                                }
+                                .tb-btn:hover { background:rgba(255,255,255,0.06); border-color:#374151; color:#d1d5db; }
+                                .tb-btn.tb-active { background:rgba(0,240,255,0.12); border-color:#00F0FF; color:#00F0FF; }
+                                .tb-btn .tb-icon { font-size:1rem; line-height:1; }
+                                .tb-btn .tb-dot { display:inline-block; width:16px; height:16px; border-radius:50%; border:2px solid rgba(255,255,255,0.8); margin-bottom:1px; }
+                                .tb-player-blue  { background:#1d6aff !important; box-shadow:0 0 8px rgba(29,106,255,0.5); }
+                                .tb-player-red   { background:#ef4444 !important; box-shadow:0 0 8px rgba(239,68,68,0.5); }
+                                .tb-player-yel   { background:#eab308 !important; box-shadow:0 0 8px rgba(234,179,8,0.5); }
+                                .tb-player-grn   { background:#22c55e !important; box-shadow:0 0 8px rgba(34,197,94,0.5); }
+                                .tb-player-blk   { background:#374151 !important; box-shadow:0 0 8px rgba(55,65,81,0.5); }
+                                .tb-select {
+                                    background:#0f172a; border:1.5px solid #1f2937; color:#9ca3af;
+                                    font-family:Outfit,sans-serif; font-size:0.72rem; font-weight:700;
+                                    padding:7px 10px; border-radius:8px; cursor:pointer; outline:none;
+                                    transition:border-color 0.2s;
+                                }
+                                .tb-select:hover, .tb-select:focus { border-color:#00F0FF; color:#e2e8f0; }
+                                .tb-toggle { display:flex; align-items:center; gap:5px; font-size:0.6rem; color:#6b7280; font-weight:700; font-family:Outfit,sans-serif; cursor:pointer; white-space:nowrap; }
+                                .tb-toggle input[type=checkbox] { accent-color:#00F0FF; width:13px; height:13px; }
+                                .tb-toggle:hover { color:#9ca3af; }
+                                .tb-danger { border-color:rgba(239,68,68,0.3) !important; color:#ef4444 !important; }
+                                .tb-danger:hover { background:rgba(239,68,68,0.12) !important; border-color:#ef4444 !important; }
+                            </style>
+                            <div id="tactical-toolbar">
 
-                                <!-- Etiqueta -->
-                                <span style="font-size:0.65rem; color:#00F0FF; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; white-space:nowrap; margin-right:4px;">🎨 HERRAMIENTAS</span>
-                                <div style="width:1px; height:28px; background:rgba(255,255,255,0.08); margin:0 4px;"></div>
+                                <!-- ─── GRUPO 1: FONDO / DEPORTE ─── -->
+                                <div class="tb-group">
+                                    <span class="tb-label">⚽ Campo</span>
+                                    <select id="board-background-selector" class="tb-select" onchange="DTEngine.FabricEngine.setBackground(this.value)">
+                                        <option value="futbol11">Fútbol 11</option>
+                                        <option value="futbol-media">½ Cancha</option>
+                                        <option value="basketball">Básquetbol</option>
+                                        <option value="parquet">Parquet</option>
+                                        <option value="blank">Pizarra Lisa</option>
+                                    </select>
+                                </div>
 
-                                <!-- TRAZO LIBRE -->
-                                <button id="tool-draw" onclick="DTEngine.FabricEngine.setTool('draw')" title="Trazo Libre"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:rgba(0,240,255,0.15); border:1.5px solid #00F0FF; border-radius:8px; color:#00F0FF; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
-                                    <span style="font-size:1.1rem;">✏️</span>Trazo
-                                </button>
+                                <!-- ─── GRUPO 2: TRAZO ─── -->
+                                <div class="tb-group">
+                                    <span class="tb-label">✏️</span>
+                                    <button id="tool-draw" class="tb-btn tb-active" onclick="DTEngine.FabricEngine.setTool('draw')" title="Trazo Libre">
+                                        <span class="tb-icon">✏️</span>Trazo
+                                    </button>
+                                </div>
 
-                                <!-- JUGADOR AZUL -->
-                                <button id="tool-player-blue" onclick="DTEngine.FabricEngine.setTool('player-blue')" title="Jugador Titular"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
-                                    <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:#0088ff; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,136,255,0.5);"></span>Local
-                                </button>
+                                <!-- ─── GRUPO 3: JUGADORES NUMERADOS ─── -->
+                                <div class="tb-group">
+                                    <span class="tb-label">👤 Local</span>
+                                    <button id="tool-player-blue" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('player-blue')" title="Local (Azul)">
+                                        <span class="tb-dot tb-player-blue"></span>Local
+                                    </button>
+                                    <button id="tool-player-red" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('player-red')" title="Rival (Rojo)">
+                                        <span class="tb-dot tb-player-red"></span>Rival
+                                    </button>
+                                    <button id="tool-player-yellow" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('player-yellow')" title="Comodín">
+                                        <span class="tb-dot tb-player-yel"></span>Comod.
+                                    </button>
+                                    <button id="tool-player-green" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('player-green')" title="Verde">
+                                        <span class="tb-dot tb-player-grn"></span>Verde
+                                    </button>
+                                    <button id="tool-player-black" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('player-black')" title="Negro">
+                                        <span class="tb-dot tb-player-blk"></span>Negro
+                                    </button>
+                                    <!-- Contador de número de ficha -->
+                                    <input id="player-number-input" type="number" min="1" max="99" value="" placeholder="#"
+                                        title="Número del jugador (opcional)"
+                                        style="width:42px; background:#0f172a; border:1.5px solid #1f2937; border-radius:8px; color:#e2e8f0; font-family:Outfit,sans-serif; font-size:0.82rem; font-weight:700; padding:6px 6px; text-align:center; outline:none; transition:border-color 0.2s;"
+                                        onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#1f2937'"
+                                    >
+                                </div>
 
-                                <!-- JUGADOR ROJO -->
-                                <button id="tool-player-red" onclick="DTEngine.FabricEngine.setTool('player-red')" title="Jugador Rival"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
-                                    <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:#ef4444; border:2px solid #fff; box-shadow:0 2px 6px rgba(239,68,68,0.5);"></span>Rival
-                                </button>
+                                <!-- ─── GRUPO 4: ELEMENTOS ─── -->
+                                <div class="tb-group">
+                                    <span class="tb-label">🧩</span>
+                                    <button id="tool-ball" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('ball')" title="Balón">
+                                        <span class="tb-icon">⚽</span>Balón
+                                    </button>
+                                    <button id="tool-cone" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('cone')" title="Cono">
+                                        <span class="tb-icon">🔺</span>Cono
+                                    </button>
+                                    <button id="tool-minigoal" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('minigoal')" title="Mini Arco">
+                                        <span class="tb-icon">🥅</span>Arco
+                                    </button>
+                                    <button id="tool-text" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('text')" title="Texto libre">
+                                        <span class="tb-icon">T</span>Texto
+                                    </button>
+                                </div>
 
-                                <!-- JUGADOR AMARILLO -->
-                                <button id="tool-player-yellow" onclick="DTEngine.FabricEngine.setTool('player-yellow')" title="Comodín/Amarillo"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
-                                    <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:#eab308; border:2px solid #fff; box-shadow:0 2px 6px rgba(234,179,8,0.5);"></span>Amarillo
-                                </button>
+                                <!-- ─── GRUPO 5: RUTAS / FLECHAS ─── -->
+                                <div class="tb-group">
+                                    <span class="tb-label">🏃 Rutas</span>
+                                    <button id="tool-arrow-pass" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-pass')" title="Pase (línea punteada con flecha)">
+                                        <span style="font-size:0.9rem; letter-spacing:-1px;">--→</span>Pase
+                                    </button>
+                                    <button id="tool-arrow-run" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-run')" title="Conducción (curva con flecha)">
+                                        <span style="font-size:0.9rem;">↝→</span>Cond.
+                                    </button>
+                                    <button id="tool-arrow-solid" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-solid')" title="Flecha sólida">
+                                        <span style="font-size:0.9rem;">──→</span>Flecha
+                                    </button>
+                                </div>
 
-                                <!-- JUGADOR VERDE -->
-                                <button id="tool-player-green" onclick="DTEngine.FabricEngine.setTool('player-green')" title="Verde"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
-                                    <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:#22c55e; border:2px solid #fff; box-shadow:0 2px 6px rgba(34,197,94,0.5);"></span>Verde
-                                </button>
+                                <!-- ─── GRUPO 6: ZONAS ─── -->
+                                <div class="tb-group">
+                                    <span class="tb-label">⬛ Zonas</span>
+                                    <button id="tool-zone-solid" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('zone-solid')" title="Zona Rondo (verde)">
+                                        <span style="display:inline-block; width:18px; height:12px; border:2px solid rgba(0,240,255,0.8); border-radius:2px; background:rgba(0,240,255,0.1);"></span>Zona
+                                    </button>
+                                    <button id="tool-zone-dashed" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('zone-dashed')" title="Zona Punteada (amarilla)">
+                                        <span style="display:inline-block; width:18px; height:12px; border:2px dashed rgba(251,191,36,0.8); border-radius:2px; background:rgba(251,191,36,0.07);"></span>Punteada
+                                    </button>
+                                    <button id="tool-zone-red" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('zone-red')" title="Zona Presión (roja)">
+                                        <span style="display:inline-block; width:18px; height:12px; border:2px solid rgba(239,68,68,0.8); border-radius:2px; background:rgba(239,68,68,0.1);"></span>Presión
+                                    </button>
+                                </div>
 
-                                <!-- JUGADOR NEGRO -->
-                                <button id="tool-player-black" onclick="DTEngine.FabricEngine.setTool('player-black')" title="Negro"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
-                                    <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:#171717; border:2px solid #fff; box-shadow:0 2px 6px rgba(23,23,23,0.5);"></span>Negro
-                                </button>
+                                <!-- ─── GRUPO 7: OPCIONES ─── -->
+                                <div class="tb-group">
+                                    <span class="tb-label">⚙️</span>
+                                    <label class="tb-toggle" title="Activar cuadrícula magnética para alinear elementos">
+                                        <input type="checkbox" id="snap-grid-toggle" onchange="DTEngine.FabricEngine.toggleSnapGrid(this.checked)">
+                                        Snap Grid
+                                    </label>
+                                </div>
 
-                                <!-- BALÓN -->
-                                <button id="tool-ball" onclick="DTEngine.FabricEngine.setTool('ball')" title="Balón"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
-                                    <span style="font-size:1.1rem;">⚽</span>Balón
-                                </button>
-
-                                <!-- CONO -->
-                                <button id="tool-cone" onclick="DTEngine.FabricEngine.setTool('cone')" title="Cono"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
-                                    <span style="display:inline-block; width:0; height:0; border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:14px solid #f97316;"></span>Cono
-                                </button>
-
-                                <!-- MINI ARCO -->
-                                <button id="tool-minigoal" onclick="DTEngine.FabricEngine.setTool('minigoal')" title="Mini Arco"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
-                                    <span style="font-size:1.1rem;">🥅</span>Arco
-                                </button>
-
-                                <!-- TEXTO -->
-                                <button id="tool-text" onclick="DTEngine.FabricEngine.setTool('text')" title="Texto"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
-                                    <span style="font-size:1.1rem;">T</span>Texto
-                                </button>
-
-                                <!-- LÍNEA -->
-                                <button id="tool-line" onclick="DTEngine.FabricEngine.setTool('line')" title="Línea Continua"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
-                                    <span style="display:inline-block; width:18px; height:2px; background:#fff; margin:6px 0;"></span>Línea
-                                </button>
-
-                                <!-- LÍNEA PUNTEADA -->
-                                <button id="tool-line-dashed" onclick="DTEngine.FabricEngine.setTool('line-dashed')" title="Línea Punteada"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
-                                    <span style="display:inline-block; width:18px; height:2px; border-bottom:2px dashed #fff; margin:5px 0;"></span>Punteada
-                                </button>
-
-                                <!-- ZONA SÓLIDA -->
-                                <button id="tool-zone-solid" onclick="DTEngine.FabricEngine.setTool('zone-solid')" title="Zona Sólida"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
-                                    <span style="display:inline-block; width:20px; height:14px; border:2px solid #fff; border-radius:2px;"></span>Zona
-                                </button>
-
-                                <!-- ZONA PUNTEADA -->
-                                <button id="tool-zone-dashed" onclick="DTEngine.FabricEngine.setTool('zone-dashed')" title="Zona Punteada"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:transparent; border:1.5px solid #334155; border-radius:8px; color:#9ca3af; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;">
-                                    <span style="display:inline-block; width:20px; height:14px; border:2px dashed rgba(255,255,255,0.7); border-radius:2px;"></span>Punteado
-                                </button>
-
-                                <!-- Spacer -->
+                                <!-- ─── SPACER + ACCIONES ─── -->
                                 <div style="flex:1;"></div>
-                                <div style="width:1px; height:28px; background:rgba(255,255,255,0.08);"></div>
+                                <div class="tb-group">
+                                    <button class="tb-btn tb-danger" onclick="DTEngine.FabricEngine.deleteSelected()" title="Eliminar seleccionado">
+                                        <span class="tb-icon">🗑️</span>Borrar
+                                    </button>
+                                    <button class="tb-btn tb-danger" onclick="DTEngine.clearCanvas()" title="Limpiar toda la pizarra">
+                                        <span class="tb-icon">💣</span>Limpiar
+                                    </button>
+                                    <button onclick="DTEngine.closeCustomTaskModal()"
+                                        style="padding:8px; background:transparent; border:none; color:#6b7280; font-size:1.3rem; cursor:pointer; border-radius:6px; transition:color 0.15s; line-height:1;"
+                                        onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#6b7280'">✕</button>
+                                </div>
 
-                                <!-- BORRAR SELECCIONADO -->
-                                <button onclick="DTEngine.FabricEngine.deleteSelected()" title="Borrar seleccionado"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:rgba(239,68,68,0.06); border:1.5px solid rgba(239,68,68,0.3); border-radius:8px; color:#ef4444; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;" onmouseover="this.style.background='rgba(239,68,68,0.15)'" onmouseout="this.style.background='rgba(239,68,68,0.06)'">
-                                    <span style="font-size:1.1rem;">🗑️</span>Borrar
-                                </button>
-
-                                <!-- LIMPIAR TODO -->
-                                <button onclick="DTEngine.clearCanvas()" title="Limpiar toda la pizarra"
-                                    style="display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 10px; background:rgba(239,68,68,0.06); border:1.5px solid rgba(239,68,68,0.3); border-radius:8px; color:#ef4444; cursor:pointer; font-size:0.65rem; font-weight:700; min-width:52px; transition:all 0.15s; font-family:Outfit,sans-serif;" onmouseover="this.style.background='rgba(239,68,68,0.15)'" onmouseout="this.style.background='rgba(239,68,68,0.06)'">
-                                    <span style="font-size:1.1rem;">💣</span>Limpiar
-                                </button>
-
-                                <!-- CERRAR -->
-                                <button onclick="DTEngine.closeCustomTaskModal()"
-                                    style="padding:8px; background:transparent; border:none; color:#6b7280; font-size:1.3rem; cursor:pointer; transition:color 0.15s; line-height:1; border-radius:6px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#6b7280'">✕</button>
-                            </div>
 
                             <!-- Canvas container (Fabric.js) -->
                             <div id="premium-tactical-board-container" style="width:100%; aspect-ratio: 105 / 68; position:relative; overflow:hidden;">
@@ -2811,21 +2853,362 @@ window.DTEngine = {
     // MOTOR FABRIC.JS — FabricEngine
     // ══════════════════════════════════════════════════════
     FabricEngine: {
-        _fc: null,           // instancia fabric.Canvas
-        _activeTool: 'draw', // herramienta activa
+        _fc: null,              // instancia fabric.Canvas
+        _activeTool: 'draw',    // herramienta activa
+        _background: 'futbol11',// fondo activo
+        _snapGrid: false,       // snap-to-grid toggle
+        _snapSize: 20,          // tamaño de celda de la grilla
+        _canvasW: 0,            // dimensiones en píxeles
+        _canvasH: 0,
+        _playerCounter: { blue:0, red:0, yellow:0, green:0, black:0 }, // auto-incremento de fichas
 
-        // Lista de IDs de botones de herramientas para resalte
-        _toolBtns: ['tool-draw','tool-player-blue','tool-player-red',
-                    'tool-ball','tool-zone-solid','tool-zone-dashed'],
+        // Todos los IDs de botones de herramientas
+        _toolBtns: [
+            'tool-draw',
+            'tool-player-blue','tool-player-red','tool-player-yellow','tool-player-green','tool-player-black',
+            'tool-ball','tool-cone','tool-minigoal','tool-text',
+            'tool-arrow-pass','tool-arrow-run','tool-arrow-solid',
+            'tool-zone-solid','tool-zone-dashed','tool-zone-red'
+        ],
 
-        // ─────────────────────────────────────────────────────────────────
-        // _drawField(ctx, w, h)
-        // Dibuja el césped y las líneas del campo directamente sobre un
-        // CanvasRenderingContext2D. Al conectarse a 'before:render', este
-        // método se ejecuta en CADA ciclo de render de Fabric, lo que hace
-        // que el campo sea arquitecturalmente indestructible: ningún clear(),
-        // remove() ni setBackgroundImage puede eliminarlo.
-        // ─────────────────────────────────────────────────────────────────
+        // ═══════════════════════════════════════════════════════════════
+        // MOTOR DE FONDOS MULTI-DEPORTE
+        // _drawField(ctx, w, h) — renderizado puro en canvas 2D.
+        // Se ejecuta via 'before:render', INDESTRUCTIBLE por clear().
+        // ═══════════════════════════════════════════════════════════════
+        _drawField(ctx, w, h) {
+            const bg = this._background || 'futbol11';
+            if      (bg === 'futbol11')    this._drawSoccerFull(ctx, w, h);
+            else if (bg === 'futbol-media') this._drawSoccerHalf(ctx, w, h);
+            else if (bg === 'basketball')  this._drawBasketball(ctx, w, h);
+            else if (bg === 'parquet')     this._drawParquet(ctx, w, h);
+            else                           this._drawBlank(ctx, w, h);
+
+            // Opcional: dibujar cuadrícula de snap
+            if (this._snapGrid) this._drawSnapGrid(ctx, w, h);
+        },
+
+        // ── CAMPO FÚTBOL 11 (cancha completa horizontal) ──
+        _drawSoccerFull(ctx, w, h) {
+            const sx = w / 105, sy = h / 68;
+            ctx.save();
+
+            // Franjas decorativas de césped
+            for (let i = 0; i < 7; i++) {
+                ctx.fillStyle = i % 2 === 0 ? '#1e5c1e' : '#1a5218';
+                ctx.fillRect(i * w / 7, 0, w / 7, h);
+            }
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+            ctx.lineWidth = 1.8;
+            ctx.setLineDash([]);
+
+            // Borde
+            ctx.strokeRect(3, 3, w - 6, h - 6);
+            // Línea media
+            ctx.beginPath(); ctx.moveTo(52.5*sx, 3); ctx.lineTo(52.5*sx, h-3); ctx.stroke();
+            // Círculo central
+            ctx.beginPath(); ctx.arc(52.5*sx, 34*sy, 9.15*sx, 0, Math.PI*2); ctx.stroke();
+            // Punto central
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.beginPath(); ctx.arc(52.5*sx, 34*sy, 3.5, 0, Math.PI*2); ctx.fill();
+
+            // Área grande izquierda
+            ctx.strokeRect(3, 13.84*sy, 16.5*sx, 40.32*sy);
+            ctx.strokeRect(3, 26.84*sy, 5.5*sx, 14.32*sy);
+            // Área grande derecha
+            ctx.strokeRect(w-3-16.5*sx, 13.84*sy, 16.5*sx, 40.32*sy);
+            ctx.strokeRect(w-3-5.5*sx, 26.84*sy, 5.5*sx, 14.32*sy);
+
+            // Puntos penales
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.beginPath(); ctx.arc(11*sx, 34*sy, 3, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(94*sx, 34*sy, 3, 0, Math.PI*2); ctx.fill();
+
+            // Arcos
+            ctx.beginPath(); ctx.arc(3+16.5*sx, 34*sy, 9.15*sx, -Math.PI/3, Math.PI/3); ctx.stroke();
+            ctx.beginPath(); ctx.arc(w-3-16.5*sx, 34*sy, 9.15*sx, Math.PI*2/3, Math.PI*4/3); ctx.stroke();
+
+            // Porterías
+            ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+            ctx.lineWidth = 2.5;
+            ctx.strokeRect(0, 29.5*sy, 2.5, 9*sy);   // izquierda
+            ctx.strokeRect(w-2.5, 29.5*sy, 2.5, 9*sy); // derecha
+
+            ctx.restore();
+        },
+
+        // ── MEDIA CANCHA ──
+        _drawSoccerHalf(ctx, w, h) {
+            const sx = w / 52.5, sy = h / 68;
+            ctx.save();
+
+            for (let i = 0; i < 5; i++) {
+                ctx.fillStyle = i % 2 === 0 ? '#1e5c1e' : '#1a5218';
+                ctx.fillRect(i * w / 5, 0, w / 5, h);
+            }
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+            ctx.lineWidth = 1.8;
+            ctx.setLineDash([]);
+
+            ctx.strokeRect(3, 3, w - 6, h - 6);
+            // Línea de medio campo (derecha)
+            ctx.beginPath(); ctx.moveTo(w-3, 3); ctx.lineTo(w-3, h-3); ctx.stroke();
+
+            // Semicírculo central
+            ctx.beginPath();
+            ctx.arc(w-3, 34*sy, 9.15*sx, Math.PI/2, Math.PI*3/2);
+            ctx.stroke();
+
+            // Área grande
+            ctx.strokeRect(3, 13.84*sy, 16.5*sx, 40.32*sy);
+            ctx.strokeRect(3, 26.84*sy, 5.5*sx, 14.32*sy);
+
+            // Punto penal
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.beginPath(); ctx.arc(11*sx, 34*sy, 3, 0, Math.PI*2); ctx.fill();
+
+            // Arco penal
+            ctx.beginPath(); ctx.arc(3+16.5*sx, 34*sy, 9.15*sx, -Math.PI/3, Math.PI/3); ctx.stroke();
+
+            // Portería
+            ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+            ctx.lineWidth = 2.5;
+            ctx.strokeRect(0, 29.5*sy, 2.5, 9*sy);
+
+            ctx.restore();
+        },
+
+        // ── BÁSQUETBOL ──
+        _drawBasketball(ctx, w, h) {
+            ctx.save();
+            ctx.fillStyle = '#8b4513';
+            ctx.fillRect(0, 0, w, h);
+
+            // Líneas del parquet
+            ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 10; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * w / 10, 0); ctx.lineTo(i * w / 10, h);
+                ctx.stroke();
+            }
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([]);
+
+            // Borde
+            ctx.strokeRect(4, 4, w-8, h-8);
+            // Línea media
+            ctx.beginPath(); ctx.moveTo(w/2, 4); ctx.lineTo(w/2, h-4); ctx.stroke();
+            // Círculo central
+            ctx.beginPath(); ctx.arc(w/2, h/2, h*0.12, 0, Math.PI*2); ctx.stroke();
+            // Punto central
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.beginPath(); ctx.arc(w/2, h/2, 4, 0, Math.PI*2); ctx.fill();
+
+            const lw = w * 0.14; // zona libre
+            const lh = h * 0.55;
+            const lT = (h - lh) / 2;
+
+            // Zona izquierda (pintura)
+            ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+            ctx.strokeRect(4, lT, lw, lh);
+            // Semicírculo tiro libre izquierdo
+            ctx.beginPath(); ctx.arc(4+lw, h/2, lh/2, Math.PI/2, Math.PI*3/2); ctx.stroke();
+
+            // Zona derecha
+            ctx.strokeRect(w-4-lw, lT, lw, lh);
+            ctx.beginPath(); ctx.arc(w-4-lw, h/2, lh/2, -Math.PI/2, Math.PI/2); ctx.stroke();
+
+            // Arco de 3 izquierdo
+            ctx.beginPath();
+            ctx.arc(4, h/2, w*0.32, -Math.PI*0.48, Math.PI*0.48);
+            ctx.stroke();
+            // Arco de 3 derecho
+            ctx.beginPath();
+            ctx.arc(w-4, h/2, w*0.32, Math.PI*0.52, Math.PI*1.48);
+            ctx.stroke();
+
+            // Backboards
+            ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(4, h/2-h*0.1, 4, h*0.2); // izquierdo
+            ctx.strokeRect(w-8, h/2-h*0.1, 4, h*0.2); // derecho
+
+            ctx.restore();
+        },
+
+        // ── PARQUET (pizarra de líneas) ──
+        _drawParquet(ctx, w, h) {
+            ctx.save();
+            ctx.fillStyle = '#c8860a';
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.strokeStyle = 'rgba(180,100,10,0.6)';
+            ctx.lineWidth = 1;
+            const gs = 40;
+            for (let x = 0; x < w; x += gs) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+            for (let y = 0; y < h; y += gs) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(6, 6, w-12, h-12);
+
+            ctx.restore();
+        },
+
+        // ── PIZARRA LISA ──
+        _drawBlank(ctx, w, h) {
+            ctx.save();
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, w, h);
+            ctx.strokeStyle = 'rgba(0,240,255,0.06)';
+            ctx.lineWidth = 1;
+            const g = 30;
+            for (let x = 0; x < w; x += g) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+            for (let y = 0; y < h; y += g) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+            ctx.restore();
+        },
+
+        // ── SNAP GRID (visual overlay) ──
+        _drawSnapGrid(ctx, w, h) {
+            ctx.save();
+            ctx.strokeStyle = 'rgba(0,240,255,0.15)';
+            ctx.lineWidth = 0.5;
+            ctx.setLineDash([2, 4]);
+            const g = this._snapSize;
+            for (let x = 0; x < w; x += g) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+            for (let y = 0; y < h; y += g) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+            ctx.restore();
+        },
+
+        // ── CAMBIAR FONDO DINÁMICAMENTE ──
+        setBackground(type) {
+            this._background = type;
+            if (this._fc) this._fc.renderAll(); // before:render se encarga del resto
+            // Ajustar aspect-ratio del contenedor según deporte
+            const container = document.getElementById('premium-tactical-board-container');
+            if (!container) return;
+            const ratios = {
+                'futbol11':    '105 / 68',
+                'futbol-media':'52.5 / 68',
+                'basketball':  '94 / 50',
+                'parquet':     '4 / 3',
+                'blank':       '16 / 9'
+            };
+            container.style.aspectRatio = ratios[type] || '105 / 68';
+            // Re-init canvas para adaptar dimensiones
+            setTimeout(() => this.init(), 50);
+        },
+
+        // ── TOGGLE SNAP-TO-GRID ──
+        toggleSnapGrid(enabled) {
+            this._snapGrid = enabled;
+            if (!this._fc) return;
+            if (enabled) {
+                const snap = this._snapSize;
+                this._fc.on('object:moving', (e) => {
+                    const obj = e.target;
+                    obj.set({
+                        left: Math.round(obj.left / snap) * snap,
+                        top:  Math.round(obj.top  / snap) * snap
+                    });
+                });
+            } else {
+                this._fc.off('object:moving');
+            }
+            this._fc.renderAll();
+        },
+
+        // ── CREAR FICHA NUMERADA (fabric.Group) ──
+        _makePlayerToken(x, y, fillColor, shadowColor, label) {
+            const r = 18;
+            const circle = new fabric.Circle({
+                radius: r,
+                fill: fillColor,
+                stroke: '#ffffff',
+                strokeWidth: 2.5,
+                originX: 'center',
+                originY: 'center',
+                shadow: new fabric.Shadow({ color: shadowColor, blur: 12 })
+            });
+            const text = new fabric.Text(String(label || ''), {
+                fontSize: label ? 13 : 0,
+                fill: '#ffffff',
+                fontWeight: '900',
+                fontFamily: 'Outfit, sans-serif',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                selectable: false,
+                evented: false,
+                shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.7)', blur: 4 })
+            });
+            const group = new fabric.Group([circle, text], {
+                left: x - r,
+                top: y - r,
+                selectable: true,
+                hasControls: true,
+                subTargetCheck: false,
+                data: { type: 'player', color: fillColor }
+            });
+            // Doble click para editar el número
+            group.on('mousedblclick', () => {
+                const newNum = prompt('Número del jugador:', label || '');
+                if (newNum !== null) {
+                    text.set('text', String(newNum));
+                    text.set('fontSize', newNum ? 13 : 0);
+                    this._fc.renderAll();
+                }
+            });
+            return group;
+        },
+
+        // ── CREAR FLECHA DE PASE (línea punteada + cabeza) ──
+        _makeArrow(x, y, type) {
+            const len = 80;
+            let dash = [], color = '#ffffff';
+            if      (type === 'arrow-pass')  { dash = [8, 5]; color = '#ffffff'; }
+            else if (type === 'arrow-run')   { dash = []; color = '#facc15'; }
+            else                             { dash = []; color = '#ffffff'; }
+
+            const line = new fabric.Line([x, y, x + len, y], {
+                stroke: color, strokeWidth: 2.5,
+                strokeDashArray: dash,
+                selectable: true, hasControls: true, hasBorders: true, padding: 10
+            });
+
+            // Cabeza de flecha (triángulo pequeño)
+            const head = new fabric.Triangle({
+                width: 12, height: 14,
+                fill: color, stroke: color, strokeWidth: 1,
+                left: x + len - 6, top: y - 7,
+                angle: 90,
+                selectable: false, evented: false
+            });
+
+            // Si es conducción, añadir ondulación visual
+            if (type === 'arrow-run') {
+                const wave = new fabric.Path(
+                    `M ${x} ${y} Q ${x+len*0.25} ${y-20} ${x+len*0.5} ${y} Q ${x+len*0.75} ${y+20} ${x+len} ${y}`,
+                    { stroke: color, strokeWidth: 2.5, fill: 'transparent', strokeDashArray: [],
+                      selectable: true, hasControls: true }
+                );
+                this._fc.add(wave);
+                this._fc.add(head);
+                this._fc.renderAll();
+                return null; // ya añadidos
+            }
+
+            const group = new fabric.Group([line, head], {
+                selectable: true, hasControls: true
+            });
+            return group;
+        },
+
         _drawField(ctx, w, h) {
             const sx = w / 105;
             const sy = h / 68;
@@ -2971,20 +3354,19 @@ window.DTEngine = {
             this._activeTool = tool;
             if (!this._fc) return;
 
-            // Resaltar botón activo
+            // Resaltar botón activo con clase CSS .tb-active
             this._toolBtns.forEach(id => {
                 const btn = document.getElementById(id);
                 if (!btn) return;
-                const isActive = id === ('tool-' + tool);
-                btn.style.background = isActive ? 'rgba(0,240,255,0.18)' : 'transparent';
-                btn.style.borderColor = isActive ? '#00F0FF' : '#334155';
-                btn.style.color = isActive ? '#00F0FF' : '#9ca3af';
+                btn.classList.toggle('tb-active', id === ('tool-' + tool));
             });
 
             if (tool === 'draw') {
                 this._fc.isDrawingMode = true;
-                this._fc.freeDrawingBrush.color = '#00F0FF';
-                this._fc.freeDrawingBrush.width = 3;
+                if (this._fc.freeDrawingBrush) {
+                    this._fc.freeDrawingBrush.color = '#00F0FF';
+                    this._fc.freeDrawingBrush.width = 3;
+                }
                 this._fc.defaultCursor = 'crosshair';
             } else {
                 this._fc.isDrawingMode = false;
@@ -2993,101 +3375,129 @@ window.DTEngine = {
             }
         },
 
-        // ── Colocar objeto en (x, y) según herramienta ──
+        // ═══════════════════════════════════════════════════════════════
+        // _placeObject(x, y) — fábrica de objetos tácticos
+        // ═══════════════════════════════════════════════════════════════
         _placeObject(x, y) {
-            let obj;
             const t = this._activeTool;
+            let obj = null;
 
-            if (t === 'player-blue') {
-                obj = new fabric.Circle({
-                    radius: 15, left: x - 15, top: y - 15,
-                    fill: '#0088ff', stroke: '#ffffff', strokeWidth: 2.5,
-                    selectable: true, hasControls: true,
-                    shadow: new fabric.Shadow({ color: 'rgba(0,136,255,0.6)', blur: 10 })
-                });
-            } else if (t === 'player-red') {
-                obj = new fabric.Circle({
-                    radius: 15, left: x - 15, top: y - 15,
-                    fill: '#ef4444', stroke: '#ffffff', strokeWidth: 2.5,
-                    selectable: true, hasControls: true,
-                    shadow: new fabric.Shadow({ color: 'rgba(239,68,68,0.6)', blur: 10 })
-                });
+            // ── Fichas de jugadores numeradas (fabric.Group) ──
+            const playerMap = {
+                'player-blue':   { fill: '#1d6aff', shadow: 'rgba(29,106,255,0.7)',   key: 'blue' },
+                'player-red':    { fill: '#ef4444', shadow: 'rgba(239,68,68,0.7)',    key: 'red' },
+                'player-yellow': { fill: '#eab308', shadow: 'rgba(234,179,8,0.7)',    key: 'yellow' },
+                'player-green':  { fill: '#22c55e', shadow: 'rgba(34,197,94,0.7)',    key: 'green' },
+                'player-black':  { fill: '#1f2937', shadow: 'rgba(31,41,55,0.7)',     key: 'black' }
+            };
+
+            if (playerMap[t]) {
+                const { fill, shadow, key } = playerMap[t];
+                // Leer número manual o auto-incrementar
+                const inputEl = document.getElementById('player-number-input');
+                const manualNum = inputEl && inputEl.value.trim() !== '' ? inputEl.value.trim() : null;
+                const num = manualNum !== null ? manualNum : ++this._playerCounter[key];
+                obj = this._makePlayerToken(x, y, fill, shadow, num);
+
             } else if (t === 'ball') {
                 obj = new fabric.Text('⚽', {
-                    left: x - 14, top: y - 14,
-                    fontSize: 28, selectable: true, hasControls: true,
+                    left: x - 14, top: y - 14, fontSize: 28,
                     fontFamily: 'Segoe UI Emoji, Apple Color Emoji, sans-serif',
-                    textBaseline: 'top'
-                });
-            } else if (t === 'player-yellow') {
-                obj = new fabric.Circle({
-                    radius: 15, left: x - 15, top: y - 15,
-                    fill: '#eab308', stroke: '#ffffff', strokeWidth: 2.5,
-                    selectable: true, hasControls: true,
-                    shadow: new fabric.Shadow({ color: 'rgba(234,179,8,0.6)', blur: 10 })
-                });
-            } else if (t === 'player-green') {
-                obj = new fabric.Circle({
-                    radius: 15, left: x - 15, top: y - 15,
-                    fill: '#22c55e', stroke: '#ffffff', strokeWidth: 2.5,
-                    selectable: true, hasControls: true,
-                    shadow: new fabric.Shadow({ color: 'rgba(34,197,94,0.6)', blur: 10 })
-                });
-            } else if (t === 'player-black') {
-                obj = new fabric.Circle({
-                    radius: 15, left: x - 15, top: y - 15,
-                    fill: '#171717', stroke: '#ffffff', strokeWidth: 2.5,
-                    selectable: true, hasControls: true,
-                    shadow: new fabric.Shadow({ color: 'rgba(23,23,23,0.6)', blur: 10 })
-                });
-            } else if (t === 'cone') {
-                obj = new fabric.Triangle({
-                    width: 14, height: 20, left: x - 7, top: y - 10,
-                    fill: '#f97316', selectable: true, hasControls: true
-                });
-            } else if (t === 'minigoal') {
-                obj = new fabric.Rect({
-                    width: 35, height: 10, left: x - 17.5, top: y - 5,
-                    fill: 'transparent', stroke: '#ffffff', strokeWidth: 3, rx: 2, ry: 2,
                     selectable: true, hasControls: true
                 });
+
+            } else if (t === 'cone') {
+                obj = new fabric.Triangle({
+                    width: 16, height: 22, left: x - 8, top: y - 11,
+                    fill: '#f97316', stroke: '#fff', strokeWidth: 1,
+                    selectable: true, hasControls: true,
+                    shadow: new fabric.Shadow({ color: 'rgba(249,115,22,0.5)', blur: 8 })
+                });
+
+            } else if (t === 'minigoal') {
+                obj = new fabric.Rect({
+                    width: 44, height: 14, left: x - 22, top: y - 7,
+                    fill: 'transparent', stroke: '#ffffff', strokeWidth: 3,
+                    rx: 2, ry: 2, selectable: true, hasControls: true
+                });
+
             } else if (t === 'text') {
                 obj = new fabric.IText('Texto...', {
                     left: x - 20, top: y - 10,
                     fontFamily: 'Outfit, sans-serif', fill: '#ffffff',
-                    fontSize: 20, selectable: true, hasControls: true,
-                    textBaseline: 'top'
+                    fontSize: 20, fontWeight: '700',
+                    selectable: true, hasControls: true
                 });
-            } else if (t === 'line') {
-                obj = new fabric.Line([x - 30, y, x + 30, y], {
-                    stroke: '#ffffff', strokeWidth: 3,
-                    selectable: true, hasControls: true, hasBorders: true,
-                    padding: 10
+
+            // ── Rutas inteligentes con flechas ──
+            } else if (t === 'arrow-pass') {
+                // Pase: línea punteada blanca con flecha
+                const line = new fabric.Line([x, y, x+90, y], {
+                    stroke: '#ffffff', strokeWidth: 2.5, strokeDashArray: [9, 5],
+                    selectable: true, hasControls: true, hasBorders: true, padding: 8
                 });
-            } else if (t === 'line-dashed') {
-                obj = new fabric.Line([x - 30, y, x + 30, y], {
-                    stroke: '#ffffff', strokeWidth: 3, strokeDashArray: [8, 5],
-                    selectable: true, hasControls: true, hasBorders: true,
-                    padding: 10
+                const head = new fabric.Triangle({
+                    width: 12, height: 14, fill: '#ffffff',
+                    left: x+90-6, top: y-7, angle: 90,
+                    selectable: false, evented: false
                 });
+                obj = new fabric.Group([line, head], { selectable: true, hasControls: true });
+
+            } else if (t === 'arrow-run') {
+                // Conducción: curva sinusoidal amarilla con flecha
+                const wave = new fabric.Path(
+                    `M ${x} ${y} C ${x+25} ${y-28} ${x+50} ${y+28} ${x+80} ${y}`,
+                    { stroke: '#facc15', strokeWidth: 2.5, fill: 'transparent',
+                      selectable: true, hasControls: true }
+                );
+                const head = new fabric.Triangle({
+                    width: 12, height: 14, fill: '#facc15',
+                    left: x+80-6, top: y-7, angle: 90,
+                    selectable: false, evented: false
+                });
+                this._fc.add(wave);
+                this._fc.add(head);
+                this._fc.renderAll();
+                return; // ya insertados individualmente
+
+            } else if (t === 'arrow-solid') {
+                // Flecha sólida rápida
+                const line = new fabric.Line([x, y, x+80, y], {
+                    stroke: '#00F0FF', strokeWidth: 3,
+                    selectable: true, hasControls: true, hasBorders: true, padding: 8
+                });
+                const head = new fabric.Triangle({
+                    width: 14, height: 16, fill: '#00F0FF',
+                    left: x+80-7, top: y-8, angle: 90,
+                    selectable: false, evented: false
+                });
+                obj = new fabric.Group([line, head], { selectable: true, hasControls: true });
+
+            // ── Zonas sombreadas ──
             } else if (t === 'zone-solid') {
                 obj = new fabric.Rect({
-                    left: x - 50, top: y - 35, width: 100, height: 70,
-                    fill: 'rgba(0,240,255,0.08)', stroke: '#ffffff',
-                    strokeWidth: 2, selectable: true, hasControls: true,
-                    rx: 4, ry: 4
+                    left: x - 55, top: y - 38, width: 110, height: 76,
+                    fill: 'rgba(0,240,255,0.1)', stroke: '#00F0FF',
+                    strokeWidth: 2, selectable: true, hasControls: true, rx: 4, ry: 4
                 });
+
             } else if (t === 'zone-dashed') {
                 obj = new fabric.Rect({
-                    left: x - 50, top: y - 35, width: 100, height: 70,
-                    fill: 'rgba(255,200,0,0.07)', stroke: '#fbbf24',
+                    left: x - 55, top: y - 38, width: 110, height: 76,
+                    fill: 'rgba(251,191,36,0.08)', stroke: '#fbbf24',
                     strokeWidth: 2, strokeDashArray: [8, 5],
                     selectable: true, hasControls: true, rx: 4, ry: 4
+                });
+
+            } else if (t === 'zone-red') {
+                obj = new fabric.Rect({
+                    left: x - 55, top: y - 38, width: 110, height: 76,
+                    fill: 'rgba(239,68,68,0.1)', stroke: '#ef4444',
+                    strokeWidth: 2, selectable: true, hasControls: true, rx: 4, ry: 4
                 });
             }
 
             if (obj) {
-                obj.set({ opacity: 1 });
                 this._fc.add(obj);
                 this._fc.bringToFront(obj);
                 this._fc.setActiveObject(obj);
