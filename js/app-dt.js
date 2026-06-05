@@ -3137,7 +3137,7 @@ window.DTEngine = {
             this._fc.setHeight(h);
 
             // ── Fondo multi-deporte via setBackgroundImage (estable, no bloquea el hilo) ──
-            this._applyBackground(w, h);
+            this.setBackground('futbol11');
 
             // Forzar primer render
             this._fc.renderAll();
