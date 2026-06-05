@@ -3151,8 +3151,8 @@ window.DTEngine = {
             if (boardContainer) {
                 boardContainer.addEventListener('mouseenter', () => {
                     try {
-                        if (self._fc && typeof self._fc.calcOffset === 'function') {
-                            self._fc.calcOffset();
+                        if (this._fc && typeof this._fc.calcOffset === 'function') {
+                            this._fc.calcOffset();
                         }
                     } catch (err) {
                         console.warn('Advertencia de FabricJS silenciada:', err);
@@ -3167,19 +3167,19 @@ window.DTEngine = {
                     e.preventDefault();
                     const tool = e.dataTransfer.getData('tool');
                     if (tool) {
-                        const pointer = self._fc.getPointer(e);
-                        self._activeTool = tool;
-                        self._placeObject(pointer.x, pointer.y);
+                        const pointer = this._fc.getPointer(e);
+                        this._activeTool = tool;
+                        this._placeObject(pointer.x, pointer.y);
                     }
                 });
                 boardContainer.addEventListener('mouseleave', () => {
-                    self._isDrawingShape = false;
-                    self._fc.selection = true;
-                    self.updateMeasurementHUD(0, 0, '', false);
-                    if (self._tempShape) {
-                        self._fc.remove(self._tempShape);
-                        self._tempShape = null;
-                        self._fc.renderAll();
+                    this._isDrawingShape = false;
+                    this._fc.selection = true;
+                    this.updateMeasurementHUD(0, 0, '', false);
+                    if (this._tempShape) {
+                        this._fc.remove(this._tempShape);
+                        this._tempShape = null;
+                        this._fc.renderAll();
                     }
                 });
             }
@@ -3223,89 +3223,89 @@ window.DTEngine = {
                         else if (tool === 'arrow-run') { dash = []; color = '#facc15'; }
                         else { dash = []; color = '#00F0FF'; }
 
-                        self._tempShape = new fabric.Line([ptr.x, ptr.y, ptr.x, ptr.y], {
+                        this._tempShape = new fabric.Line([ptr.x, ptr.y, ptr.x, ptr.y], {
                             stroke: color, strokeWidth: tool === 'arrow-solid' ? 3 : 2.5,
                             strokeDashArray: dash, selectable: false, evented: false
                         });
                     }
                     
-                    if (self._tempShape) {
-                        self._fc.add(self._tempShape);
+                    if (this._tempShape) {
+                        this._fc.add(this._tempShape);
                     }
                     return;
                 }
 
                 if (opt.target) return;
-                const ptr = self._fc.getPointer(opt.e);
-                self._placeObject(ptr.x, ptr.y);
+                const ptr = this._fc.getPointer(opt.e);
+                this._placeObject(ptr.x, ptr.y);
             });
 
-            this._fc.on('mouse:move', function(opt) {
-                if (!self._isDrawingShape) return;
-                if (!self._tempShape) return;
-                const ptr = self._fc.getPointer(opt.e);
-                const scale = 68 / self._fc.width; // Asumiendo ancho de cancha = 68m
+            this._fc.on('mouse:move', (opt) => {
+                if (!this._isDrawingShape) return;
+                if (!this._tempShape) return;
+                const ptr = this._fc.getPointer(opt.e);
+                const scale = 68 / this._fc.width; // Asumiendo ancho de cancha = 68m
                 
-                if (self._tempShape.type === 'rect') {
-                    const w = Math.abs(ptr.x - self._drawStartX);
-                    const h = Math.abs(ptr.y - self._drawStartY);
-                    self._tempShape.set({
-                        left: Math.min(ptr.x, self._drawStartX),
-                        top: Math.min(ptr.y, self._drawStartY),
+                if (this._tempShape.type === 'rect') {
+                    const w = Math.abs(ptr.x - this._drawStartX);
+                    const h = Math.abs(ptr.y - this._drawStartY);
+                    this._tempShape.set({
+                        left: Math.min(ptr.x, this._drawStartX),
+                        top: Math.min(ptr.y, this._drawStartY),
                         width: w,
                         height: h
                     });
                     
                     const mX = (w * scale).toFixed(1);
                     const mY = (h * scale).toFixed(1);
-                    self.updateMeasurementHUD(opt.e.clientX, opt.e.clientY, `${mX}m x ${mY}m`, true);
+                    this.updateMeasurementHUD(opt.e.clientX, opt.e.clientY, `${mX}m x ${mY}m`, true);
                     
-                } else if (self._tempShape.type === 'line') {
-                    self._tempShape.set({ x2: ptr.x, y2: ptr.y });
+                } else if (this._tempShape.type === 'line') {
+                    this._tempShape.set({ x2: ptr.x, y2: ptr.y });
                     
-                    const dx = ptr.x - self._drawStartX;
-                    const dy = ptr.y - self._drawStartY;
+                    const dx = ptr.x - this._drawStartX;
+                    const dy = ptr.y - this._drawStartY;
                     const dist = Math.sqrt(dx*dx + dy*dy);
                     const mDist = (dist * scale).toFixed(1);
-                    self.updateMeasurementHUD(opt.e.clientX, opt.e.clientY, `${mDist}m`, true);
+                    this.updateMeasurementHUD(opt.e.clientX, opt.e.clientY, `${mDist}m`, true);
                 }
                 
-                self._fc.renderAll();
+                this._fc.renderAll();
             });
 
-            this._fc.on('mouse:up', function(opt) {
-                self._isDrawingShape = false;
-                self._fc.selection = true;
-                self.updateMeasurementHUD(0, 0, '', false);
+            this._fc.on('mouse:up', (opt) => {
+                this._isDrawingShape = false;
+                this._fc.selection = true;
+                this.updateMeasurementHUD(0, 0, '', false);
 
-                if (self._tempShape) {
+                if (this._tempShape) {
                     
                     // Si el tamaño es muy pequeño (clic accidental), eliminar
                     let isTooSmall = false;
-                    if (self._tempShape.type === 'rect' && (self._tempShape.width < 5 && self._tempShape.height < 5)) isTooSmall = true;
-                    if (self._tempShape.type === 'line') {
-                        const dx = self._tempShape.x2 - self._tempShape.x1;
-                        const dy = self._tempShape.y2 - self._tempShape.y1;
+                    if (this._tempShape.type === 'rect' && (this._tempShape.width < 5 && this._tempShape.height < 5)) isTooSmall = true;
+                    if (this._tempShape.type === 'line') {
+                        const dx = this._tempShape.x2 - this._tempShape.x1;
+                        const dy = this._tempShape.y2 - this._tempShape.y1;
                         if (Math.sqrt(dx*dx + dy*dy) < 5) isTooSmall = true;
                     }
                     
                     if (isTooSmall) {
-                        self._fc.remove(self._tempShape);
-                        self._tempShape = null;
-                        self._fc.renderAll();
+                        this._fc.remove(this._tempShape);
+                        this._tempShape = null;
+                        this._fc.renderAll();
                         return;
                     }
 
-                    self._tempShape.set({ selectable: true, evented: true, hasControls: true });
+                    this._tempShape.set({ selectable: true, evented: true, hasControls: true });
                     
                     // Para líneas, necesitamos agregar la cabeza de la flecha y agrupar
-                    if (self._tempShape.type === 'line') {
-                        const x1 = self._drawStartX, y1 = self._drawStartY;
-                        const x2 = self._tempShape.x2, y2 = self._tempShape.y2;
+                    if (this._tempShape.type === 'line') {
+                        const x1 = this._drawStartX, y1 = this._drawStartY;
+                        const x2 = this._tempShape.x2, y2 = this._tempShape.y2;
                         const dx = x2 - x1, dy = y2 - y1;
                         const angle = Math.atan2(dy, dx) * 180 / Math.PI;
                         
-                        const color = self._tempShape.stroke;
+                        const color = this._tempShape.stroke;
                         const head = new fabric.Triangle({
                             width: 14, height: 16, fill: color,
                             left: x2, top: y2, angle: angle + 90,
@@ -3314,19 +3314,19 @@ window.DTEngine = {
                         });
                         
                         const lineObj = new fabric.Line([x1, y1, x2, y2], {
-                            stroke: color, strokeWidth: self._tempShape.strokeWidth, strokeDashArray: self._tempShape.strokeDashArray,
+                            stroke: color, strokeWidth: this._tempShape.strokeWidth, strokeDashArray: this._tempShape.strokeDashArray,
                             selectable: true, hasControls: true, hasBorders: true, padding: 8
                         });
                         
                         const grp = new fabric.Group([lineObj, head], { selectable: true, hasControls: true });
-                        self._fc.remove(self._tempShape);
-                        self._fc.add(grp);
-                        self._fc.setActiveObject(grp);
+                        this._fc.remove(this._tempShape);
+                        this._fc.add(grp);
+                        this._fc.setActiveObject(grp);
                     } else {
-                        self._fc.setActiveObject(self._tempShape);
+                        this._fc.setActiveObject(this._tempShape);
                     }
-                    self._tempShape = null;
-                    self._fc.renderAll();
+                    this._tempShape = null;
+                    this._fc.renderAll();
                 }
             });
         },
