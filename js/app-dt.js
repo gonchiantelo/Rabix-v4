@@ -2974,8 +2974,11 @@ window.DTEngine = {
                     id: 'cancha_bg',
                     originX: 'left',
                     originY: 'top',
-                    scaleX: fcW / imgLogicalW,
-                    scaleY: fcH / imgLogicalH,
+                    // FIX PILAR 1: Forzar renderizado a resolución nativa del canvas (Chrome Fix)
+                    width: fcW,
+                    height: fcH,
+                    scaleX: 1,
+                    scaleY: 1,
                     selectable: false,
                     evented: false
                 });
@@ -3198,8 +3201,11 @@ window.DTEngine = {
                     const tool = e.dataTransfer.getData('tool');
                     if (tool) {
                         const rect = boardContainer.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const y = e.clientY - rect.top;
+                        // FIX PILAR 2: Cálculo robusto de coordenadas que soporta contenedores flex/scaled en Chrome
+                        const scaleX = this._fc.width / rect.width;
+                        const scaleY = this._fc.height / rect.height;
+                        const x = (e.clientX - rect.left) * scaleX;
+                        const y = (e.clientY - rect.top) * scaleY;
                         this._activeTool = tool;
                         this._placeObject(x, y);
                     }
@@ -3207,13 +3213,17 @@ window.DTEngine = {
                 // FIX PILAR 2: mouse:out del contenedor fuerza el estado a false
                 boardContainer.addEventListener('mouseleave', () => {
                     this._isDrawingShape = false;
-                    if (this._fc) {
-                        this._fc.selection = true;
-                    }
                     this.updateMeasurementHUD(0, 0, '', false);
-                    if (this._tempShape && this._fc) {
-                        this._fc.remove(this._tempShape);
-                        this._tempShape = null;
+                    if (this._fc) {
+                        if (this._tempShape) {
+                            this._fc.remove(this._tempShape);
+                            this._tempShape = null;
+                        }
+                        // FIX PILAR 3: Hard Reset de Estado
+                        if (this._activeTool !== 'draw') {
+                            this._fc.isDrawingMode = false;
+                            this._fc.selection = true;
+                        }
                         this._fc.renderAll();
                     }
                 });
@@ -3316,8 +3326,13 @@ window.DTEngine = {
             // FIX PILAR 2: Estado APAGADO forzosamente en mouse:up sin excepción.
             this._fc.on('mouse:up', (opt) => {
                 this._isDrawingShape = false; // Estado siempre falso al soltar
-                this._fc.selection = true;
                 this.updateMeasurementHUD(0, 0, '', false);
+
+                // FIX PILAR 3: Hard Reset de Estado
+                if (this._activeTool !== 'draw') {
+                    this._fc.isDrawingMode = false;
+                    this._fc.selection = true;
+                }
 
                 if (this._tempShape) {
                     
