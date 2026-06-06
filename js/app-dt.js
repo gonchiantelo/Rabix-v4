@@ -2233,7 +2233,11 @@ window.DTEngine = {
                     <h2 class="m-task-title">${task.title}</h2>
                     ${tagsHtml ? `<div style="margin-top:8px;">${tagsHtml}</div>` : ''}
                 </div>
-                <button class="btn-close-modal" onclick="DTEngine.closeModal()">✕</button>
+                <button class="premium-close" onclick="DTEngine.closeModal()" aria-label="Cerrar">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
             </div>
             <div class="modal-grid" style="grid-template-columns: 1fr;">
                 <!-- Metadatos Base -->
@@ -2325,7 +2329,14 @@ window.DTEngine = {
         }
     },
 
-    closeModal() { document.getElementById('dt-modal').classList.add('hidden'); },
+    closeModal() {
+        const modal = document.getElementById('dt-modal');
+        if (modal) {
+            modal.style.cssText = ''; // Clean all inline CSS
+            modal.style.display = 'none';
+            modal.classList.add('hidden');
+        }
+    },
     closeDrawer() {
         // Limpiar todo el staging al cancelar con ✕
         this._stagedTasks = [];

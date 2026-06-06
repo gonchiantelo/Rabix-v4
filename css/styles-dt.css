@@ -431,12 +431,27 @@
     font-weight: 900;
 }
 
-.btn-close-modal {
-    background: none;
+.premium-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
     border: none;
-    color: var(--dt-text-dim);
-    font-size: 28px;
+    color: #64748b; /* Gris tenue */
     cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.premium-close:hover {
+    color: #00f2fe; /* Acento eléctrico */
+    background: rgba(0, 242, 254, 0.1);
+    transform: scale(1.1);
 }
 
 .modal-grid {
