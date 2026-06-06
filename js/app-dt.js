@@ -2208,6 +2208,11 @@ window.DTEngine = {
                 }
             }
 
+            if (!task) {
+                console.warn("⚠️ Retorno temprano: La tarea resolvió a undefined.");
+                return;
+            }
+
             this.renderTaskModal(task);
         } catch (error) {
             console.error("Error abriendo popup:", error);
@@ -2215,13 +2220,13 @@ window.DTEngine = {
     },
 
     renderTaskModal(task) {
-        const modal = document.getElementById('dt-modal');
-        const body = document.getElementById('modal-body-content');
-        const tagsHtml = Array.isArray(task.tags)
+        if (!task) return;
+        
+        const tagsHtml = Array.isArray(task?.tags)
             ? task.tags.map(t => `<span style="background:rgba(0,242,254,0.1);color:#00F2FE;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:700;margin-right:5px;border:1px solid rgba(0,242,254,0.3);">${t}</span>`).join('')
             : '';
 
-        body.innerHTML = `
+        const htmlContent = `
             <div class="modal-header">
                 <div class="m-title-group">
                     <span class="m-task-id">#${task.numericId}</span>
@@ -2269,8 +2274,18 @@ window.DTEngine = {
                 </div>
             </div>
         `;
-        modal.classList.remove('hidden');
-        modal.style.display = 'flex';
+        
+        const bodyEl = document.getElementById('modal-body-content');
+        if (bodyEl) {
+            bodyEl.innerHTML = htmlContent;
+        }
+
+        const modalEl = document.getElementById('dt-modal');
+        if (modalEl) {
+            modalEl.classList.remove('hidden');
+            modalEl.style.display = 'flex';
+            console.log('Modal abierto exitosamente');
+        }
     },
 
     closeModal() { document.getElementById('dt-modal').classList.add('hidden'); },
