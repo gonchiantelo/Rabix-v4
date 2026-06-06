@@ -2933,7 +2933,7 @@ window.DTEngine = {
 
             if (type === 'futbol11') {
                 svgW = 100; svgH = 65;
-                svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgW} ${svgH}">
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${svgW} ${svgH}">
                     <rect width="${svgW}" height="${svgH}" fill="#2e7d32"/>
                     <rect x="5" y="5" width="90" height="55" fill="none" stroke="white" stroke-width="0.5"/>
                     <line x1="50" y1="5" x2="50" y2="60" stroke="white" stroke-width="0.5"/>
@@ -2943,7 +2943,7 @@ window.DTEngine = {
                 </svg>`;
             } else if (type === 'basquetbol' || type === 'basketball') {
                 svgW = 100; svgH = 50;
-                svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgW} ${svgH}">
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${svgW} ${svgH}">
                     <rect width="${svgW}" height="${svgH}" fill="#d2884a"/>
                     <rect x="5" y="5" width="90" height="40" fill="none" stroke="white" stroke-width="0.8"/>
                     <line x1="50" y1="5" x2="50" y2="45" stroke="white" stroke-width="0.8"/>
