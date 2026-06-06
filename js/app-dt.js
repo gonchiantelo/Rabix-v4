@@ -2914,9 +2914,15 @@ window.DTEngine = {
             const w = this._fc.width || 800;
             const h = this._fc.height || 600;
 
+            // FIX PILAR 3: SVGs definidos SOLO con viewBox; las dimensiones lógicas
+            // se fijan vía las variables svgW/svgH del viewBox para que scaleX/Y
+            // sean siempre exactas (img.width puede ser 0 con ciertas versiones de Fabric).
+            let svgW = 100, svgH = 65; // dimensiones lógicas del viewBox
+
             if (type === 'futbol11') {
-                svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 65">
-                    <rect width="100" height="65" fill="#2e7d32"/>
+                svgW = 100; svgH = 65;
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgW} ${svgH}">
+                    <rect width="${svgW}" height="${svgH}" fill="#2e7d32"/>
                     <rect x="5" y="5" width="90" height="55" fill="none" stroke="white" stroke-width="0.5"/>
                     <line x1="50" y1="5" x2="50" y2="60" stroke="white" stroke-width="0.5"/>
                     <circle cx="50" cy="32.5" r="9" fill="none" stroke="white" stroke-width="0.5"/>
@@ -2924,8 +2930,9 @@ window.DTEngine = {
                     <rect x="79" y="15" width="16" height="35" fill="none" stroke="white" stroke-width="0.5"/>
                 </svg>`;
             } else if (type === 'basquetbol' || type === 'basketball') {
-                svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50">
-                    <rect width="100" height="50" fill="#d2884a"/>
+                svgW = 100; svgH = 50;
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgW} ${svgH}">
+                    <rect width="${svgW}" height="${svgH}" fill="#d2884a"/>
                     <rect x="5" y="5" width="90" height="40" fill="none" stroke="white" stroke-width="0.8"/>
                     <line x1="50" y1="5" x2="50" y2="45" stroke="white" stroke-width="0.8"/>
                     <circle cx="50" cy="25" r="6" fill="none" stroke="white" stroke-width="0.8"/>
@@ -2939,17 +2946,24 @@ window.DTEngine = {
 
             this._fc.setBackgroundColor('#1e293b', this._fc.renderAll.bind(this._fc));
 
+            // Capturar dimensiones de Fabric ANTES del callback asíncrono
+            const fcW = this._fc.width;
+            const fcH = this._fc.height;
+
             fabric.Image.fromURL(encodedData, (img, isError) => {
                 if (isError || !img) {
                     this._fc.setBackgroundColor('#2e7d32', this._fc.renderAll.bind(this._fc));
                     return;
                 }
+                // Usar dimensiones del viewBox como referencia lógica (nunca 0)
+                const imgLogicalW = img.width  || svgW;
+                const imgLogicalH = img.height || svgH;
                 img.set({
                     id: 'cancha_bg',
                     originX: 'left',
                     originY: 'top',
-                    scaleX: this._fc.width / img.width,
-                    scaleY: this._fc.height / img.height,
+                    scaleX: fcW / imgLogicalW,
+                    scaleY: fcH / imgLogicalH,
                     selectable: false,
                     evented: false
                 });
@@ -3159,24 +3173,33 @@ window.DTEngine = {
                     }
                 });
 
-                // Drag & Drop
+                // FIX PILAR 4: dragover DEBE llamar preventDefault para habilitar el drop.
                 boardContainer.addEventListener('dragover', (e) => {
                     e.preventDefault();
+                    e.dataTransfer.dropEffect = 'copy';
                 });
+                // FIX PILAR 4: getPointer() sólo acepta eventos Fabric — para drops DOM
+                // usamos getBoundingClientRect para calcular coordenadas canvas-relativas.
                 boardContainer.addEventListener('drop', (e) => {
                     e.preventDefault();
+                    if (!this._fc) return;
                     const tool = e.dataTransfer.getData('tool');
                     if (tool) {
-                        const pointer = this._fc.getPointer(e);
+                        const rect = boardContainer.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
                         this._activeTool = tool;
-                        this._placeObject(pointer.x, pointer.y);
+                        this._placeObject(x, y);
                     }
                 });
+                // FIX PILAR 2: mouse:out del contenedor fuerza el estado a false
                 boardContainer.addEventListener('mouseleave', () => {
                     this._isDrawingShape = false;
-                    this._fc.selection = true;
+                    if (this._fc) {
+                        this._fc.selection = true;
+                    }
                     this.updateMeasurementHUD(0, 0, '', false);
-                    if (this._tempShape) {
+                    if (this._tempShape && this._fc) {
                         this._fc.remove(this._tempShape);
                         this._tempShape = null;
                         this._fc.renderAll();
@@ -3184,40 +3207,42 @@ window.DTEngine = {
                 });
             }
 
-            // Click en canvas vacío => añadir objeto según herramienta activa
-            this._fc.on('mouse:down', function(opt) {
-                const tool = self._activeTool || '';
+            // FIX PILAR 1 + PILAR 2: Convertido a Arrow Function para preservar
+            // el scope léxico de FabricEngine. _isDrawingShape SÓLO se activa aquí.
+            this._fc.on('mouse:down', (opt) => {
+                const tool = this._activeTool || '';
                 if (tool === 'draw') return;
                 
                 // Dibujo dinámico para Zonas y Líneas
                 if (tool.startsWith('zone-') || tool.startsWith('arrow-')) {
                     if (opt.target) return; // Si clica en un objeto existente, no dibujar
                     
-                    self._fc.selection = false;
-                    const ptr = self._fc.getPointer(opt.e);
-                    self._isDrawingShape = true;
-                    self._drawStartX = ptr.x;
-                    self._drawStartY = ptr.y;
+                    this._fc.selection = false;
+                    const ptr = this._fc.getPointer(opt.e);
+                    // FIX PILAR 2: Estado ENCENDIDO sólo en mouse:down con herramienta válida
+                    this._isDrawingShape = true;
+                    this._drawStartX = ptr.x;
+                    this._drawStartY = ptr.y;
                     
-                    if (self._activeTool === 'zone-solid') {
-                        self._tempShape = new fabric.Rect({
+                    if (this._activeTool === 'zone-solid') {
+                        this._tempShape = new fabric.Rect({
                             left: ptr.x, top: ptr.y, width: 0, height: 0,
                             fill: 'rgba(0,240,255,0.1)', stroke: '#00F0FF',
                             strokeWidth: 2, rx: 4, ry: 4, selectable: false, evented: false
                         });
-                    } else if (self._activeTool === 'zone-dashed') {
-                        self._tempShape = new fabric.Rect({
+                    } else if (this._activeTool === 'zone-dashed') {
+                        this._tempShape = new fabric.Rect({
                             left: ptr.x, top: ptr.y, width: 0, height: 0,
                             fill: 'rgba(251,191,36,0.08)', stroke: '#fbbf24',
                             strokeWidth: 2, strokeDashArray: [8, 5], rx: 4, ry: 4, selectable: false, evented: false
                         });
-                    } else if (self._activeTool === 'zone-red') {
-                        self._tempShape = new fabric.Rect({
+                    } else if (this._activeTool === 'zone-red') {
+                        this._tempShape = new fabric.Rect({
                             left: ptr.x, top: ptr.y, width: 0, height: 0,
                             fill: 'rgba(239,68,68,0.1)', stroke: '#ef4444',
                             strokeWidth: 2, rx: 4, ry: 4, selectable: false, evented: false
                         });
-                    } else if (self._activeTool.startsWith('arrow-')) {
+                    } else if (this._activeTool.startsWith('arrow-')) {
                         let color = '#ffffff', dash = [];
                         if (tool === 'arrow-pass') { dash = [8, 5]; color = '#ffffff'; }
                         else if (tool === 'arrow-run') { dash = []; color = '#facc15'; }
@@ -3273,8 +3298,9 @@ window.DTEngine = {
                 this._fc.renderAll();
             });
 
+            // FIX PILAR 2: Estado APAGADO forzosamente en mouse:up sin excepción.
             this._fc.on('mouse:up', (opt) => {
-                this._isDrawingShape = false;
+                this._isDrawingShape = false; // Estado siempre falso al soltar
                 this._fc.selection = true;
                 this.updateMeasurementHUD(0, 0, '', false);
 
