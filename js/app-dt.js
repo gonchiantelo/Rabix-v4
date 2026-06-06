@@ -2284,6 +2284,10 @@ window.DTEngine = {
         console.log('Elemento modal objetivo:', modalTarget);
 
         if (modalTarget) {
+            if (modalTarget.parentElement !== document.body) {
+                document.body.appendChild(modalTarget);
+            }
+
             modalTarget.classList.remove('hidden');
             
             // FUERZA BRUTA CSS: Sobrescribir cualquier conflicto externo
@@ -2294,14 +2298,28 @@ window.DTEngine = {
                 left: 0 !important;
                 width: 100vw !important;
                 height: 100vh !important;
-                z-index: 999999 !important;
+                z-index: 2147483647 !important;
                 background: rgba(0, 0, 0, 0.85) !important;
                 backdrop-filter: blur(8px) !important;
                 align-items: center !important;
                 justify-content: center !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
             `;
             
-            console.log('Modal abierto exitosamente (display forzado a flex con CSS Brute Force)');
+            const contentTarget = modalTarget.querySelector('.modal-content');
+            if (contentTarget) {
+                contentTarget.style.cssText = `
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    position: relative !important;
+                    z-index: 2147483647 !important;
+                `;
+            }
+            
+            console.log('Modal abierto exitosamente (movido a document.body)');
         } else {
             console.error('CRÍTICO: No se encontró el elemento modal en el HTML con ese ID.');
         }
