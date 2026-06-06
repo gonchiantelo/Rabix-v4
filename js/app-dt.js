@@ -3208,6 +3208,11 @@ window.DTEngine = {
                 try { this._fc.dispose(); } catch(e) {}
                 this._fc = null;
             }
+            // Limpiar listener de resize si existe
+            if (this._resizeHandler) {
+                window.removeEventListener('resize', this._resizeHandler);
+                this._resizeHandler = null;
+            }
 
             const container = document.getElementById('premium-tactical-board-container');
             if (!container) return;
@@ -3290,6 +3295,29 @@ window.DTEngine = {
                     }
                 });
             }
+
+            // FIX: Redimensionamiento Seguro y Debounce Estricto
+            let resizeTimeout;
+            this._resizeHandler = () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    if (!this._fc || !container) return;
+                    
+                    const newW = container.clientWidth || 800;
+                    const newH = container.clientHeight || 500;
+                    
+                    // Solo actualizar dimensiones del objeto (NO destruir ni recrear)
+                    this._fc.setWidth(newW);
+                    this._fc.setHeight(newH);
+                    
+                    // Regenerar el fondo a la escala nueva y repintar
+                    this.setBackground(this._currentBackground || 'futbol11');
+                    this._fc.renderAll();
+                    
+                    console.log(`Pizarra táctica redimensionada de forma segura a ${newW}x${newH}`);
+                }, 300); // 300ms de Debounce nativo para evitar 'Event Thrashing'
+            };
+            window.addEventListener('resize', this._resizeHandler);
 
             // FIX PILAR 1 + PILAR 2: Arrow Function — scope léxico de FabricEngine.
             // CANDADO DE COLISIÓN: si Fabric está en modo pincel nativo, retornar
