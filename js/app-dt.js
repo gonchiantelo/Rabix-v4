@@ -2280,11 +2280,15 @@ window.DTEngine = {
             bodyEl.innerHTML = htmlContent;
         }
 
-        const modalEl = document.getElementById('dt-modal');
-        if (modalEl) {
-            modalEl.classList.remove('hidden');
-            modalEl.style.display = 'flex';
-            console.log('Modal abierto exitosamente');
+        const modalTarget = document.getElementById('dt-modal');
+        console.log('Elemento modal objetivo:', modalTarget);
+
+        if (modalTarget) {
+            modalTarget.classList.remove('hidden');
+            modalTarget.style.display = 'flex';
+            console.log('Modal abierto exitosamente (display forzado a flex)');
+        } else {
+            console.error('CRÍTICO: No se encontró el elemento modal en el HTML con ese ID.');
         }
     },
 
