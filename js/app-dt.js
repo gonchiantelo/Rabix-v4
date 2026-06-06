@@ -1137,6 +1137,18 @@ window.DTEngine = {
                                     </button>
                                 </div>
 
+                                <!-- ─── AFFORDANCE: Hint de Drag & Drop ─── -->
+                                <div style="width:100%; text-align:center; padding:3px 0 1px; margin-bottom:2px;">
+                                    <span style="
+                                        display:inline-flex; align-items:center; gap:5px;
+                                        font-family:Outfit,sans-serif; font-size:0.6rem; font-weight:600;
+                                        color:#4b5563; letter-spacing:0.5px;
+                                        background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05);
+                                        border-radius:20px; padding:3px 10px;
+                                        user-select:none; pointer-events:none;
+                                    ">💡 Arrastra a la cancha o hace clic en ella</span>
+                                </div>
+
                                 <!-- ─── GRUPO 3: JUGADORES NUMERADOS ─── -->
                                 <div class="tb-group">
                                     <span class="tb-label">👤 Local</span>
@@ -3207,9 +3219,11 @@ window.DTEngine = {
                 });
             }
 
-            // FIX PILAR 1 + PILAR 2: Convertido a Arrow Function para preservar
-            // el scope léxico de FabricEngine. _isDrawingShape SÓLO se activa aquí.
+            // FIX PILAR 1 + PILAR 2: Arrow Function — scope léxico de FabricEngine.
+            // CANDADO DE COLISIÓN: si Fabric está en modo pincel nativo, retornar
+            // inmediatamente para no interferir con _onMouseDownInDrawingMode.
             this._fc.on('mouse:down', (opt) => {
+                if (this._fc.isDrawingMode) return; // ← Candado anti-crash del lápiz
                 const tool = this._activeTool || '';
                 if (tool === 'draw') return;
                 
@@ -3266,6 +3280,7 @@ window.DTEngine = {
             });
 
             this._fc.on('mouse:move', (opt) => {
+                if (this._fc.isDrawingMode) return; // ← Candado anti-crash del lápiz
                 if (!this._isDrawingShape) return;
                 if (!this._tempShape) return;
                 const ptr = this._fc.getPointer(opt.e);
