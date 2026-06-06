@@ -2285,8 +2285,23 @@ window.DTEngine = {
 
         if (modalTarget) {
             modalTarget.classList.remove('hidden');
-            modalTarget.style.display = 'flex';
-            console.log('Modal abierto exitosamente (display forzado a flex)');
+            
+            // FUERZA BRUTA CSS: Sobrescribir cualquier conflicto externo
+            modalTarget.style.cssText = `
+                display: flex !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                z-index: 999999 !important;
+                background: rgba(0, 0, 0, 0.85) !important;
+                backdrop-filter: blur(8px) !important;
+                align-items: center !important;
+                justify-content: center !important;
+            `;
+            
+            console.log('Modal abierto exitosamente (display forzado a flex con CSS Brute Force)');
         } else {
             console.error('CRÍTICO: No se encontró el elemento modal en el HTML con ese ID.');
         }
