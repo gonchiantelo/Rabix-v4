@@ -1497,9 +1497,9 @@ window.DTEngine = {
                         timeBadge = `<span style="color:#00F2FE;font-size:0.6rem;font-weight:700;margin-right:3px;">⏱ ${wrk}'</span>`;
                     }
                     return `
-                        <div class="task-chip" draggable="${!isPast}" ondragstart="event.dataTransfer.setData('text/plain', '${a.logId}|${a.block}|${dateStr}'); event.stopPropagation();" onclick="event.stopPropagation(); window.DTEngine.openTaskModal('${a.rawId || a.id}')">
+                        <div class="task-chip" draggable="${!isPast}" ondragstart="event.dataTransfer.setData('text/plain', '${a.logId}|${a.block}|${dateStr}'); event.stopPropagation();" onclick="window.DTEngine.openTaskModal(event, '${a.rawId || a.id}')">
                             ${timeBadge}<span class="tc-name">${ex.title}</span>
-                            ${!isPast ? `<span class="tc-delete" onclick="event.stopPropagation(); window.DTEngine.removeTask('${dateStr}', ${assignments.indexOf(a)})">\u00d7</span>` : ''}
+                            ${!isPast ? `<span class="tc-delete" onclick="window.DTEngine.removeTask(event, '${dateStr}', ${assignments.indexOf(a)})">\u00d7</span>` : ''}
                         </div>
                     `;
                 }).join('');
@@ -2096,8 +2096,12 @@ window.DTEngine = {
         }
     },
 
-    async removeTask(date, index) {
+    async removeTask(e, date, index) {
         try {
+            if (e && e.stopPropagation) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             const task = this._assignedTasks[date][index];
             if (!task) return;
 
@@ -2170,8 +2174,14 @@ window.DTEngine = {
         }
     },
 
-    async openTaskModal(taskId) {
+    async openTaskModal(eventOrId, optionalId) {
         try {
+            let taskId = optionalId !== undefined ? optionalId : eventOrId;
+            let e = optionalId !== undefined ? eventOrId : null;
+            if (e && e.stopPropagation) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             console.log("Clic detectado en tarea ID:", taskId);
             const idBuscado = String(taskId);
             let task = (window.ExercisesLibrary || []).find(t => String(t.numericId) === idBuscado || String(t.id) === idBuscado) ||
@@ -2223,7 +2233,7 @@ window.DTEngine = {
             <div class="modal-grid" style="grid-template-columns: 1fr;">
                 <!-- Metadatos Base -->
                 <div style="display:flex;gap:15px;background:rgba(255,255,255,0.03);padding:15px;border-radius:12px;border:1px solid rgba(255,255,255,0.05);margin-bottom:15px;">
-                    <div style="flex:1"><label style="font-size:0.65rem;color:#888;text-transform:uppercase;">Momento</label><p style="margin:2px 0 0;font-weight:700;color:#fff;">${(task.game_moment || '').replace('_', ' ').toUpperCase()}</p></div>
+                    <div style="flex:1"><label style="font-size:0.65rem;color:#888;text-transform:uppercase;">Momento</label><p style="margin:2px 0 0;font-weight:700;color:#fff;">${String(task.game_moment || '').replace('_', ' ').toUpperCase()}</p></div>
                     <div style="flex:1"><label style="font-size:0.65rem;color:#888;text-transform:uppercase;">SSP</label><p style="margin:2px 0 0;font-weight:700;color:#fff;">${task.ssp_type || 'N/A'}</p></div>
                     <div style="flex:1"><label style="font-size:0.65rem;color:#888;text-transform:uppercase;">Materiales</label><p style="margin:2px 0 0;font-weight:700;color:#fff;">${task.materials || 'Balones, Conos'}</p></div>
                 </div>
