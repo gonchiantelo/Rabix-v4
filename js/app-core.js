@@ -360,6 +360,14 @@ window.App = {
         const hash = window.location.hash;
         console.log("📍 Router ejecutado, hash:", hash || '(vacío)');
 
+        // ── FALLBACK ESTRICTO: hash vacío → forzar #home ──────────────────────
+        if (!hash || hash === '' || hash === '#') {
+            window.location.hash = '#home';
+            // El hashchange event disparará handleRouting de nuevo con '#home'.
+            // Salimos para evitar doble ejecución.
+            return;
+        }
+
         // El routing interno de las vistas del DT es manejado por DTEngine.toggleView.
         // Solo actuamos si DTEngine ya está disponible en el DOM.
         if (!window.DTEngine) {
@@ -376,8 +384,7 @@ window.App = {
         } else if (hash === '#board' || hash === '#view-board') {
             window.DTEngine.toggleView('board');
         } else {
-            // '#home' o cualquier hash vacío/desconocido → home
-            window.location.hash = '#home';
+            // '#home' o cualquier hash desconocido → home
             window.DTEngine.toggleView('home');
         }
     },
