@@ -373,8 +373,11 @@ window.App = {
             window.DTEngine.toggleView('calendar');
         } else if (hash === '#analytics') {
             window.DTEngine.toggleView('analytics');
+        } else if (hash === '#board' || hash === '#view-board') {
+            window.DTEngine.toggleView('board');
         } else {
             // '#home' o cualquier hash vacío/desconocido → home
+            window.location.hash = '#home';
             window.DTEngine.toggleView('home');
         }
     },

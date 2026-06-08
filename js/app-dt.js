@@ -798,47 +798,120 @@ window.DTEngine = {
                         </div>
                     </section>
                     
-                    <section id="view-board" class="view-section" style="width: 100%; margin-top: 15px; box-sizing: border-box;">
-                        <div style="display: flex; gap: 20px; width: 100%; height: 85vh;">
-                            <div style="width: 260px; background: #111827; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 20px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;">
-                                <h3 style="color: var(--primary-color, #00F2FE); margin: 0; font-family: Outfit; font-size: 1.2rem;">SALA DE JUEGOS</h3>
-                                <p style="color: #6b7280; font-size: 0.8rem; margin-top: -10px; margin-bottom: 10px;">Diseño Táctico</p>
-                                
-                                <label style="color: #9ca3af; font-size: 0.75rem; font-weight: bold; margin-bottom: -10px;">ESQUEMA LOCAL</label>
-                                <select id="slocal" onchange="window.DTEngine.Board.deployTeams(this.value, document.getElementById('srival').value)" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
-                                    <option value="4-3-3">1-4-3-3 Ofensivo</option>
-                                    <option value="4-4-2">1-4-4-2 Clásico</option>
-                                    <option value="4-2-3-1">1-4-2-3-1 Equilibrado</option>
-                                    <option value="3-5-2">1-3-5-2 Carrileros</option>
-                                </select>
-                    
-                                <label style="color: #9ca3af; font-size: 0.75rem; font-weight: bold; margin-top: 10px; margin-bottom: -10px;">ESQUEMA RIVAL</label>
-                                <select id="srival" onchange="window.DTEngine.Board.deployTeams(document.getElementById('slocal').value, this.value)" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
-                                    <option value="4-4-2">1-4-4-2 Clásico</option>
-                                    <option value="4-3-3">1-4-3-3 Ofensivo</option>
-                                    <option value="4-2-3-1">1-4-2-3-1 Equilibrado</option>
-                                    <option value="3-5-2">1-3-5-2 Carrileros</option>
-                                </select>
-                    
-                                <button onclick="window.DTEngine.Board.deployTeams(document.getElementById('slocal').value, document.getElementById('srival').value)" style="margin-top: auto; padding: 12px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 6px; cursor: pointer; font-weight: bold;">↻ Restaurar Posiciones</button>
+                    <section id="view-board" class="view-section" style="width: 100%; margin-top: 15px; box-sizing: border-box; display: none;">
+                        <div style="display: flex; flex-direction: column; width: 100%; height: 85vh; background: #080808; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden;">
+                            
+                            <!-- BARRA DE HERRAMIENTAS (Pizarra Principal) -->
+                            <div id="view-tactical-toolbar" style="padding:2px 6px; background:#080808; border-bottom:1px solid rgba(0,240,255,0.1); display:flex; align-items:center; gap:2px; flex-wrap:wrap; flex-shrink:0;">
+                                <!-- ─── GRUPO 1: FONDO / DEPORTE ─── -->
+                                <div class="tb-group">
+                                    <span class="tb-label">⚽ Campo</span>
+                                    <select class="tb-select" onchange="DTEngine.ViewFabricEngine.setBackground(this.value)">
+                                        <option value="futbol11">Fútbol 11</option>
+                                        <option value="futbol-media">½ Cancha</option>
+                                        <option value="basketball">Básquetbol</option>
+                                        <option value="parquet">Parquet</option>
+                                        <option value="blank">Pizarra Lisa</option>
+                                    </select>
+                                </div>
+                                <!-- ─── GRUPO 2: TRAZO ─── -->
+                                <div class="tb-group">
+                                    <span class="tb-label">✏️</span>
+                                    <button class="tb-btn tb-active" onclick="DTEngine.ViewFabricEngine.setTool('draw')" title="Trazo Libre">
+                                        <span class="tb-icon">✏️</span>Trazo
+                                    </button>
+                                </div>
+                                <!-- ─── GRUPO 3: JUGADORES NUMERADOS ─── -->
+                                <div class="tb-group">
+                                    <span class="tb-label">👤 Local</span>
+                                    <button class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'player-blue')" onclick="DTEngine.ViewFabricEngine.setTool('player-blue')" title="Local (Azul)">
+                                        <span class="tb-dot tb-player-blue"></span>Local
+                                    </button>
+                                    <button class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'player-red')" onclick="DTEngine.ViewFabricEngine.setTool('player-red')" title="Rival (Rojo)">
+                                        <span class="tb-dot tb-player-red"></span>Rival
+                                    </button>
+                                    <button class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'player-yellow')" onclick="DTEngine.ViewFabricEngine.setTool('player-yellow')" title="Comodín">
+                                        <span class="tb-dot tb-player-yel"></span>Comod.
+                                    </button>
+                                    <button class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'player-green')" onclick="DTEngine.ViewFabricEngine.setTool('player-green')" title="Verde">
+                                        <span class="tb-dot tb-player-grn"></span>Verde
+                                    </button>
+                                    <button class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'player-black')" onclick="DTEngine.ViewFabricEngine.setTool('player-black')" title="Negro">
+                                        <span class="tb-dot tb-player-blk"></span>Negro
+                                    </button>
+                                </div>
+                                <!-- ─── GRUPO 4: ELEMENTOS ─── -->
+                                <div class="tb-group">
+                                    <span class="tb-label">🧩</span>
+                                    <button class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'ball')" onclick="DTEngine.ViewFabricEngine.setTool('ball')" title="Balón">
+                                        <span class="tb-icon">⚽</span>Balón
+                                    </button>
+                                    <button class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'cone')" onclick="DTEngine.ViewFabricEngine.setTool('cone')" title="Cono">
+                                        <span class="tb-icon">🔺</span>Cono
+                                    </button>
+                                    <button class="tb-btn" draggable="true" ondragstart="event.dataTransfer.setData('tool', 'minigoal')" onclick="DTEngine.ViewFabricEngine.setTool('minigoal')" title="Mini Arco">
+                                        <span class="tb-icon">🥅</span>Arco
+                                    </button>
+                                    <button class="tb-btn" onclick="DTEngine.ViewFabricEngine.setTool('text')" title="Texto libre">
+                                        <span class="tb-icon">T</span>Texto
+                                    </button>
+                                </div>
+                                <!-- ─── GRUPO 5: RUTAS / FLECHAS ─── -->
+                                <div class="tb-group">
+                                    <span class="tb-label">🏃 Rutas</span>
+                                    <button class="tb-btn" onclick="DTEngine.ViewFabricEngine.setTool('arrow-pass')" title="Desplazamiento (Movimiento sin balón o Pase)">
+                                        <span style="font-size:0.9rem; letter-spacing:-1px;">--→</span>Desplaz.
+                                    </button>
+                                    <button class="tb-btn" onclick="DTEngine.ViewFabricEngine.setTool('arrow-run')" title="Conducción (Movimiento con balón)">
+                                        <span style="font-size:0.9rem;">↝→</span>Cond.
+                                    </button>
+                                    <button class="tb-btn" onclick="DTEngine.ViewFabricEngine.setTool('arrow-solid')" title="Flecha sólida">
+                                        <span style="font-size:0.9rem;">──→</span>Flecha
+                                    </button>
+                                </div>
+                                <!-- ─── GRUPO 6: ZONAS ─── -->
+                                <div class="tb-group">
+                                    <span class="tb-label">⬛ Zonas</span>
+                                    <button class="tb-btn" onclick="DTEngine.ViewFabricEngine.setTool('zone-solid')" title="Zona Rondo (verde)">
+                                        <span style="display:inline-block; width:18px; height:12px; border:2px solid rgba(0,240,255,0.8); border-radius:2px; background:rgba(0,240,255,0.1);"></span>Zona
+                                    </button>
+                                    <button class="tb-btn" onclick="DTEngine.ViewFabricEngine.setTool('zone-dashed')" title="Zona Punteada (amarilla)">
+                                        <span style="display:inline-block; width:18px; height:12px; border:2px dashed rgba(251,191,36,0.8); border-radius:2px; background:rgba(251,191,36,0.07);"></span>Punteada
+                                    </button>
+                                    <button class="tb-btn" onclick="DTEngine.ViewFabricEngine.setTool('zone-red')" title="Zona Presión (roja)">
+                                        <span style="display:inline-block; width:18px; height:12px; border:2px solid rgba(239,68,68,0.8); border-radius:2px; background:rgba(239,68,68,0.1);"></span>Presión
+                                    </button>
+                                </div>
+                                <!-- ─── GRUPO 7: OPCIONES ─── -->
+                                <div class="tb-group">
+                                    <span class="tb-label">⚙️</span>
+                                    <label class="tb-toggle" title="Activar cuadrícula magnética para alinear elementos">
+                                        <input type="checkbox" onchange="DTEngine.ViewFabricEngine.toggleSnapGrid(this.checked)">
+                                        Snap Grid
+                                    </label>
+                                </div>
+                                <!-- ─── SPACER + ACCIONES ─── -->
+                                <div style="flex:1;"></div>
+                                <div class="tb-group">
+                                    <button class="tb-btn tb-danger" onclick="DTEngine.ViewFabricEngine.deleteSelected()" title="Eliminar seleccionado">
+                                        <span class="tb-icon">🗑️</span>Borrar
+                                    </button>
+                                    <button class="tb-btn tb-danger" onclick="DTEngine.ViewFabricEngine._fc.clear(); DTEngine.ViewFabricEngine.setBackground('futbol11');" title="Limpiar toda la pizarra">
+                                        <span class="tb-icon">💣</span>Limpiar
+                                    </button>
+                                </div>
                             </div>
                     
-                            <div style="flex: 1; background: #0f172a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                                <svg viewBox="0 -5 105 78" style="width: 95%; height: 95%; overflow: visible; opacity: 0.8;">
-                                    <rect x="0" y="0" width="105" height="68" fill="none" stroke="#334155" stroke-width="0.4"/>
-                                    <line x1="52.5" y1="0" x2="52.5" y2="68" stroke="#334155" stroke-width="0.4"/>
-                                    <circle cx="52.5" cy="34" r="9.15" fill="none" stroke="#334155" stroke-width="0.4"/>
-                                    <circle cx="52.5" cy="34" r="0.5" fill="#334155"/>
-                                    <rect x="0" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                                    <rect x="0" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                                    <circle cx="11" cy="34" r="0.4" fill="#334155"/>
-                                    <path d="M 16.5 24.84 A 9.15 9.15 0 0 1 16.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/>
-                                    <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                                    <rect x="99.5" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                                    <circle cx="94" cy="34" r="0.4" fill="#334155"/>
-                                    <path d="M 88.5 24.84 A 9.15 9.15 0 0 0 88.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/>
+                            <div id="view-premium-tactical-board-container" style="flex-grow: 1; flex-shrink: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; position:relative; width: 100%;">
+                                <!-- SVG BG fallback -->
+                                <svg id="view-pitch-svg" viewBox="0 0 105 68" preserveAspectRatio="none" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none;">
+                                    <rect width="105" height="68" fill="#1a4a1a"/>
+                                    <rect x="0" y="0" width="105" height="68" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.6"/>
+                                    <line x1="52.5" y1="0" x2="52.5" y2="68" stroke="rgba(255,255,255,0.3)" stroke-width="0.6"/>
+                                    <circle cx="52.5" cy="34" r="9.15" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.6"/>
+                                    <circle cx="52.5" cy="34" r="0.7" fill="rgba(255,255,255,0.5)"/>
                                 </svg>
-                                <div id="tokens-layer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+                                <canvas id="view-tactical-board" style="position:relative; z-index:5;"></canvas>
                             </div>
                         </div>
                     </section>
@@ -2513,7 +2586,7 @@ window.DTEngine = {
         if (targetView) {
             targetView.classList.add('active');
             if (viewName === 'board') {
-                const container = document.getElementById('premium-tactical-board-container');
+                const container = document.getElementById('view-premium-tactical-board-container');
                 if (container) {
                     console.log("[Router] Evaluando contenedor Pizarra. Altura actual:", container.clientHeight);
                     
@@ -2522,10 +2595,18 @@ window.DTEngine = {
                         for (let entry of entries) {
                             if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
                                 console.log("[Router] Contenedor Pizarra con volumen:", entry.contentRect.width, "x", entry.contentRect.height);
-                                const fe = window.DTEngine.FabricEngine;
+                                
+                                // Asegurar que exista la instancia separada ViewFabricEngine
+                                if (!window.DTEngine.ViewFabricEngine) {
+                                    window.DTEngine.ViewFabricEngine = Object.assign({}, window.DTEngine.FabricEngine);
+                                    // Reset de variables internas
+                                    window.DTEngine.ViewFabricEngine._fc = null;
+                                }
+
+                                const fe = window.DTEngine.ViewFabricEngine;
                                 
                                 if (!fe._fc) {
-                                    fe.init();
+                                    fe.init('view-premium-tactical-board-container', 'view-tactical-board');
                                 } else {
                                     fe._fc.setWidth(entry.contentRect.width);
                                     fe._fc.setHeight(entry.contentRect.height);
@@ -3308,7 +3389,7 @@ window.DTEngine = {
             ctx.restore();
         },
 
-        init() {
+        init(containerId = 'premium-tactical-board-container', canvasId = 'premium-tactical-board') {
             // Destruir instancia anterior si existe
             if (this._fc) {
                 try { this._fc.dispose(); } catch(e) {}
@@ -3320,19 +3401,19 @@ window.DTEngine = {
                 this._resizeHandler = null;
             }
 
-            const container = document.getElementById('premium-tactical-board-container');
+            const container = document.getElementById(containerId);
             if (!container) return;
             const w = container.clientWidth  || 800;
             const h = container.clientHeight || 500;
 
             // Asignar dimensiones físicas al elemento canvas
-            const canvasEl = document.getElementById('premium-tactical-board');
+            const canvasEl = document.getElementById(canvasId);
             if (!canvasEl) return;
             canvasEl.width  = w;
             canvasEl.height = h;
 
             // Inicializar Fabric — fondo transparente (el campo lo pinta _drawField)
-            this._fc = new fabric.Canvas('premium-tactical-board', {
+            this._fc = new fabric.Canvas(canvasId, {
                 selection: true,
                 backgroundColor: 'transparent',
                 enableRetinaScaling: false
@@ -3349,7 +3430,7 @@ window.DTEngine = {
             // Activar trazo libre por defecto
             this.setTool('draw');
 
-            const boardContainer = document.getElementById('premium-tactical-board')?.parentElement;
+            const boardContainer = document.getElementById(canvasId)?.parentElement;
             if (boardContainer) {
                 boardContainer.addEventListener('mouseenter', () => {
                     try {
