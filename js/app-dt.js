@@ -1082,21 +1082,21 @@ window.DTEngine = {
                                  TACTICAL BOARD 2.0 — BARRA DE HERRAMIENTAS
                             ══════════════════════════════════════════════════ -->
                                 <style>
-                                    #tactical-toolbar { padding:4px 8px; background:#080808; border-bottom:1px solid rgba(0,240,255,0.1); display:flex; align-items:center; gap:4px; flex-wrap:wrap; flex-shrink:0; }
-                                    .tb-group { display:flex; align-items:center; gap:3px; padding:0 6px; border-right:1px solid rgba(255,255,255,0.07); }
+                                    #tactical-toolbar { padding:2px 6px; background:#080808; border-bottom:1px solid rgba(0,240,255,0.1); display:flex; align-items:center; gap:2px; flex-wrap:wrap; flex-shrink:0; }
+                                    .tb-group { display:flex; align-items:center; gap:2px; padding:0 4px; border-right:1px solid rgba(255,255,255,0.07); }
                                     .tb-group:last-child { border-right:none; }
-                                    .tb-label { font-size:0.5rem; color:#4b5563; font-weight:800; letter-spacing:1px; text-transform:uppercase; white-space:nowrap; padding-right:3px; }
+                                    .tb-label { font-size:0.5rem; color:#4b5563; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; white-space:nowrap; padding-right:2px; }
                                     .tb-btn {
-                                        display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
-                                        padding:3px 6px; border-radius:6px; border:1px solid #1f2937;
+                                        display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0px;
+                                        padding:2px 4px; border-radius:4px; border:1px solid #1f2937;
                                         background:transparent; color:#6b7280; cursor:pointer;
-                                        font-size:0.55rem; font-weight:700; min-width:38px;
+                                        font-size:0.55rem; font-weight:700; min-width:34px;
                                         transition:all 0.15s ease; font-family:Outfit,sans-serif; line-height:1;
                                     }
                                     .tb-btn:hover { background:rgba(255,255,255,0.06); border-color:#374151; color:#d1d5db; }
                                     .tb-btn.tb-active { background:rgba(0,240,255,0.12); border-color:#00F0FF; color:#00F0FF; }
-                                    .tb-btn .tb-icon { font-size:0.85rem; line-height:1; }
-                                    .tb-btn .tb-dot { display:inline-block; width:12px; height:12px; border-radius:50%; border:2px solid rgba(255,255,255,0.8); margin-bottom:1px; }
+                                    .tb-btn .tb-icon { font-size:0.8rem; line-height:1; }
+                                    .tb-btn .tb-dot { display:inline-block; width:10px; height:10px; border-radius:50%; border:2px solid rgba(255,255,255,0.8); margin-bottom:1px; }
                                     .tb-player-blue  { background:#1d6aff !important; box-shadow:0 0 8px rgba(29,106,255,0.5); }
                                     .tb-player-red   { background:#ef4444 !important; box-shadow:0 0 8px rgba(239,68,68,0.5); }
                                     .tb-player-yel   { background:#eab308 !important; box-shadow:0 0 8px rgba(234,179,8,0.5); }
@@ -1104,13 +1104,13 @@ window.DTEngine = {
                                     .tb-player-blk   { background:#374151 !important; box-shadow:0 0 8px rgba(55,65,81,0.5); }
                                     .tb-select {
                                         background:#0f172a; border:1px solid #1f2937; color:#9ca3af;
-                                        font-family:Outfit,sans-serif; font-size:0.65rem; font-weight:700;
-                                        padding:4px 6px; border-radius:6px; cursor:pointer; outline:none;
+                                        font-family:Outfit,sans-serif; font-size:0.6rem; font-weight:700;
+                                        padding:2px 4px; border-radius:4px; cursor:pointer; outline:none;
                                         transition:border-color 0.2s;
                                     }
                                     .tb-select:hover, .tb-select:focus { border-color:#00F0FF; color:#e2e8f0; }
-                                    .tb-toggle { display:flex; align-items:center; gap:4px; font-size:0.55rem; color:#6b7280; font-weight:700; font-family:Outfit,sans-serif; cursor:pointer; white-space:nowrap; }
-                                    .tb-toggle input[type=checkbox] { accent-color:#00F0FF; width:11px; height:11px; }
+                                    .tb-toggle { display:flex; align-items:center; gap:3px; font-size:0.5rem; color:#6b7280; font-weight:700; font-family:Outfit,sans-serif; cursor:pointer; white-space:nowrap; }
+                                    .tb-toggle input[type=checkbox] { accent-color:#00F0FF; width:10px; height:10px; }
                                     .tb-toggle:hover { color:#9ca3af; }
                                     .tb-danger { border-color:rgba(239,68,68,0.3) !important; color:#ef4444 !important; }
                                     .tb-danger:hover { background:rgba(239,68,68,0.12) !important; border-color:#ef4444 !important; }
@@ -1138,13 +1138,13 @@ window.DTEngine = {
                                 </div>
 
                                 <!-- ─── AFFORDANCE: Hint de Drag & Drop ─── -->
-                                <div style="width:100%; text-align:center; padding:2px 0; margin-bottom:1px;">
+                                <div style="width:100%; text-align:center; padding:1px 0; margin-bottom:0px;">
                                     <span style="
-                                        display:inline-flex; align-items:center; gap:4px;
-                                        font-family:Outfit,sans-serif; font-size:0.55rem; font-weight:600;
+                                        display:inline-flex; align-items:center; gap:3px;
+                                        font-family:Outfit,sans-serif; font-size:0.5rem; font-weight:600;
                                         color:#4b5563; letter-spacing:0.5px;
                                         background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05);
-                                        border-radius:12px; padding:2px 8px;
+                                        border-radius:12px; padding:1px 6px;
                                         user-select:none; pointer-events:none;
                                     ">💡 Arrastra a la cancha o hace clic en ella</span>
                                 </div>
@@ -1170,7 +1170,7 @@ window.DTEngine = {
                                     <!-- Contador de número de ficha -->
                                     <input id="player-number-input" type="number" min="1" max="99" value="" placeholder="#"
                                         title="Número del jugador (opcional)"
-                                        style="width:36px; background:#0f172a; border:1px solid #1f2937; border-radius:6px; color:#e2e8f0; font-family:Outfit,sans-serif; font-size:0.75rem; font-weight:700; padding:4px 4px; text-align:center; outline:none; transition:border-color 0.2s;"
+                                        style="width:30px; background:#0f172a; border:1px solid #1f2937; border-radius:4px; color:#e2e8f0; font-family:Outfit,sans-serif; font-size:0.65rem; font-weight:700; padding:2px 2px; text-align:center; outline:none; transition:border-color 0.2s;"
                                         onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#1f2937'"
                                     >
                                 </div>
@@ -3033,6 +3033,17 @@ window.DTEngine = {
                     <rect x="5" y="15" width="16" height="35" fill="none" stroke="white" stroke-width="0.5"/>
                     <rect x="79" y="15" width="16" height="35" fill="none" stroke="white" stroke-width="0.5"/>
                 </svg>`;
+            } else if (type === 'futbol-media') {
+                svgW = 100; svgH = 65;
+                // '1/2 cancha': goal on the bottom, penalty area, center circle at top
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${svgW} ${svgH}">
+                    <rect width="${svgW}" height="${svgH}" fill="#2e7d32"/>
+                    <rect x="5" y="5" width="90" height="55" fill="none" stroke="white" stroke-width="0.5"/>
+                    <line x1="5" y1="5" x2="95" y2="5" stroke="white" stroke-width="0.5"/>
+                    <circle cx="50" cy="5" r="9" fill="none" stroke="white" stroke-width="0.5"/>
+                    <rect x="25" y="44" width="50" height="16" fill="none" stroke="white" stroke-width="0.5"/>
+                    <rect x="38" y="54" width="24" height="6" fill="none" stroke="white" stroke-width="0.5"/>
+                </svg>`;
             } else if (type === 'basquetbol' || type === 'basketball') {
                 svgW = 100; svgH = 50;
                 svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${svgW} ${svgH}">
@@ -3041,6 +3052,17 @@ window.DTEngine = {
                     <line x1="50" y1="5" x2="50" y2="45" stroke="white" stroke-width="0.8"/>
                     <circle cx="50" cy="25" r="6" fill="none" stroke="white" stroke-width="0.8"/>
                 </svg>`;
+            } else if (type === 'parquet') {
+                svgW = 100; svgH = 50;
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${svgW} ${svgH}">
+                    <rect width="${svgW}" height="${svgH}" fill="#f5deb3"/>
+                    <rect x="5" y="5" width="90" height="40" fill="none" stroke="white" stroke-width="0.8"/>
+                    <line x1="50" y1="5" x2="50" y2="45" stroke="white" stroke-width="0.8"/>
+                    <circle cx="50" cy="25" r="6" fill="none" stroke="white" stroke-width="0.8"/>
+                </svg>`;
+            } else if (type === 'blank') {
+                this._fc.setBackgroundColor('#1e293b', this._fc.renderAll.bind(this._fc));
+                return;
             } else {
                 this._fc.setBackgroundColor('#1e293b', this._fc.renderAll.bind(this._fc));
                 return;
