@@ -1195,10 +1195,10 @@ window.DTEngine = {
                                 <!-- ─── GRUPO 5: RUTAS / FLECHAS ─── -->
                                 <div class="tb-group">
                                     <span class="tb-label">🏃 Rutas</span>
-                                    <button id="tool-arrow-pass" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-pass')" title="Pase (línea punteada con flecha)">
-                                        <span style="font-size:0.9rem; letter-spacing:-1px;">--→</span>Pase
+                                    <button id="tool-arrow-pass" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-pass')" title="Desplazamiento (Movimiento sin balón o Pase)">
+                                        <span style="font-size:0.9rem; letter-spacing:-1px;">--→</span>Desplaz.
                                     </button>
-                                    <button id="tool-arrow-run" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-run')" title="Conducción (curva con flecha)">
+                                    <button id="tool-arrow-run" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-run')" title="Conducción (Movimiento con balón)">
                                         <span style="font-size:0.9rem;">↝→</span>Cond.
                                     </button>
                                     <button id="tool-arrow-solid" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-solid')" title="Flecha sólida">
@@ -3177,41 +3177,65 @@ window.DTEngine = {
         // ── CREAR FLECHA DE PASE (línea punteada + cabeza) ──
         _makeArrow(x, y, type) {
             const len = 80;
+            const x2 = x + len;
+            const y2 = y;
             let dash = [], color = '#ffffff';
-            if      (type === 'arrow-pass')  { dash = [8, 5]; color = '#ffffff'; }
-            else if (type === 'arrow-run')   { dash = []; color = '#facc15'; }
-            else                             { dash = []; color = '#ffffff'; }
-
-            const line = new fabric.Line([x, y, x + len, y], {
-                stroke: color, strokeWidth: 2.5,
-                strokeDashArray: dash,
-                selectable: true, hasControls: true, hasBorders: true, padding: 10
-            });
+            let customType = 'tactical-arrow';
+            
+            if (type === 'arrow-pass')  { dash = [10, 5]; color = '#ffffff'; customType = 'tactical-displacement'; }
+            else if (type === 'arrow-run')   { dash = []; color = '#facc15'; customType = 'tactical-conduction'; }
+            else                             { dash = []; color = '#00F0FF'; }
 
             // Cabeza de flecha (triángulo pequeño)
             const head = new fabric.Triangle({
-                width: 12, height: 14,
+                width: 14, height: 16,
                 fill: color, stroke: color, strokeWidth: 1,
-                left: x + len - 6, top: y - 7,
-                angle: 90,
+                left: x2, top: y2, angle: 90,
+                originX: 'center', originY: 'center',
                 selectable: false, evented: false
             });
 
-            // Si es conducción, añadir ondulación visual
+            let tacticalShape;
+
             if (type === 'arrow-run') {
-                const wave = new fabric.Path(
-                    `M ${x} ${y} Q ${x+len*0.25} ${y-20} ${x+len*0.5} ${y} Q ${x+len*0.75} ${y+20} ${x+len} ${y}`,
-                    { stroke: color, strokeWidth: 2.5, fill: 'transparent', strokeDashArray: [],
-                      selectable: true, hasControls: true }
-                );
-                this._fc.add(wave);
-                this._fc.add(head);
-                this._fc.renderAll();
-                return null; // ya añadidos
+                const waveLen = 14;
+                const steps = Math.floor(len / waveLen);
+                const amp = 6;
+                let pathStr = `M ${x} ${y}`;
+                
+                for (let i=1; i<=steps; i++) {
+                    let prevT = (i - 0.5) / steps;
+                    let t = i / steps;
+                    let px = x + len * t;
+                    let py = y;
+                    let perpY = amp * (i%2===0 ? 1 : -1);
+                    let cpx = x + len * prevT;
+                    let cpy = y + perpY * 2;
+                    
+                    if (i === steps) {
+                        pathStr += ` Q ${cpx} ${cpy} ${x2} ${y2}`;
+                    } else {
+                        pathStr += ` Q ${cpx} ${cpy} ${px} ${py}`;
+                    }
+                }
+                if (steps === 0) pathStr += ` L ${x2} ${y2}`;
+                
+                tacticalShape = new fabric.Path(pathStr, {
+                    fill: '', stroke: color, strokeWidth: 2.5,
+                    selectable: true, hasControls: true, hasBorders: true, padding: 8
+                });
+            } else {
+                tacticalShape = new fabric.Line([x, y, x2, y2], {
+                    stroke: color, strokeWidth: type === 'arrow-solid' ? 3 : 2.5,
+                    strokeDashArray: dash,
+                    selectable: true, hasControls: true, hasBorders: true, padding: 8
+                });
             }
 
-            const group = new fabric.Group([line, head], {
-                selectable: true, hasControls: true
+            const group = new fabric.Group([tacticalShape, head], {
+                selectable: true, hasControls: true,
+                customType: customType,
+                tacticData: { x1: x, y1: y, x2: x2, y2: y2, tool: type }
             });
             return group;
         },
@@ -3440,7 +3464,7 @@ window.DTEngine = {
                         });
                     } else if (this._activeTool.startsWith('arrow-')) {
                         let color = '#ffffff', dash = [];
-                        if (tool === 'arrow-pass') { dash = [8, 5]; color = '#ffffff'; }
+                        if (tool === 'arrow-pass') { dash = [10, 5]; color = '#ffffff'; }
                         else if (tool === 'arrow-run') { dash = []; color = '#facc15'; }
                         else { dash = []; color = '#00F0FF'; }
 
@@ -3448,6 +3472,7 @@ window.DTEngine = {
                             stroke: color, strokeWidth: tool === 'arrow-solid' ? 3 : 2.5,
                             strokeDashArray: dash, selectable: false, evented: false
                         });
+                        this._tempShape._sourceTool = tool;
                     }
                     
                     if (this._tempShape) {
@@ -3534,6 +3559,9 @@ window.DTEngine = {
                         const angle = Math.atan2(dy, dx) * 180 / Math.PI;
                         
                         const color = this._tempShape.stroke;
+                        const toolType = this._tempShape._sourceTool || 'arrow-solid';
+                        let customType = 'tactical-arrow';
+                        
                         const head = new fabric.Triangle({
                             width: 14, height: 16, fill: color,
                             left: x2, top: y2, angle: angle + 90,
@@ -3541,12 +3569,61 @@ window.DTEngine = {
                             selectable: false, evented: false
                         });
                         
-                        const lineObj = new fabric.Line([x1, y1, x2, y2], {
-                            stroke: color, strokeWidth: this._tempShape.strokeWidth, strokeDashArray: this._tempShape.strokeDashArray,
-                            selectable: true, hasControls: true, hasBorders: true, padding: 8
+                        let tacticalShape;
+                        
+                        if (toolType === 'arrow-pass') {
+                            customType = 'tactical-displacement';
+                            tacticalShape = new fabric.Line([x1, y1, x2, y2], {
+                                stroke: color, strokeWidth: this._tempShape.strokeWidth, strokeDashArray: [10, 5],
+                                selectable: true, hasControls: true, hasBorders: true, padding: 8
+                            });
+                        } else if (toolType === 'arrow-run') {
+                            customType = 'tactical-conduction';
+                            const dist = Math.sqrt(dx*dx + dy*dy);
+                            const pathAngle = Math.atan2(dy, dx);
+                            let pathStr = `M ${x1} ${y1}`;
+                            const waveLen = 14;
+                            const steps = Math.floor(dist / waveLen);
+                            const amp = 6;
+                            
+                            for (let i=1; i<=steps; i++) {
+                                let prevT = (i - 0.5) / steps;
+                                let t = i / steps;
+                                
+                                let px = x1 + dx * t;
+                                let py = y1 + dy * t;
+                                
+                                let perpX = -Math.sin(pathAngle) * amp * (i%2===0 ? 1 : -1);
+                                let perpY = Math.cos(pathAngle) * amp * (i%2===0 ? 1 : -1);
+                                
+                                let cpx = x1 + dx * prevT + perpX*2;
+                                let cpy = y1 + dy * prevT + perpY*2;
+                                
+                                if (i === steps) {
+                                    pathStr += ` Q ${cpx} ${cpy} ${x2} ${y2}`;
+                                } else {
+                                    pathStr += ` Q ${cpx} ${cpy} ${px} ${py}`;
+                                }
+                            }
+                            if (steps === 0) pathStr += ` L ${x2} ${y2}`;
+                            
+                            tacticalShape = new fabric.Path(pathStr, {
+                                fill: '', stroke: color, strokeWidth: this._tempShape.strokeWidth,
+                                selectable: true, hasControls: true, hasBorders: true, padding: 8
+                            });
+                        } else {
+                            tacticalShape = new fabric.Line([x1, y1, x2, y2], {
+                                stroke: color, strokeWidth: this._tempShape.strokeWidth, strokeDashArray: this._tempShape.strokeDashArray,
+                                selectable: true, hasControls: true, hasBorders: true, padding: 8
+                            });
+                        }
+                        
+                        const grp = new fabric.Group([tacticalShape, head], { 
+                            selectable: true, hasControls: true,
+                            customType: customType,
+                            tacticData: { x1, y1, x2, y2, tool: toolType }
                         });
                         
-                        const grp = new fabric.Group([lineObj, head], { selectable: true, hasControls: true });
                         this._fc.remove(this._tempShape);
                         this._fc.add(grp);
                         this._fc.setActiveObject(grp);
