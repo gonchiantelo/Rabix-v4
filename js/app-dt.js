@@ -1197,14 +1197,29 @@ window.DTEngine = {
                                 <!-- ─── GRUPO 5: RUTAS / FLECHAS ─── -->
                                 <div class="tb-group">
                                     <span class="tb-label">🏃 Rutas</span>
-                                    <button id="tool-arrow-pass" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-pass')" title="Desplazamiento (Movimiento sin balón o Pase)">
-                                        <span style="font-size:0.9rem; letter-spacing:-1px;">--→</span>Desplaz.
+                                    <!-- Desplazamiento: línea punteada con flecha → drag & drop en el canvas -->
+                                    <button id="tool-arrow-pass" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-pass')" title="Desplazamiento — Arrastrá en el canvas para trazar (línea punteada + flecha)">
+                                        <svg width="28" height="14" viewBox="0 0 28 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 1px;">
+                                            <line x1="0" y1="7" x2="19" y2="7" stroke="currentColor" stroke-width="2" stroke-dasharray="4 2.5"/>
+                                            <polygon points="19,3 28,7 19,11" fill="currentColor"/>
+                                        </svg>
+                                        Desplaz.
                                     </button>
-                                    <button id="tool-arrow-run" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-run')" title="Conducción (Movimiento con balón)">
-                                        <span style="font-size:0.9rem;">↝→</span>Cond.
+                                    <!-- Conducción: curva ondulada con flecha → drag & drop en el canvas -->
+                                    <button id="tool-arrow-run" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-run')" title="Conducción — Arrastrá en el canvas para trazar (curva ondulada + flecha)">
+                                        <svg width="28" height="14" viewBox="0 0 28 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 1px;">
+                                            <path d="M0 7 Q4 1 8 7 Q12 13 16 7 Q18 4 19 7" stroke="#facc15" stroke-width="2" fill="none"/>
+                                            <polygon points="19,3 28,7 19,11" fill="#facc15"/>
+                                        </svg>
+                                        Cond.
                                     </button>
-                                    <button id="tool-arrow-solid" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-solid')" title="Flecha sólida">
-                                        <span style="font-size:0.9rem;">──→</span>Flecha
+                                    <!-- Flecha sólida → drag & drop en el canvas -->
+                                    <button id="tool-arrow-solid" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-solid')" title="Flecha sólida — Arrastrá en el canvas para trazar">
+                                        <svg width="28" height="14" viewBox="0 0 28 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 1px;">
+                                            <line x1="0" y1="7" x2="19" y2="7" stroke="#00F0FF" stroke-width="2.5"/>
+                                            <polygon points="19,3 28,7 19,11" fill="#00F0FF"/>
+                                        </svg>
+                                        Flecha
                                     </button>
                                 </div>
 
