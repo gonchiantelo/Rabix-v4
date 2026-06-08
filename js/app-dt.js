@@ -377,7 +377,7 @@ window.DTEngine = {
                 </header>
 
                 <main class="dt-main-content">
-                    <section id="dt-home-view" class="dt-home-view">
+                    <section id="dt-home-view" class="dt-home-view view-section">
                         <!-- Widget 1: Perfil & Identidad -->
                         <div class="platinum-widget profile-widget" onclick="window.DTEngine.toggleView('profile')" style="cursor: pointer;">
                             <div class="pw-content">
@@ -446,7 +446,7 @@ window.DTEngine = {
 
 
 
-                    <section id="dt-calendar-view" class="dt-dashboard-view" style="display: none;">
+                    <section id="dt-calendar-view" class="dt-dashboard-view view-section">
 
                         <!-- ═══ HEADER DE PERIODIZACIÓN ═══ -->
                         <div id="periodization-header" style="background: linear-gradient(135deg, #0d1117 0%, #111827 100%); border: 1px solid rgba(0,242,254,0.08); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px;">
@@ -493,7 +493,7 @@ window.DTEngine = {
                         </div>
                     </section>
 
-                    <section id="dt-analytics-view" class="dt-analytics-view" style="display: none;">
+                    <section id="dt-analytics-view" class="dt-analytics-view view-section">
                         <div class="analytics-grid">
                             <div class="chart-card">
                                 <h3>Curva de Carga Semanal (Minutos)</h3>
@@ -528,7 +528,7 @@ window.DTEngine = {
                         .settings-tab-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
                         .settings-tab-btn.active { background: rgba(0, 242, 254, 0.1); color: #00F2FE; }
                     </style>
-                    <section id="view-profile" class="view-section" style="display: none; width: 100%; box-sizing: border-box;">
+                    <section id="view-profile" class="view-section" style="width: 100%; box-sizing: border-box;">
                         <div style="display: flex; gap: 30px; align-items: flex-start; max-width: 1200px; margin: 0 auto;">
                             
                             <!-- Sidebar -->
@@ -798,7 +798,7 @@ window.DTEngine = {
                         </div>
                     </section>
                     
-                    <section id="view-board" class="view-section hidden" style="display: none; width: 100%; margin-top: 15px; box-sizing: border-box;">
+                    <section id="view-board" class="view-section" style="width: 100%; margin-top: 15px; box-sizing: border-box;">
                         <div style="display: flex; gap: 20px; width: 100%; height: 85vh;">
                             <div style="width: 260px; background: #111827; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 20px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;">
                                 <h3 style="color: var(--primary-color, #00F2FE); margin: 0; font-family: Outfit; font-size: 1.2rem;">SALA DE JUEGOS</h3>
@@ -2487,7 +2487,10 @@ window.DTEngine = {
         const prof = document.getElementById('view-profile');
         const board = document.getElementById('view-board');
 
-        [home, cal, an, prof, board].forEach(v => { if (v) v.style.display = 'none'; });
+        const views = [home, cal, an, prof, board];
+        views.forEach(v => { 
+            if (v) v.classList.remove('active'); 
+        });
 
         let targetView = null;
 
@@ -2508,9 +2511,36 @@ window.DTEngine = {
         }
 
         if (targetView) {
-            targetView.style.display = 'block';
+            targetView.classList.add('active');
             if (viewName === 'board') {
-                setTimeout(() => window.DTEngine.Board.init(), 100);
+                const container = document.getElementById('premium-tactical-board-container');
+                if (container) {
+                    console.log("[Router] Evaluando contenedor Pizarra. Altura actual:", container.clientHeight);
+                    
+                    // Definimos ResizeObserver para esperar volumen real sin parches de tiempo
+                    const resizeObserver = new ResizeObserver((entries, observer) => {
+                        for (let entry of entries) {
+                            if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+                                console.log("[Router] Contenedor Pizarra con volumen:", entry.contentRect.width, "x", entry.contentRect.height);
+                                const fe = window.DTEngine.FabricEngine;
+                                
+                                if (!fe._fc) {
+                                    fe.init();
+                                } else {
+                                    fe._fc.setWidth(entry.contentRect.width);
+                                    fe._fc.setHeight(entry.contentRect.height);
+                                    fe.setBackground(fe._currentBackground || 'futbol11');
+                                    fe._fc.renderAll();
+                                }
+                                observer.disconnect();
+                                break;
+                            }
+                        }
+                    });
+                    
+                    // Comienza a observar
+                    resizeObserver.observe(container);
+                }
             }
         }
     },

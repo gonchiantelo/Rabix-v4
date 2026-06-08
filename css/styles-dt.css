@@ -2058,6 +2058,23 @@ body { background: #121212 !important; }
     background: rgba(0, 242, 254, 0.6);
 }
 
+/* ═══════════════════════════════════════════════════════
+   SPA ROUTER (MÁQUINA DE ESTADOS) - FIX DEFINITIVO
+   Las vistas se controlan exclusivamente por la clase .active.
+   Ninguna media query debe forzar un display sobre una sección no activa.
+   ═══════════════════════════════════════════════════════ */
+.view-section {
+    display: none !important;
+}
+
+.view-section.active {
+    display: block !important;
+}
+
+.view-section.dt-home-view.active {
+    display: flex !important;
+}
+
 /* ── FUERZA BRUTA - NATIVE APP MOBILE ── */
 @media (max-width: 768px) {
     /* Cuerpo de la App */
@@ -2098,9 +2115,9 @@ body { background: #121212 !important; }
         scroll-snap-align: center !important;
     }
 
-    /* Paneles y Widgets */
+    /* Paneles y Widgets de la vista ACTIVA — solo afectan al layout
+       interno de la sección visible. NUNCA apuntar al contenedor raíz (.view-section). */
     .drawer-content,
-    .dt-home-view,
     .analytics-grid,
     .profile-view-container,
     .modal-grid,
