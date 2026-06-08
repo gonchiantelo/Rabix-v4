@@ -824,23 +824,99 @@ window.DTEngine = {
                                 <button onclick="window.DTEngine.Board.deployTeams(document.getElementById('slocal').value, document.getElementById('srival').value)" style="margin-top: auto; padding: 12px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 6px; cursor: pointer; font-weight: bold;">↻ Restaurar Posiciones</button>
                             </div>
 
-                            <!-- Área derecha: canvas SVG libre -->
-                            <div style="flex: 1; background: #0f172a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                                <svg viewBox="0 -5 105 78" style="width: 95%; height: 95%; overflow: visible; opacity: 0.8;">
-                                    <rect x="0" y="0" width="105" height="68" fill="none" stroke="#334155" stroke-width="0.4"/>
-                                    <line x1="52.5" y1="0" x2="52.5" y2="68" stroke="#334155" stroke-width="0.4"/>
-                                    <circle cx="52.5" cy="34" r="9.15" fill="none" stroke="#334155" stroke-width="0.4"/>
-                                    <circle cx="52.5" cy="34" r="0.5" fill="#334155"/>
-                                    <rect x="0" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                                    <rect x="0" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                                    <circle cx="11" cy="34" r="0.4" fill="#334155"/>
-                                    <path d="M 16.5 24.84 A 9.15 9.15 0 0 1 16.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/>
-                                    <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                                    <rect x="99.5" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
-                                    <circle cx="94" cy="34" r="0.4" fill="#334155"/>
-                                    <path d="M 88.5 24.84 A 9.15 9.15 0 0 0 88.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/>
-                                </svg>
-                                <div id="tokens-layer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+                            <!-- Área derecha: toolbar + canvas Fabric.js -->
+                            <div style="flex: 1; background: #0f172a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden;">
+
+                                <!-- Barra de herramientas compacta -->
+                                <div id="board-toolbar" style="padding: 4px 8px; background: #080808; border-bottom: 1px solid rgba(0,240,255,0.1); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; flex-shrink: 0;">
+
+                                    <!-- Campo -->
+                                    <div class="tb-group">
+                                        <span class="tb-label">⚽ Campo</span>
+                                        <select class="tb-select" onchange="DTEngine.FabricEngine.setBackground(this.value)">
+                                            <option value="futbol11">Fútbol 11</option>
+                                            <option value="futbol-media">½ Cancha</option>
+                                            <option value="basketball">Básquetbol</option>
+                                            <option value="parquet">Parquet</option>
+                                            <option value="blank">Pizarra Lisa</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Trazo libre -->
+                                    <div class="tb-group">
+                                        <button class="tb-btn tb-active" id="board-tool-draw" onclick="DTEngine.FabricEngine.setTool('draw')" title="Trazo Libre">
+                                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="display:block;margin:0 auto 1px"><path d="M2 11 Q6 2 12 3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+                                            Trazo
+                                        </button>
+                                    </div>
+
+                                    <!-- Jugadores -->
+                                    <div class="tb-group">
+                                        <span class="tb-label">👤</span>
+                                        <button class="tb-btn" id="board-tool-player-blue" draggable="true" ondragstart="event.dataTransfer.setData('tool','player-blue')" onclick="DTEngine.FabricEngine.setTool('player-blue')" title="Local (Azul)"><span class="tb-dot tb-player-blue"></span>Local</button>
+                                        <button class="tb-btn" id="board-tool-player-red" draggable="true" ondragstart="event.dataTransfer.setData('tool','player-red')" onclick="DTEngine.FabricEngine.setTool('player-red')" title="Rival (Rojo)"><span class="tb-dot tb-player-red"></span>Rival</button>
+                                        <button class="tb-btn" id="board-tool-player-yellow" draggable="true" ondragstart="event.dataTransfer.setData('tool','player-yellow')" onclick="DTEngine.FabricEngine.setTool('player-yellow')" title="Comodín"><span class="tb-dot tb-player-yel"></span>Comod.</button>
+                                        <button class="tb-btn" id="board-tool-player-green" draggable="true" ondragstart="event.dataTransfer.setData('tool','player-green')" onclick="DTEngine.FabricEngine.setTool('player-green')" title="Verde"><span class="tb-dot tb-player-grn"></span>Verde</button>
+                                        <button class="tb-btn" id="board-tool-player-black" draggable="true" ondragstart="event.dataTransfer.setData('tool','player-black')" onclick="DTEngine.FabricEngine.setTool('player-black')" title="Negro"><span class="tb-dot tb-player-blk"></span>Negro</button>
+                                    </div>
+
+                                    <!-- Elementos -->
+                                    <div class="tb-group">
+                                        <span class="tb-label">🧩</span>
+                                        <button class="tb-btn" id="board-tool-ball" draggable="true" ondragstart="event.dataTransfer.setData('tool','ball')" onclick="DTEngine.FabricEngine.setTool('ball')" title="Balón"><span class="tb-icon">⚽</span>Balón</button>
+                                        <button class="tb-btn" id="board-tool-cone" draggable="true" ondragstart="event.dataTransfer.setData('tool','cone')" onclick="DTEngine.FabricEngine.setTool('cone')" title="Cono"><span class="tb-icon">🔺</span>Cono</button>
+                                        <button class="tb-btn" id="board-tool-minigoal" draggable="true" ondragstart="event.dataTransfer.setData('tool','minigoal')" onclick="DTEngine.FabricEngine.setTool('minigoal')" title="Mini Arco"><span class="tb-icon">🥅</span>Arco</button>
+                                        <button class="tb-btn" id="board-tool-text" onclick="DTEngine.FabricEngine.setTool('text')" title="Texto libre"><span class="tb-icon">T</span>Texto</button>
+                                    </div>
+
+                                    <!-- Rutas / Vectores -->
+                                    <div class="tb-group">
+                                        <span class="tb-label">🏃 Rutas</span>
+                                        <button class="tb-btn" id="board-tool-arrow-pass" onclick="DTEngine.FabricEngine.setTool('arrow-pass')" title="Desplazamiento — Arrastrá en el canvas">
+                                            <svg width="28" height="14" viewBox="0 0 28 14" fill="none" style="display:block;margin:0 auto 1px">
+                                                <line x1="0" y1="7" x2="19" y2="7" stroke="currentColor" stroke-width="2" stroke-dasharray="4 2.5"/>
+                                                <polygon points="19,3 28,7 19,11" fill="currentColor"/>
+                                            </svg>
+                                            Desplaz.
+                                        </button>
+                                        <button class="tb-btn" id="board-tool-arrow-run" onclick="DTEngine.FabricEngine.setTool('arrow-run')" title="Conducción — Arrastrá en el canvas">
+                                            <svg width="28" height="14" viewBox="0 0 28 14" fill="none" style="display:block;margin:0 auto 1px">
+                                                <path d="M0 7 Q4 1 8 7 Q12 13 16 7 Q18 4 19 7" stroke="#facc15" stroke-width="2" fill="none"/>
+                                                <polygon points="19,3 28,7 19,11" fill="#facc15"/>
+                                            </svg>
+                                            Cond.
+                                        </button>
+                                        <button class="tb-btn" id="board-tool-arrow-solid" onclick="DTEngine.FabricEngine.setTool('arrow-solid')" title="Flecha sólida">
+                                            <svg width="28" height="14" viewBox="0 0 28 14" fill="none" style="display:block;margin:0 auto 1px">
+                                                <line x1="0" y1="7" x2="19" y2="7" stroke="#00F0FF" stroke-width="2.5"/>
+                                                <polygon points="19,3 28,7 19,11" fill="#00F0FF"/>
+                                            </svg>
+                                            Flecha
+                                        </button>
+                                    </div>
+
+                                    <!-- Zonas -->
+                                    <div class="tb-group">
+                                        <span class="tb-label">⬛ Zonas</span>
+                                        <button class="tb-btn" id="board-tool-zone-solid" onclick="DTEngine.FabricEngine.setTool('zone-solid')" title="Zona Rondo"><span style="display:inline-block;width:18px;height:12px;border:2px solid rgba(0,240,255,0.8);border-radius:2px;background:rgba(0,240,255,0.1)"></span>Zona</button>
+                                        <button class="tb-btn" id="board-tool-zone-dashed" onclick="DTEngine.FabricEngine.setTool('zone-dashed')" title="Zona Punteada"><span style="display:inline-block;width:18px;height:12px;border:2px dashed rgba(251,191,36,0.8);border-radius:2px;background:rgba(251,191,36,0.07)"></span>Punteada</button>
+                                        <button class="tb-btn" id="board-tool-zone-red" onclick="DTEngine.FabricEngine.setTool('zone-red')" title="Zona Presión"><span style="display:inline-block;width:18px;height:12px;border:2px solid rgba(239,68,68,0.8);border-radius:2px;background:rgba(239,68,68,0.1)"></span>Presión</button>
+                                    </div>
+
+                                    <!-- Acciones -->
+                                    <div style="flex:1"></div>
+                                    <div class="tb-group">
+                                        <button class="tb-btn tb-danger" onclick="DTEngine.FabricEngine.deleteSelected()" title="Eliminar seleccionado"><span class="tb-icon">🗑️</span>Borrar</button>
+                                        <button class="tb-btn tb-danger" onclick="DTEngine.FabricEngine.clear()" title="Limpiar pizarra"><span class="tb-icon">💣</span>Limpiar</button>
+                                    </div>
+                                </div>
+
+                                <!-- Canvas Fabric.js -->
+                                <div id="board-canvas-container" style="flex: 1; position: relative; overflow: hidden;">
+                                    <!-- SVG de fondo (campo) reemplazado por FabricEngine.setBackground -->
+                                    <canvas id="board-canvas" style="position: absolute; top: 0; left: 0; z-index: 10;"></canvas>
+                                </div>
+
                             </div>
                         </div>
                     </section>
@@ -2530,27 +2606,16 @@ window.DTEngine = {
         if (targetView) {
             targetView.classList.add('active');
             if (viewName === 'board') {
-                const container = document.getElementById('view-premium-tactical-board-container');
+                const container = document.getElementById('board-canvas-container');
                 if (container) {
-                    console.log("[Router] Evaluando contenedor Pizarra. Altura actual:", container.clientHeight);
-                    
-                    // Definimos ResizeObserver para esperar volumen real sin parches de tiempo
+                    console.log('[Router] Evaluando contenedor Pizarra. Altura actual:', container.clientHeight);
                     const resizeObserver = new ResizeObserver((entries, observer) => {
                         for (let entry of entries) {
                             if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
-                                console.log("[Router] Contenedor Pizarra con volumen:", entry.contentRect.width, "x", entry.contentRect.height);
-                                
-                                // Asegurar que exista la instancia separada ViewFabricEngine
-                                if (!window.DTEngine.ViewFabricEngine) {
-                                    window.DTEngine.ViewFabricEngine = Object.assign({}, window.DTEngine.FabricEngine);
-                                    // Reset de variables internas
-                                    window.DTEngine.ViewFabricEngine._fc = null;
-                                }
-
-                                const fe = window.DTEngine.ViewFabricEngine;
-                                
+                                console.log('[Router] Contenedor Pizarra con volumen:', entry.contentRect.width, 'x', entry.contentRect.height);
+                                const fe = window.DTEngine.FabricEngine;
                                 if (!fe._fc) {
-                                    fe.init('view-premium-tactical-board-container', 'view-tactical-board');
+                                    fe.init('board-canvas-container', 'board-canvas');
                                 } else {
                                     fe._fc.setWidth(entry.contentRect.width);
                                     fe._fc.setHeight(entry.contentRect.height);
@@ -3010,11 +3075,18 @@ window.DTEngine = {
 
         // Todos los IDs de botones de herramientas
         _toolBtns: [
+            // Modal "Crear Tarea"
             'tool-draw',
             'tool-player-blue','tool-player-red','tool-player-yellow','tool-player-green','tool-player-black',
             'tool-ball','tool-cone','tool-minigoal','tool-text',
             'tool-arrow-pass','tool-arrow-run','tool-arrow-solid',
-            'tool-zone-solid','tool-zone-dashed','tool-zone-red'
+            'tool-zone-solid','tool-zone-dashed','tool-zone-red',
+            // View-board (PIZARRA del nav)
+            'board-tool-draw',
+            'board-tool-player-blue','board-tool-player-red','board-tool-player-yellow','board-tool-player-green','board-tool-player-black',
+            'board-tool-ball','board-tool-cone','board-tool-minigoal','board-tool-text',
+            'board-tool-arrow-pass','board-tool-arrow-run','board-tool-arrow-solid',
+            'board-tool-zone-solid','board-tool-zone-dashed','board-tool-zone-red'
         ],
 
         updateMeasurementHUD: function(x, y, text, visible) {
