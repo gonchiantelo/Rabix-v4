@@ -1076,45 +1076,45 @@ window.DTEngine = {
                         </div>
 
                         <!-- ═══ COLUMNA DERECHA: PIZARRA TÁCTICA FABRIC.JS (65%) ═══ -->
-                        <div style="width:65%; background:#080808; display:flex; flex-direction:column; position:relative; z-index:10; pointer-events:auto;">
+                        <div style="width:65%; background:#080808; display:flex; flex-direction:column; position:relative; z-index:10; pointer-events:auto; height: 100%; max-height: 100%; overflow: hidden;">
 
                             <!-- ══════════════════════════════════════════════════
                                  TACTICAL BOARD 2.0 — BARRA DE HERRAMIENTAS
                             ══════════════════════════════════════════════════ -->
-                            <style>
-                                #tactical-toolbar { padding:8px 14px; background:#080808; border-bottom:1px solid rgba(0,240,255,0.1); display:flex; align-items:center; gap:6px; flex-wrap:wrap; flex-shrink:0; }
-                                .tb-group { display:flex; align-items:center; gap:4px; padding:0 8px; border-right:1px solid rgba(255,255,255,0.07); }
-                                .tb-group:last-child { border-right:none; }
-                                .tb-label { font-size:0.55rem; color:#4b5563; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; white-space:nowrap; padding-right:4px; }
-                                .tb-btn {
-                                    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
-                                    padding:6px 9px; border-radius:8px; border:1.5px solid #1f2937;
-                                    background:transparent; color:#6b7280; cursor:pointer;
-                                    font-size:0.6rem; font-weight:700; min-width:46px;
-                                    transition:all 0.15s ease; font-family:Outfit,sans-serif; line-height:1;
-                                }
-                                .tb-btn:hover { background:rgba(255,255,255,0.06); border-color:#374151; color:#d1d5db; }
-                                .tb-btn.tb-active { background:rgba(0,240,255,0.12); border-color:#00F0FF; color:#00F0FF; }
-                                .tb-btn .tb-icon { font-size:1rem; line-height:1; }
-                                .tb-btn .tb-dot { display:inline-block; width:16px; height:16px; border-radius:50%; border:2px solid rgba(255,255,255,0.8); margin-bottom:1px; }
-                                .tb-player-blue  { background:#1d6aff !important; box-shadow:0 0 8px rgba(29,106,255,0.5); }
-                                .tb-player-red   { background:#ef4444 !important; box-shadow:0 0 8px rgba(239,68,68,0.5); }
-                                .tb-player-yel   { background:#eab308 !important; box-shadow:0 0 8px rgba(234,179,8,0.5); }
-                                .tb-player-grn   { background:#22c55e !important; box-shadow:0 0 8px rgba(34,197,94,0.5); }
-                                .tb-player-blk   { background:#374151 !important; box-shadow:0 0 8px rgba(55,65,81,0.5); }
-                                .tb-select {
-                                    background:#0f172a; border:1.5px solid #1f2937; color:#9ca3af;
-                                    font-family:Outfit,sans-serif; font-size:0.72rem; font-weight:700;
-                                    padding:7px 10px; border-radius:8px; cursor:pointer; outline:none;
-                                    transition:border-color 0.2s;
-                                }
-                                .tb-select:hover, .tb-select:focus { border-color:#00F0FF; color:#e2e8f0; }
-                                .tb-toggle { display:flex; align-items:center; gap:5px; font-size:0.6rem; color:#6b7280; font-weight:700; font-family:Outfit,sans-serif; cursor:pointer; white-space:nowrap; }
-                                .tb-toggle input[type=checkbox] { accent-color:#00F0FF; width:13px; height:13px; }
-                                .tb-toggle:hover { color:#9ca3af; }
-                                .tb-danger { border-color:rgba(239,68,68,0.3) !important; color:#ef4444 !important; }
-                                .tb-danger:hover { background:rgba(239,68,68,0.12) !important; border-color:#ef4444 !important; }
-                            </style>
+                                <style>
+                                    #tactical-toolbar { padding:4px 8px; background:#080808; border-bottom:1px solid rgba(0,240,255,0.1); display:flex; align-items:center; gap:4px; flex-wrap:wrap; flex-shrink:0; }
+                                    .tb-group { display:flex; align-items:center; gap:3px; padding:0 6px; border-right:1px solid rgba(255,255,255,0.07); }
+                                    .tb-group:last-child { border-right:none; }
+                                    .tb-label { font-size:0.5rem; color:#4b5563; font-weight:800; letter-spacing:1px; text-transform:uppercase; white-space:nowrap; padding-right:3px; }
+                                    .tb-btn {
+                                        display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
+                                        padding:3px 6px; border-radius:6px; border:1px solid #1f2937;
+                                        background:transparent; color:#6b7280; cursor:pointer;
+                                        font-size:0.55rem; font-weight:700; min-width:38px;
+                                        transition:all 0.15s ease; font-family:Outfit,sans-serif; line-height:1;
+                                    }
+                                    .tb-btn:hover { background:rgba(255,255,255,0.06); border-color:#374151; color:#d1d5db; }
+                                    .tb-btn.tb-active { background:rgba(0,240,255,0.12); border-color:#00F0FF; color:#00F0FF; }
+                                    .tb-btn .tb-icon { font-size:0.85rem; line-height:1; }
+                                    .tb-btn .tb-dot { display:inline-block; width:12px; height:12px; border-radius:50%; border:2px solid rgba(255,255,255,0.8); margin-bottom:1px; }
+                                    .tb-player-blue  { background:#1d6aff !important; box-shadow:0 0 8px rgba(29,106,255,0.5); }
+                                    .tb-player-red   { background:#ef4444 !important; box-shadow:0 0 8px rgba(239,68,68,0.5); }
+                                    .tb-player-yel   { background:#eab308 !important; box-shadow:0 0 8px rgba(234,179,8,0.5); }
+                                    .tb-player-grn   { background:#22c55e !important; box-shadow:0 0 8px rgba(34,197,94,0.5); }
+                                    .tb-player-blk   { background:#374151 !important; box-shadow:0 0 8px rgba(55,65,81,0.5); }
+                                    .tb-select {
+                                        background:#0f172a; border:1px solid #1f2937; color:#9ca3af;
+                                        font-family:Outfit,sans-serif; font-size:0.65rem; font-weight:700;
+                                        padding:4px 6px; border-radius:6px; cursor:pointer; outline:none;
+                                        transition:border-color 0.2s;
+                                    }
+                                    .tb-select:hover, .tb-select:focus { border-color:#00F0FF; color:#e2e8f0; }
+                                    .tb-toggle { display:flex; align-items:center; gap:4px; font-size:0.55rem; color:#6b7280; font-weight:700; font-family:Outfit,sans-serif; cursor:pointer; white-space:nowrap; }
+                                    .tb-toggle input[type=checkbox] { accent-color:#00F0FF; width:11px; height:11px; }
+                                    .tb-toggle:hover { color:#9ca3af; }
+                                    .tb-danger { border-color:rgba(239,68,68,0.3) !important; color:#ef4444 !important; }
+                                    .tb-danger:hover { background:rgba(239,68,68,0.12) !important; border-color:#ef4444 !important; }
+                                </style>
                             <div id="tactical-toolbar">
 
                                 <!-- ─── GRUPO 1: FONDO / DEPORTE ─── -->
@@ -1138,13 +1138,13 @@ window.DTEngine = {
                                 </div>
 
                                 <!-- ─── AFFORDANCE: Hint de Drag & Drop ─── -->
-                                <div style="width:100%; text-align:center; padding:3px 0 1px; margin-bottom:2px;">
+                                <div style="width:100%; text-align:center; padding:2px 0; margin-bottom:1px;">
                                     <span style="
-                                        display:inline-flex; align-items:center; gap:5px;
-                                        font-family:Outfit,sans-serif; font-size:0.6rem; font-weight:600;
+                                        display:inline-flex; align-items:center; gap:4px;
+                                        font-family:Outfit,sans-serif; font-size:0.55rem; font-weight:600;
                                         color:#4b5563; letter-spacing:0.5px;
                                         background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05);
-                                        border-radius:20px; padding:3px 10px;
+                                        border-radius:12px; padding:2px 8px;
                                         user-select:none; pointer-events:none;
                                     ">💡 Arrastra a la cancha o hace clic en ella</span>
                                 </div>
@@ -1170,7 +1170,7 @@ window.DTEngine = {
                                     <!-- Contador de número de ficha -->
                                     <input id="player-number-input" type="number" min="1" max="99" value="" placeholder="#"
                                         title="Número del jugador (opcional)"
-                                        style="width:42px; background:#0f172a; border:1.5px solid #1f2937; border-radius:8px; color:#e2e8f0; font-family:Outfit,sans-serif; font-size:0.82rem; font-weight:700; padding:6px 6px; text-align:center; outline:none; transition:border-color 0.2s;"
+                                        style="width:36px; background:#0f172a; border:1px solid #1f2937; border-radius:6px; color:#e2e8f0; font-family:Outfit,sans-serif; font-size:0.75rem; font-weight:700; padding:4px 4px; text-align:center; outline:none; transition:border-color 0.2s;"
                                         onfocus="this.style.borderColor='#00F0FF'" onblur="this.style.borderColor='#1f2937'"
                                     >
                                 </div>
@@ -1245,7 +1245,7 @@ window.DTEngine = {
 
 
                             <!-- Canvas container (Fabric.js) -->
-                            <div id="premium-tactical-board-container" style="width:100%; aspect-ratio: 105 / 68; position:relative; overflow:hidden; min-height: 500px;">
+                            <div id="premium-tactical-board-container" style="flex-grow: 1; flex-shrink: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; position:relative; width: 100%;">
                                 <!-- Campo SVG (fondo decorativo — z-index:1, bajo el canvas Fabric) -->
                                 <svg id="ct-pitch-svg" viewBox="0 0 105 68" preserveAspectRatio="none" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none;">
                                     <rect width="105" height="68" fill="#1a4a1a"/>
@@ -2993,6 +2993,25 @@ window.DTEngine = {
 
         setBackground: function(type) {
             if (!this._fc) return;
+
+            // --- SINCRONIZACIÓN DE DIMENSIONES PADRE ---
+            const container = document.getElementById('premium-tactical-board-container');
+            if (container) {
+                const parentW = container.clientWidth;
+                const parentH = container.clientHeight;
+                if (parentW > 0 && parentH > 0 && (this._fc.width !== parentW || this._fc.height !== parentH)) {
+                    this._fc.setWidth(parentW);
+                    this._fc.setHeight(parentH);
+                    
+                    const canvasEl = document.getElementById('premium-tactical-board');
+                    if (canvasEl) {
+                        canvasEl.width = parentW;
+                        canvasEl.height = parentH;
+                    }
+                }
+            }
+            // -------------------------------------------
+
             this._fc.setBackgroundImage(null, this._fc.renderAll.bind(this._fc));
             
             let svgString = '';
