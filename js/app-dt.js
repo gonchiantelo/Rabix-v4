@@ -843,6 +843,8 @@ window.DTEngine = {
                                         onmouseover="this.style.borderColor='#9ca3af'; this.style.color='#9ca3af';" onmouseout="this.style.borderColor='rgba(107,114,128,0.18)'; this.style.color='#6b7280';">✋ Mover Jugadores</button>
 
                                     <div style="border-top: 1px solid rgba(255,255,255,0.05); margin-top: 2px; padding-top: 8px; display: flex; flex-direction: column; gap: 6px;">
+                                        <button onclick="window.DTEngine.Board.addBallDOM()" style="padding: 8px 12px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 7px; cursor: pointer; font-family: Outfit, sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; transition: all 0.15s;"
+                                            onmouseover="this.style.background='rgba(255,255,255,0.15)';" onmouseout="this.style.background='rgba(255,255,255,0.05)';">⚽ Añadir Balón</button>
                                         <button onclick="window.DTEngine.Board.TacticalOverlay.clearAll()" style="padding: 8px 12px; background: rgba(255,59,48,0.07); color: #ff3b30; border: 1px solid rgba(255,59,48,0.2); border-radius: 7px; cursor: pointer; font-family: Outfit, sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; transition: all 0.15s;"
                                             onmouseover="this.style.background='rgba(255,59,48,0.15)';" onmouseout="this.style.background='rgba(255,59,48,0.07)';">🗑 Borrar Anotaciones</button>
                                     </div>
@@ -4316,6 +4318,9 @@ window.DTEngine = {
             const loc = document.getElementById('slocal') ? document.getElementById('slocal').value : '4-3-3';
             const riv = document.getElementById('srival') ? document.getElementById('srival').value : '4-4-2';
             this.deployTeams(loc, riv);
+            if (this.TacticalOverlay && this.TacticalOverlay.init) {
+                this.TacticalOverlay.init();
+            }
         },
 
         deployTeams: function (loc, riv) {
@@ -4414,53 +4419,33 @@ window.DTEngine = {
             ficha.classList.add('tactical-ficha');
 
             var label = document.createElement('div');
-            label.style.cssText = 'background:' + colorBg + '; border:1px solid ' + colorMain + '; color:' + colorMain + '; font-size:0.52rem; padding:2px 7px; border-radius:4px; font-weight:800; font-family:Outfit,sans-serif; margin-bottom:4px; pointer-events:none; white-space:nowrap; letter-spacing:0.5px;';
+            label.style.cssText = 'background:' + colorBg + '; border:1px solid ' + colorMain + '; color:' + colorMain + '; font-size:0.52rem; padding:2px 7px; border-radius:4px; font-weight:800; font-family:Outfit,sans-serif; margin-bottom:4px; pointer-events:none; white-space:nowrap; letter-spacing:0.5px; transition: all 0.2s;';
             label.textContent = roleText;
+            label.dataset.role = roleText;
 
             var circle = document.createElement('div');
             circle.style.cssText = 'width:38px; height:38px; background:' + colorMain + '; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:900; color:' + textColor + '; box-shadow: 0 0 12px ' + colorShadow + ', 0 4px 10px rgba(0,0,0,0.6); pointer-events:none; font-family:Outfit,sans-serif; letter-spacing:-0.5px; position:relative;';
             circle.textContent = posText;
 
-            // ── Player Name Label (DOM nativo, estilo Neón) ──
-            var nameLabel = document.createElement('span');
-            nameLabel.className = 'player-name-label';
-            nameLabel.style.cssText = [
-                'position:absolute',
-                'bottom:-22px',
-                'left:50%',
-                'transform:translateX(-50%)',
-                'color:#ffffff',
-                'font-size:10px',
-                'font-family:Outfit,sans-serif',
-                'font-weight:600',
-                'white-space:nowrap',
-                'pointer-events:none',
-                'text-shadow:0 0 6px ' + colorMain + ', 0 0 14px ' + colorShadow,
-                'letter-spacing:0.5px',
-                'opacity:0.9'
-            ].join(';');
-            nameLabel.textContent = '';
-            circle.appendChild(nameLabel);
-
             ficha.appendChild(label);
             ficha.appendChild(circle);
 
-            // ── Doble clic para editar nombre del jugador ──
+            // ── Doble clic para editar nombre in-place ──
             ficha.addEventListener('dblclick', function (e) {
                 e.stopPropagation();
-                // Mostrar inline input sobre la ficha
                 var existing = ficha.querySelector('.player-name-input');
                 if (existing) return;
 
                 var input = document.createElement('input');
                 input.type = 'text';
                 input.className = 'player-name-input';
-                input.value = nameLabel.textContent || '';
-                input.placeholder = 'Nombre...';
-                input.maxLength = 14;
+                // Si ya fue editado y no es el rol original, mostrar el texto actual
+                input.value = (label.textContent !== label.dataset.role) ? label.textContent : '';
+                input.placeholder = label.dataset.role;
+                input.maxLength = 18;
                 input.style.cssText = [
                     'position:absolute',
-                    'bottom:-40px',
+                    'top:-2px',
                     'left:50%',
                     'transform:translateX(-50%)',
                     'width:80px',
@@ -4477,20 +4462,28 @@ window.DTEngine = {
                     'box-shadow:0 0 8px ' + colorShadow
                 ].join(';');
 
-                circle.appendChild(input);
+                // Ocultamos temporalmente la etiqueta para que no se superponga
+                label.style.opacity = '0';
+                ficha.appendChild(input);
                 input.focus();
                 input.select();
 
                 function commitName() {
                     var newName = input.value.trim();
-                    nameLabel.textContent = newName;
+                    if (newName !== '') {
+                        label.textContent = newName;
+                    } else {
+                        label.textContent = label.dataset.role;
+                    }
                     if (input.parentNode) input.parentNode.removeChild(input);
+                    label.style.opacity = '1';
                 }
                 input.addEventListener('blur', commitName);
                 input.addEventListener('keydown', function (ev) {
                     if (ev.key === 'Enter') commitName();
                     if (ev.key === 'Escape') {
                         if (input.parentNode) input.parentNode.removeChild(input);
+                        label.style.opacity = '1';
                     }
                     ev.stopPropagation();
                 });
@@ -4500,7 +4493,6 @@ window.DTEngine = {
             var isDragging = false;
 
             ficha.addEventListener('pointerdown', function (e) {
-                // No arrastrar si el overlay de zonas/flechas está activo
                 var overlayMode = window.DTEngine.Board.TacticalOverlay._mode;
                 if (overlayMode === 'zone' || overlayMode === 'arrow' || overlayMode === 'pass') return;
                 isDragging = true;
@@ -4533,6 +4525,67 @@ window.DTEngine = {
             layer.appendChild(ficha);
         },
 
+        // ── Balón Nativo arrastrable ──
+        addBallDOM: function () {
+            const layer = document.getElementById('tokens-layer');
+            if (!layer) return;
+
+            var ball = document.createElement('div');
+            ball.className = 'tactical-ball';
+            ball.style.cssText = [
+                'position:absolute',
+                'left:50%',
+                'top:50%',
+                'transform:translate(-50%, -50%)',
+                'display:flex',
+                'align-items:center',
+                'justify-content:center',
+                'cursor:grab',
+                'user-select:none',
+                'z-index:30',
+                'pointer-events:auto',
+                'font-size:1.2rem',
+                'width:24px',
+                'height:24px',
+                'background:#fff',
+                'border-radius:50%',
+                'box-shadow:0 0 10px rgba(255,255,255,0.5), inset -2px -2px 6px rgba(0,0,0,0.3)',
+                'transition:transform 0.1s ease'
+            ].join(';');
+            ball.textContent = '⚽';
+
+            var isDragging = false;
+            ball.addEventListener('pointerdown', function (e) {
+                var overlayMode = window.DTEngine.Board.TacticalOverlay._mode;
+                if (overlayMode === 'zone' || overlayMode === 'arrow' || overlayMode === 'pass') return;
+                isDragging = true;
+                ball.style.cursor = 'grabbing';
+                ball.style.zIndex = '200';
+                ball.style.transform = 'translate(-50%, -50%) scale(1.3)';
+                ball.setPointerCapture(e.pointerId);
+            });
+
+            ball.addEventListener('pointermove', function (e) {
+                if (!isDragging) return;
+                var rect = layer.getBoundingClientRect();
+                var nx = ((e.clientX - rect.left) / rect.width) * 100;
+                var ny = ((e.clientY - rect.top) / rect.height) * 100;
+                ball.style.left = nx.toFixed(2) + '%';
+                ball.style.top = ny.toFixed(2) + '%';
+            });
+
+            ball.addEventListener('pointerup', function (e) {
+                if (!isDragging) return;
+                isDragging = false;
+                ball.style.cursor = 'grab';
+                ball.style.zIndex = '30';
+                ball.style.transform = 'translate(-50%, -50%) scale(1)';
+                ball.releasePointerCapture(e.pointerId);
+            });
+
+            layer.appendChild(ball);
+        },
+
         // ════════════════════════════════════════════════════
         // TACTICAL OVERLAY ENGINE — DOM + SVG nativo (sin Canvas)
         // ════════════════════════════════════════════════════
@@ -4543,9 +4596,40 @@ window.DTEngine = {
             _startY: 0,
             _currentZone: null,
             _currentLine: null,
+            _currentG: null,
             _boundDown: null,
             _boundMove: null,
             _boundUp: null,
+
+            init: function() {
+                // Atajo global para borrar elementos tácticos activos
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Delete' || e.key === 'Backspace') {
+                        if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
+                        if (window.DTEngine && window.DTEngine.activeTacticalElement) {
+                            window.DTEngine.activeTacticalElement.remove();
+                            window.DTEngine.activeTacticalElement = null;
+                        }
+                    }
+                });
+
+                // Clic global para deseleccionar
+                document.addEventListener('pointerdown', function(e) {
+                    if (window.DTEngine && window.DTEngine.activeTacticalElement) {
+                        if (!window.DTEngine.activeTacticalElement.contains(e.target) && e.target !== window.DTEngine.activeTacticalElement) {
+                            var el = window.DTEngine.activeTacticalElement;
+                            if (el.classList.contains('tactical-zone')) {
+                                el.style.boxShadow = 'inset 0 0 20px rgba(0,242,254,0.04), 0 0 8px rgba(0,242,254,0.12)';
+                                el.style.borderColor = '#00f2fe';
+                            } else if (el.tagName === 'g') {
+                                var line = el.querySelector('line');
+                                if(line) line.setAttribute('stroke-width', '2');
+                            }
+                            window.DTEngine.activeTacticalElement = null;
+                        }
+                    }
+                });
+            },
 
             /** Cambia el modo activo y ajusta pointer-events en las capas */
             setMode: function (mode) {
@@ -4641,6 +4725,88 @@ window.DTEngine = {
                 };
             },
 
+            // Aplica la lógica de drag y selección a zonas y líneas
+            _makeInteractive: function (el) {
+                el.style.pointerEvents = 'auto';
+                el.style.cursor = 'pointer';
+                el.addEventListener('pointerdown', function (e) {
+                    if (window.DTEngine.Board.TacticalOverlay._mode !== 'none') return;
+                    e.stopPropagation();
+
+                    // Deseleccionar el anterior
+                    if (window.DTEngine.activeTacticalElement && window.DTEngine.activeTacticalElement !== el) {
+                        var prev = window.DTEngine.activeTacticalElement;
+                        if (prev.classList.contains('tactical-zone')) {
+                            prev.style.boxShadow = 'inset 0 0 20px rgba(0,242,254,0.04), 0 0 8px rgba(0,242,254,0.12)';
+                            prev.style.borderColor = '#00f2fe';
+                        } else if (prev.tagName === 'g') {
+                            var pline = prev.querySelector('line');
+                            if (pline) pline.setAttribute('stroke-width', '2');
+                        }
+                    }
+
+                    window.DTEngine.activeTacticalElement = el;
+
+                    // Destacar el actual
+                    if (el.classList.contains('tactical-zone')) {
+                        el.style.boxShadow = 'inset 0 0 20px rgba(255,255,255,0.2), 0 0 12px rgba(255,255,255,0.8)';
+                        el.style.borderColor = '#fff';
+                    } else if (el.tagName === 'g') {
+                        var line = el.querySelector('line');
+                        if (line) line.setAttribute('stroke-width', '4');
+                    }
+
+                    // Setup Drag nativo
+                    var overlay = window.DTEngine.Board.TacticalOverlay;
+                    var container = document.getElementById('pitch-container');
+                    var startPos = overlay._getRelativePos(e, container);
+
+                    var initialLeft, initialTop;
+                    var initialTx = 0, initialTy = 0;
+
+                    if (el.classList.contains('tactical-zone')) {
+                        initialLeft = parseFloat(el.style.left);
+                        initialTop = parseFloat(el.style.top);
+                    } else if (el.tagName === 'g') {
+                        var t = el.getAttribute('transform');
+                        if (t) {
+                            var match = t.match(/translate\(([^,]+),\s*([^\)]+)\)/);
+                            if (match) {
+                                initialTx = parseFloat(match[1]);
+                                initialTy = parseFloat(match[2]);
+                            }
+                        }
+                    }
+
+                    el.setPointerCapture(e.pointerId);
+
+                    var moveHandler = function (ev) {
+                        var currPos = overlay._getRelativePos(ev, container);
+                        var dx = currPos.px - startPos.px;
+                        var dy = currPos.py - startPos.py;
+
+                        if (el.classList.contains('tactical-zone')) {
+                            el.style.left = (initialLeft + dx) + '%';
+                            el.style.top = (initialTop + dy) + '%';
+                        } else if (el.tagName === 'g') {
+                            // En SVG, mover transform relative a px absolutos
+                            var dxPx = currPos.x - startPos.x;
+                            var dyPx = currPos.y - startPos.y;
+                            el.setAttribute('transform', 'translate(' + (initialTx + dxPx) + ', ' + (initialTy + dyPx) + ')');
+                        }
+                    };
+
+                    var upHandler = function (ev) {
+                        el.releasePointerCapture(ev.pointerId);
+                        el.removeEventListener('pointermove', moveHandler);
+                        el.removeEventListener('pointerup', upHandler);
+                    };
+
+                    el.addEventListener('pointermove', moveHandler);
+                    el.addEventListener('pointerup', upHandler);
+                });
+            },
+
             _onDown: function (e, container) {
                 if (e.button !== 0) return;
                 e.preventDefault();
@@ -4658,14 +4824,14 @@ window.DTEngine = {
                         'border:2px dashed #00f2fe',
                         'background:rgba(0,242,254,0.08)',
                         'border-radius:4px',
-                        'pointer-events:none',
+                        'pointer-events:none', // temporal mientras se dibuja
                         'box-shadow:inset 0 0 20px rgba(0,242,254,0.04), 0 0 8px rgba(0,242,254,0.12)',
                         'left:' + pos.px.toFixed(2) + '%',
                         'top:' + pos.py.toFixed(2) + '%',
                         'width:0',
-                        'height:0'
+                        'height:0',
+                        'transition: box-shadow 0.2s, border-color 0.2s'
                     ].join(';');
-                    // Guardar origen en px absolutos para cálculos de resize
                     zone.dataset.ox = pos.x;
                     zone.dataset.oy = pos.y;
                     document.getElementById('zones-layer').appendChild(zone);
@@ -4677,6 +4843,11 @@ window.DTEngine = {
                     var color = isPass ? '#FFC800' : '#00F2FE';
                     var markerId = isPass ? 'arrowhead-yellow' : 'arrowhead-cyan';
 
+                    var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    g.setAttribute('transform', 'translate(0, 0)');
+                    g.style.pointerEvents = 'none'; // temporal mientras se dibuja
+                    g.style.transition = 'filter 0.2s';
+
                     var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                     line.setAttribute('x1', pos.px.toFixed(2) + '%');
                     line.setAttribute('y1', pos.py.toFixed(2) + '%');
@@ -4687,11 +4858,15 @@ window.DTEngine = {
                     line.setAttribute('stroke-linecap', 'round');
                     line.setAttribute('marker-end', 'url(#' + markerId + ')');
                     line.setAttribute('filter', 'drop-shadow(0 0 4px ' + color + ')');
+                    line.style.transition = 'stroke-width 0.2s';
+                    
                     if (isPass) {
                         line.setAttribute('stroke-dasharray', '8,5');
                     }
-                    svgEl.appendChild(line);
+                    g.appendChild(line);
+                    svgEl.appendChild(g);
                     this._currentLine = line;
+                    this._currentG = g;
                 }
             },
 
@@ -4726,12 +4901,13 @@ window.DTEngine = {
                 this._drawing = false;
                 container.releasePointerCapture(e.pointerId);
 
-                // Eliminar zonas o líneas demasiado pequeñas (click sin drag)
                 if (this._mode === 'zone' && this._currentZone) {
                     var w = parseFloat(this._currentZone.style.width);
                     var h = parseFloat(this._currentZone.style.height);
                     if (w < 2 && h < 2) {
                         this._currentZone.remove();
+                    } else {
+                        this._makeInteractive(this._currentZone);
                     }
                     this._currentZone = null;
 
@@ -4741,9 +4917,12 @@ window.DTEngine = {
                     var y1 = parseFloat(this._currentLine.getAttribute('y1'));
                     var y2 = parseFloat(this._currentLine.getAttribute('y2'));
                     if (Math.abs(x2 - x1) < 1.5 && Math.abs(y2 - y1) < 1.5) {
-                        this._currentLine.remove();
+                        this._currentG.remove();
+                    } else {
+                        this._makeInteractive(this._currentG);
                     }
                     this._currentLine = null;
+                    this._currentG = null;
                 }
             },
 
