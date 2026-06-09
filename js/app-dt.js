@@ -800,11 +800,10 @@ window.DTEngine = {
                     
                     <section id="view-board" class="view-section" style="width: 100%; margin-top: 15px; box-sizing: border-box;">
                         <div style="display: flex; gap: 20px; width: 100%; height: 85vh;">
-                            <!-- Panel izquierdo: selectores de esquema -->
                             <div style="width: 260px; background: #111827; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 20px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;">
                                 <h3 style="color: var(--primary-color, #00F2FE); margin: 0; font-family: Outfit; font-size: 1.2rem;">SALA DE JUEGOS</h3>
                                 <p style="color: #6b7280; font-size: 0.8rem; margin-top: -10px; margin-bottom: 10px;">Diseño Táctico</p>
-
+                                
                                 <label style="color: #9ca3af; font-size: 0.75rem; font-weight: bold; margin-bottom: -10px;">ESQUEMA LOCAL</label>
                                 <select id="slocal" onchange="window.DTEngine.Board.deployTeams(this.value, document.getElementById('srival').value)" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
                                     <option value="4-3-3">1-4-3-3 Ofensivo</option>
@@ -812,7 +811,7 @@ window.DTEngine = {
                                     <option value="4-2-3-1">1-4-2-3-1 Equilibrado</option>
                                     <option value="3-5-2">1-3-5-2 Carrileros</option>
                                 </select>
-
+                    
                                 <label style="color: #9ca3af; font-size: 0.75rem; font-weight: bold; margin-top: 10px; margin-bottom: -10px;">ESQUEMA RIVAL</label>
                                 <select id="srival" onchange="window.DTEngine.Board.deployTeams(document.getElementById('slocal').value, this.value)" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
                                     <option value="4-4-2">1-4-4-2 Clásico</option>
@@ -820,103 +819,26 @@ window.DTEngine = {
                                     <option value="4-2-3-1">1-4-2-3-1 Equilibrado</option>
                                     <option value="3-5-2">1-3-5-2 Carrileros</option>
                                 </select>
-
+                    
                                 <button onclick="window.DTEngine.Board.deployTeams(document.getElementById('slocal').value, document.getElementById('srival').value)" style="margin-top: auto; padding: 12px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 6px; cursor: pointer; font-weight: bold;">↻ Restaurar Posiciones</button>
                             </div>
-
-                            <!-- Área derecha: toolbar + canvas Fabric.js -->
-                            <div style="flex: 1; background: #0f172a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden;">
-
-                                <!-- Barra de herramientas compacta -->
-                                <div id="board-toolbar" style="padding: 4px 8px; background: #080808; border-bottom: 1px solid rgba(0,240,255,0.1); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; flex-shrink: 0;">
-
-                                    <!-- Campo -->
-                                    <div class="tb-group">
-                                        <span class="tb-label">⚽ Campo</span>
-                                        <select class="tb-select" onchange="DTEngine.FabricEngine.setBackground(this.value)">
-                                            <option value="futbol11">Fútbol 11</option>
-                                            <option value="futbol-media">½ Cancha</option>
-                                            <option value="basketball">Básquetbol</option>
-                                            <option value="parquet">Parquet</option>
-                                            <option value="blank">Pizarra Lisa</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Trazo libre -->
-                                    <div class="tb-group">
-                                        <button class="tb-btn tb-active" id="board-tool-draw" onclick="DTEngine.FabricEngine.setTool('draw')" title="Trazo Libre">
-                                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="display:block;margin:0 auto 1px"><path d="M2 11 Q6 2 12 3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
-                                            Trazo
-                                        </button>
-                                    </div>
-
-                                    <!-- Jugadores -->
-                                    <div class="tb-group">
-                                        <span class="tb-label">👤</span>
-                                        <button class="tb-btn" id="board-tool-player-blue" draggable="true" ondragstart="event.dataTransfer.setData('tool','player-blue')" onclick="DTEngine.FabricEngine.setTool('player-blue')" title="Local (Azul)"><span class="tb-dot tb-player-blue"></span>Local</button>
-                                        <button class="tb-btn" id="board-tool-player-red" draggable="true" ondragstart="event.dataTransfer.setData('tool','player-red')" onclick="DTEngine.FabricEngine.setTool('player-red')" title="Rival (Rojo)"><span class="tb-dot tb-player-red"></span>Rival</button>
-                                        <button class="tb-btn" id="board-tool-player-yellow" draggable="true" ondragstart="event.dataTransfer.setData('tool','player-yellow')" onclick="DTEngine.FabricEngine.setTool('player-yellow')" title="Comodín"><span class="tb-dot tb-player-yel"></span>Comod.</button>
-                                        <button class="tb-btn" id="board-tool-player-green" draggable="true" ondragstart="event.dataTransfer.setData('tool','player-green')" onclick="DTEngine.FabricEngine.setTool('player-green')" title="Verde"><span class="tb-dot tb-player-grn"></span>Verde</button>
-                                        <button class="tb-btn" id="board-tool-player-black" draggable="true" ondragstart="event.dataTransfer.setData('tool','player-black')" onclick="DTEngine.FabricEngine.setTool('player-black')" title="Negro"><span class="tb-dot tb-player-blk"></span>Negro</button>
-                                    </div>
-
-                                    <!-- Elementos -->
-                                    <div class="tb-group">
-                                        <span class="tb-label">🧩</span>
-                                        <button class="tb-btn" id="board-tool-ball" draggable="true" ondragstart="event.dataTransfer.setData('tool','ball')" onclick="DTEngine.FabricEngine.setTool('ball')" title="Balón"><span class="tb-icon">⚽</span>Balón</button>
-                                        <button class="tb-btn" id="board-tool-cone" draggable="true" ondragstart="event.dataTransfer.setData('tool','cone')" onclick="DTEngine.FabricEngine.setTool('cone')" title="Cono"><span class="tb-icon">🔺</span>Cono</button>
-                                        <button class="tb-btn" id="board-tool-minigoal" draggable="true" ondragstart="event.dataTransfer.setData('tool','minigoal')" onclick="DTEngine.FabricEngine.setTool('minigoal')" title="Mini Arco"><span class="tb-icon">🥅</span>Arco</button>
-                                        <button class="tb-btn" id="board-tool-text" onclick="DTEngine.FabricEngine.setTool('text')" title="Texto libre"><span class="tb-icon">T</span>Texto</button>
-                                    </div>
-
-                                    <!-- Rutas / Vectores -->
-                                    <div class="tb-group">
-                                        <span class="tb-label">🏃 Rutas</span>
-                                        <button class="tb-btn" id="board-tool-arrow-pass" onclick="DTEngine.FabricEngine.setTool('arrow-pass')" title="Desplazamiento — Arrastrá en el canvas">
-                                            <svg width="28" height="14" viewBox="0 0 28 14" fill="none" style="display:block;margin:0 auto 1px">
-                                                <line x1="0" y1="7" x2="19" y2="7" stroke="currentColor" stroke-width="2" stroke-dasharray="4 2.5"/>
-                                                <polygon points="19,3 28,7 19,11" fill="currentColor"/>
-                                            </svg>
-                                            Desplaz.
-                                        </button>
-                                        <button class="tb-btn" id="board-tool-arrow-run" onclick="DTEngine.FabricEngine.setTool('arrow-run')" title="Conducción — Arrastrá en el canvas">
-                                            <svg width="28" height="14" viewBox="0 0 28 14" fill="none" style="display:block;margin:0 auto 1px">
-                                                <path d="M0 7 Q4 1 8 7 Q12 13 16 7 Q18 4 19 7" stroke="#facc15" stroke-width="2" fill="none"/>
-                                                <polygon points="19,3 28,7 19,11" fill="#facc15"/>
-                                            </svg>
-                                            Cond.
-                                        </button>
-                                        <button class="tb-btn" id="board-tool-arrow-solid" onclick="DTEngine.FabricEngine.setTool('arrow-solid')" title="Flecha sólida">
-                                            <svg width="28" height="14" viewBox="0 0 28 14" fill="none" style="display:block;margin:0 auto 1px">
-                                                <line x1="0" y1="7" x2="19" y2="7" stroke="#00F0FF" stroke-width="2.5"/>
-                                                <polygon points="19,3 28,7 19,11" fill="#00F0FF"/>
-                                            </svg>
-                                            Flecha
-                                        </button>
-                                    </div>
-
-                                    <!-- Zonas -->
-                                    <div class="tb-group">
-                                        <span class="tb-label">⬛ Zonas</span>
-                                        <button class="tb-btn" id="board-tool-zone-solid" onclick="DTEngine.FabricEngine.setTool('zone-solid')" title="Zona Rondo"><span style="display:inline-block;width:18px;height:12px;border:2px solid rgba(0,240,255,0.8);border-radius:2px;background:rgba(0,240,255,0.1)"></span>Zona</button>
-                                        <button class="tb-btn" id="board-tool-zone-dashed" onclick="DTEngine.FabricEngine.setTool('zone-dashed')" title="Zona Punteada"><span style="display:inline-block;width:18px;height:12px;border:2px dashed rgba(251,191,36,0.8);border-radius:2px;background:rgba(251,191,36,0.07)"></span>Punteada</button>
-                                        <button class="tb-btn" id="board-tool-zone-red" onclick="DTEngine.FabricEngine.setTool('zone-red')" title="Zona Presión"><span style="display:inline-block;width:18px;height:12px;border:2px solid rgba(239,68,68,0.8);border-radius:2px;background:rgba(239,68,68,0.1)"></span>Presión</button>
-                                    </div>
-
-                                    <!-- Acciones -->
-                                    <div style="flex:1"></div>
-                                    <div class="tb-group">
-                                        <button class="tb-btn tb-danger" onclick="DTEngine.FabricEngine.deleteSelected()" title="Eliminar seleccionado"><span class="tb-icon">🗑️</span>Borrar</button>
-                                        <button class="tb-btn tb-danger" onclick="DTEngine.FabricEngine.clear()" title="Limpiar pizarra"><span class="tb-icon">💣</span>Limpiar</button>
-                                    </div>
-                                </div>
-
-                                <!-- Canvas Fabric.js -->
-                                <div id="board-canvas-container" style="flex: 1; position: relative; overflow: hidden;">
-                                    <!-- SVG de fondo (campo) reemplazado por FabricEngine.setBackground -->
-                                    <canvas id="board-canvas" style="position: absolute; top: 0; left: 0; z-index: 10;"></canvas>
-                                </div>
-
+                    
+                            <div style="flex: 1; background: #0f172a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                <svg viewBox="0 -5 105 78" style="width: 95%; height: 95%; overflow: visible; opacity: 0.8;">
+                                    <rect x="0" y="0" width="105" height="68" fill="none" stroke="#334155" stroke-width="0.4"/>
+                                    <line x1="52.5" y1="0" x2="52.5" y2="68" stroke="#334155" stroke-width="0.4"/>
+                                    <circle cx="52.5" cy="34" r="9.15" fill="none" stroke="#334155" stroke-width="0.4"/>
+                                    <circle cx="52.5" cy="34" r="0.5" fill="#334155"/>
+                                    <rect x="0" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                                    <rect x="0" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                                    <circle cx="11" cy="34" r="0.4" fill="#334155"/>
+                                    <path d="M 16.5 24.84 A 9.15 9.15 0 0 1 16.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/>
+                                    <rect x="88.5" y="13.84" width="16.5" height="40.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                                    <rect x="99.5" y="26.84" width="5.5" height="14.32" fill="none" stroke="#334155" stroke-width="0.4"/>
+                                    <circle cx="94" cy="34" r="0.4" fill="#334155"/>
+                                    <path d="M 88.5 24.84 A 9.15 9.15 0 0 0 88.5 43.16" fill="none" stroke="#334155" stroke-width="0.4"/>
+                                </svg>
+                                <div id="tokens-layer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
                             </div>
                         </div>
                     </section>
@@ -1273,29 +1195,14 @@ window.DTEngine = {
                                 <!-- ─── GRUPO 5: RUTAS / FLECHAS ─── -->
                                 <div class="tb-group">
                                     <span class="tb-label">🏃 Rutas</span>
-                                    <!-- Desplazamiento: línea punteada con flecha → drag & drop en el canvas -->
-                                    <button id="tool-arrow-pass" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-pass')" title="Desplazamiento — Arrastrá en el canvas para trazar (línea punteada + flecha)">
-                                        <svg width="28" height="14" viewBox="0 0 28 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 1px;">
-                                            <line x1="0" y1="7" x2="19" y2="7" stroke="currentColor" stroke-width="2" stroke-dasharray="4 2.5"/>
-                                            <polygon points="19,3 28,7 19,11" fill="currentColor"/>
-                                        </svg>
-                                        Desplaz.
+                                    <button id="tool-arrow-pass" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-pass')" title="Pase (línea punteada con flecha)">
+                                        <span style="font-size:0.9rem; letter-spacing:-1px;">--→</span>Pase
                                     </button>
-                                    <!-- Conducción: curva ondulada con flecha → drag & drop en el canvas -->
-                                    <button id="tool-arrow-run" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-run')" title="Conducción — Arrastrá en el canvas para trazar (curva ondulada + flecha)">
-                                        <svg width="28" height="14" viewBox="0 0 28 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 1px;">
-                                            <path d="M0 7 Q4 1 8 7 Q12 13 16 7 Q18 4 19 7" stroke="#facc15" stroke-width="2" fill="none"/>
-                                            <polygon points="19,3 28,7 19,11" fill="#facc15"/>
-                                        </svg>
-                                        Cond.
+                                    <button id="tool-arrow-run" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-run')" title="Conducción (curva con flecha)">
+                                        <span style="font-size:0.9rem;">↝→</span>Cond.
                                     </button>
-                                    <!-- Flecha sólida → drag & drop en el canvas -->
-                                    <button id="tool-arrow-solid" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-solid')" title="Flecha sólida — Arrastrá en el canvas para trazar">
-                                        <svg width="28" height="14" viewBox="0 0 28 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 1px;">
-                                            <line x1="0" y1="7" x2="19" y2="7" stroke="#00F0FF" stroke-width="2.5"/>
-                                            <polygon points="19,3 28,7 19,11" fill="#00F0FF"/>
-                                        </svg>
-                                        Flecha
+                                    <button id="tool-arrow-solid" class="tb-btn" onclick="DTEngine.FabricEngine.setTool('arrow-solid')" title="Flecha sólida">
+                                        <span style="font-size:0.9rem;">──→</span>Flecha
                                     </button>
                                 </div>
 
@@ -1724,11 +1631,11 @@ window.DTEngine = {
         if (especEl) especEl.value = '0.4';
         if (volEl) volEl.value = '';
         if (saveBtn) saveBtn.textContent = 'GUARDAR SESIÓN';
-        
+
         const rivalContainer = document.getElementById('rival-container');
         const rivalInput = document.getElementById('macro-rival');
         const isMatch = this._matchDays.has(date);
-        
+
         if (rivalContainer) rivalContainer.style.display = isMatch ? 'block' : 'none';
         if (rivalInput) rivalInput.value = '';
 
@@ -1827,7 +1734,7 @@ window.DTEngine = {
         const especificidad = document.getElementById('drawer-especificidad')?.value || '0.4';
         const isMatch = this._matchDays.has(dateStr);
         const volumen = document.getElementById('drawer-volumen')?.value || null;
-        
+
         const rivalInput = document.getElementById('macro-rival');
         const rival = (isMatch && rivalInput) ? rivalInput.value.trim() : null;
 
@@ -1888,7 +1795,7 @@ window.DTEngine = {
             if (error) throw error;
 
             console.log('✅ Sesión eliminada:', dateStr);
-            
+
             // Limpiar estado local
             if (this._microcycleSessions && this._microcycleSessions[dateStr]) {
                 delete this._microcycleSessions[dateStr];
@@ -1912,7 +1819,7 @@ window.DTEngine = {
             // Refrescar calendario y cerrar
             this.generateCalendar();
             this.closeDrawer();
-            
+
             alert('Sesión eliminada correctamente.');
         } catch (e) {
             console.error('❌ Error al eliminar sesión:', e);
@@ -2202,7 +2109,7 @@ window.DTEngine = {
             if (!teamId) return alert("Error: Equipo no identificado.");
 
             console.log("🟡 Intentando desasignar tarea del calendario:", task);
-            
+
             // 1. Lógica solicitada: Filtrar del array 'actividades' en microcycle_sessions
             const session = this._microcycleSessions && this._microcycleSessions[date];
             if (session) {
@@ -2240,10 +2147,10 @@ window.DTEngine = {
     async deleteCustomTask(taskId) {
         try {
             if (!confirm('¿Estás seguro de que deseas eliminar esta tarea de tu biblioteca para siempre?')) return;
-            
+
             const uid = localStorage.getItem('ravix_v5_uid');
             if (!uid) return;
-            
+
             const { error } = await window.supabase
                 .from('custom_exercises')
                 .delete()
@@ -2251,17 +2158,17 @@ window.DTEngine = {
                 .eq('user_id', uid);
 
             if (error) throw error;
-            
+
             // Eliminar del estado local
             if (window.CustomExercises) {
                 window.CustomExercises = window.CustomExercises.filter(t => String(t.numericId) !== String(taskId) && String(t.id) !== String(taskId));
             }
-            
+
             // Re-renderizar la biblioteca usando la etiqueta actual
             this.renderLibrary(this._stagedLabel || this.calcularEtiquetaMD(this._selectedDate, Array.from(this._matchDays)));
-            
+
             if (this._showToast) this._showToast('🗑️ Tarea eliminada permanentemente', 'success');
-        } catch(err) {
+        } catch (err) {
             console.error("🔴 Error al borrar custom task:", err);
             alert("Error al borrar la tarea: " + err.message);
         }
@@ -2314,7 +2221,7 @@ window.DTEngine = {
 
     renderTaskModal(task) {
         if (!task) return;
-        
+
         const tagsHtml = Array.isArray(task?.tags)
             ? task.tags.map(t => `<span style="background:rgba(0,242,254,0.1);color:#00F2FE;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:700;margin-right:5px;border:1px solid rgba(0,242,254,0.3);">${t}</span>`).join('')
             : '';
@@ -2371,7 +2278,7 @@ window.DTEngine = {
                 </div>
             </div>
         `;
-        
+
         const bodyEl = document.getElementById('modal-body-content');
         if (bodyEl) {
             bodyEl.innerHTML = htmlContent;
@@ -2386,7 +2293,7 @@ window.DTEngine = {
             }
 
             modalTarget.classList.remove('hidden');
-            
+
             // FUERZA BRUTA CSS: Sobrescribir cualquier conflicto externo
             modalTarget.style.cssText = `
                 display: flex !important;
@@ -2404,7 +2311,7 @@ window.DTEngine = {
                 opacity: 1 !important;
                 pointer-events: auto !important;
             `;
-            
+
             const contentTarget = modalTarget.querySelector('.modal-content');
             if (contentTarget) {
                 contentTarget.style.cssText = `
@@ -2415,7 +2322,7 @@ window.DTEngine = {
                     z-index: 2147483647 !important;
                 `;
             }
-            
+
             console.log('Modal abierto exitosamente (movido a document.body)');
         } else {
             console.error('CRÍTICO: No se encontró el elemento modal en el HTML con ese ID.');
@@ -2581,8 +2488,8 @@ window.DTEngine = {
         const board = document.getElementById('view-board');
 
         const views = [home, cal, an, prof, board];
-        views.forEach(v => { 
-            if (v) v.classList.remove('active'); 
+        views.forEach(v => {
+            if (v) v.classList.remove('active');
         });
 
         let targetView = null;
@@ -2606,16 +2513,19 @@ window.DTEngine = {
         if (targetView) {
             targetView.classList.add('active');
             if (viewName === 'board') {
-                const container = document.getElementById('board-canvas-container');
+                const container = document.getElementById('premium-tactical-board-container');
                 if (container) {
-                    console.log('[Router] Evaluando contenedor Pizarra. Altura actual:', container.clientHeight);
+                    console.log("[Router] Evaluando contenedor Pizarra. Altura actual:", container.clientHeight);
+
+                    // Definimos ResizeObserver para esperar volumen real sin parches de tiempo
                     const resizeObserver = new ResizeObserver((entries, observer) => {
                         for (let entry of entries) {
                             if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
-                                console.log('[Router] Contenedor Pizarra con volumen:', entry.contentRect.width, 'x', entry.contentRect.height);
+                                console.log("[Router] Contenedor Pizarra con volumen:", entry.contentRect.width, "x", entry.contentRect.height);
                                 const fe = window.DTEngine.FabricEngine;
+
                                 if (!fe._fc) {
-                                    fe.init('board-canvas-container', 'board-canvas');
+                                    fe.init();
                                 } else {
                                     fe._fc.setWidth(entry.contentRect.width);
                                     fe._fc.setHeight(entry.contentRect.height);
@@ -2627,7 +2537,7 @@ window.DTEngine = {
                             }
                         }
                     });
-                    
+
                     // Comienza a observar
                     resizeObserver.observe(container);
                 }
@@ -2643,7 +2553,7 @@ window.DTEngine = {
 
         const weeklyMinutes = [0, 0, 0, 0, 0, 0, 0];
         const weeklySRPE = [0, 0, 0, 0, 0, 0, 0];
-        
+
         // PREPARACIÓN FASE 2: Estructuras para "CARGA REAL" devuelta por los jugadores.
         // Se usarán para superponer un segundo dataset en las gráficas semanales.
         const weeklyRealMinutes = [0, 0, 0, 0, 0, 0, 0]; // TODO Phase 2
@@ -2743,19 +2653,19 @@ window.DTEngine = {
             const dtNameInputEl = document.getElementById('dt-name-input');
             const teamNameEl = document.getElementById('prof-team-name');
             const teamColorEl = document.getElementById('prof-team-color');
-            
+
             const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== null && val !== undefined) el.value = val; };
 
             if (nameEl) nameEl.value = userData.name || '';
             if (dtNameInputEl) dtNameInputEl.value = userData.name || '';
-            
+
             const emailEl = document.getElementById('prof-email');
             if (emailEl) emailEl.value = userData.email || '';
-            
+
             // Pre-hidratación estricta desde variables globales para evitar vacíos visuales (Fallback)
             if (teamNameEl) teamNameEl.value = teamData.name || '';
             if (teamColorEl) teamColorEl.value = teamData.primary_color || '#079FA0';
-            
+
 
             try {
                 // Cargar datos del DT
@@ -2771,22 +2681,22 @@ window.DTEngine = {
                         }
                         const avatarHidden = document.getElementById('avatar_url_base64');
                         if (avatarHidden) avatarHidden.value = pData.avatar_url;
-                        
+
                         const innerAvatar = document.querySelector('.dt-avatar-inner');
-                        if(innerAvatar) {
+                        if (innerAvatar) {
                             innerAvatar.style.backgroundImage = 'url(' + pData.avatar_url + ')';
                             innerAvatar.style.backgroundSize = 'cover';
                         }
                     }
                 }
-                
+
                 // Cargar datos del Club y Táctica (de la tabla teams)
                 const { data: tData } = await window.supabase.from('teams').select('*').eq('id', teamData.id).maybeSingle();
                 if (tData) {
                     setVal('prof-team-name', tData.name || '');
                     setVal('prof-team-category', tData.category || tData.categoria || '');
                     setVal('prof-team-liga', tData.liga || '');
-                    
+
                     if (tData.logo_url) {
                         const shieldPreview = document.getElementById('prof-shield-preview');
                         if (shieldPreview) {
@@ -2805,7 +2715,7 @@ window.DTEngine = {
                     setVal('dna-bloque', tData.altura_bloque_defensivo);
                     setVal('dna-trans-def', tData.transicion_ata_def);
                     setVal('dna-trans-of', tData.transicion_def_ata);
-                    
+
                     const reglasVal = tData.reglas_accion_provocacion || tData.reglas_accion || tData.reglas_propension || '';
                     setVal('reglas_propension', reglasVal);
                     if (reglasVal && document.getElementById('rules-tag-input-wrapper')) {
@@ -2835,13 +2745,13 @@ window.DTEngine = {
                     setVal('prof-team-color', cData.primary_color || '#079FA0');
                     setVal('prof-methodology', cData.methodology || cData.metodologia);
                 }
-                
+
                 // Cargar team_load_settings
                 if (teamData) {
                     const { data: loadData } = await window.supabase.from('team_load_settings').select('*').eq('team_id', teamData.id).maybeSingle();
                     const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== null && val !== undefined) el.value = val; };
                     const cbVal = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
-                    
+
                     if (loadData) {
                         cbVal('load-rpe-diff', loadData.rpe_diferenciado);
                         setVal('load-ac-ratio', loadData.umbral_ac_ratio);
@@ -2863,12 +2773,12 @@ window.DTEngine = {
         }
     },
 
-    
+
     handleImageUpload(event, previewId, hiddenId) {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 const base64Str = e.target.result;
                 document.getElementById(hiddenId).value = base64Str;
                 const preview = document.getElementById(previewId);
@@ -2882,10 +2792,10 @@ window.DTEngine = {
     switchSettingsTab(tabId) {
         document.querySelectorAll('.settings-tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.settings-tab-content').forEach(content => content.style.display = 'none');
-        
+
         const activeBtn = document.getElementById(`tab-btn-${tabId}`);
         const activeContent = document.getElementById(`settings-tab-${tabId}`);
-        
+
         if (activeBtn) activeBtn.classList.add('active');
         if (activeContent) activeContent.style.display = 'block';
     },
@@ -2919,7 +2829,7 @@ window.DTEngine = {
                 window.CurrentUser.license = valLicencia;
                 if (valAvatar) {
                     const innerAvatar = document.querySelector('.dt-avatar-inner');
-                    if(innerAvatar) {
+                    if (innerAvatar) {
                         innerAvatar.style.backgroundImage = 'url(' + valAvatar + ')';
                         innerAvatar.style.backgroundSize = 'cover';
                     }
@@ -2951,7 +2861,7 @@ window.DTEngine = {
         const valAlturaDefensiva = document.getElementById('dna-bloque')?.value || null;
         const valTransAtaDef = document.getElementById('dna-trans-def')?.value || null;
         const valTransDefAta = document.getElementById('dna-trans-of')?.value || null;
-        
+
         const rulesInputEl = document.getElementById('reglas_propension');
         const valReglasPropension = rulesInputEl ? rulesInputEl.value : (DTEngine.RulesTagInput.getTags().join(' | ') || null);
         const valPrincipiosOperativos = DTEngine.TagInput.getTags().join(' | ') || null;
@@ -3019,7 +2929,7 @@ window.DTEngine = {
                 window.CurrentTeam.name = teamName;
                 window.CurrentTeam.primary_color = color;
                 window.CurrentTeam.methodology = valMetodologia;
-                if(valLogo) window.CurrentTeam.logo_url = valLogo;
+                if (valLogo) window.CurrentTeam.logo_url = valLogo;
             }
 
             alert('✅ Configuración del Club y Táctica guardadas en la tabla teams.');
@@ -3065,7 +2975,7 @@ window.DTEngine = {
         _snapSize: 20,          // tamaño de celda de la grilla
         _canvasW: 0,            // dimensiones en píxeles
         _canvasH: 0,
-        _playerCounter: { blue:0, red:0, yellow:0, green:0, black:0 }, // auto-incremento de fichas
+        _playerCounter: { blue: 0, red: 0, yellow: 0, green: 0, black: 0 }, // auto-incremento de fichas
 
         // --- Estado de dibujo dinámico ---
         _isDrawingShape: false,
@@ -3075,21 +2985,14 @@ window.DTEngine = {
 
         // Todos los IDs de botones de herramientas
         _toolBtns: [
-            // Modal "Crear Tarea"
             'tool-draw',
-            'tool-player-blue','tool-player-red','tool-player-yellow','tool-player-green','tool-player-black',
-            'tool-ball','tool-cone','tool-minigoal','tool-text',
-            'tool-arrow-pass','tool-arrow-run','tool-arrow-solid',
-            'tool-zone-solid','tool-zone-dashed','tool-zone-red',
-            // View-board (PIZARRA del nav)
-            'board-tool-draw',
-            'board-tool-player-blue','board-tool-player-red','board-tool-player-yellow','board-tool-player-green','board-tool-player-black',
-            'board-tool-ball','board-tool-cone','board-tool-minigoal','board-tool-text',
-            'board-tool-arrow-pass','board-tool-arrow-run','board-tool-arrow-solid',
-            'board-tool-zone-solid','board-tool-zone-dashed','board-tool-zone-red'
+            'tool-player-blue', 'tool-player-red', 'tool-player-yellow', 'tool-player-green', 'tool-player-black',
+            'tool-ball', 'tool-cone', 'tool-minigoal', 'tool-text',
+            'tool-arrow-pass', 'tool-arrow-run', 'tool-arrow-solid',
+            'tool-zone-solid', 'tool-zone-dashed', 'tool-zone-red'
         ],
 
-        updateMeasurementHUD: function(x, y, text, visible) {
+        updateMeasurementHUD: function (x, y, text, visible) {
             let hud = document.getElementById('tactical-measurement-hud');
             if (!hud) {
                 hud = document.createElement('div');
@@ -3118,7 +3021,7 @@ window.DTEngine = {
             }
         },
 
-        setBackground: function(type) {
+        setBackground: function (type) {
             if (!this._fc) return;
 
             // --- SINCRONIZACIÓN DE DIMENSIONES PADRE ---
@@ -3129,7 +3032,7 @@ window.DTEngine = {
                 if (parentW > 0 && parentH > 0 && (this._fc.width !== parentW || this._fc.height !== parentH)) {
                     this._fc.setWidth(parentW);
                     this._fc.setHeight(parentH);
-                    
+
                     const canvasEl = document.getElementById('premium-tactical-board');
                     if (canvasEl) {
                         canvasEl.width = parentW;
@@ -3140,7 +3043,7 @@ window.DTEngine = {
             // -------------------------------------------
 
             this._fc.setBackgroundImage(null, this._fc.renderAll.bind(this._fc));
-            
+
             let svgString = '';
             const w = this._fc.width || 800;
             const h = this._fc.height || 600;
@@ -3209,7 +3112,7 @@ window.DTEngine = {
                     return;
                 }
                 // Usar dimensiones del viewBox como referencia lógica (nunca 0)
-                const imgLogicalW = img.width  || svgW;
+                const imgLogicalW = img.width || svgW;
                 const imgLogicalH = img.height || svgH;
                 img.set({
                     id: 'cancha_bg',
@@ -3274,65 +3177,43 @@ window.DTEngine = {
         // ── CREAR FLECHA DE PASE (línea punteada + cabeza) ──
         _makeArrow(x, y, type) {
             const len = 80;
-            const x2 = x + len;
-            const y2 = y;
             let dash = [], color = '#ffffff';
-            let customType = 'tactical-arrow';
-            
-            if (type === 'arrow-pass')  { dash = [10, 5]; color = '#ffffff'; customType = 'tactical-displacement'; }
-            else if (type === 'arrow-run')   { dash = []; color = '#facc15'; customType = 'tactical-conduction'; }
-            else                             { dash = []; color = '#00F0FF'; }
+            if (type === 'arrow-pass') { dash = [8, 5]; color = '#ffffff'; }
+            else if (type === 'arrow-run') { dash = []; color = '#facc15'; }
+            else { dash = []; color = '#ffffff'; }
+
+            const line = new fabric.Line([x, y, x + len, y], {
+                stroke: color, strokeWidth: 2.5,
+                strokeDashArray: dash,
+                selectable: true, hasControls: true, hasBorders: true, padding: 10
+            });
 
             // Cabeza de flecha (triángulo pequeño)
             const head = new fabric.Triangle({
-                width: 14, height: 16,
+                width: 12, height: 14,
                 fill: color, stroke: color, strokeWidth: 1,
-                left: x2, top: y2, angle: 90,
-                originX: 'center', originY: 'center',
+                left: x + len - 6, top: y - 7,
+                angle: 90,
                 selectable: false, evented: false
             });
 
-            let tacticalShape;
-
+            // Si es conducción, añadir ondulación visual
             if (type === 'arrow-run') {
-                const waveLen = 14;
-                const steps = Math.floor(len / waveLen);
-                const amp = 6;
-                let pathStr = `M ${x} ${y}`;
-                
-                for (let i=1; i<=steps; i++) {
-                    let prevT = (i - 0.5) / steps;
-                    let t = i / steps;
-                    let px = x + len * t;
-                    let py = y;
-                    let perpY = amp * (i%2===0 ? 1 : -1);
-                    let cpx = x + len * prevT;
-                    let cpy = y + perpY * 2;
-                    
-                    if (i === steps) {
-                        pathStr += ` Q ${cpx} ${cpy} ${x2} ${y2}`;
-                    } else {
-                        pathStr += ` Q ${cpx} ${cpy} ${px} ${py}`;
+                const wave = new fabric.Path(
+                    `M ${x} ${y} Q ${x + len * 0.25} ${y - 20} ${x + len * 0.5} ${y} Q ${x + len * 0.75} ${y + 20} ${x + len} ${y}`,
+                    {
+                        stroke: color, strokeWidth: 2.5, fill: 'transparent', strokeDashArray: [],
+                        selectable: true, hasControls: true
                     }
-                }
-                if (steps === 0) pathStr += ` L ${x2} ${y2}`;
-                
-                tacticalShape = new fabric.Path(pathStr, {
-                    fill: '', stroke: color, strokeWidth: 2.5,
-                    selectable: true, hasControls: true, hasBorders: true, padding: 8
-                });
-            } else {
-                tacticalShape = new fabric.Line([x, y, x2, y2], {
-                    stroke: color, strokeWidth: type === 'arrow-solid' ? 3 : 2.5,
-                    strokeDashArray: dash,
-                    selectable: true, hasControls: true, hasBorders: true, padding: 8
-                });
+                );
+                this._fc.add(wave);
+                this._fc.add(head);
+                this._fc.renderAll();
+                return null; // ya añadidos
             }
 
-            const group = new fabric.Group([tacticalShape, head], {
-                selectable: true, hasControls: true,
-                customType: customType,
-                tacticData: { x1: x, y1: y, x2: x2, y2: y2, tool: type }
+            const group = new fabric.Group([line, head], {
+                selectable: true, hasControls: true
             });
             return group;
         },
@@ -3405,10 +3286,10 @@ window.DTEngine = {
             ctx.restore();
         },
 
-        init(containerId = 'premium-tactical-board-container', canvasId = 'premium-tactical-board') {
+        init() {
             // Destruir instancia anterior si existe
             if (this._fc) {
-                try { this._fc.dispose(); } catch(e) {}
+                try { this._fc.dispose(); } catch (e) { }
                 this._fc = null;
             }
             // Limpiar listener de resize si existe
@@ -3417,19 +3298,19 @@ window.DTEngine = {
                 this._resizeHandler = null;
             }
 
-            const container = document.getElementById(containerId);
+            const container = document.getElementById('premium-tactical-board-container');
             if (!container) return;
-            const w = container.clientWidth  || 800;
+            const w = container.clientWidth || 800;
             const h = container.clientHeight || 500;
 
             // Asignar dimensiones físicas al elemento canvas
-            const canvasEl = document.getElementById(canvasId);
+            const canvasEl = document.getElementById('premium-tactical-board');
             if (!canvasEl) return;
-            canvasEl.width  = w;
+            canvasEl.width = w;
             canvasEl.height = h;
 
             // Inicializar Fabric — fondo transparente (el campo lo pinta _drawField)
-            this._fc = new fabric.Canvas(canvasId, {
+            this._fc = new fabric.Canvas('premium-tactical-board', {
                 selection: true,
                 backgroundColor: 'transparent',
                 enableRetinaScaling: false
@@ -3446,7 +3327,7 @@ window.DTEngine = {
             // Activar trazo libre por defecto
             this.setTool('draw');
 
-            const boardContainer = document.getElementById(canvasId)?.parentElement;
+            const boardContainer = document.getElementById('premium-tactical-board')?.parentElement;
             if (boardContainer) {
                 boardContainer.addEventListener('mouseenter', () => {
                     try {
@@ -3505,18 +3386,18 @@ window.DTEngine = {
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(() => {
                     if (!this._fc || !container) return;
-                    
+
                     const newW = container.clientWidth || 800;
                     const newH = container.clientHeight || 500;
-                    
+
                     // Solo actualizar dimensiones del objeto (NO destruir ni recrear)
                     this._fc.setWidth(newW);
                     this._fc.setHeight(newH);
-                    
+
                     // Regenerar el fondo a la escala nueva y repintar
                     this.setBackground(this._currentBackground || 'futbol11');
                     this._fc.renderAll();
-                    
+
                     console.log(`Pizarra táctica redimensionada de forma segura a ${newW}x${newH}`);
                 }, 300); // 300ms de Debounce nativo para evitar 'Event Thrashing'
             };
@@ -3529,18 +3410,18 @@ window.DTEngine = {
                 if (this._fc.isDrawingMode) return; // ← Candado anti-crash del lápiz
                 const tool = this._activeTool || '';
                 if (tool === 'draw') return;
-                
+
                 // Dibujo dinámico para Zonas y Líneas
                 if (tool.startsWith('zone-') || tool.startsWith('arrow-')) {
                     if (opt.target) return; // Si clica en un objeto existente, no dibujar
-                    
+
                     this._fc.selection = false;
                     const ptr = this._fc.getPointer(opt.e);
                     // FIX PILAR 2: Estado ENCENDIDO sólo en mouse:down con herramienta válida
                     this._isDrawingShape = true;
                     this._drawStartX = ptr.x;
                     this._drawStartY = ptr.y;
-                    
+
                     if (this._activeTool === 'zone-solid') {
                         this._tempShape = new fabric.Rect({
                             left: ptr.x, top: ptr.y, width: 0, height: 0,
@@ -3561,7 +3442,7 @@ window.DTEngine = {
                         });
                     } else if (this._activeTool.startsWith('arrow-')) {
                         let color = '#ffffff', dash = [];
-                        if (tool === 'arrow-pass') { dash = [10, 5]; color = '#ffffff'; }
+                        if (tool === 'arrow-pass') { dash = [8, 5]; color = '#ffffff'; }
                         else if (tool === 'arrow-run') { dash = []; color = '#facc15'; }
                         else { dash = []; color = '#00F0FF'; }
 
@@ -3569,9 +3450,8 @@ window.DTEngine = {
                             stroke: color, strokeWidth: tool === 'arrow-solid' ? 3 : 2.5,
                             strokeDashArray: dash, selectable: false, evented: false
                         });
-                        this._tempShape._sourceTool = tool;
                     }
-                    
+
                     if (this._tempShape) {
                         this._fc.add(this._tempShape);
                     }
@@ -3589,7 +3469,7 @@ window.DTEngine = {
                 if (!this._tempShape) return;
                 const ptr = this._fc.getPointer(opt.e);
                 const scale = 68 / this._fc.width; // Asumiendo ancho de cancha = 68m
-                
+
                 if (this._tempShape.type === 'rect') {
                     const w = Math.abs(ptr.x - this._drawStartX);
                     const h = Math.abs(ptr.y - this._drawStartY);
@@ -3599,21 +3479,21 @@ window.DTEngine = {
                         width: w,
                         height: h
                     });
-                    
+
                     const mX = (w * scale).toFixed(1);
                     const mY = (h * scale).toFixed(1);
                     this.updateMeasurementHUD(opt.e.clientX, opt.e.clientY, `${mX}m x ${mY}m`, true);
-                    
+
                 } else if (this._tempShape.type === 'line') {
                     this._tempShape.set({ x2: ptr.x, y2: ptr.y });
-                    
+
                     const dx = ptr.x - this._drawStartX;
                     const dy = ptr.y - this._drawStartY;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    const dist = Math.sqrt(dx * dx + dy * dy);
                     const mDist = (dist * scale).toFixed(1);
                     this.updateMeasurementHUD(opt.e.clientX, opt.e.clientY, `${mDist}m`, true);
                 }
-                
+
                 this._fc.renderAll();
             });
 
@@ -3629,16 +3509,16 @@ window.DTEngine = {
                 }
 
                 if (this._tempShape) {
-                    
+
                     // Si el tamaño es muy pequeño (clic accidental), eliminar
                     let isTooSmall = false;
                     if (this._tempShape.type === 'rect' && (this._tempShape.width < 5 && this._tempShape.height < 5)) isTooSmall = true;
                     if (this._tempShape.type === 'line') {
                         const dx = this._tempShape.x2 - this._tempShape.x1;
                         const dy = this._tempShape.y2 - this._tempShape.y1;
-                        if (Math.sqrt(dx*dx + dy*dy) < 5) isTooSmall = true;
+                        if (Math.sqrt(dx * dx + dy * dy) < 5) isTooSmall = true;
                     }
-                    
+
                     if (isTooSmall) {
                         this._fc.remove(this._tempShape);
                         this._tempShape = null;
@@ -3647,80 +3527,28 @@ window.DTEngine = {
                     }
 
                     this._tempShape.set({ selectable: true, evented: true, hasControls: true });
-                    
+
                     // Para líneas, necesitamos agregar la cabeza de la flecha y agrupar
                     if (this._tempShape.type === 'line') {
                         const x1 = this._drawStartX, y1 = this._drawStartY;
                         const x2 = this._tempShape.x2, y2 = this._tempShape.y2;
                         const dx = x2 - x1, dy = y2 - y1;
                         const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-                        
+
                         const color = this._tempShape.stroke;
-                        const toolType = this._tempShape._sourceTool || 'arrow-solid';
-                        let customType = 'tactical-arrow';
-                        
                         const head = new fabric.Triangle({
                             width: 14, height: 16, fill: color,
                             left: x2, top: y2, angle: angle + 90,
                             originX: 'center', originY: 'center',
                             selectable: false, evented: false
                         });
-                        
-                        let tacticalShape;
-                        
-                        if (toolType === 'arrow-pass') {
-                            customType = 'tactical-displacement';
-                            tacticalShape = new fabric.Line([x1, y1, x2, y2], {
-                                stroke: color, strokeWidth: this._tempShape.strokeWidth, strokeDashArray: [10, 5],
-                                selectable: true, hasControls: true, hasBorders: true, padding: 8
-                            });
-                        } else if (toolType === 'arrow-run') {
-                            customType = 'tactical-conduction';
-                            const dist = Math.sqrt(dx*dx + dy*dy);
-                            const pathAngle = Math.atan2(dy, dx);
-                            let pathStr = `M ${x1} ${y1}`;
-                            const waveLen = 14;
-                            const steps = Math.floor(dist / waveLen);
-                            const amp = 6;
-                            
-                            for (let i=1; i<=steps; i++) {
-                                let prevT = (i - 0.5) / steps;
-                                let t = i / steps;
-                                
-                                let px = x1 + dx * t;
-                                let py = y1 + dy * t;
-                                
-                                let perpX = -Math.sin(pathAngle) * amp * (i%2===0 ? 1 : -1);
-                                let perpY = Math.cos(pathAngle) * amp * (i%2===0 ? 1 : -1);
-                                
-                                let cpx = x1 + dx * prevT + perpX*2;
-                                let cpy = y1 + dy * prevT + perpY*2;
-                                
-                                if (i === steps) {
-                                    pathStr += ` Q ${cpx} ${cpy} ${x2} ${y2}`;
-                                } else {
-                                    pathStr += ` Q ${cpx} ${cpy} ${px} ${py}`;
-                                }
-                            }
-                            if (steps === 0) pathStr += ` L ${x2} ${y2}`;
-                            
-                            tacticalShape = new fabric.Path(pathStr, {
-                                fill: '', stroke: color, strokeWidth: this._tempShape.strokeWidth,
-                                selectable: true, hasControls: true, hasBorders: true, padding: 8
-                            });
-                        } else {
-                            tacticalShape = new fabric.Line([x1, y1, x2, y2], {
-                                stroke: color, strokeWidth: this._tempShape.strokeWidth, strokeDashArray: this._tempShape.strokeDashArray,
-                                selectable: true, hasControls: true, hasBorders: true, padding: 8
-                            });
-                        }
-                        
-                        const grp = new fabric.Group([tacticalShape, head], { 
-                            selectable: true, hasControls: true,
-                            customType: customType,
-                            tacticData: { x1, y1, x2, y2, tool: toolType }
+
+                        const lineObj = new fabric.Line([x1, y1, x2, y2], {
+                            stroke: color, strokeWidth: this._tempShape.strokeWidth, strokeDashArray: this._tempShape.strokeDashArray,
+                            selectable: true, hasControls: true, hasBorders: true, padding: 8
                         });
-                        
+
+                        const grp = new fabric.Group([lineObj, head], { selectable: true, hasControls: true });
                         this._fc.remove(this._tempShape);
                         this._fc.add(grp);
                         this._fc.setActiveObject(grp);
@@ -3768,11 +3596,11 @@ window.DTEngine = {
 
             // ── Fichas de jugadores numeradas (fabric.Group) ──
             const playerMap = {
-                'player-blue':   { fill: '#1d6aff', shadow: 'rgba(29,106,255,0.7)',   key: 'blue' },
-                'player-red':    { fill: '#ef4444', shadow: 'rgba(239,68,68,0.7)',    key: 'red' },
-                'player-yellow': { fill: '#eab308', shadow: 'rgba(234,179,8,0.7)',    key: 'yellow' },
-                'player-green':  { fill: '#22c55e', shadow: 'rgba(34,197,94,0.7)',    key: 'green' },
-                'player-black':  { fill: '#1f2937', shadow: 'rgba(31,41,55,0.7)',     key: 'black' }
+                'player-blue': { fill: '#1d6aff', shadow: 'rgba(29,106,255,0.7)', key: 'blue' },
+                'player-red': { fill: '#ef4444', shadow: 'rgba(239,68,68,0.7)', key: 'red' },
+                'player-yellow': { fill: '#eab308', shadow: 'rgba(234,179,8,0.7)', key: 'yellow' },
+                'player-green': { fill: '#22c55e', shadow: 'rgba(34,197,94,0.7)', key: 'green' },
+                'player-black': { fill: '#1f2937', shadow: 'rgba(31,41,55,0.7)', key: 'black' }
             };
 
             if (playerMap[t]) {
@@ -3813,16 +3641,16 @@ window.DTEngine = {
                     selectable: true, hasControls: true
                 });
 
-            // ── Rutas inteligentes con flechas ──
+                // ── Rutas inteligentes con flechas ──
             } else if (t === 'arrow-pass') {
                 // Pase: línea punteada blanca con flecha
-                const line = new fabric.Line([x, y, x+90, y], {
+                const line = new fabric.Line([x, y, x + 90, y], {
                     stroke: '#ffffff', strokeWidth: 2.5, strokeDashArray: [9, 5],
                     selectable: true, hasControls: true, hasBorders: true, padding: 8
                 });
                 const head = new fabric.Triangle({
                     width: 12, height: 14, fill: '#ffffff',
-                    left: x+90-6, top: y-7, angle: 90,
+                    left: x + 90 - 6, top: y - 7, angle: 90,
                     selectable: false, evented: false
                 });
                 obj = new fabric.Group([line, head], { selectable: true, hasControls: true });
@@ -3830,13 +3658,15 @@ window.DTEngine = {
             } else if (t === 'arrow-run') {
                 // Conducción: curva sinusoidal amarilla con flecha
                 const wave = new fabric.Path(
-                    `M ${x} ${y} C ${x+25} ${y-28} ${x+50} ${y+28} ${x+80} ${y}`,
-                    { stroke: '#facc15', strokeWidth: 2.5, fill: 'transparent',
-                      selectable: true, hasControls: true }
+                    `M ${x} ${y} C ${x + 25} ${y - 28} ${x + 50} ${y + 28} ${x + 80} ${y}`,
+                    {
+                        stroke: '#facc15', strokeWidth: 2.5, fill: 'transparent',
+                        selectable: true, hasControls: true
+                    }
                 );
                 const head = new fabric.Triangle({
                     width: 12, height: 14, fill: '#facc15',
-                    left: x+80-6, top: y-7, angle: 90,
+                    left: x + 80 - 6, top: y - 7, angle: 90,
                     selectable: false, evented: false
                 });
                 this._fc.add(wave);
@@ -3846,18 +3676,18 @@ window.DTEngine = {
 
             } else if (t === 'arrow-solid') {
                 // Flecha sólida rápida
-                const line = new fabric.Line([x, y, x+80, y], {
+                const line = new fabric.Line([x, y, x + 80, y], {
                     stroke: '#00F0FF', strokeWidth: 3,
                     selectable: true, hasControls: true, hasBorders: true, padding: 8
                 });
                 const head = new fabric.Triangle({
                     width: 14, height: 16, fill: '#00F0FF',
-                    left: x+80-7, top: y-8, angle: 90,
+                    left: x + 80 - 7, top: y - 8, angle: 90,
                     selectable: false, evented: false
                 });
                 obj = new fabric.Group([line, head], { selectable: true, hasControls: true });
 
-            // ── Zonas sombreadas ──
+                // ── Zonas sombreadas ──
             } else if (t === 'zone-solid') {
                 obj = new fabric.Rect({
                     left: x - 55, top: y - 38, width: 110, height: 76,
@@ -3926,7 +3756,7 @@ window.DTEngine = {
 
             // 1. Renderizar el SVG del campo en un canvas offscreen
             const offscreen = document.createElement('canvas');
-            offscreen.width  = w;
+            offscreen.width = w;
             offscreen.height = h;
             const octx = offscreen.getContext('2d');
 
@@ -3943,26 +3773,27 @@ window.DTEngine = {
             // Borde campo
             octx.strokeRect(0, 0, w, h);
             // Línea media
-            octx.beginPath(); octx.moveTo(52.5*sx, 0); octx.lineTo(52.5*sx, h); octx.stroke();
+            octx.beginPath(); octx.moveTo(52.5 * sx, 0); octx.lineTo(52.5 * sx, h); octx.stroke();
             // Círculo central
-            octx.beginPath(); octx.arc(52.5*sx, 34*sy, 9.15*sx, 0, Math.PI*2); octx.stroke();
+            octx.beginPath(); octx.arc(52.5 * sx, 34 * sy, 9.15 * sx, 0, Math.PI * 2); octx.stroke();
             // Punto central
             octx.fillStyle = 'rgba(255,255,255,0.5)';
-            octx.beginPath(); octx.arc(52.5*sx, 34*sy, 2, 0, Math.PI*2); octx.fill();
+            octx.beginPath(); octx.arc(52.5 * sx, 34 * sy, 2, 0, Math.PI * 2); octx.fill();
             // Áreas
             octx.strokeStyle = 'rgba(255,255,255,0.3)';
-            octx.strokeRect(0, 13.84*sy, 16.5*sx, 40.32*sy);
-            octx.strokeRect(0, 26.84*sy, 5.5*sx,  14.32*sy);
-            octx.strokeRect(88.5*sx, 13.84*sy, 16.5*sx, 40.32*sy);
-            octx.strokeRect(99.5*sx, 26.84*sy, 5.5*sx,  14.32*sy);
+            octx.strokeRect(0, 13.84 * sy, 16.5 * sx, 40.32 * sy);
+            octx.strokeRect(0, 26.84 * sy, 5.5 * sx, 14.32 * sy);
+            octx.strokeRect(88.5 * sx, 13.84 * sy, 16.5 * sx, 40.32 * sy);
+            octx.strokeRect(99.5 * sx, 26.84 * sy, 5.5 * sx, 14.32 * sy);
             // Puntos penales
-            ['rgba(255,255,255,0.5)'].forEach(c => { octx.fillStyle = c;
-                octx.beginPath(); octx.arc(11*sx, 34*sy, 2, 0, Math.PI*2); octx.fill();
-                octx.beginPath(); octx.arc(94*sx, 34*sy, 2, 0, Math.PI*2); octx.fill();
+            ['rgba(255,255,255,0.5)'].forEach(c => {
+                octx.fillStyle = c;
+                octx.beginPath(); octx.arc(11 * sx, 34 * sy, 2, 0, Math.PI * 2); octx.fill();
+                octx.beginPath(); octx.arc(94 * sx, 34 * sy, 2, 0, Math.PI * 2); octx.fill();
             });
             // Arcos
-            octx.beginPath(); octx.arc(16.5*sx, 34*sy, 9.15*sx, -Math.PI/3, Math.PI/3); octx.stroke();
-            octx.beginPath(); octx.arc(88.5*sx, 34*sy, 9.15*sx, Math.PI*2/3, Math.PI*4/3); octx.stroke();
+            octx.beginPath(); octx.arc(16.5 * sx, 34 * sy, 9.15 * sx, -Math.PI / 3, Math.PI / 3); octx.stroke();
+            octx.beginPath(); octx.arc(88.5 * sx, 34 * sy, 9.15 * sx, Math.PI * 2 / 3, Math.PI * 4 / 3); octx.stroke();
 
             // 2. Componer encima los objetos de Fabric
             const fabricDataURL = this._fc.toDataURL({ format: 'png', multiplier: 1 });
@@ -3989,10 +3820,10 @@ window.DTEngine = {
     // ── FIX 4: ASISTENTE FISIOLÓGICO Y TÁCTICO (Juegos Reducidos) ──
     autoFillM2() {
         const objFisico = document.getElementById('ct-objetivo-fisico')?.value;
-        const m2Input    = document.getElementById('ct-m2-jugador');
-        const volInput   = document.getElementById('ct-volumen');
+        const m2Input = document.getElementById('ct-m2-jugador');
+        const volInput = document.getElementById('ct-volumen');
         const pausaInput = document.getElementById('ct-pausa');
-        const helperEl   = document.getElementById('ct-fisiologico-helper');
+        const helperEl = document.getElementById('ct-fisiologico-helper');
 
         // ── Tabla paramétrica basada en teoría de Juegos Reducidos ──
         const presets = {
@@ -4031,8 +3862,8 @@ window.DTEngine = {
         const preset = presets[objFisico];
 
         if (preset) {
-            if (m2Input)    m2Input.value    = preset.m2;
-            if (volInput)   volInput.value   = preset.volumen;
+            if (m2Input) m2Input.value = preset.m2;
+            if (volInput) volInput.value = preset.volumen;
             if (pausaInput) pausaInput.value = preset.pausa;
 
             // Mostrar texto de ayuda fisiológico
@@ -4061,7 +3892,7 @@ window.DTEngine = {
         const pausa = parseFloat(document.getElementById('ct-pausa')?.value);
         const helper = document.getElementById('ct-density-helper');
         if (!helper) return;
-        
+
         if (!isNaN(vol) && !isNaN(pausa)) {
             helper.style.display = 'block';
             helper.textContent = `Densidad ${vol}:${pausa}`;
@@ -4148,13 +3979,13 @@ window.DTEngine = {
     // --- BÓVEDA DE TAREAS PERSONALIZADAS ---
     openCustomTaskModal() {
         // Limpiar todos los campos del formulario
-        ['ct-title','ct-description','ct-dimensions','ct-materials-input',
-         'ct-rule-provocation','ct-rule-propension','ct-rule-continuity',
-         'ct-density','ct-min-players','ct-max-players'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = '';
-        });
-        
+        ['ct-title', 'ct-description', 'ct-dimensions', 'ct-materials-input',
+            'ct-rule-provocation', 'ct-rule-propension', 'ct-rule-continuity',
+            'ct-density', 'ct-min-players', 'ct-max-players'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+
         this.materialTags = [];
         this.renderMaterialTags();
 
@@ -4194,27 +4025,27 @@ window.DTEngine = {
         // ════════════════════════════════════════════════════
         const title = (document.getElementById('ct-title')?.value || '').trim() || null;
 
-        const description      = (document.getElementById('ct-description')?.value || '').trim() || null;
+        const description = (document.getElementById('ct-description')?.value || '').trim() || null;
         const objetivo_tactico = document.getElementById('ct-objetivo-tactico')?.value || null;
-        const objetivo_fisico  = document.getElementById('ct-objetivo-fisico')?.value || null;
-        const volumen          = parseFloat(document.getElementById('ct-volumen')?.value) || null;
-        const pausa            = parseFloat(document.getElementById('ct-pausa')?.value) || null;
-        const m2_jugador       = parseFloat(document.getElementById('ct-m2-jugador')?.value) || null;
-        const densidad         = (volumen !== null && pausa !== null) ? `${volumen}:${pausa}` : null;
+        const objetivo_fisico = document.getElementById('ct-objetivo-fisico')?.value || null;
+        const volumen = parseFloat(document.getElementById('ct-volumen')?.value) || null;
+        const pausa = parseFloat(document.getElementById('ct-pausa')?.value) || null;
+        const m2_jugador = parseFloat(document.getElementById('ct-m2-jugador')?.value) || null;
+        const densidad = (volumen !== null && pausa !== null) ? `${volumen}:${pausa}` : null;
 
         // Etiquetas visuales unificadas a string
         const materials = this.materialTags.length > 0 ? this.materialTags.join(', ') : null;
 
         // Reglas tácticas
         const rule_provocation = (document.getElementById('ct-rule-provocation')?.value || '').trim() || null;
-        const rule_propension  = (document.getElementById('ct-rule-propension')?.value  || '').trim() || null;
-        const rule_continuity  = (document.getElementById('ct-rule-continuity')?.value  || '').trim() || null;
+        const rule_propension = (document.getElementById('ct-rule-propension')?.value || '').trim() || null;
+        const rule_continuity = (document.getElementById('ct-rule-continuity')?.value || '').trim() || null;
 
         const tactical_format = document.getElementById('ct-tactical-format')?.value || 'Grupos / Estaciones';
-        const ideal_players   = parseInt(document.getElementById('ct-ideal-players')?.value || '0', 10) || null;
-        const group_qty       = tactical_format !== 'Todo el Plantel' ? (parseInt(document.getElementById('ct-group-qty')?.value || '0', 10) || null) : null;
-        const usa_goleros     = document.getElementById('ct-use-gks')?.value?.trim() || null;
-        const usa_comodines   = document.getElementById('ct-use-wildcards')?.value?.trim() || null;
+        const ideal_players = parseInt(document.getElementById('ct-ideal-players')?.value || '0', 10) || null;
+        const group_qty = tactical_format !== 'Todo el Plantel' ? (parseInt(document.getElementById('ct-group-qty')?.value || '0', 10) || null) : null;
+        const usa_goleros = document.getElementById('ct-use-gks')?.value?.trim() || null;
+        const usa_comodines = document.getElementById('ct-use-wildcards')?.value?.trim() || null;
 
         // Capturar nuevos campos para el DB estricto
         const _tagsRaw = document.getElementById('ct-tags')?.value || '';
@@ -4232,7 +4063,7 @@ window.DTEngine = {
                 this.FabricEngine._fc.renderAll();
                 tactical_diagram_url = this.FabricEngine._fc.toDataURL({ format: 'png', multiplier: 1 });
             }
-        } catch(e) {
+        } catch (e) {
             console.error('Error exportando diagrama:', e);
         }
 
@@ -4304,7 +4135,7 @@ window.DTEngine = {
         const toast = document.createElement('div');
         toast.id = 'ravix-toast';
         toast.textContent = message;
-        const bg     = type === 'success' ? 'linear-gradient(135deg,rgba(0,240,255,0.12),rgba(0,136,204,0.18))' : 'linear-gradient(135deg,rgba(239,68,68,0.12),rgba(220,38,38,0.18))';
+        const bg = type === 'success' ? 'linear-gradient(135deg,rgba(0,240,255,0.12),rgba(0,136,204,0.18))' : 'linear-gradient(135deg,rgba(239,68,68,0.12),rgba(220,38,38,0.18))';
         const border = type === 'success' ? '#00F0FF' : '#ef4444';
         toast.style.cssText = `position:fixed;bottom:32px;right:32px;z-index:99999;padding:14px 22px;border-radius:12px;background:${bg};border:1px solid ${border};color:#F5F5F5;font-family:Outfit,sans-serif;font-size:0.9rem;font-weight:700;backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:ravix-toast-in 0.3s ease;`;
         if (!document.getElementById('ravix-toast-style')) {
