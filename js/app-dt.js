@@ -843,6 +843,8 @@ window.DTEngine = {
                                         onmouseover="this.style.borderColor='#9ca3af'; this.style.color='#9ca3af';" onmouseout="this.style.borderColor='rgba(107,114,128,0.18)'; this.style.color='#6b7280';">✋ Mover Jugadores</button>
 
                                     <div style="border-top: 1px solid rgba(255,255,255,0.05); margin-top: 2px; padding-top: 8px; display: flex; flex-direction: column; gap: 6px;">
+                                        <button onclick="window.DTEngine.Board.spawnSinglePlayer('local')" style="padding: 8px 12px; background: rgba(0,242,254,0.05); color: #00F2FE; border: 1px solid rgba(0,242,254,0.2); border-radius: 7px; cursor: pointer; font-family: Outfit, sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; transition: all 0.15s;" onmouseover="this.style.background='rgba(0,242,254,0.15)';" onmouseout="this.style.background='rgba(0,242,254,0.05)';">👤 Añadir Jugador Local</button>
+                                        <button onclick="window.DTEngine.Board.spawnSinglePlayer('rival')" style="padding: 8px 12px; background: rgba(255,77,77,0.05); color: #ff4d4d; border: 1px solid rgba(255,77,77,0.2); border-radius: 7px; cursor: pointer; font-family: Outfit, sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; transition: all 0.15s;" onmouseover="this.style.background='rgba(255,77,77,0.15)';" onmouseout="this.style.background='rgba(255,77,77,0.05)';">👤 Añadir Jugador Rival</button>
                                         <button onclick="window.DTEngine.Board.addBallDOM()" style="padding: 8px 12px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 7px; cursor: pointer; font-family: Outfit, sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; transition: all 0.15s;"
                                             onmouseover="this.style.background='rgba(255,255,255,0.15)';" onmouseout="this.style.background='rgba(255,255,255,0.05)';">⚽ Añadir Balón</button>
                                         <button onclick="window.DTEngine.Board.TacticalOverlay.clearAll()" style="padding: 8px 12px; background: rgba(255,59,48,0.07); color: #ff3b30; border: 1px solid rgba(255,59,48,0.2); border-radius: 7px; cursor: pointer; font-family: Outfit, sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; transition: all 0.15s;"
@@ -4391,6 +4393,10 @@ window.DTEngine = {
             fRival.forEach(function (t) { window.DTEngine.Board.createFicha('rival', t.p, t.r, 1 - t.x, 1 - t.y); });
         },
 
+        spawnSinglePlayer: function(type) {
+            this.createFicha(type, 'P', 'Nuevo', 0.5, 0.5);
+        },
+
         createFicha: function (type, posText, roleText, percentX, percentY) {
             const layer = document.getElementById('tokens-layer');
             if (!layer) return;
@@ -4424,8 +4430,17 @@ window.DTEngine = {
             label.dataset.role = roleText;
 
             var circle = document.createElement('div');
-            circle.style.cssText = 'width:38px; height:38px; background:' + colorMain + '; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:900; color:' + textColor + '; box-shadow: 0 0 12px ' + colorShadow + ', 0 4px 10px rgba(0,0,0,0.6); pointer-events:none; font-family:Outfit,sans-serif; letter-spacing:-0.5px; position:relative;';
+            circle.style.cssText = 'width:38px; height:38px; background:' + colorMain + '; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:900; color:' + textColor + '; box-shadow: 0 0 12px ' + colorShadow + ', 0 4px 10px rgba(0,0,0,0.6); pointer-events:auto; cursor:text; font-family:Outfit,sans-serif; letter-spacing:-0.5px; position:relative;';
             circle.textContent = posText;
+
+            // ── Doble clic para editar posText ──
+            circle.addEventListener('dblclick', function(e) {
+                e.stopPropagation(); // Evita que dispare la edición de nombre de la ficha
+                var newPos = prompt('Introduce la posición (Ej. MC, DFD):', circle.textContent);
+                if (newPos !== null && newPos.trim() !== '') {
+                    circle.textContent = newPos.trim().substring(0, 4).toUpperCase();
+                }
+            });
 
             ficha.appendChild(label);
             ficha.appendChild(circle);
@@ -4496,10 +4511,14 @@ window.DTEngine = {
                 var overlayMode = window.DTEngine.Board.TacticalOverlay._mode;
                 if (overlayMode === 'zone' || overlayMode === 'arrow' || overlayMode === 'pass') return;
                 isDragging = true;
+                
+                if (window.DTEngine.Board.TacticalOverlay.selectNode) {
+                    window.DTEngine.Board.TacticalOverlay.selectNode(ficha);
+                }
+                
                 ficha.style.cursor = 'grabbing';
                 ficha.style.zIndex = '200';
                 ficha.style.transform = 'translate(-50%, -50%) scale(1.18)';
-                ficha.style.filter = 'drop-shadow(0 0 8px ' + colorMain + ')';
                 ficha.setPointerCapture(e.pointerId);
             });
 
@@ -4518,7 +4537,7 @@ window.DTEngine = {
                 ficha.style.cursor = 'grab';
                 ficha.style.zIndex = '20';
                 ficha.style.transform = 'translate(-50%, -50%) scale(1)';
-                ficha.style.filter = 'none';
+                // Removida la limpieza de filter para que mantenga el halo de selección
                 ficha.releasePointerCapture(e.pointerId);
             });
 
@@ -4559,6 +4578,11 @@ window.DTEngine = {
                 var overlayMode = window.DTEngine.Board.TacticalOverlay._mode;
                 if (overlayMode === 'zone' || overlayMode === 'arrow' || overlayMode === 'pass') return;
                 isDragging = true;
+                
+                if (window.DTEngine.Board.TacticalOverlay.selectNode) {
+                    window.DTEngine.Board.TacticalOverlay.selectNode(ball);
+                }
+
                 ball.style.cursor = 'grabbing';
                 ball.style.zIndex = '200';
                 ball.style.transform = 'translate(-50%, -50%) scale(1.3)';
@@ -4601,31 +4625,53 @@ window.DTEngine = {
             _boundMove: null,
             _boundUp: null,
 
+            selectNode: function(el) {
+                if (window.DTEngine.activeNode && window.DTEngine.activeNode !== el) {
+                    var prev = window.DTEngine.activeNode;
+                    prev.classList.remove('node-selected');
+                    if (prev.classList.contains('tactical-zone')) {
+                        prev.style.boxShadow = 'inset 0 0 20px rgba(0,242,254,0.04), 0 0 8px rgba(0,242,254,0.12)';
+                        prev.style.borderColor = '#00f2fe';
+                    } else if (prev.tagName === 'g') {
+                        var pline = prev.querySelector('line');
+                        if (pline) pline.setAttribute('stroke-width', '2');
+                    } else if (prev.classList.contains('tactical-ficha') || prev.classList.contains('tactical-ball')) {
+                        prev.style.filter = 'none';
+                    }
+                }
+
+                window.DTEngine.activeNode = el;
+                if (el) {
+                    el.classList.add('node-selected');
+                    if (el.classList.contains('tactical-zone')) {
+                        el.style.boxShadow = 'inset 0 0 20px rgba(255,255,255,0.2), 0 0 12px rgba(255,255,255,0.8)';
+                        el.style.borderColor = '#fff';
+                    } else if (el.tagName === 'g') {
+                        var line = el.querySelector('line');
+                        if (line) line.setAttribute('stroke-width', '4');
+                    } else if (el.classList.contains('tactical-ficha') || el.classList.contains('tactical-ball')) {
+                        el.style.filter = 'drop-shadow(0 0 12px rgba(255,255,255,0.8))';
+                    }
+                }
+            },
+
             init: function() {
                 // Atajo global para borrar elementos tácticos activos
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'Delete' || e.key === 'Backspace') {
                         if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
-                        if (window.DTEngine && window.DTEngine.activeTacticalElement) {
-                            window.DTEngine.activeTacticalElement.remove();
-                            window.DTEngine.activeTacticalElement = null;
+                        if (window.DTEngine && window.DTEngine.activeNode) {
+                            window.DTEngine.activeNode.remove();
+                            window.DTEngine.Board.TacticalOverlay.selectNode(null);
                         }
                     }
                 });
 
                 // Clic global para deseleccionar
                 document.addEventListener('pointerdown', function(e) {
-                    if (window.DTEngine && window.DTEngine.activeTacticalElement) {
-                        if (!window.DTEngine.activeTacticalElement.contains(e.target) && e.target !== window.DTEngine.activeTacticalElement) {
-                            var el = window.DTEngine.activeTacticalElement;
-                            if (el.classList.contains('tactical-zone')) {
-                                el.style.boxShadow = 'inset 0 0 20px rgba(0,242,254,0.04), 0 0 8px rgba(0,242,254,0.12)';
-                                el.style.borderColor = '#00f2fe';
-                            } else if (el.tagName === 'g') {
-                                var line = el.querySelector('line');
-                                if(line) line.setAttribute('stroke-width', '2');
-                            }
-                            window.DTEngine.activeTacticalElement = null;
+                    if (window.DTEngine && window.DTEngine.activeNode) {
+                        if (!window.DTEngine.activeNode.contains(e.target) && e.target !== window.DTEngine.activeNode) {
+                            window.DTEngine.Board.TacticalOverlay.selectNode(null);
                         }
                     }
                 });
@@ -4733,28 +4779,7 @@ window.DTEngine = {
                     if (window.DTEngine.Board.TacticalOverlay._mode !== 'none') return;
                     e.stopPropagation();
 
-                    // Deseleccionar el anterior
-                    if (window.DTEngine.activeTacticalElement && window.DTEngine.activeTacticalElement !== el) {
-                        var prev = window.DTEngine.activeTacticalElement;
-                        if (prev.classList.contains('tactical-zone')) {
-                            prev.style.boxShadow = 'inset 0 0 20px rgba(0,242,254,0.04), 0 0 8px rgba(0,242,254,0.12)';
-                            prev.style.borderColor = '#00f2fe';
-                        } else if (prev.tagName === 'g') {
-                            var pline = prev.querySelector('line');
-                            if (pline) pline.setAttribute('stroke-width', '2');
-                        }
-                    }
-
-                    window.DTEngine.activeTacticalElement = el;
-
-                    // Destacar el actual
-                    if (el.classList.contains('tactical-zone')) {
-                        el.style.boxShadow = 'inset 0 0 20px rgba(255,255,255,0.2), 0 0 12px rgba(255,255,255,0.8)';
-                        el.style.borderColor = '#fff';
-                    } else if (el.tagName === 'g') {
-                        var line = el.querySelector('line');
-                        if (line) line.setAttribute('stroke-width', '4');
-                    }
+                    window.DTEngine.Board.TacticalOverlay.selectNode(el);
 
                     // Setup Drag nativo
                     var overlay = window.DTEngine.Board.TacticalOverlay;
