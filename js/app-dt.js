@@ -806,23 +806,6 @@ window.DTEngine = {
                                 <h3 style="color: var(--primary-color, #00F2FE); margin: 0; font-family: Outfit; font-size: 1.2rem;">SALA DE JUEGOS</h3>
                                 <p style="color: #6b7280; font-size: 0.8rem; margin-top: -10px; margin-bottom: 4px;">Diseño Táctico</p>
 
-                                <!-- Esquemas -->
-                                <label style="color: #9ca3af; font-size: 0.75rem; font-weight: bold; margin-bottom: -10px;">ESQUEMA LOCAL</label>
-                                <select id="slocal" onchange="window.DTEngine.Board.deployTeams(this.value, document.getElementById('srival').value)" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
-                                    <option value="4-3-3">1-4-3-3 Ofensivo</option>
-                                    <option value="4-4-2">1-4-4-2 Clásico</option>
-                                    <option value="4-2-3-1">1-4-2-3-1 Equilibrado</option>
-                                    <option value="3-5-2">1-3-5-2 Carrileros</option>
-                                </select>
-
-                                <label style="color: #9ca3af; font-size: 0.75rem; font-weight: bold; margin-bottom: -10px;">ESQUEMA RIVAL</label>
-                                <select id="srival" onchange="window.DTEngine.Board.deployTeams(document.getElementById('slocal').value, this.value)" style="padding: 10px; background: #1f2937; color: white; border: 1px solid #374151; border-radius: 6px; outline: none; cursor: pointer;">
-                                    <option value="4-4-2">1-4-4-2 Clásico</option>
-                                    <option value="4-3-3">1-4-3-3 Ofensivo</option>
-                                    <option value="4-2-3-1">1-4-2-3-1 Equilibrado</option>
-                                    <option value="3-5-2">1-3-5-2 Carrileros</option>
-                                </select>
-
                                 <!-- ═══ HERRAMIENTAS TÁCTICAS NATIVAS (DOM) ═══ -->
                                 <div style="border-top: 1px solid rgba(0,242,254,0.12); padding-top: 14px; display: flex; flex-direction: column; gap: 8px;">
                                     <p style="color: #00F2FE; font-size: 0.68rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin: 0 0 4px 0;">⚙ HERRAMIENTAS</p>
@@ -854,8 +837,6 @@ window.DTEngine = {
                                     <!-- Modo activo indicador -->
                                     <div id="overlay-mode-indicator" style="font-size: 0.68rem; color: #4b5563; text-align: center; font-family: Outfit, sans-serif; letter-spacing: 0.5px; margin-top: 2px;">Modo: Mover Jugadores</div>
                                 </div>
-
-                                <button onclick="window.DTEngine.Board.deployTeams(document.getElementById('slocal').value, document.getElementById('srival').value)" style="margin-top: auto; padding: 12px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 6px; cursor: pointer; font-weight: bold;">↻ Restaurar Posiciones</button>
                             </div>
 
                             <!-- ═══ CANCHA PRINCIPAL ═══ -->
@@ -4317,9 +4298,7 @@ window.DTEngine = {
         init: function () {
             const layer = document.getElementById('tokens-layer');
             if (!layer) return;
-            const loc = document.getElementById('slocal') ? document.getElementById('slocal').value : '4-3-3';
-            const riv = document.getElementById('srival') ? document.getElementById('srival').value : '4-4-2';
-            this.deployTeams(loc, riv);
+            layer.innerHTML = '';
             if (this.TacticalOverlay && this.TacticalOverlay.init) {
                 this.TacticalOverlay.init();
             }
@@ -4436,7 +4415,7 @@ window.DTEngine = {
             // ── Doble clic para editar posText ──
             circle.addEventListener('dblclick', function(e) {
                 e.stopPropagation(); // Evita que dispare la edición de nombre de la ficha
-                var newPos = prompt('Introduce la posición (Ej. MC, DFD):', circle.textContent);
+                var newPos = prompt('Ingresa el número o posición (Ej: 5, MC, DC):', circle.textContent);
                 if (newPos !== null && newPos.trim() !== '') {
                     circle.textContent = newPos.trim().substring(0, 4).toUpperCase();
                 }
