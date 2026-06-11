@@ -59,6 +59,22 @@ window.PortalHub = (() => {
 
             _clubs = ownedTeams || [];
             console.log(`[HUB] ${_clubs.length} club(s) cargado(s).`);
+
+            // Obtener partidos disputados en la App (training_logs)
+            window.AppInAppMatches = 0;
+            if (_clubs.length > 0) {
+                try {
+                    const teamIds = _clubs.map(c => c.id);
+                    const { count, error: countErr } = await window.supabase
+                        .from('training_logs')
+                        .select('*', { count: 'exact', head: true })
+                        .in('team_id', teamIds)
+                        .eq('tipo', 'Partido');
+                        
+                    if (!countErr) window.AppInAppMatches = count || 0;
+                } catch(e) {}
+            }
+            
         } catch (e) {
             console.error('[HUB] Error cargando clubes:', e);
             _clubs = [];
@@ -80,12 +96,27 @@ window.PortalHub = (() => {
         // Generar iniciales para avatar
         const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
-        // Stats de carrera (mockeadas por ahora, se conectarán a BD en fase 2)
+        // ── MOTOR DE ESTADÍSTICAS HÍBRIDO ──
+        const histPartidos = parseInt(_user?.hist_partidos) || 0;
+        const histTitulos = parseInt(_user?.hist_titulos) || 0;
+        const histTemporadas = parseInt(_user?.hist_temporadas) || 0;
+        const histVictorias = parseInt(_user?.hist_victorias) || 0;
+        const histEmpates = parseInt(_user?.hist_empates) || 0;
+
+        const inAppMatches = window.AppInAppMatches || 0;
+        const totalPartidos = histPartidos + inAppMatches;
+        const totalTemporadas = histTemporadas + _clubs.length;
+        
+        let efectividad = 0;
+        if (totalPartidos > 0) {
+            efectividad = Math.round(((histVictorias * 3 + histEmpates) / (totalPartidos * 3)) * 100);
+        }
+
         const careerStats = [
-            { icon: '⚽', label: 'Partidos Dirigidos', value: _user?.matches_coached || 0 },
-            { icon: '🏆', label: 'Títulos', value: _user?.titles_won || 0 },
-            { icon: '📅', label: 'Temporadas', value: _user?.seasons_experience || 0 },
-            { icon: '📈', label: 'Efectividad', value: (_user?.win_rate ? `${_user.win_rate}%` : '—') },
+            { icon: '⚽', label: 'Partidos Dirigidos', value: totalPartidos },
+            { icon: '🏆', label: 'Títulos', value: histTitulos },
+            { icon: '📅', label: 'Temporadas', value: totalTemporadas },
+            { icon: '📈', label: 'Efectividad', value: efectividad > 0 ? `${efectividad}%` : '0%' },
         ];
 
         const statsHTML = careerStats.map(s => `
@@ -129,8 +160,8 @@ window.PortalHub = (() => {
                 <div class="hub-hero-content">
                     <!-- Avatar -->
                     <div class="hub-avatar-wrap">
-                        <div class="hub-avatar" id="hub-avatar-el">
-                            <span class="hub-avatar-initials">${initials}</span>
+                        <div class="hub-avatar" id="hub-avatar-el" style="${_user?.avatar_url ? `background-image: url('${_user.avatar_url}'); background-size: cover; background-position: center;` : ''}">
+                            <span class="hub-avatar-initials" style="${_user?.avatar_url ? 'display: none;' : ''}">${initials}</span>
                         </div>
                         <span class="hub-avatar-status" title="Online"></span>
                     </div>

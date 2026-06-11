@@ -591,6 +591,36 @@ window.DTEngine = {
                                             </div>
                                         </div>
                                     </div>
+                                    
+                                    <div class="profile-card" style="margin-top: 20px;">
+                                        <h3 class="profile-section-title">TRAYECTORIA PREVIA (Histórico)</h3>
+                                        <div class="profile-form-grid">
+                                            <div class="profile-input-group">
+                                                <label>PARTIDOS DIRIGIDOS</label>
+                                                <input type="number" id="prof-hist-partidos" class="profile-input" placeholder="0" min="0">
+                                            </div>
+                                            <div class="profile-input-group">
+                                                <label>TÍTULOS OBTENIDOS</label>
+                                                <input type="number" id="prof-hist-titulos" class="profile-input" placeholder="0" min="0">
+                                            </div>
+                                            <div class="profile-input-group">
+                                                <label>AÑOS / TEMPORADAS DE EXPERIENCIA</label>
+                                                <input type="number" id="prof-hist-temporadas" class="profile-input" placeholder="0" min="0">
+                                            </div>
+                                            <div class="profile-input-group">
+                                                <label>VICTORIAS</label>
+                                                <input type="number" id="prof-hist-victorias" class="profile-input" placeholder="0" min="0">
+                                            </div>
+                                            <div class="profile-input-group">
+                                                <label>EMPATES</label>
+                                                <input type="number" id="prof-hist-empates" class="profile-input" placeholder="0" min="0">
+                                            </div>
+                                            <div class="profile-input-group">
+                                                <label>DERROTAS</label>
+                                                <input type="number" id="prof-hist-derrotas" class="profile-input" placeholder="0" min="0">
+                                            </div>
+                                        </div>
+                                    </div>
                                     <button class="btn-save-profile" onclick="DTEngine.saveDTProfile()" style="margin-top: 25px;">GUARDAR PERFIL DEL DT</button>
                                 </div>
 
@@ -2855,6 +2885,14 @@ window.DTEngine = {
         const valLicencia = document.getElementById('prof-license')?.value || null;
         const valAvatar = document.getElementById('avatar_url_base64')?.value || null;
 
+        // Histórico
+        const hPartidos = parseInt(document.getElementById('prof-hist-partidos')?.value) || 0;
+        const hTitulos = parseInt(document.getElementById('prof-hist-titulos')?.value) || 0;
+        const hTemporadas = parseInt(document.getElementById('prof-hist-temporadas')?.value) || 0;
+        const hVictorias = parseInt(document.getElementById('prof-hist-victorias')?.value) || 0;
+        const hEmpates = parseInt(document.getElementById('prof-hist-empates')?.value) || 0;
+        const hDerrotas = parseInt(document.getElementById('prof-hist-derrotas')?.value) || 0;
+
         if (!name) return alert('El nombre es obligatorio.');
 
         try {
@@ -2862,7 +2900,13 @@ window.DTEngine = {
             const profilePayload = {
                 id: uid,
                 licencia: valLicencia,
-                avatar_url: valAvatar
+                avatar_url: valAvatar,
+                hist_partidos: hPartidos,
+                hist_titulos: hTitulos,
+                hist_temporadas: hTemporadas,
+                hist_victorias: hVictorias,
+                hist_empates: hEmpates,
+                hist_derrotas: hDerrotas
             };
 
             const { error: pErr } = await window.supabase.from('profiles_dt').upsert(profilePayload);
@@ -2874,6 +2918,13 @@ window.DTEngine = {
             if (window.CurrentUser) {
                 window.CurrentUser.name = name;
                 window.CurrentUser.license = valLicencia;
+                window.CurrentUser.hist_partidos = hPartidos;
+                window.CurrentUser.hist_titulos = hTitulos;
+                window.CurrentUser.hist_temporadas = hTemporadas;
+                window.CurrentUser.hist_victorias = hVictorias;
+                window.CurrentUser.hist_empates = hEmpates;
+                window.CurrentUser.hist_derrotas = hDerrotas;
+
                 if (valAvatar) {
                     const innerAvatar = document.querySelector('.dt-avatar-inner');
                     if (innerAvatar) {
