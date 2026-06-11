@@ -357,6 +357,9 @@ window.App = {
         const hash = window.location.hash;
         console.log("📍 Router ejecutado, hash:", hash || '(vacío)');
 
+        // ── 1. PURGADO ABSOLUTO (Ida y Vuelta) ──
+        this._hideAllViews();
+
         // ── FALLBACK ESTRICTO: hash vacío → forzar #portal ────────────────────
         // El DT ya no aterriza en #home directamente. El Hub es la puerta de entrada.
         if (!hash || hash === '' || hash === '#') {
@@ -368,9 +371,7 @@ window.App = {
 
         // ── ROUTING AL HUB DEL DT ───────────────────────────────────────────
         if (hash === '#portal') {
-            this._hideAllViews();
-            
-            // Encender EXCLUSIVAMENTE el Hub del DT
+            // A. Encender EXCLUSIVAMENTE el Hub del DT
             const hubView = document.getElementById('view-dt-hub');
             if (hubView) {
                 hubView.classList.add('vista-activa');
@@ -385,6 +386,12 @@ window.App = {
             } else {
                 console.error("CRÍTICO: No se encontró el elemento #view-dt-hub en el DOM");
             }
+            
+            // B. Limpiar la memoria temporal del club (evitar datos cruzados)
+            window.CurrentTeam = null;
+            localStorage.removeItem('ravix_team_id');
+            localStorage.removeItem('ravix_active_club_name');
+            
             return;
         }
 
@@ -406,7 +413,6 @@ window.App = {
         }
 
         // ── ESTADO SAAS: Encender app-shell (Dashboard) y apagar el resto ──
-        this._hideAllViews();
         const appShell = document.getElementById('app-shell');
         if (appShell) appShell.classList.add('vista-activa');
 
