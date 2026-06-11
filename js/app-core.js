@@ -237,9 +237,9 @@ window.App = {
             // Mostrar un loader mínimo mientras se verifica
             const portal = document.getElementById('view-role-selector');
             if (portal) {
-                portal.style.display = 'flex';
-                portal.style.opacity = '0';
-                portal.style.pointerEvents = 'none';
+                portal.style.setProperty('display', 'flex', 'important');
+                portal.style.opacity = '';
+                portal.style.pointerEvents = '';
             }
 
             console.log('[ROUTER] Token encontrado. Verificando sesión...');
@@ -248,25 +248,19 @@ window.App = {
         } else {
             console.log('[ROUTER] Sin sesión. Mostrando portal de entrada.');
             const portal = document.getElementById('view-role-selector');
-            portal.style.display = 'flex';
+            if (portal) {
+                portal.style.setProperty('display', 'flex', 'important');
+            }
         }
     },
 
     // Oculta todas las vistas para evitar flash visual (Hard Reset Simple)
     _hideAllViews() {
-        // Seleccionamos las vistas principales y limpiamos
-        const sections = [
-            ...document.querySelectorAll('.view-section'),
-            document.getElementById('view-login'),
-            document.getElementById('app-shell')
-        ];
-        
-        sections.forEach(sec => {
-            if (sec) {
-                sec.style.display = 'none';
-                sec.style.opacity = '';
-                sec.style.pointerEvents = '';
-            }
+        // Apagar todo
+        document.querySelectorAll('.view-section, .login-view, #app-shell').forEach(el => {
+            el.style.setProperty('display', 'none', 'important');
+            el.style.opacity = '';
+            el.style.pointerEvents = '';
         });
     },
 
@@ -294,7 +288,7 @@ window.App = {
         this._hideAllViews();
         const portal = document.getElementById('view-role-selector');
         if (portal) {
-            portal.style.display = 'flex';
+            portal.style.setProperty('display', 'flex', 'important');
             portal.style.opacity = '';
             portal.style.pointerEvents = '';
         }
@@ -335,10 +329,10 @@ window.App = {
         if (portal) {
             portal.style.opacity = '0';
             portal.style.pointerEvents = 'none';
-            setTimeout(() => { portal.style.display = 'none'; portal.style.opacity = ''; portal.style.pointerEvents = ''; }, 420);
+            setTimeout(() => { portal.style.setProperty('display', 'none', 'important'); portal.style.opacity = ''; portal.style.pointerEvents = ''; }, 420);
         }
         if (login) {
-            login.style.display = 'flex';
+            login.style.setProperty('display', 'flex', 'important');
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => { login.style.opacity = '1'; });
             });
@@ -375,9 +369,11 @@ window.App = {
         // ── ROUTING AL HUB DEL DT ───────────────────────────────────────────
         if (hash === '#portal') {
             this._hideAllViews();
-            const hub = document.getElementById('view-dt-hub');
-            if (hub) {
-                hub.style.display = 'flex';
+            
+            // Encender EXCLUSIVAMENTE el Hub del DT
+            const hubView = document.getElementById('view-dt-hub');
+            if (hubView) {
+                hubView.style.setProperty('display', 'flex', 'important'); // Layout top-down
                 // Inyectar CSS del DT para que el hub tenga el tema correcto
                 if (!document.querySelector('link[href="css/styles-dt.css"]')) {
                     const dtLink = document.createElement('link');
@@ -386,6 +382,8 @@ window.App = {
                     document.head.appendChild(dtLink);
                 }
                 if (window.PortalHub) window.PortalHub.init();
+            } else {
+                console.error("CRÍTICO: No se encontró el elemento #view-dt-hub en el DOM");
             }
             return;
         }
@@ -596,7 +594,7 @@ window.App = {
                 this._hideAllViews();
                 const login = document.getElementById('view-login');
                 if (login) {
-                    login.style.display = 'flex';
+                    login.style.setProperty('display', 'flex', 'important');
                 }
                 return;
             }
