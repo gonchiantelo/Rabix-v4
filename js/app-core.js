@@ -237,7 +237,7 @@ window.App = {
             // Mostrar un loader mínimo mientras se verifica
             const portal = document.getElementById('view-role-selector');
             if (portal) {
-                portal.style.display = 'flex';
+                portal.style.setProperty('display', 'flex', 'important');
                 portal.style.opacity = '0';
                 portal.style.pointerEvents = 'none';
             }
@@ -247,7 +247,8 @@ window.App = {
             window.addEventListener('hashchange', () => this.handleRouting());
         } else {
             console.log('[ROUTER] Sin sesión. Mostrando portal de entrada.');
-            document.getElementById('view-role-selector').style.display = 'flex';
+            const portal = document.getElementById('view-role-selector');
+            portal.style.setProperty('display', 'flex', 'important');
         }
     },
 
@@ -261,7 +262,7 @@ window.App = {
         ids.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
-                el.style.display = 'none';
+                el.style.setProperty('display', 'none', 'important');
                 el.style.opacity = '';
                 el.style.pointerEvents = '';
             }
@@ -292,7 +293,7 @@ window.App = {
         this._hideAllViews();
         const portal = document.getElementById('view-role-selector');
         if (portal) {
-            portal.style.display = 'flex';
+            portal.style.setProperty('display', 'flex', 'important');
             portal.style.opacity = '';
             portal.style.pointerEvents = '';
         }
@@ -333,10 +334,10 @@ window.App = {
         if (portal) {
             portal.style.opacity = '0';
             portal.style.pointerEvents = 'none';
-            setTimeout(() => { portal.style.display = 'none'; portal.style.opacity = ''; portal.style.pointerEvents = ''; }, 420);
+            setTimeout(() => { portal.style.setProperty('display', 'none', 'important'); portal.style.opacity = ''; portal.style.pointerEvents = ''; }, 420);
         }
         if (login) {
-            login.style.display = 'flex';
+            login.style.setProperty('display', 'flex', 'important');
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => { login.style.opacity = '1'; });
             });
@@ -595,7 +596,7 @@ window.App = {
                 this._hideAllViews();
                 const portal = document.getElementById('view-role-selector');
                 if (portal) {
-                    portal.style.display = 'flex';
+                    portal.style.setProperty('display', 'flex', 'important');
                     portal.style.opacity = '';
                     portal.style.pointerEvents = '';
                 }

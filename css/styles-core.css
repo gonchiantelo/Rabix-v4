@@ -207,13 +207,14 @@ body.mode-athlete .brand-name {
 /* ═══════════════════════════════════════════════════════
    PORTAL DE ENTRADA — PREMIUM REDESIGN
 ═══════════════════════════════════════════════════════ */
-#view-portal {
+#view-role-selector {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 100vh !important;
+    width: 100% !important;
     background: #050510;
     overflow: hidden;
     transition: opacity var(--transition-premium);
@@ -530,8 +531,12 @@ body.mode-athlete .brand-name {
    LOGIN — SPLIT PANEL PREMIUM REDESIGN
 ═══════════════════════════════════════════════════════ */
 .login-view {
-    display: flex;
-    height: 100vh;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 100vh !important;
+    width: 100% !important;
     transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     background: var(--login-bg);
 }
