@@ -60,19 +60,16 @@ window.PortalHub = (() => {
             _clubs = ownedTeams || [];
             console.log(`[HUB] ${_clubs.length} club(s) cargado(s).`);
 
-            // Obtener partidos disputados en la App (training_logs)
+            // Obtener partidos disputados en la App (teams.match_dates)
             window.AppInAppMatches = 0;
             if (_clubs.length > 0) {
-                try {
-                    const teamIds = _clubs.map(c => c.id);
-                    const { count, error: countErr } = await window.supabase
-                        .from('training_logs')
-                        .select('*', { count: 'exact', head: true })
-                        .in('team_id', teamIds)
-                        .eq('tipo', 'Partido');
-                        
-                    if (!countErr) window.AppInAppMatches = count || 0;
-                } catch(e) {}
+                let totalMatches = 0;
+                _clubs.forEach(club => {
+                    if (club.match_dates && Array.isArray(club.match_dates)) {
+                        totalMatches += club.match_dates.length;
+                    }
+                });
+                window.AppInAppMatches = totalMatches;
             }
             
         } catch (e) {

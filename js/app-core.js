@@ -407,16 +407,16 @@ window.App = {
             }
         }
 
+        // ── ESTADO SAAS: Encender app-shell (Dashboard) y apagar el resto ──
+        const appShell = document.getElementById('app-shell');
+        if (appShell) appShell.classList.add('vista-activa');
+
         // El routing interno de las vistas del DT es manejado por DTEngine.toggleView.
         // Solo actuamos si DTEngine ya está disponible en el DOM.
         if (!window.DTEngine) {
             console.warn('⚠️ handleRouting: DTEngine aún no disponible, encolado para después.');
             return;
         }
-
-        // ── ESTADO SAAS: Encender app-shell (Dashboard) y apagar el resto ──
-        const appShell = document.getElementById('app-shell');
-        if (appShell) appShell.classList.add('vista-activa');
 
         if (hash === '#view-profile') {
             window.DTEngine.toggleView('profile');
