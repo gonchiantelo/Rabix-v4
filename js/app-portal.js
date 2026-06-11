@@ -161,32 +161,34 @@ window.PortalHub = (() => {
                 </div>
             </div>
 
-            <!-- ═══ CAREER STATS ═══ -->
-            <div class="hub-section">
-                <div class="hub-section-header">
-                    <h2 class="hub-section-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                        Estadísticas de Carrera
-                    </h2>
-                    <span class="hub-section-tag">GLOBAL · TODOS LOS CLUBS</span>
+            <div class="hub-content-wrapper">
+                <!-- ═══ CAREER STATS ═══ -->
+                <div class="hub-section">
+                    <div class="hub-section-header">
+                        <h2 class="hub-section-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            Estadísticas de Carrera
+                        </h2>
+                        <span class="hub-section-tag">GLOBAL · TODOS LOS CLUBS</span>
+                    </div>
+                    <div class="hub-stats-grid">
+                        ${statsHTML}
+                    </div>
                 </div>
-                <div class="hub-stats-grid">
-                    ${statsHTML}
-                </div>
-            </div>
 
-            <!-- ═══ MIS PROYECTOS / CLUBES ═══ -->
-            <div class="hub-section hub-section--clubs">
-                <div class="hub-section-header">
-                    <h2 class="hub-section-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                        Mis Proyectos
-                    </h2>
-                    <span class="hub-section-tag">${_clubs.length} CLUB${_clubs.length !== 1 ? 'S' : ''} ACTIVO${_clubs.length !== 1 ? 'S' : ''}</span>
-                </div>
-                <div class="hub-clubs-grid" id="hub-clubs-grid">
-                    ${clubsHTML}
-                    ${foundClubCard}
+                <!-- ═══ MIS PROYECTOS / CLUBES ═══ -->
+                <div class="hub-section hub-section--clubs">
+                    <div class="hub-section-header">
+                        <h2 class="hub-section-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            Mis Proyectos
+                        </h2>
+                        <span class="hub-section-tag">${_clubs.length} CLUB${_clubs.length !== 1 ? 'S' : ''} ACTIVO${_clubs.length !== 1 ? 'S' : ''}</span>
+                    </div>
+                    <div class="hub-clubs-grid" id="hub-clubs-grid">
+                        ${clubsHTML}
+                        ${foundClubCard}
+                    </div>
                 </div>
             </div>
 

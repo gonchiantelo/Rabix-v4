@@ -2155,6 +2155,10 @@ select option {
     font-family: 'Inter', sans-serif;
     color: var(--hub-text);
     background: var(--hub-bg);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    width: 100%;
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -2168,7 +2172,8 @@ select option {
 
 .hub-hero-banner {
     position: relative;
-    height: 220px;
+    width: 100%;
+    min-height: 200px;
     background: linear-gradient(135deg, #0A0A18 0%, #0D1528 50%, #0A1020 100%);
     overflow: hidden;
 }
@@ -2336,12 +2341,17 @@ select option {
 /* ─────────────────────────────────────────────────────────────────
    SECTIONS
 ───────────────────────────────────────────────────────────────── */
-.hub-section {
-    padding: 32px 40px;
-    max-width: 1280px;
-    width: 100%;
+.hub-content-wrapper {
+    max-width: 1200px;
     margin: 0 auto;
+    padding: 40px 20px;
+    width: 100%;
     box-sizing: border-box;
+}
+
+.hub-section {
+    width: 100%;
+    margin-bottom: 40px;
 }
 
 .hub-section--clubs {
@@ -2384,8 +2394,8 @@ select option {
 ───────────────────────────────────────────────────────────────── */
 .hub-stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
 }
 
 .hub-stat-card {
