@@ -531,11 +531,9 @@ body.mode-athlete .brand-name {
    LOGIN — SPLIT PANEL PREMIUM REDESIGN
 ═══════════════════════════════════════════════════════ */
 .login-view {
-    /* display is controlled by JS router — do NOT set display here */
+    display: flex !important;
     flex-direction: row !important;
-    align-items: center !important;
-    justify-content: center !important;
-    min-height: 100vh !important;
+    height: 100vh !important;
     width: 100% !important;
     transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     background: var(--login-bg);

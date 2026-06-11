@@ -376,7 +376,6 @@ window.App = {
             this._hideAllViews();
             const hub = document.getElementById('view-dt-hub');
             if (hub) {
-                hub.style.display = 'flex';
                 hub.style.setProperty('display', 'flex', 'important');
                 // Inyectar CSS del DT para que el hub tenga el tema correcto
                 if (!document.querySelector('link[href="css/styles-dt.css"]')) {
