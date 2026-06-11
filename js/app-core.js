@@ -255,7 +255,8 @@ window.App = {
     _hideAllViews() {
         const ids = [
             'view-portal', 'view-login', 'view-onboarding',
-            'app-shell', 'view-athlete-dashboard', 'view-athletes'
+            'app-shell', 'view-athlete-dashboard', 'view-athletes',
+            'view-dt-hub'
         ];
         ids.forEach(id => {
             const el = document.getElementById(id);
@@ -360,10 +361,11 @@ window.App = {
         const hash = window.location.hash;
         console.log("📍 Router ejecutado, hash:", hash || '(vacío)');
 
-        // ── FALLBACK ESTRICTO: hash vacío → forzar #home ──────────────────────
+        // ── FALLBACK ESTRICTO: hash vacío → forzar #portal ────────────────────
+        // El DT ya no aterriza en #home directamente. El Hub es la puerta de entrada.
         if (!hash || hash === '' || hash === '#') {
-            window.location.hash = '#home';
-            // El hashchange event disparará handleRouting de nuevo con '#home'.
+            window.location.hash = '#portal';
+            // El hashchange event disparará handleRouting de nuevo con '#portal'.
             // Salimos para evitar doble ejecución.
             return;
         }
@@ -671,11 +673,48 @@ window.App = {
             await this.fetchCustomExercises();
 
             window.CurrentUser = userData;
-            LOG('DT')('✅ Estado global listo. Activando app-shell...');
+            LOG('DT')('✅ Estado global listo. Activando DT Hub (Portal del Manager)...');
             this._hideAllViews();
-            document.getElementById('app-shell').style.display = 'block';
-            this.injectRoleAssets('dt');
-            this.handleRouting();
+
+            // ── NUEVO PARADIGMA SAAS: DT va al HUB, no al dashboard directo ──
+            // El Hub muestra el perfil de carrera y la grilla de clubes.
+            // El DT elige qué club gestionar y DESDE AHÍ se lanza app-dt.js.
+            const hub = document.getElementById('view-dt-hub');
+            if (hub) {
+                hub.style.display = 'block';
+                hub.style.opacity = '0';
+                // Inyectar CSS del DT para que el hub tenga el tema correcto
+                if (!document.querySelector('link[href="css/styles-dt.css"]')) {
+                    const dtLink = document.createElement('link');
+                    dtLink.rel = 'stylesheet';
+                    dtLink.href = 'css/styles-dt.css';
+                    document.head.appendChild(dtLink);
+                }
+                // Fade in suave
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        hub.style.transition = 'opacity 0.4s ease';
+                        hub.style.opacity = '1';
+                        setTimeout(() => { hub.style.transition = ''; }, 450);
+                    });
+                });
+                // Lanzar el Hub
+                if (window.PortalHub) {
+                    window.PortalHub.init();
+                } else {
+                    LOG('DT')('⚠️ PortalHub no disponible — asegúrate de que app-portal.js está cargado.');
+                    // Fallback: ir al dashboard directamente si el Hub no está disponible
+                    hub.style.display = 'none';
+                    document.getElementById('app-shell').style.display = 'block';
+                    this.injectRoleAssets('dt');
+                    this.handleRouting();
+                }
+            } else {
+                LOG('DT')('⚠️ #view-dt-hub no encontrado — fallback a app-shell');
+                document.getElementById('app-shell').style.display = 'block';
+                this.injectRoleAssets('dt');
+                this.handleRouting();
+            }
 
         } catch (e) {
             console.error('[ROUTER] ❌ Error no manejado en checkSession:', e);

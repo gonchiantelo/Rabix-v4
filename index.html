@@ -30,7 +30,7 @@
     <!-- ═══════════════════════════════════════════════
          PORTAL DE ENTRADA — PREMIUM REDESIGN
     ═══════════════════════════════════════════════ -->
-    <section id="view-portal">
+    <section id="view-portal" class="view-section">
         <!-- Animated particles canvas -->
         <canvas id="portal-particles" class="portal-particles-canvas"></canvas>
         <!-- Ambient glows -->
@@ -239,6 +239,13 @@
 
             </div>
         </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         DT HUB — PORTAL DEL MANAGER (app-portal.js)
+    ═══════════════════════════════════════════════ -->
+    <section id="view-dt-hub" class="view-section" style="display:none; background:#050508; min-height:100vh; overflow-y:auto;">
+        <!-- Renderizado dinámico vía PortalHub.init() en app-portal.js -->
     </section>
 
     <!-- Contenedor para inyección dinámica -->
@@ -1037,6 +1044,7 @@
         </main>
     </section>
 
+    <script src="./js/app-portal.js"></script>
     <script src="./js/app-core.js"></script>
 </body>
 </html>

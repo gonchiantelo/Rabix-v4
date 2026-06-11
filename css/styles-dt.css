@@ -2135,3 +2135,743 @@ select option {
     background-color: #161616 !important;
     color: #ffffff !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   DT HUB — PORTAL DEL MANAGER (styles para app-portal.js)
+   Premium dark-mode, glass cards, mesh gradients
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── Variables internas del Hub ── */
+#view-dt-hub {
+    --hub-bg: #050508;
+    --hub-surface: #0E0E16;
+    --hub-surface-2: #14141E;
+    --hub-border: rgba(255,255,255,0.06);
+    --hub-accent: var(--primary-color, #079FA0);
+    --hub-gold: #D4AF37;
+    --hub-text: #E2E2F0;
+    --hub-text-dim: #5A5A72;
+    --hub-radius: 20px;
+    font-family: 'Inter', sans-serif;
+    color: var(--hub-text);
+    background: var(--hub-bg);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   HERO BANNER
+───────────────────────────────────────────────────────────────── */
+.hub-hero {
+    position: relative;
+    padding: 0;
+    overflow: hidden;
+}
+
+.hub-hero-banner {
+    position: relative;
+    height: 220px;
+    background: linear-gradient(135deg, #0A0A18 0%, #0D1528 50%, #0A1020 100%);
+    overflow: hidden;
+}
+
+.hub-hero-banner-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 40%, var(--hub-bg) 100%);
+    z-index: 1;
+}
+
+/* Mesh gradient blobs */
+.hub-hero-mesh {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.4;
+    z-index: 0;
+}
+.hub-hero-mesh--1 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(0,114,255,0.25) 0%, transparent 70%);
+    top: -200px; left: -100px;
+}
+.hub-hero-mesh--2 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(0,242,254,0.15) 0%, transparent 70%);
+    top: -100px; right: 50px;
+}
+
+.hub-hero-content {
+    position: relative;
+    z-index: 2;
+    margin-top: -80px;
+    padding: 0 40px 32px;
+    display: flex;
+    align-items: flex-end;
+    gap: 28px;
+}
+
+/* ── Avatar ── */
+.hub-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.hub-avatar {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #1A1A2E, #0E0E1A);
+    border: 3px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 4px var(--hub-bg), 0 0 0 6px rgba(0,242,254,0.25), 0 10px 40px rgba(0,0,0,0.6);
+    transition: box-shadow 0.3s ease;
+}
+.hub-avatar:hover {
+    box-shadow: 0 0 0 4px var(--hub-bg), 0 0 0 6px rgba(0,242,254,0.5), 0 10px 40px rgba(0,0,0,0.6);
+}
+
+.hub-avatar-initials {
+    font-family: 'Outfit', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: -1px;
+}
+
+.hub-avatar-status {
+    position: absolute;
+    bottom: 4px; right: 4px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #10b981;
+    border: 2px solid var(--hub-bg);
+    box-shadow: 0 0 8px rgba(16,185,129,0.6);
+}
+
+/* ── Hero Info ── */
+.hub-hero-info {
+    flex: 1;
+    padding-bottom: 4px;
+}
+
+.hub-hero-role {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: var(--hub-accent);
+    margin: 0 0 6px;
+    text-transform: uppercase;
+}
+
+.hub-hero-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 900;
+    color: #FFFFFF;
+    margin: 0 0 12px;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+}
+
+.hub-hero-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.hub-license-badge,
+.hub-prestige-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 100px;
+    letter-spacing: 0.5px;
+}
+
+.hub-license-badge {
+    background: rgba(0,242,254,0.08);
+    border: 1px solid rgba(0,242,254,0.2);
+    color: #00F2FE;
+}
+
+.hub-prestige-badge {
+    background: rgba(212,175,55,0.08);
+    border: 1px solid rgba(212,175,55,0.2);
+    color: var(--hub-gold);
+}
+
+/* ── Hero Actions ── */
+.hub-hero-actions {
+    display: flex;
+    gap: 10px;
+    padding-bottom: 4px;
+    flex-shrink: 0;
+}
+
+.hub-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    color: var(--hub-text-dim);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+}
+.hub-btn-secondary:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.15);
+    color: var(--hub-text);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   SECTIONS
+───────────────────────────────────────────────────────────────── */
+.hub-section {
+    padding: 32px 40px;
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.hub-section--clubs {
+    padding-bottom: 80px;
+}
+
+.hub-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.hub-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.9);
+    margin: 0;
+    letter-spacing: 0.3px;
+}
+.hub-section-title svg {
+    color: var(--hub-accent);
+    flex-shrink: 0;
+}
+
+.hub-section-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--hub-text-dim);
+    text-transform: uppercase;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   CAREER STATS GRID
+───────────────────────────────────────────────────────────────── */
+.hub-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.hub-stat-card {
+    background: var(--hub-surface);
+    border: 1px solid var(--hub-border);
+    border-radius: var(--hub-radius);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.hub-stat-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,242,254,0.04) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.hub-stat-card:hover { transform: translateY(-4px); border-color: rgba(0,242,254,0.15); }
+.hub-stat-card:hover::before { opacity: 1; }
+
+.hub-stat-icon {
+    font-size: 28px;
+    line-height: 1;
+    filter: drop-shadow(0 0 8px rgba(0,242,254,0.2));
+}
+
+.hub-stat-value {
+    font-family: 'Outfit', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: #FFFFFF;
+    line-height: 1;
+}
+
+.hub-stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--hub-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    line-height: 1.3;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   CLUBS GRID
+───────────────────────────────────────────────────────────────── */
+.hub-clubs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* ── Club Card ── */
+.hub-club-card {
+    background: var(--hub-surface);
+    border: 1px solid var(--hub-border);
+    border-radius: var(--hub-radius);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.hub-club-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(145deg, rgba(255,255,255,0.04) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.hub-club-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(0,242,254,0.25);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,242,254,0.05);
+}
+.hub-club-card:hover::after { opacity: 1; }
+.hub-club-card:hover .hub-club-cta {
+    background: var(--hub-accent);
+    color: #000;
+    border-color: var(--hub-accent);
+}
+
+/* Animation in keyframe */
+.hub-card--animate-in {
+    animation: hubCardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes hubCardIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.hub-club-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Club Shield */
+.hub-club-shield {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(145deg, color-mix(in srgb, var(--club-color) 20%, transparent), color-mix(in srgb, var(--club-color) 5%, transparent));
+    border: 1px solid color-mix(in srgb, var(--club-color) 40%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Outfit', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--club-color);
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--club-color) 20%, transparent);
+}
+
+/* Fallback for browsers without color-mix */
+@supports not (color: color-mix(in srgb, red, blue)) {
+    .hub-club-shield {
+        background: rgba(7,159,160,0.12);
+        border-color: rgba(7,159,160,0.3);
+    }
+}
+
+.hub-club-code {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--hub-text-dim);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--hub-border);
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+.hub-club-card-body {
+    flex: 1;
+}
+
+.hub-club-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin: 0 0 6px;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+}
+
+.hub-club-meta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: #10b981;
+    font-weight: 600;
+    margin: 0;
+}
+.hub-club-meta svg {
+    color: #10b981;
+    flex-shrink: 0;
+}
+
+.hub-club-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    background: transparent;
+    border: 1px solid rgba(0,242,254,0.2);
+    border-radius: 12px;
+    color: var(--hub-accent);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.3px;
+}
+
+/* ── New Club Card ── */
+.hub-club-card--new {
+    background: linear-gradient(145deg, rgba(255,255,255,0.015) 0%, transparent 100%);
+    border: 1.5px dashed rgba(255,255,255,0.08);
+    opacity: 1;
+    min-height: 200px;
+}
+.hub-club-card--new:hover {
+    border-color: rgba(0,242,254,0.3);
+    border-style: solid;
+    background: rgba(0,242,254,0.02);
+}
+
+.hub-new-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    height: 100%;
+    min-height: 200px;
+    text-align: center;
+}
+
+.hub-new-plus {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.3);
+    transition: all 0.3s ease;
+}
+.hub-club-card--new:hover .hub-new-plus {
+    background: rgba(0,242,254,0.08);
+    border-color: rgba(0,242,254,0.3);
+    color: var(--hub-accent);
+    transform: scale(1.05);
+}
+
+.hub-new-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    margin: 0;
+    transition: color 0.3s;
+}
+.hub-club-card--new:hover .hub-new-label { color: rgba(255,255,255,0.8); }
+
+.hub-new-sub {
+    font-size: 12px;
+    color: var(--hub-text-dim);
+    margin: 0;
+}
+
+/* ── Empty state ── */
+.hub-empty-state {
+    grid-column: 1/-1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 40px;
+    text-align: center;
+    color: rgba(255,255,255,0.2);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────────────────────────────── */
+.hub-btn-primary {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--hub-accent) 0%, color-mix(in srgb, var(--hub-accent) 70%, #0072FF) 100%);
+    border: none;
+    border-radius: 14px;
+    color: #000;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+.hub-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,242,254,0.3); }
+.hub-btn-primary:active { transform: translateY(0); }
+
+.hub-btn-spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(0,0,0,0.3);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─────────────────────────────────────────────────────────────────
+   MODAL — FUNDAR CLUB
+───────────────────────────────────────────────────────────────── */
+.hub-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.hub-modal-overlay.hub-modal--open { opacity: 1; }
+.hub-modal-overlay.hidden { display: none !important; }
+
+.hub-modal {
+    background: linear-gradient(145deg, #13131E 0%, #0D0D18 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 28px;
+    width: 100%;
+    max-width: 540px;
+    padding: 40px;
+    position: relative;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+    animation: hubModalPop 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes hubModalPop {
+    from { transform: translateY(30px) scale(0.96); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.hub-modal-close {
+    position: absolute;
+    top: 20px; right: 20px;
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--hub-text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.hub-modal-close:hover { background: rgba(255,255,255,0.08); color: #FFF; }
+
+.hub-modal-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+.hub-modal-icon { font-size: 48px; display: block; margin-bottom: 16px; }
+.hub-modal-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+    color: #FFFFFF;
+    margin: 0 0 8px;
+}
+.hub-modal-sub {
+    font-size: 13px;
+    color: var(--hub-text-dim);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.hub-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.hub-field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.hub-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.hub-field-label {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--hub-accent);
+    text-transform: uppercase;
+}
+
+.hub-field-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    color: #FFF;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.hub-field-input:focus {
+    border-color: rgba(0,242,254,0.4);
+    background: rgba(0,242,254,0.03);
+    box-shadow: 0 0 0 3px rgba(0,242,254,0.06);
+}
+.hub-field-input::placeholder { color: rgba(255,255,255,0.2); }
+.hub-field-input option { background: #0D0D18; }
+
+.hub-color-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.hub-color-input {
+    width: 40px; height: 40px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    background: none;
+    cursor: pointer;
+    padding: 2px;
+    flex-shrink: 0;
+}
+.hub-color-preview {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--hub-text-dim);
+    font-family: 'Inter', monospace;
+}
+
+.hub-modal-error {
+    padding: 12px 16px;
+    background: rgba(220,46,47,0.08);
+    border: 1px solid rgba(220,46,47,0.2);
+    border-radius: 10px;
+    color: #ff7070;
+    font-size: 13px;
+    line-height: 1.4;
+}
+.hub-modal-error.hidden { display: none; }
+
+/* ─────────────────────────────────────────────────────────────────
+   UTILITIES
+───────────────────────────────────────────────────────────────── */
+.hidden { display: none !important; }
+
+/* ─────────────────────────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .hub-stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 680px) {
+    .hub-hero-content {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-top: -60px;
+        padding: 0 20px 24px;
+        gap: 16px;
+    }
+    .hub-hero-banner { height: 160px; }
+    .hub-section { padding: 24px 20px; }
+    .hub-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .hub-stat-card { padding: 16px 12px; }
+    .hub-stat-value { font-size: 24px; }
+    .hub-clubs-grid { grid-template-columns: 1fr; }
+    .hub-hero-actions { margin-top: 0; }
+    .hub-field-row { grid-template-columns: 1fr; }
+    .hub-modal { padding: 28px 20px; border-radius: 20px; }
+}
+
+@media (max-width: 480px) {
+    .hub-avatar { width: 72px; height: 72px; }
+    .hub-avatar-initials { font-size: 24px; }
+    .hub-hero-name { font-size: 22px; }
+    .hub-stats-grid { grid-template-columns: 1fr 1fr; }
+}
+
