@@ -958,9 +958,20 @@ window.DTEngine = {
                                 </div>
                             </div>
                             
-                            <div id="rival-container" style="display: none; margin-top: 12px;">
-                                <label style="color:#9ca3af; font-size:0.68rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Rival</label>
-                                <input type="text" id="macro-rival" class="premium-input" placeholder="Nombre del Rival (ej. Nacional)" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff; padding:10px 8px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; font-size:0.85rem; box-sizing:border-box; transition: border-color 0.2s;" onfocus="this.style.borderColor='#00F2FE'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+                            <div id="rival-container" style="display: none; margin-top: 12px; display:flex; flex-direction:column; gap:10px;">
+                                <div>
+                                    <label style="color:#9ca3af; font-size:0.68rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Rival</label>
+                                    <input type="text" id="macro-rival" class="premium-input" placeholder="Nombre del Rival (ej. Nacional)" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff; padding:10px 8px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; font-size:0.85rem; box-sizing:border-box; transition: border-color 0.2s;" onfocus="this.style.borderColor='#00F2FE'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+                                </div>
+                                <div>
+                                    <label style="color:#9ca3af; font-size:0.68rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Resultado</label>
+                                    <select id="macro-match-result" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff; padding:10px 8px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; cursor:pointer; font-size:0.85rem; box-sizing:border-box;">
+                                        <option value="Pendiente">Pendiente</option>
+                                        <option value="Victoria">Victoria</option>
+                                        <option value="Empate">Empate</option>
+                                        <option value="Derrota">Derrota</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
@@ -1713,8 +1724,10 @@ window.DTEngine = {
         const rivalInput = document.getElementById('macro-rival');
         const isMatch = this._matchDays.has(date);
 
-        if (rivalContainer) rivalContainer.style.display = isMatch ? 'block' : 'none';
+        if (rivalContainer) rivalContainer.style.display = isMatch ? 'flex' : 'none';
         if (rivalInput) rivalInput.value = '';
+        const matchResult = document.getElementById('macro-match-result');
+        if (matchResult) matchResult.value = 'Pendiente';
 
         this.updateDrawerUI();
         document.getElementById('dt-drawer').classList.remove('hidden');
@@ -1736,10 +1749,13 @@ window.DTEngine = {
                     if (volEl && sessionData.volumen_minutos) volEl.value = sessionData.volumen_minutos;
                     if (sessionData.is_match_day) {
                         this._matchDays.add(date);
-                        if (rivalContainer) rivalContainer.style.display = 'block';
+                        if (rivalContainer) rivalContainer.style.display = 'flex';
                     }
                     if (sessionData.rival && rivalInput) {
                         rivalInput.value = sessionData.rival;
+                    }
+                    if (sessionData.match_result && document.getElementById('macro-match-result')) {
+                        document.getElementById('macro-match-result').value = sessionData.match_result;
                     }
                 }
             } catch (e) { console.error('Error cargando sesión del día:', e); }
@@ -1770,10 +1786,12 @@ window.DTEngine = {
             const rivalContainer = document.getElementById('rival-container');
             const rivalInput = document.getElementById('macro-rival');
             if (isNowMatch) {
-                if (rivalContainer) rivalContainer.style.display = 'block';
+                if (rivalContainer) rivalContainer.style.display = 'flex';
             } else {
                 if (rivalContainer) rivalContainer.style.display = 'none';
                 if (rivalInput) rivalInput.value = '';
+                const matchResult = document.getElementById('macro-match-result');
+                if (matchResult) matchResult.value = 'Pendiente';
             }
         }
 
@@ -1815,6 +1833,9 @@ window.DTEngine = {
         const rivalInput = document.getElementById('macro-rival');
         const rival = (isMatch && rivalInput) ? rivalInput.value.trim() : null;
 
+        const matchResultInput = document.getElementById('macro-match-result');
+        const matchResult = (isMatch && matchResultInput) ? matchResultInput.value : 'Pendiente';
+
         const payload = {
             team_id: teamId,
             fecha: dateStr,
@@ -1822,7 +1843,8 @@ window.DTEngine = {
             volumen_minutos: volumen ? parseInt(volumen) : null,
             indice_especificidad: parseFloat(especificidad),
             is_match_day: isMatch,
-            rival: rival || null
+            rival: rival || null,
+            match_result: matchResult
         };
 
         const btn = document.getElementById('drawer-save-btn');

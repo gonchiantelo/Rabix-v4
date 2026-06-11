@@ -60,16 +60,30 @@ window.PortalHub = (() => {
             _clubs = ownedTeams || [];
             console.log(`[HUB] ${_clubs.length} club(s) cargado(s).`);
 
-            // Obtener partidos disputados en la App (teams.match_dates)
+            // Obtener partidos disputados en la App (teams.match_dates) y Resultados (microcycle_sessions)
             window.AppInAppMatches = 0;
+            window.AppInAppWins = 0;
+            window.AppInAppDraws = 0;
+
             if (_clubs.length > 0) {
-                let totalMatches = 0;
-                _clubs.forEach(club => {
-                    if (club.match_dates && Array.isArray(club.match_dates)) {
-                        totalMatches += club.match_dates.length;
+                const teamIds = _clubs.map(c => c.id);
+                try {
+                    const { data: matches, error: matchErr } = await window.supabase
+                        .from('microcycle_sessions')
+                        .select('match_result')
+                        .in('team_id', teamIds)
+                        .eq('is_match_day', true);
+
+                    if (!matchErr && matches) {
+                        matches.forEach(m => {
+                            if (m.match_result && m.match_result !== 'Pendiente') {
+                                window.AppInAppMatches++;
+                                if (m.match_result === 'Victoria') window.AppInAppWins++;
+                                else if (m.match_result === 'Empate') window.AppInAppDraws++;
+                            }
+                        });
                     }
-                });
-                window.AppInAppMatches = totalMatches;
+                } catch(e) {}
             }
             
         } catch (e) {
@@ -101,12 +115,17 @@ window.PortalHub = (() => {
         const histEmpates = parseInt(_user?.hist_empates) || 0;
 
         const inAppMatches = window.AppInAppMatches || 0;
+        const inAppWins = window.AppInAppWins || 0;
+        const inAppDraws = window.AppInAppDraws || 0;
+
         const totalPartidos = histPartidos + inAppMatches;
         const totalTemporadas = histTemporadas + _clubs.length;
+        const totalVictorias = histVictorias + inAppWins;
+        const totalEmpates = histEmpates + inAppDraws;
         
         let efectividad = 0;
         if (totalPartidos > 0) {
-            efectividad = Math.round(((histVictorias * 3 + histEmpates) / (totalPartidos * 3)) * 100);
+            efectividad = Math.round(((totalVictorias * 3 + totalEmpates) / (totalPartidos * 3)) * 100);
         }
 
         const careerStats = [
@@ -145,7 +164,10 @@ window.PortalHub = (() => {
                 </div>
             </div>`;
 
-        container.innerHTML = `
+        // Limpiamos el contenedor
+        container.innerHTML = '';
+
+        const hubHTML = `
             <!-- ═══ HERO — Portada del DT ═══ -->
             <div class="hub-hero">
                 <div class="hub-hero-banner">
@@ -267,6 +289,8 @@ window.PortalHub = (() => {
                 </div>
             </div>
         `;
+
+        container.insertAdjacentHTML('afterbegin', hubHTML);
 
         // Sync color preview
         const colorInput = document.getElementById('hf-color');
