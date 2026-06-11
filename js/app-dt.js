@@ -2511,19 +2511,23 @@ window.DTEngine = {
         todayFocusEl.className = `cc-value ${focusClass ? 'cc-' + focusClass.replace('type-', '') : 'cc-base'}`;
 
         // --- WIDGET PROACTIVO DE RESULTADOS PENDIENTES ---
-        this._renderPendingResultsWidget(todayStr);
+        try {
+            this._renderPendingResultsWidget(todayStr);
+        } catch (err) {
+            console.error('Error en Widget:', err);
+        }
     },
 
     getPendingMatchResults(todayStr) {
         const pending = [];
-        const logs = this._monthLogs || [];
+        const sessions = this._microcycleSessions || {};
         
         // Iteramos sobre todos los match days
         this._matchDays.forEach(dateStr => {
             if (dateStr <= todayStr) {
-                const session = logs.find(l => l.fecha === dateStr);
-                const result = session?.match_result;
-                if (!result || result === 'Pendiente') {
+                const session = sessions[dateStr];
+                const resultado = session ? session.match_result : 'Pendiente';
+                if (!resultado || resultado === 'Pendiente') {
                     pending.push({ date: dateStr, rival: session?.rival || '' });
                 }
             }
@@ -2581,27 +2585,15 @@ window.DTEngine = {
         if (!teamId) return;
 
         try {
-            // Guardar en UI optimísticamente si queremos, pero lo hacemos seguro
-            const existing = this._monthLogs?.find(l => l.fecha === fecha);
-            
-            if (existing) {
-                const { error } = await window.supabase
-                    .from('microcycle_sessions')
-                    .update({ match_result: resultToSave })
-                    .eq('team_id', teamId)
-                    .eq('fecha', fecha);
-                if (error) throw error;
-            } else {
-                const { error } = await window.supabase
-                    .from('microcycle_sessions')
-                    .upsert([{
-                        team_id: teamId,
-                        fecha: fecha,
-                        is_match_day: true,
-                        match_result: resultToSave
-                    }], { onConflict: 'team_id,fecha' });
-                if (error) throw error;
-            }
+            const { error } = await window.supabase
+                .from('microcycle_sessions')
+                .upsert([{
+                    team_id: teamId,
+                    fecha: fecha,
+                    is_match_day: true,
+                    match_result: resultToSave
+                }], { onConflict: 'team_id,fecha' });
+            if (error) throw error;
 
             console.log(`✅ Resultado del partido del ${fecha} resuelto como: ${resultToSave}`);
             
@@ -2611,6 +2603,7 @@ window.DTEngine = {
             console.error('Error al guardar el resultado del partido:', e);
             alert('Error al resolver el partido.');
         }
+    },
 
     renderHomeCharts() {
         if (this._charts.homeLoad) this._charts.homeLoad.destroy();
