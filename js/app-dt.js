@@ -4352,7 +4352,8 @@ window.DTEngine = {
             init: function() {
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'Delete' || e.key === 'Backspace') {
-                        if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
+                        var tag = e.target.tagName;
+                        if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
                         if (window.DTEngine && window.DTEngine.activeNode) {
                             console.log('Intentando borrar:', window.DTEngine.activeNode);
                             window.DTEngine.activeNode.remove();
@@ -4362,10 +4363,14 @@ window.DTEngine = {
                 });
 
                 document.addEventListener('pointerdown', function(e) {
-                    if (window.DTEngine && window.DTEngine.activeNode) {
-                        if (!window.DTEngine.activeNode.contains(e.target) && e.target !== window.DTEngine.activeNode) {
-                            window.DTEngine.Board.Interaction.selectNode(null);
-                        }
+                    var node = e.target.closest('.tactical-ficha, .tactical-ball, .tactical-zone, g');
+                    if (node && node.tagName && node.tagName.toLowerCase() === 'g' && !node.closest('#tactical-svg-overlay')) {
+                        node = null;
+                    }
+                    if (node) {
+                        window.DTEngine.Board.Interaction.selectNode(node);
+                    } else if (e.target.closest('#pitch-container')) {
+                        window.DTEngine.Board.Interaction.selectNode(null);
                     }
                 });
             },
@@ -4554,6 +4559,9 @@ window.DTEngine = {
                     var initialTx = 0, initialTy = 0;
 
                     if (el.classList.contains('tactical-zone')) {
+                        if (e.offsetX > el.clientWidth - 16 && e.offsetY > el.clientHeight - 16) {
+                            return; // Is on resize handle, allow native resize
+                        }
                         initialLeft = parseFloat(el.style.left);
                         initialTop = parseFloat(el.style.top);
                     } else if (el.tagName === 'g') {
@@ -4614,6 +4622,10 @@ window.DTEngine = {
                         'border-radius:4px',
                         'pointer-events:none',
                         'box-shadow:inset 0 0 20px rgba(0,242,254,0.04), 0 0 8px rgba(0,242,254,0.12)',
+                        'resize:both',
+                        'overflow:hidden',
+                        'max-width:100%',
+                        'max-height:100%',
                         'left:' + pos.px.toFixed(2) + '%',
                         'top:' + pos.py.toFixed(2) + '%',
                         'width:0',
