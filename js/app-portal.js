@@ -297,27 +297,13 @@ window.PortalHub = (() => {
             window.CurrentTeam = { ...club, id: clubId };
         }
 
-        // Ocultar el Hub
-        const hub = document.getElementById('view-dt-hub');
-        if (hub) {
-            hub.style.opacity = '0';
-            hub.style.transition = 'opacity 0.3s ease';
-            setTimeout(() => {
-                hub.style.display = 'none';
-                hub.style.opacity = '';
-                hub.style.transition = '';
-                _launchDTEngine(clubId);
-            }, 300);
-        } else {
-            _launchDTEngine(clubId);
-        }
+        // Delegar transición al Router
+        _launchDTEngine(clubId);
     }
 
     // ── Lanzar el motor del DT (app-dt.js) ──────────────────────────
     function _launchDTEngine(clubId) {
-        // Mostrar el app-shell del DT
-        const shell = document.getElementById('app-shell');
-        if (shell) shell.style.display = 'block';
+        // En vez de inyectar estilos, dejamos que el Router maneje #app-shell cuando salte a #home
 
         // Si DTEngine ya está cargado, redirigir directamente
         if (window.DTEngine) {

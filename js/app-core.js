@@ -405,6 +405,11 @@ window.App = {
             return;
         }
 
+        // ── ESTADO SAAS: Encender app-shell (Dashboard) y apagar el resto ──
+        this._hideAllViews();
+        const appShell = document.getElementById('app-shell');
+        if (appShell) appShell.classList.add('vista-activa');
+
         if (hash === '#view-profile') {
             window.DTEngine.toggleView('profile');
         } else if (hash === '#calendar') {
