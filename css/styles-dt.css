@@ -2059,39 +2059,10 @@ body { background: #121212 !important; }
 }
 
 /* ═══════════════════════════════════════════════════════
-   SPA ROUTER (MÁQUINA DE ESTADOS) - FIX DEFINITIVO
-   Las vistas se controlan exclusivamente por la clase .active.
-   Ninguna media query debe forzar un display sobre una sección no activa.
-
-   ⚠️ EXCEPCIÓN CRÍTICA: #view-role-selector, #view-login y #view-dt-hub
-   son controlados por el router JS via inline styles (style.setProperty).
-   NO deben ser afectados por esta regla genérica.
+   SPA ROUTER - MANEJO JS
+   Se elimina el control por CSS (.view-section.active)
+   para evitar conflictos de especificidad (HARD RESET).
    ═══════════════════════════════════════════════════════ */
-.view-section:not(#view-role-selector):not(#view-dt-hub) {
-    display: none !important;
-}
-
-.view-section.active {
-    display: block !important;
-}
-
-.view-section.dt-home-view.active {
-    display: flex !important;
-}
-
-/* ── Pre-Login & Hub: visibilidad controlada EXCLUSIVAMENTE por JS router ──
-   El router usa style.setProperty('display', '...', 'important').
-   Estas reglas solo establecen el estado DEFAULT (oculto al arrancar).
-   El JS las sobreescribe en runtime. ── */
-#view-role-selector {
-    /* Default: hidden. JS lo muestra con inline !important */
-    display: none;
-}
-
-#view-dt-hub {
-    /* Default: hidden. JS lo muestra con inline !important */
-    display: none;
-}
 
 /* ── FUERZA BRUTA - NATIVE APP MOBILE ── */
 @media (max-width: 768px) {
@@ -2161,6 +2132,10 @@ select option {
 
 /* ── Variables internas del Hub ── */
 #view-dt-hub {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
     --hub-bg: #050508;
     --hub-surface: #0E0E16;
     --hub-surface-2: #14141E;
@@ -2173,10 +2148,6 @@ select option {
     font-family: 'Inter', sans-serif;
     color: var(--hub-text);
     background: var(--hub-bg);
-    /* display is controlled by JS router — do NOT set display here */
-    flex-direction: column;
-    overflow-y: auto;
-    width: 100%;
 }
 
 /* ─────────────────────────────────────────────────────────────────

@@ -237,7 +237,7 @@ window.App = {
             // Mostrar un loader mínimo mientras se verifica
             const portal = document.getElementById('view-role-selector');
             if (portal) {
-                portal.style.setProperty('display', 'flex', 'important');
+                portal.style.display = 'flex';
                 portal.style.opacity = '0';
                 portal.style.pointerEvents = 'none';
             }
@@ -248,23 +248,24 @@ window.App = {
         } else {
             console.log('[ROUTER] Sin sesión. Mostrando portal de entrada.');
             const portal = document.getElementById('view-role-selector');
-            portal.style.setProperty('display', 'flex', 'important');
+            portal.style.display = 'flex';
         }
     },
 
-    // Oculta todas las vistas para evitar flash visual
+    // Oculta todas las vistas para evitar flash visual (Hard Reset Simple)
     _hideAllViews() {
-        const ids = [
-            'view-role-selector', 'view-login', 'view-onboarding',
-            'app-shell', 'view-athlete-dashboard', 'view-athletes',
-            'view-dt-hub'
+        // Seleccionamos las vistas principales y limpiamos
+        const sections = [
+            ...document.querySelectorAll('.view-section'),
+            document.getElementById('view-login'),
+            document.getElementById('app-shell')
         ];
-        ids.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.style.setProperty('display', 'none', 'important');
-                el.style.opacity = '';
-                el.style.pointerEvents = '';
+        
+        sections.forEach(sec => {
+            if (sec) {
+                sec.style.display = 'none';
+                sec.style.opacity = '';
+                sec.style.pointerEvents = '';
             }
         });
     },
@@ -293,7 +294,7 @@ window.App = {
         this._hideAllViews();
         const portal = document.getElementById('view-role-selector');
         if (portal) {
-            portal.style.setProperty('display', 'flex', 'important');
+            portal.style.display = 'flex';
             portal.style.opacity = '';
             portal.style.pointerEvents = '';
         }
@@ -334,10 +335,10 @@ window.App = {
         if (portal) {
             portal.style.opacity = '0';
             portal.style.pointerEvents = 'none';
-            setTimeout(() => { portal.style.setProperty('display', 'none', 'important'); portal.style.opacity = ''; portal.style.pointerEvents = ''; }, 420);
+            setTimeout(() => { portal.style.display = 'none'; portal.style.opacity = ''; portal.style.pointerEvents = ''; }, 420);
         }
         if (login) {
-            login.style.setProperty('display', 'flex', 'important');
+            login.style.display = 'flex';
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => { login.style.opacity = '1'; });
             });
@@ -376,7 +377,7 @@ window.App = {
             this._hideAllViews();
             const hub = document.getElementById('view-dt-hub');
             if (hub) {
-                hub.style.setProperty('display', 'flex', 'important');
+                hub.style.display = 'flex';
                 // Inyectar CSS del DT para que el hub tenga el tema correcto
                 if (!document.querySelector('link[href="css/styles-dt.css"]')) {
                     const dtLink = document.createElement('link');
@@ -593,11 +594,9 @@ window.App = {
                 localStorage.removeItem('ravix_v5_uid');
                 localStorage.removeItem('ravix_active_role');
                 this._hideAllViews();
-                const portal = document.getElementById('view-role-selector');
-                if (portal) {
-                    portal.style.setProperty('display', 'flex', 'important');
-                    portal.style.opacity = '';
-                    portal.style.pointerEvents = '';
+                const login = document.getElementById('view-login');
+                if (login) {
+                    login.style.display = 'flex';
                 }
                 return;
             }
