@@ -1468,6 +1468,9 @@ window.DTEngine = {
         // --- FLUJO ESTRICTO DE RENDERIZADO ---
         this.generateCalendar();   // 1. Grilla y Tareas
         this.updateHomeUI();       // 2. Timeline
+        
+        // --- AUTO-ENCENDIDO DEL HOME ---
+        this.toggleView('home');
 
         // --- INICIALIZAR COMPONENTES DE PERFIL ---
         if (this.TagInput) this.TagInput.init();

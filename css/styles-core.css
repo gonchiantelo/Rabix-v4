@@ -1449,3 +1449,17 @@ body:not(.mode-athlete) .rform-input:focus {
 #view-dt-hub.vista-activa {
     display: flex !important;
 }
+
+/* ═══════════════════════════════════════════════════════
+   SUB-ENRUTAMIENTO (APP-DT.JS)
+   Las vistas internas usan .active en lugar de .vista-activa
+═══════════════════════════════════════════════════════ */
+.view-section.active {
+    display: block !important;
+}
+#view-board.active {
+    display: flex !important;
+}
+#view-profile.active {
+    display: flex !important;
+}
