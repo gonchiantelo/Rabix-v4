@@ -958,20 +958,9 @@ window.DTEngine = {
                                 </div>
                             </div>
                             
-                            <div id="rival-container" style="display: none; margin-top: 12px; display:flex; flex-direction:column; gap:10px;">
-                                <div>
-                                    <label style="color:#9ca3af; font-size:0.68rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Rival</label>
-                                    <input type="text" id="macro-rival" class="premium-input" placeholder="Nombre del Rival (ej. Nacional)" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff; padding:10px 8px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; font-size:0.85rem; box-sizing:border-box; transition: border-color 0.2s;" onfocus="this.style.borderColor='#00F2FE'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
-                                </div>
-                                <div>
-                                    <label style="color:#9ca3af; font-size:0.68rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Resultado</label>
-                                    <select id="macro-match-result" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff; padding:10px 8px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; cursor:pointer; font-size:0.85rem; box-sizing:border-box;">
-                                        <option value="Pendiente">Pendiente</option>
-                                        <option value="Victoria">Victoria</option>
-                                        <option value="Empate">Empate</option>
-                                        <option value="Derrota">Derrota</option>
-                                    </select>
-                                </div>
+                            <div id="rival-container" style="display: none; margin-top: 12px;">
+                                <label style="color:#9ca3af; font-size:0.68rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Rival</label>
+                                <input type="text" id="macro-rival" class="premium-input" placeholder="Nombre del Rival (ej. Nacional)" style="width:100%; background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff; padding:10px 8px; border-radius:8px; outline:none; font-family:Outfit,sans-serif; font-size:0.85rem; box-sizing:border-box; transition: border-color 0.2s;" onfocus="this.style.borderColor='#00F2FE'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
                             </div>
                         </div>
 
@@ -1724,10 +1713,8 @@ window.DTEngine = {
         const rivalInput = document.getElementById('macro-rival');
         const isMatch = this._matchDays.has(date);
 
-        if (rivalContainer) rivalContainer.style.display = isMatch ? 'flex' : 'none';
+        if (rivalContainer) rivalContainer.style.display = isMatch ? 'block' : 'none';
         if (rivalInput) rivalInput.value = '';
-        const matchResult = document.getElementById('macro-match-result');
-        if (matchResult) matchResult.value = 'Pendiente';
 
         this.updateDrawerUI();
         document.getElementById('dt-drawer').classList.remove('hidden');
@@ -1749,13 +1736,10 @@ window.DTEngine = {
                     if (volEl && sessionData.volumen_minutos) volEl.value = sessionData.volumen_minutos;
                     if (sessionData.is_match_day) {
                         this._matchDays.add(date);
-                        if (rivalContainer) rivalContainer.style.display = 'flex';
+                        if (rivalContainer) rivalContainer.style.display = 'block';
                     }
                     if (sessionData.rival && rivalInput) {
                         rivalInput.value = sessionData.rival;
-                    }
-                    if (sessionData.match_result && document.getElementById('macro-match-result')) {
-                        document.getElementById('macro-match-result').value = sessionData.match_result;
                     }
                 }
             } catch (e) { console.error('Error cargando sesión del día:', e); }
@@ -1786,12 +1770,10 @@ window.DTEngine = {
             const rivalContainer = document.getElementById('rival-container');
             const rivalInput = document.getElementById('macro-rival');
             if (isNowMatch) {
-                if (rivalContainer) rivalContainer.style.display = 'flex';
+                if (rivalContainer) rivalContainer.style.display = 'block';
             } else {
                 if (rivalContainer) rivalContainer.style.display = 'none';
                 if (rivalInput) rivalInput.value = '';
-                const matchResult = document.getElementById('macro-match-result');
-                if (matchResult) matchResult.value = 'Pendiente';
             }
         }
 
@@ -1833,9 +1815,6 @@ window.DTEngine = {
         const rivalInput = document.getElementById('macro-rival');
         const rival = (isMatch && rivalInput) ? rivalInput.value.trim() : null;
 
-        const matchResultInput = document.getElementById('macro-match-result');
-        const matchResult = (isMatch && matchResultInput) ? matchResultInput.value : 'Pendiente';
-
         const payload = {
             team_id: teamId,
             fecha: dateStr,
@@ -1843,8 +1822,7 @@ window.DTEngine = {
             volumen_minutos: volumen ? parseInt(volumen) : null,
             indice_especificidad: parseFloat(especificidad),
             is_match_day: isMatch,
-            rival: rival || null,
-            match_result: matchResult
+            rival: rival || null
         };
 
         const btn = document.getElementById('drawer-save-btn');
@@ -2531,7 +2509,108 @@ window.DTEngine = {
         todayFocusEl.textContent = todayLabel;
         const focusClass = this.getTypeClass(todayLabel);
         todayFocusEl.className = `cc-value ${focusClass ? 'cc-' + focusClass.replace('type-', '') : 'cc-base'}`;
+
+        // --- WIDGET PROACTIVO DE RESULTADOS PENDIENTES ---
+        this._renderPendingResultsWidget(todayStr);
     },
+
+    getPendingMatchResults(todayStr) {
+        const pending = [];
+        const logs = this._monthLogs || [];
+        
+        // Iteramos sobre todos los match days
+        this._matchDays.forEach(dateStr => {
+            if (dateStr <= todayStr) {
+                const session = logs.find(l => l.fecha === dateStr);
+                const result = session?.match_result;
+                if (!result || result === 'Pendiente') {
+                    pending.push({ date: dateStr, rival: session?.rival || '' });
+                }
+            }
+        });
+        
+        // Orden cronológico
+        return pending.sort((a, b) => a.date.localeCompare(b.date));
+    },
+
+    _renderPendingResultsWidget(todayStr) {
+        let container = document.getElementById('cc-pending-results-container');
+        if (!container) {
+            const cmdCenter = document.getElementById('home-command-center');
+            if (cmdCenter) {
+                container = document.createElement('div');
+                container.id = 'cc-pending-results-container';
+                container.style.marginTop = '15px';
+                cmdCenter.parentNode.appendChild(container);
+            }
+        }
+
+        if (!container) return;
+
+        const pending = this.getPendingMatchResults(todayStr);
+        
+        if (pending.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+
+        const match = pending[0]; // Mostrar el más antiguo primero
+        const matchTitle = match.rival ? `vs ${match.rival}` : match.date;
+
+        container.innerHTML = `
+            <div style="background: rgba(0, 242, 254, 0.08); border: 1px solid rgba(0, 242, 254, 0.3); border-radius: 12px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; gap: 15px; animation: fadeIn 0.3s ease; box-shadow: 0 4px 15px rgba(0, 242, 254, 0.05);">
+                <div style="display:flex; flex-direction:column;">
+                    <span style="color:#00F2FE; font-size:0.7rem; font-weight:800; letter-spacing:1px; text-transform:uppercase;">Acción Requerida</span>
+                    <span style="color:#fff; font-size:1.05rem; font-weight:700; margin-top:2px;">¿Cómo salió el partido ${matchTitle}?</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="window.DTEngine.resolveMatchResult('${match.date}', 'Victoria'); event.stopPropagation();" style="background: rgba(76, 175, 80, 0.15); color: #4CAF50; border: 1px solid rgba(76,175,80,0.5); padding: 8px 16px; border-radius: 6px; font-weight: 800; font-family: Outfit, sans-serif; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(76, 175, 80, 0.3)'" onmouseout="this.style.background='rgba(76, 175, 80, 0.15)'">V</button>
+                    <button onclick="window.DTEngine.resolveMatchResult('${match.date}', 'Empate'); event.stopPropagation();" style="background: rgba(255, 193, 7, 0.15); color: #FFC107; border: 1px solid rgba(255,193,7,0.5); padding: 8px 16px; border-radius: 6px; font-weight: 800; font-family: Outfit, sans-serif; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255, 193, 7, 0.3)'" onmouseout="this.style.background='rgba(255, 193, 7, 0.15)'">E</button>
+                    <button onclick="window.DTEngine.resolveMatchResult('${match.date}', 'Derrota'); event.stopPropagation();" style="background: rgba(244, 67, 54, 0.15); color: #F44336; border: 1px solid rgba(244,67,54,0.5); padding: 8px 16px; border-radius: 6px; font-weight: 800; font-family: Outfit, sans-serif; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(244, 67, 54, 0.3)'" onmouseout="this.style.background='rgba(244, 67, 54, 0.15)'">D</button>
+                    <button onclick="window.DTEngine.resolveMatchResult('${match.date}', 'Ignorar'); event.stopPropagation();" style="background: transparent; color: #9ca3af; border: none; padding: 8px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s; display:flex; align-items:center;" title="Ignorar" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+
+    async resolveMatchResult(fecha, resultado) {
+        const resultToSave = (resultado === 'Ignorar') ? 'Ignorado' : resultado;
+        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id');
+        if (!teamId) return;
+
+        try {
+            // Guardar en UI optimísticamente si queremos, pero lo hacemos seguro
+            const existing = this._monthLogs?.find(l => l.fecha === fecha);
+            
+            if (existing) {
+                const { error } = await window.supabase
+                    .from('microcycle_sessions')
+                    .update({ match_result: resultToSave })
+                    .eq('team_id', teamId)
+                    .eq('fecha', fecha);
+                if (error) throw error;
+            } else {
+                const { error } = await window.supabase
+                    .from('microcycle_sessions')
+                    .upsert([{
+                        team_id: teamId,
+                        fecha: fecha,
+                        is_match_day: true,
+                        match_result: resultToSave
+                    }], { onConflict: 'team_id,fecha' });
+                if (error) throw error;
+            }
+
+            console.log(`✅ Resultado del partido del ${fecha} resuelto como: ${resultToSave}`);
+            
+            await this.fetchMonthLogs();
+            this.refreshState();
+        } catch(e) {
+            console.error('Error al guardar el resultado del partido:', e);
+            alert('Error al resolver el partido.');
+        }
 
     renderHomeCharts() {
         if (this._charts.homeLoad) this._charts.homeLoad.destroy();
