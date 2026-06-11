@@ -26,6 +26,39 @@ window.PortalHub = (() => {
         _render();
         _bindEvents();
 
+        // 1. Construcción del Bloque del Perfil
+        const dtName = window.CurrentUser?.nombre_completo || window.CurrentUser?.name || 'STAFF';
+        const dtLicense = window.CurrentUser?.licencia || window.CurrentUser?.license || 'UEFA PRO';
+        const dtAvatar = window.CurrentUser?.avatar_url || '';
+        
+        const avatarInitial = dtName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+
+        const heroBannerHTML = `
+            <div id="dt-hero-banner" class="hub-hero" style="display: flex; align-items: center; gap: 24px; padding: 40px; background: linear-gradient(135deg, #111111 0%, #0a0a0a 100%); border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 30px; border-radius: 20px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <!-- Decoración Dark Premium -->
+                <div style="position: absolute; top: 0; right: 0; width: 300px; height: 300px; background: radial-gradient(circle, rgba(7,159,160,0.1) 0%, rgba(0,0,0,0) 70%); transform: translate(30%, -30%); pointer-events: none;"></div>
+                
+                <div style="width: 90px; height: 90px; border-radius: 50%; background-color: #1a1a1a; background-image: url('${dtAvatar}'); background-size: cover; background-position: center; border: 2px solid rgba(7, 159, 160, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+                    ${!dtAvatar ? `<span style="color: rgba(255,255,255,0.8); font-size: 28px; font-weight: 700; letter-spacing: 1px;">${avatarInitial}</span>` : ''}
+                </div>
+                
+                <div style="z-index: 1;">
+                    <p style="margin: 0 0 4px 0; color: rgba(255,255,255,0.5); font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">Portal del Director Técnico</p>
+                    <h1 style="color: #ffffff; margin: 0 0 12px 0; font-size: 32px; font-weight: 800; letter-spacing: -1px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">${dtName}</h1>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(7, 159, 160, 0.15); border: 1px solid rgba(7, 159, 160, 0.3); border-radius: 20px; color: #0df; font-size: 12px; font-weight: 700; letter-spacing: 1px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        ${dtLicense}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // 2 & 3. Prevención de Duplicados e Inyección Absoluta
+        const hubContainer = document.getElementById('view-dt-hub');
+        if (hubContainer && !document.getElementById('dt-hero-banner')) {
+            hubContainer.insertAdjacentHTML('afterbegin', heroBannerHTML);
+        }
+
         // Animar la entrada de las tarjetas con un stagger
         requestAnimationFrame(() => {
             document.querySelectorAll('.hub-club-card').forEach((card, i) => {
@@ -34,7 +67,7 @@ window.PortalHub = (() => {
             });
         });
 
-        console.log('[HUB] ✅ Renderizado completo.');
+        console.log('[HUB] ✅ Renderizado completo con Perfil DT.');
     }
 
     // ── Cargar clubes del DT desde Supabase ──────────────────────────
