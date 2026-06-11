@@ -366,13 +366,17 @@ window.DTEngine = {
                 <header class="app-header">
                     <div class="brand-name">RAVIX <span class="team-name-badge">${teamName}</span> <span class="dt-badge">DT ELITE</span></div>
 
-                    <div class="header-actions">
-                        <button onclick="DTEngine.toggleView('home')" class="btn-logout">🏠 HOME</button>
-                        <button id="btn-nav-calendar" onclick="DTEngine.toggleView('calendar')" class="btn-logout">📅 CALENDARIO</button>
+                    <div class="header-actions" style="display: flex; gap: 32px; align-items: center;">
+                        <button onclick="window.location.hash = '#portal';" class="dt-nav-link dt-portal-btn">← Portal del Manager</button>
+                        
+                        <nav class="dt-main-nav">
+                            <button id="btn-nav-home" onclick="DTEngine.toggleView('home')" class="dt-nav-link">Inicio</button>
+                            <button id="btn-nav-calendar" onclick="DTEngine.toggleView('calendar')" class="dt-nav-link">Calendario</button>
+                            <button id="btn-nav-analytics" onclick="DTEngine.toggleView('analytics')" class="dt-nav-link">Analítica</button>
+                            <button id="btn-nav-board" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" class="dt-nav-link">Pizarra</button>
+                        </nav>
 
-                        <button id="btn-nav-analytics" onclick="DTEngine.toggleView('analytics')" class="btn-logout">📊 ANALÍTICA</button>
-                        <button onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" class="btn-logout">🏟️ PIZARRA</button>
-                        <button onclick="App.logout()" class="btn-logout">SALIR</button>
+                        <button onclick="App.logout()" class="dt-nav-link dt-nav-logout">Salir</button>
                     </div>
                 </header>
 

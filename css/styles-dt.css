@@ -55,14 +55,55 @@
     padding-left: 10px;
 }
 
-.btn-logout {
-    background: none;
-    border: 1px solid var(--dt-border);
-    color: var(--dt-text-dim);
-    padding: 6px 12px;
-    border-radius: 4px;
+/* ── Navegación Principal (Rediseño Minimalista) ── */
+.dt-main-nav {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.dt-nav-link {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
     cursor: pointer;
+    padding: 6px 0;
+    transition: all 0.3s ease;
+    position: relative;
+    border-bottom: 2px solid transparent;
+}
+
+.dt-nav-link:hover,
+.dt-nav-link.active {
+    color: #ffffff;
+    border-bottom: 2px solid #00F2FE;
+    text-shadow: 0 0 8px rgba(0, 242, 254, 0.3);
+}
+
+.dt-portal-btn {
+    color: #9ca3af;
     font-size: 12px;
+    opacity: 0.8;
+}
+
+.dt-portal-btn:hover {
+    color: #ffffff;
+    border-bottom-color: transparent;
+    text-shadow: none;
+    opacity: 1;
+}
+
+.dt-nav-logout {
+    color: #9ca3af;
+}
+
+.dt-nav-logout:hover {
+    color: #fca5a5;
+    border-bottom-color: transparent;
+    text-shadow: none;
 }
 
 /* ── Calendar Grid ── */
