@@ -38,7 +38,7 @@ window.Wizard = {
             if (onboarding) onboarding.style.display = 'flex';
 
             // Hide others after showing DT wizard
-            ['view-login', 'view-portal', 'app-shell'].forEach(id => {
+            ['view-login', 'view-role-selector', 'app-shell'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) { el.style.display = 'none'; el.style.opacity = ''; }
             });
@@ -235,7 +235,7 @@ window.App = {
             this.currentRole = role;
 
             // Mostrar un loader mínimo mientras se verifica
-            const portal = document.getElementById('view-portal');
+            const portal = document.getElementById('view-role-selector');
             if (portal) {
                 portal.style.display = 'flex';
                 portal.style.opacity = '0';
@@ -247,14 +247,14 @@ window.App = {
             window.addEventListener('hashchange', () => this.handleRouting());
         } else {
             console.log('[ROUTER] Sin sesión. Mostrando portal de entrada.');
-            document.getElementById('view-portal').style.display = 'flex';
+            document.getElementById('view-role-selector').style.display = 'flex';
         }
     },
 
     // Oculta todas las vistas para evitar flash visual
     _hideAllViews() {
         const ids = [
-            'view-portal', 'view-login', 'view-onboarding',
+            'view-role-selector', 'view-login', 'view-onboarding',
             'app-shell', 'view-athlete-dashboard', 'view-athletes',
             'view-dt-hub'
         ];
@@ -290,7 +290,7 @@ window.App = {
     _showPortalWithError(msg) {
         console.error('[ROUTER] ❌ Error catastrófico:', msg);
         this._hideAllViews();
-        const portal = document.getElementById('view-portal');
+        const portal = document.getElementById('view-role-selector');
         if (portal) {
             portal.style.display = 'flex';
             portal.style.opacity = '';
@@ -321,7 +321,7 @@ window.App = {
         if (window.LoginUI) window.LoginUI.setRole(role);
 
         // Smooth portal → login transition
-        const portal = document.getElementById('view-portal');
+        const portal = document.getElementById('view-role-selector');
         const login = document.getElementById('view-login');
 
         // ── FAILSAFE: verificar que login existe antes de ocultar portal ──
@@ -346,7 +346,7 @@ window.App = {
     },
 
     goBackToPortal: function () {
-        const portal = document.getElementById('view-portal');
+        const portal = document.getElementById('view-role-selector');
         const login = document.getElementById('view-login');
 
         // Reset mode classes
@@ -375,7 +375,8 @@ window.App = {
             this._hideAllViews();
             const hub = document.getElementById('view-dt-hub');
             if (hub) {
-                hub.style.display = 'block';
+                hub.style.display = 'flex';
+                hub.style.setProperty('display', 'flex', 'important');
                 // Inyectar CSS del DT para que el hub tenga el tema correcto
                 if (!document.querySelector('link[href="css/styles-dt.css"]')) {
                     const dtLink = document.createElement('link');
@@ -592,7 +593,7 @@ window.App = {
                 localStorage.removeItem('ravix_v5_uid');
                 localStorage.removeItem('ravix_active_role');
                 this._hideAllViews();
-                const portal = document.getElementById('view-portal');
+                const portal = document.getElementById('view-role-selector');
                 if (portal) {
                     portal.style.display = 'flex';
                     portal.style.opacity = '';
