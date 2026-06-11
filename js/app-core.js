@@ -35,12 +35,12 @@ window.Wizard = {
         } else {
             // ══ WIZARD DT (original) ══
             const onboarding = document.getElementById('view-onboarding');
-            if (onboarding) onboarding.style.display = 'flex';
+            if (onboarding) onboarding.classList.add('vista-activa');
 
             // Hide others after showing DT wizard
             ['view-login', 'view-role-selector', 'app-shell'].forEach(id => {
                 const el = document.getElementById(id);
-                if (el) { el.style.display = 'none'; el.style.opacity = ''; }
+                if (el) { el.classList.remove('vista-activa'); el.style.opacity = ''; }
             });
 
             const wizDT = document.getElementById('wizard-dt');
@@ -237,7 +237,7 @@ window.App = {
             // Mostrar un loader mínimo mientras se verifica
             const portal = document.getElementById('view-role-selector');
             if (portal) {
-                portal.style.setProperty('display', 'flex', 'important');
+                portal.classList.add('vista-activa');
                 portal.style.opacity = '';
                 portal.style.pointerEvents = '';
             }
@@ -249,16 +249,16 @@ window.App = {
             console.log('[ROUTER] Sin sesión. Mostrando portal de entrada.');
             const portal = document.getElementById('view-role-selector');
             if (portal) {
-                portal.style.setProperty('display', 'flex', 'important');
+                portal.classList.add('vista-activa');
             }
         }
     },
 
-    // Oculta todas las vistas para evitar flash visual (Hard Reset Simple)
+    // Oculta todas las vistas para evitar flash visual (Clases de estado)
     _hideAllViews() {
         // Apagar todo
-        document.querySelectorAll('.view-section, .login-view, #app-shell').forEach(el => {
-            el.style.setProperty('display', 'none', 'important');
+        document.querySelectorAll('.view-section, .login-view, .onboarding-view, #app-shell, #view-dt-hub').forEach(el => {
+            el.classList.remove('vista-activa');
             el.style.opacity = '';
             el.style.pointerEvents = '';
         });
@@ -278,7 +278,7 @@ window.App = {
             );
             return false;
         }
-        el.style.display = displayMode || 'flex';
+        el.classList.add('vista-activa');
         return true;
     },
 
@@ -288,7 +288,7 @@ window.App = {
         this._hideAllViews();
         const portal = document.getElementById('view-role-selector');
         if (portal) {
-            portal.style.setProperty('display', 'flex', 'important');
+            portal.classList.add('vista-activa');
             portal.style.opacity = '';
             portal.style.pointerEvents = '';
         }
@@ -329,10 +329,10 @@ window.App = {
         if (portal) {
             portal.style.opacity = '0';
             portal.style.pointerEvents = 'none';
-            setTimeout(() => { portal.style.setProperty('display', 'none', 'important'); portal.style.opacity = ''; portal.style.pointerEvents = ''; }, 420);
+            setTimeout(() => { portal.classList.remove('vista-activa'); portal.style.opacity = ''; portal.style.pointerEvents = ''; }, 420);
         }
         if (login) {
-            login.style.setProperty('display', 'flex', 'important');
+            login.classList.add('vista-activa');
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => { login.style.opacity = '1'; });
             });
@@ -349,8 +349,8 @@ window.App = {
         document.body.classList.remove('mode-athlete', 'mode-dt', 'testing-athlete');
         this.currentRole = 'dt';
 
-        if (login) { login.style.opacity = '0'; setTimeout(() => { login.style.display = 'none'; login.style.opacity = ''; }, 360); }
-        if (portal) { setTimeout(() => { portal.style.display = 'flex'; }, 200); }
+        if (login) { login.style.opacity = '0'; setTimeout(() => { login.classList.remove('vista-activa'); login.style.opacity = ''; }, 360); }
+        if (portal) { setTimeout(() => { portal.classList.add('vista-activa'); }, 200); }
     },
 
     handleRouting() {
@@ -373,7 +373,7 @@ window.App = {
             // Encender EXCLUSIVAMENTE el Hub del DT
             const hubView = document.getElementById('view-dt-hub');
             if (hubView) {
-                hubView.style.setProperty('display', 'flex', 'important'); // Layout top-down
+                hubView.classList.add('vista-activa');
                 // Inyectar CSS del DT para que el hub tenga el tema correcto
                 if (!document.querySelector('link[href="css/styles-dt.css"]')) {
                     const dtLink = document.createElement('link');
@@ -594,7 +594,7 @@ window.App = {
                 this._hideAllViews();
                 const login = document.getElementById('view-login');
                 if (login) {
-                    login.style.setProperty('display', 'flex', 'important');
+                    login.classList.add('vista-activa');
                 }
                 return;
             }

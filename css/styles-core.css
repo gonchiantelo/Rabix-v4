@@ -205,6 +205,36 @@ body.mode-athlete .brand-name {
 }
 
 /* ═══════════════════════════════════════════════════════
+   MÁQUINA DE ESTADOS - VISIBILIDAD (HARD RESET CSS)
+   Todas las vistas maestras están ocultas por defecto.
+   El Router añade la clase .vista-activa para mostrarlas.
+═══════════════════════════════════════════════════════ */
+.view-section,
+.login-view,
+.onboarding-view,
+#app-shell,
+#view-dt-hub {
+    display: none !important;
+}
+
+/* Reglas específicas para cuando están activas */
+#view-role-selector.vista-activa {
+    display: flex !important;
+}
+.login-view.vista-activa {
+    display: flex !important;
+}
+#view-onboarding.vista-activa {
+    display: block !important;
+}
+#app-shell.vista-activa {
+    display: block !important;
+}
+#view-dt-hub.vista-activa {
+    display: flex !important;
+}
+
+/* ═══════════════════════════════════════════════════════
    PORTAL DE ENTRADA — PREMIUM REDESIGN
 ═══════════════════════════════════════════════════════ */
 #view-role-selector {
