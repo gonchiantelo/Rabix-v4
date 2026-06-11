@@ -209,7 +209,7 @@ body.mode-athlete .brand-name {
 ═══════════════════════════════════════════════════════ */
 #view-role-selector {
     position: relative;
-    display: flex !important;
+    /* display is controlled by JS router — do NOT set display here */
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
@@ -531,7 +531,7 @@ body.mode-athlete .brand-name {
    LOGIN — SPLIT PANEL PREMIUM REDESIGN
 ═══════════════════════════════════════════════════════ */
 .login-view {
-    display: flex !important;
+    /* display is controlled by JS router — do NOT set display here */
     flex-direction: row !important;
     align-items: center !important;
     justify-content: center !important;
