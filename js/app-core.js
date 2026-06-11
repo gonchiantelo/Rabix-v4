@@ -244,7 +244,6 @@ window.App = {
 
             console.log('[ROUTER] Token encontrado. Verificando sesión...');
             await this.checkSession(uid, token);
-            window.addEventListener('hashchange', () => this.handleRouting());
         } else {
             console.log('[ROUTER] Sin sesión. Mostrando portal de entrada.');
             const portal = document.getElementById('view-role-selector');
@@ -252,6 +251,9 @@ window.App = {
                 portal.classList.add('vista-activa');
             }
         }
+
+        // Suscribirse a los cambios de URL de forma global e incondicional
+        window.addEventListener('hashchange', () => this.handleRouting());
     },
 
     // Oculta todas las vistas para evitar flash visual (Clases de estado)
