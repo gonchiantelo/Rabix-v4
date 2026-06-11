@@ -703,11 +703,10 @@ window.App = {
             this._hideAllViews();
 
             // ── NUEVO PARADIGMA SAAS: DT va al HUB, no al dashboard directo ──
-            if (window.location.hash === '#portal') {
-                this.handleRouting();
-            } else {
+            if (window.location.hash !== '#portal') {
                 window.location.hash = '#portal';
             }
+            this.handleRouting();
 
         } catch (e) {
             console.error('[ROUTER] ❌ Error no manejado en checkSession:', e);
