@@ -303,14 +303,21 @@ window.PortalHub = (() => {
 
     // ── Lanzar el motor del DT (app-dt.js) ──────────────────────────
     function _launchDTEngine(clubId) {
-        // En vez de inyectar estilos, dejamos que el Router maneje #app-shell cuando salte a #home
+        // B. Manipulación de clases estricta (Router Bypass Local)
+        const hub = document.getElementById('view-dt-hub');
+        const shell = document.getElementById('app-shell');
+        
+        if (hub) hub.classList.remove('vista-activa');
+        if (shell) shell.classList.add('vista-activa');
+
+        // C. Actualiza el hash de la URL a #home
+        window.location.hash = '#home';
 
         // Si DTEngine ya está cargado, redirigir directamente
         if (window.DTEngine) {
             console.log('[HUB] DTEngine ya disponible. Cargando dashboard...');
-            window.DTEngine.renderDashboard().then(() => {
-                window.location.hash = '#home';
-            });
+            // D. Arranque del Motor
+            window.DTEngine.renderDashboard();
             return;
         }
 
@@ -327,10 +334,9 @@ window.PortalHub = (() => {
         script.src = 'js/app-dt.js';
         script.onload = () => {
             if (window.DTEngine) {
-                window.DTEngine.renderDashboard().then(() => {
-                    window.location.hash = '#home';
-                    console.log('[HUB] ✅ DTEngine cargado y dashboard activo.');
-                });
+                // D. Arranque del Motor (post-carga)
+                window.DTEngine.renderDashboard();
+                console.log('[HUB] ✅ DTEngine cargado y dashboard activo.');
             } else {
                 console.error('[HUB] app-dt.js cargó pero no expone DTEngine');
                 window.App._showPortalWithError('Error al iniciar el Centro de Comando.');
