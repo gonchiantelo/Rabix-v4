@@ -370,6 +370,34 @@ window.App = {
             return;
         }
 
+        // ── ROUTING AL HUB DEL DT ───────────────────────────────────────────
+        if (hash === '#portal') {
+            this._hideAllViews();
+            const hub = document.getElementById('view-dt-hub');
+            if (hub) {
+                hub.style.display = 'block';
+                // Inyectar CSS del DT para que el hub tenga el tema correcto
+                if (!document.querySelector('link[href="css/styles-dt.css"]')) {
+                    const dtLink = document.createElement('link');
+                    dtLink.rel = 'stylesheet';
+                    dtLink.href = 'css/styles-dt.css';
+                    document.head.appendChild(dtLink);
+                }
+                if (window.PortalHub) window.PortalHub.init();
+            }
+            return;
+        }
+
+        // ── REGLA DE SEGURIDAD: Abortar si no hay club seleccionado ──────────
+        const dtViews = ['#home', '#board', '#analytics', '#calendar', '#view-profile', '#view-board'];
+        if (dtViews.includes(hash)) {
+            if (!window.CurrentTeam || !localStorage.getItem('ravix_team_id')) {
+                console.warn('⚠️ handleRouting: Intento de acceso a tablero sin club seleccionado. Redirigiendo a #portal.');
+                window.location.hash = '#portal';
+                return;
+            }
+        }
+
         // El routing interno de las vistas del DT es manejado por DTEngine.toggleView.
         // Solo actuamos si DTEngine ya está disponible en el DOM.
         if (!window.DTEngine) {
@@ -677,43 +705,10 @@ window.App = {
             this._hideAllViews();
 
             // ── NUEVO PARADIGMA SAAS: DT va al HUB, no al dashboard directo ──
-            // El Hub muestra el perfil de carrera y la grilla de clubes.
-            // El DT elige qué club gestionar y DESDE AHÍ se lanza app-dt.js.
-            const hub = document.getElementById('view-dt-hub');
-            if (hub) {
-                hub.style.display = 'block';
-                hub.style.opacity = '0';
-                // Inyectar CSS del DT para que el hub tenga el tema correcto
-                if (!document.querySelector('link[href="css/styles-dt.css"]')) {
-                    const dtLink = document.createElement('link');
-                    dtLink.rel = 'stylesheet';
-                    dtLink.href = 'css/styles-dt.css';
-                    document.head.appendChild(dtLink);
-                }
-                // Fade in suave
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        hub.style.transition = 'opacity 0.4s ease';
-                        hub.style.opacity = '1';
-                        setTimeout(() => { hub.style.transition = ''; }, 450);
-                    });
-                });
-                // Lanzar el Hub
-                if (window.PortalHub) {
-                    window.PortalHub.init();
-                } else {
-                    LOG('DT')('⚠️ PortalHub no disponible — asegúrate de que app-portal.js está cargado.');
-                    // Fallback: ir al dashboard directamente si el Hub no está disponible
-                    hub.style.display = 'none';
-                    document.getElementById('app-shell').style.display = 'block';
-                    this.injectRoleAssets('dt');
-                    this.handleRouting();
-                }
-            } else {
-                LOG('DT')('⚠️ #view-dt-hub no encontrado — fallback a app-shell');
-                document.getElementById('app-shell').style.display = 'block';
-                this.injectRoleAssets('dt');
+            if (window.location.hash === '#portal') {
                 this.handleRouting();
+            } else {
+                window.location.hash = '#portal';
             }
 
         } catch (e) {
