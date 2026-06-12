@@ -416,19 +416,19 @@ window.DTEngine = {
                         </div>
 
                         <!-- Analítica -->
-                        <div class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('analytics')" style="grid-column: span 4;">
+                        <div id="tile-analytics" class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('analytics')" style="grid-column: span 4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
                             <div class="tile-icon-mini">📊</div>
                             <h3 class="tile-title-mini">Analítica</h3>
                         </div>
                         
                         <!-- Pizarra -->
-                        <div class="platinum-widget action-tile-mini" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" style="grid-column: span 4;">
+                        <div id="tile-board" class="platinum-widget action-tile-mini" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" style="grid-column: span 4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
                             <div class="tile-icon-mini">♟️</div>
                             <h3 class="tile-title-mini">Pizarra</h3>
                         </div>
                         
                         <!-- Calendario -->
-                        <div class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('calendar')" style="grid-column: span 8;">
+                        <div id="tile-calendar" class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('calendar')" style="grid-column: span 8; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
                             <div class="tile-icon-mini">📅</div>
                             <h3 class="tile-title-mini">Calendario</h3>
                         </div>
@@ -2487,29 +2487,36 @@ window.DTEngine = {
             .sort();
 
         if (futureDates.length === 0) {
-            nextMatchEl.textContent = 'Sin partidos programados';
+            nextMatchEl.innerHTML = '<span style="color: #888;">Sin partidos programados</span>';
             nextMatchEl.className = 'cc-value cc-neutral';
         } else {
             const nextStr = futureDates[0];
             const nextDate = new Date(nextStr + 'T00:00:00');
             const msPerDay = 24 * 60 * 60 * 1000;
             const daysUntil = Math.round((nextDate - todayMidnight) / msPerDay);
-
+            
+            // Si hay tareas tipo partido, podríamos extraer el nombre, por ahora hardcodeado o general
+            let rivalName = 'PRÓXIMO RIVAL';
+            const matchLogs = this._assignedTasks[nextStr] || [];
+            const partidoLog = matchLogs.find(l => l.block === 'Partido' || l.type === 'Partido');
+            if (partidoLog && typeof partidoLog.id === 'string') {
+                rivalName = partidoLog.id; // asumiendo que guarda el rival
+            }
+            
             if (daysUntil === 0) {
-                nextMatchEl.textContent = '¡DÍA DE PARTIDO!';
-                nextMatchEl.className = 'semaphore-text-red';
+                nextMatchEl.innerHTML = `<div style="font-size: 22px; font-weight: 900; color: #FFF; margin-bottom: 4px;">${rivalName}</div><div style="font-size: 12px; color: var(--dt-error); font-weight: 700;">MD-0 (HOY)</div>`;
+                nextMatchEl.className = '';
                 document.getElementById('widget-next-match-container').className = 'platinum-widget widget-next-match semaphore-left-red';
             } else {
-                const formatted = nextDate.toLocaleDateString('es', { day: '2-digit', month: 'long' }).toUpperCase();
-                nextMatchEl.textContent = `${formatted} — Faltan ${daysUntil} días`;
+                let countdownText = `MD-${daysUntil} (Faltan ${daysUntil} días)`;
+                nextMatchEl.innerHTML = `<div style="font-size: 22px; font-weight: 900; color: #FFF; margin-bottom: 4px;">${rivalName}</div><div style="font-size: 12px; color: var(--dt-accent); font-weight: 700;">${countdownText}</div>`;
+                nextMatchEl.className = '';
                 
                 let semColor = 'semaphore-left-neutral';
-                let txtColor = '';
-                if (daysUntil <= 1) { semColor = 'semaphore-left-red'; txtColor = 'semaphore-text-red'; }
-                else if (daysUntil <= 3) { semColor = 'semaphore-left-yellow'; txtColor = 'semaphore-text-yellow'; }
-                else { semColor = 'semaphore-left-green'; txtColor = 'semaphore-text-green'; }
+                if (daysUntil <= 1) { semColor = 'semaphore-left-red'; }
+                else if (daysUntil <= 3) { semColor = 'semaphore-left-yellow'; }
+                else { semColor = 'semaphore-left-green'; }
 
-                nextMatchEl.className = `${txtColor}`;
                 document.getElementById('widget-next-match-container').className = `platinum-widget widget-next-match ${semColor}`;
             }
         }
@@ -2523,9 +2530,9 @@ window.DTEngine = {
         if (todayTasksUl) {
             const tasksToday = this._assignedTasks[todayStr] || [];
             if (tasksToday.length === 0) {
-                todayTasksUl.innerHTML = '<li class="empty-tasks">Sin tareas planificadas para hoy.</li>';
+                todayTasksUl.innerHTML = '<li class="empty-tasks" style="color: #666; font-style: italic; list-style: none;">DÍA LIBRE - Sin tareas tácticas asignadas</li>';
             } else {
-                todayTasksUl.innerHTML = tasksToday.map(t => {
+                todayTasksUl.innerHTML = `<ul style="list-style: none; padding: 0; margin: 0;">` + tasksToday.map(t => {
                     const blockName = t.block === 'parte_principal' ? 'Principal' : (t.block || 'Tarea');
                     let exName = 'Actividad planificada';
                     const numId = parseInt(t.id);
@@ -2540,9 +2547,33 @@ window.DTEngine = {
                         const customEx = window.CustomExercises?.find(c => c.id === t.id);
                         if (customEx) exName = customEx.title;
                     }
-                    return `<li><strong>${blockName}:</strong> ${exName}</li>`;
-                }).join('');
+                    return `<li style="font-size: 13px; color: #E0E0E0; margin-bottom: 8px; border-left: 2px solid var(--dt-accent); padding-left: 10px;"><strong>${blockName}:</strong> <span style="opacity:0.8;">${exName}</span></li>`;
+                }).join('') + `</ul>`;
             }
+        }
+
+        // --- DATA TILES (Micro-Analítica) ---
+        const tileBoard = document.getElementById('tile-board');
+        const tileAnalytics = document.getElementById('tile-analytics');
+        const tileCalendar = document.getElementById('tile-calendar');
+
+        if (tileBoard) {
+            const sys = window.CurrentTeam?.tactical_system || '4-3-3';
+            tileBoard.innerHTML = `<div style="font-size: 10px; font-weight: 800; color: #888; text-transform: uppercase; margin-bottom: 5px;">SISTEMA BASE</div><div style="font-size: 24px; font-weight: 900; color: #FFF; font-family: 'Outfit', sans-serif;">${sys}</div>`;
+        }
+
+        if (tileAnalytics) {
+            const currentMonthStr = todayStr.substring(0, 7);
+            let monthSessionsCount = 0;
+            Object.keys(this._assignedTasks).forEach(date => {
+                if (date.startsWith(currentMonthStr)) monthSessionsCount++;
+            });
+            tileAnalytics.innerHTML = `<div style="font-size: 10px; font-weight: 800; color: #888; text-transform: uppercase; margin-bottom: 5px;">CARGA MENSUAL</div><div style="font-size: 24px; font-weight: 900; color: #FFF; font-family: 'Outfit', sans-serif;">${monthSessionsCount} <span style="font-size: 12px; color: var(--dt-accent);">SESIONES</span></div>`;
+        }
+
+        if (tileCalendar) {
+            const currentMonthName = new Date().toLocaleString('es', { month: 'long' }).toUpperCase();
+            tileCalendar.innerHTML = `<div style="font-size: 10px; font-weight: 800; color: #888; text-transform: uppercase; margin-bottom: 5px;">${currentMonthName}</div><div style="font-size: 18px; font-weight: 900; color: var(--dt-accent); font-family: 'Outfit', sans-serif;">Macrociclo Activo</div>`;
         }
 
         // --- WIDGET PROACTIVO DE RESULTADOS PENDIENTES ---
