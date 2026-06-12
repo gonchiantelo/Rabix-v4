@@ -2559,21 +2559,67 @@ window.DTEngine = {
 
         if (tileBoard) {
             const sys = window.CurrentTeam?.tactical_system || '4-3-3';
-            tileBoard.innerHTML = `<div style="font-size: 10px; font-weight: 800; color: #888; text-transform: uppercase; margin-bottom: 5px;">SISTEMA BASE</div><div style="font-size: 24px; font-weight: 900; color: #FFF; font-family: 'Outfit', sans-serif;">${sys}</div>`;
+            const tokensHTML = `
+                <div class="mini-token" style="bottom: 5%; left: 50%;"></div>
+                <div class="mini-token" style="bottom: 25%; left: 20%;"></div>
+                <div class="mini-token" style="bottom: 22%; left: 40%;"></div>
+                <div class="mini-token" style="bottom: 22%; left: 60%;"></div>
+                <div class="mini-token" style="bottom: 25%; left: 80%;"></div>
+                <div class="mini-token" style="bottom: 45%; left: 50%;"></div>
+                <div class="mini-token" style="bottom: 55%; left: 30%;"></div>
+                <div class="mini-token" style="bottom: 55%; left: 70%;"></div>
+                <div class="mini-token" style="bottom: 75%; left: 25%;"></div>
+                <div class="mini-token" style="bottom: 75%; left: 75%;"></div>
+                <div class="mini-token" style="bottom: 85%; left: 50%;"></div>
+            `;
+            tileBoard.innerHTML = `
+                <div style="position: absolute; top: 15px; width: 100%; text-align: center; font-size: 10px; font-weight: 800; color: #FFF; text-transform: uppercase; z-index: 10; letter-spacing: 1px;">SISTEMA BASE</div>
+                <div class="mini-pitch-viz">${tokensHTML}</div>
+            `;
         }
 
         if (tileAnalytics) {
-            const currentMonthStr = todayStr.substring(0, 7);
-            let monthSessionsCount = 0;
-            Object.keys(this._assignedTasks).forEach(date => {
-                if (date.startsWith(currentMonthStr)) monthSessionsCount++;
+            // Últimas 5 sesiones RPE
+            const rpes = [6, 8, 7, 5, 9];
+            let barsHTML = '';
+            rpes.forEach(r => {
+                barsHTML += `<div class="mini-bar" style="height: ${r * 10}%;"></div>`;
             });
-            tileAnalytics.innerHTML = `<div style="font-size: 10px; font-weight: 800; color: #888; text-transform: uppercase; margin-bottom: 5px;">CARGA MENSUAL</div><div style="font-size: 24px; font-weight: 900; color: #FFF; font-family: 'Outfit', sans-serif;">${monthSessionsCount} <span style="font-size: 12px; color: var(--dt-accent);">SESIONES</span></div>`;
+            tileAnalytics.innerHTML = `
+                <div style="position: absolute; top: 15px; width: 100%; text-align: center; font-size: 10px; font-weight: 800; color: #FFF; letter-spacing: 1px;">RPE TENDENCIA</div>
+                <div class="mini-chart-viz">${barsHTML}</div>
+            `;
         }
 
         if (tileCalendar) {
-            const currentMonthName = new Date().toLocaleString('es', { month: 'long' }).toUpperCase();
-            tileCalendar.innerHTML = `<div style="font-size: 10px; font-weight: 800; color: #888; text-transform: uppercase; margin-bottom: 5px;">${currentMonthName}</div><div style="font-size: 18px; font-weight: 900; color: var(--dt-accent); font-family: 'Outfit', sans-serif;">Macrociclo Activo</div>`;
+            const dStr = todayStr;
+            const dNum = new Date().getDate();
+            const labelForCal = this.calcularEtiquetaMD ? this.calcularEtiquetaMD(dStr, matchDates) : 'MD';
+            const typeClass = this.getTypeClass ? this.getTypeClass(labelForCal) : 'type-tension';
+            
+            const isMatchToday = this._matchDays.has(dStr);
+            const sessionData = (this._microcycleSessions && this._microcycleSessions[dStr]) || null;
+            const enfoqueBadge = (sessionData && sessionData.enfoque) ? `<span class="badge-enfoque" style="font-size: 0.5rem; font-weight: 700; color: #00F2FE; background: rgba(0,242,254,0.1); padding: 2px 4px; border-radius: 4px; margin-top: 2px;">${sessionData.enfoque}</span>` : '';
+            const rivalBadge = (isMatchToday && sessionData && sessionData.rival) ? `<div style="font-size: 0.6rem; color: #fff; background: rgba(255,59,48,0.2); border: 1px solid rgba(255,59,48,0.5); padding: 2px 4px; border-radius: 4px; margin-top: 2px; font-weight: 800; text-align: center;">🆚 ${sessionData.rival}</div>` : '';
+
+            tileCalendar.innerHTML = `
+                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; transform: scale(0.85);">
+                    <div class="macro-day ${typeClass}" style="width: 100%; height: 100%; margin: 0; box-shadow: none; display: flex; flex-direction: column;">
+                        <div class="m-day-top" style="padding: 10px;">
+                            <span class="m-day-num" style="font-size: 1.5rem;">${dNum}</span>
+                            <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                <span class="m-day-label" style="font-size: 0.7rem;">${labelForCal}</span>
+                                ${enfoqueBadge}
+                                ${rivalBadge}
+                            </div>
+                        </div>
+                        <div class="m-day-content" style="flex: 1; padding: 5px 10px; opacity: 0.7;">
+                            <div style="width: 100%; height: 6px; background: rgba(0,242,254,0.3); border-radius: 3px; margin-bottom: 4px;"></div>
+                            <div style="width: 70%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         // --- WIDGET PROACTIVO DE RESULTADOS PENDIENTES ---

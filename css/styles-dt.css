@@ -790,26 +790,75 @@ body { background: #121212 !important; }
 
 /* Mini Action Tiles */
 .action-tile-mini {
+    aspect-ratio: 1 / 1 !important;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 15px !important;
-    gap: 10px;
+    overflow: hidden;
+    position: relative;
+    padding: 0 !important;
     cursor: pointer;
 }
-.tile-icon-mini {
-    font-size: 24px;
+
+/* Micro-Viz Pizarra */
+.mini-pitch-viz {
+    position: absolute;
+    inset: 15px;
+    background: #111827;
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    border-radius: 8px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-.tile-title-mini {
-    font-family: 'Outfit', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    color: #E0E0E0;
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+.mini-pitch-viz::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 20%; width: 60%; height: 30%;
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    border-bottom: none;
+}
+.mini-pitch-viz::after {
+    content: '';
+    position: absolute;
+    bottom: 30%; left: 40%; width: 20%; height: 15%;
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    border-bottom: none;
+    border-radius: 50% 50% 0 0;
+}
+.mini-token {
+    width: 8px; height: 8px;
+    background: #00F2FE;
+    border-radius: 50%;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 4px #00F2FE;
+    z-index: 2;
+}
+
+/* Micro-Viz Analytics */
+.mini-chart-viz {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    width: 100%;
+    height: 50%;
+    padding: 0 20px;
+    box-sizing: border-box;
+    position: absolute;
+    bottom: 20px;
+}
+.mini-bar {
+    width: 12%;
+    background: #00F2FE;
+    border-radius: 2px 2px 0 0;
+    box-shadow: 0 0 8px rgba(0, 242, 254, 0.4);
+    animation: barGrow 1s ease-out forwards;
+}
+@keyframes barGrow {
+    from { transform: scaleY(0); transform-origin: bottom; }
+    to { transform: scaleY(1); transform-origin: bottom; }
 }
 
 .platinum-widget {
