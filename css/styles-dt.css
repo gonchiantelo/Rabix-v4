@@ -2880,6 +2880,128 @@ select option {
 .hub-modal-error.hidden { display: none; }
 
 /* ─────────────────────────────────────────────────────────────────
+   PORTAL HERO (SAAS DASHBOARD OVERHAUL)
+───────────────────────────────────────────────────────────────── */
+#view-dt-hub {
+    width: 100%; /* Asegurar Macro-Estructura */
+}
+
+.dt-portal-hero {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 40px;
+    background: linear-gradient(135deg, #111111 0%, #0a0a0a 100%);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.dt-hero-mesh {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(7,159,160,0.1) 0%, rgba(0,0,0,0) 70%);
+    transform: translate(30%, -30%);
+    pointer-events: none;
+}
+
+.dt-avatar-container {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background-color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    overflow: hidden;
+    border: 2px solid rgba(7, 159, 160, 0.5);
+    flex-shrink: 0;
+}
+
+.dt-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dt-avatar-initial {
+    color: rgba(255,255,255,0.8);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-family: 'Outfit', sans-serif;
+}
+
+.dt-hero-info {
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.dt-hero-subtitle {
+    margin: 0 0 4px 0;
+    color: rgba(255,255,255,0.5);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+}
+
+.dt-hero-title {
+    color: #ffffff;
+    margin: 0 0 12px 0;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    font-family: 'Outfit', sans-serif;
+}
+
+.dt-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: rgba(7, 159, 160, 0.15);
+    border: 1px solid rgba(7, 159, 160, 0.3);
+    border-radius: 20px;
+    color: #0df;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    width: fit-content;
+}
+
+.dt-portal-content {
+    margin-top: 40px; /* Separación significativa del Hero */
+}
+
+.dt-career-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0df;
+    margin: 0 0 20px 0;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+    text-transform: uppercase;
+}
+
+/* ─────────────────────────────────────────────────────────────────
    UTILITIES
 ───────────────────────────────────────────────────────────────── */
 .hidden { display: none !important; }

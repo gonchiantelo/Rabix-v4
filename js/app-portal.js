@@ -34,18 +34,18 @@ window.PortalHub = (() => {
         const avatarInitial = dtName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
 
         const heroBannerHTML = `
-            <div id="dt-hero-banner" class="hub-hero" style="display: flex; align-items: center; gap: 24px; padding: 40px; background: linear-gradient(135deg, #111111 0%, #0a0a0a 100%); border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 30px; border-radius: 20px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div id="dt-hero-banner" class="dt-portal-hero">
                 <!-- Decoración Dark Premium -->
-                <div style="position: absolute; top: 0; right: 0; width: 300px; height: 300px; background: radial-gradient(circle, rgba(7,159,160,0.1) 0%, rgba(0,0,0,0) 70%); transform: translate(30%, -30%); pointer-events: none;"></div>
+                <div class="dt-hero-mesh"></div>
                 
-                <div style="width: 90px; height: 90px; border-radius: 50%; background-color: #1a1a1a; background-image: url('${dtAvatar}'); background-size: cover; background-position: center; border: 2px solid rgba(7, 159, 160, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
-                    ${!dtAvatar ? `<span style="color: rgba(255,255,255,0.8); font-size: 28px; font-weight: 700; letter-spacing: 1px;">${avatarInitial}</span>` : ''}
+                <div class="dt-avatar-container">
+                    ${dtAvatar ? `<img src="${dtAvatar}" class="dt-avatar-img" alt="Avatar">` : `<span class="dt-avatar-initial">${avatarInitial}</span>`}
                 </div>
                 
-                <div style="z-index: 1;">
-                    <p style="margin: 0 0 4px 0; color: rgba(255,255,255,0.5); font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">Portal del Director Técnico</p>
-                    <h1 style="color: #ffffff; margin: 0 0 12px 0; font-size: 32px; font-weight: 800; letter-spacing: -1px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">${dtName}</h1>
-                    <div style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(7, 159, 160, 0.15); border: 1px solid rgba(7, 159, 160, 0.3); border-radius: 20px; color: #0df; font-size: 12px; font-weight: 700; letter-spacing: 1px;">
+                <div class="dt-hero-info">
+                    <p class="dt-hero-subtitle">Portal del Director Técnico</p>
+                    <h1 class="dt-hero-title">${dtName}</h1>
+                    <div class="dt-hero-badge">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                         ${dtLicense}
                     </div>
@@ -202,56 +202,15 @@ window.PortalHub = (() => {
 
         const hubHTML = `
             <!-- ═══ HERO — Portada del DT ═══ -->
-            <div class="hub-hero">
-                <div class="hub-hero-banner">
-                    <div class="hub-hero-banner-overlay"></div>
-                    <div class="hub-hero-mesh hub-hero-mesh--1"></div>
-                    <div class="hub-hero-mesh hub-hero-mesh--2"></div>
-                </div>
 
-                <div class="hub-hero-content">
-                    <!-- Avatar -->
-                    <div class="hub-avatar-wrap">
-                        <div class="hub-avatar" id="hub-avatar-el" style="${_user?.avatar_url ? `background-image: url('${_user.avatar_url}'); background-size: cover; background-position: center;` : ''}">
-                            <span class="hub-avatar-initials" style="${_user?.avatar_url ? 'display: none;' : ''}">${initials}</span>
-                        </div>
-                        <span class="hub-avatar-status" title="Online"></span>
-                    </div>
-
-                    <!-- Info -->
-                    <div class="hub-hero-info">
-                        <p class="hub-hero-role">${role.toUpperCase()}</p>
-                        <h1 class="hub-hero-name">${name}</h1>
-                        <div class="hub-hero-meta">
-                            <span class="hub-license-badge">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                                ${license}
-                            </span>
-                            <span class="hub-prestige-badge">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                Prestigio Global
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Hub actions -->
-                    <div class="hub-hero-actions">
-                        <button class="hub-btn-secondary" onclick="window.App.logout()" id="hub-logout-btn">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                            Salir
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="hub-content-wrapper">
+            <div class="hub-content-wrapper dt-portal-content">
                 <!-- ═══ CAREER STATS ═══ -->
                 <div class="hub-section">
                     <div class="hub-section-header">
-                        <h2 class="hub-section-title">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                            Estadísticas de Carrera
-                        </h2>
+                        <h3 class="dt-career-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            TRAYECTORIA DE CARRERA
+                        </h3>
                         <span class="hub-section-tag">GLOBAL · TODOS LOS CLUBS</span>
                     </div>
                     <div class="hub-stats-grid">
