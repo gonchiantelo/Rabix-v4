@@ -915,6 +915,7 @@ window.DTEngine = {
                                 <div style="display: flex; flex-direction: column; gap: 8px;">
                                     <p style="color: #9ca3af; font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; margin: 0;">TRAZOS</p>
                                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+                                        <button type="button" class="dt-btn-square dt-tool-btn active" title="Mover / Seleccionar" onclick="window.selectTool(this, 'none')" style="box-shadow: inset 0 0 12px rgba(0,242,254,0.1); border-color: #00f2fe;">🖱️</button>
                                         <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Pase (Continua)" onclick="window.selectTool(this, 'arrow')">⟶</button>
                                         <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Desmarque (Punteada)" onclick="window.selectTool(this, 'desmarque')">⇢</button>
                                         <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Conducción (Ondulada)" onclick="window.selectTool(this, 'conduccion')">↝</button>
@@ -4949,8 +4950,23 @@ window.DTEngine = {
                 el.style.pointerEvents = 'auto';
                 el.style.cursor = 'pointer';
                 el.addEventListener('pointerdown', function (e) {
-                    if (window.DTEngine.Board.DrawTool._mode !== 'none') return;
                     e.stopPropagation();
+
+                    // If a draw tool is active, switch back to 'none' mode when clicking an existing line
+                    if (window.DTEngine.Board.DrawTool._mode !== 'none') {
+                        window.DTEngine.Board.DrawTool.setMode('none');
+                        document.querySelectorAll('.dt-tool-btn').forEach(b => {
+                            b.classList.remove('active');
+                            b.style.boxShadow = '';
+                            b.style.borderColor = 'rgba(255,255,255,0.1)';
+                        });
+                        var btnMove = document.querySelector('.dt-tool-btn[title="Mover / Seleccionar"]');
+                        if (btnMove) {
+                            btnMove.classList.add('active');
+                            btnMove.style.boxShadow = 'inset 0 0 12px rgba(0,242,254,0.1)';
+                            btnMove.style.borderColor = '#00f2fe';
+                        }
+                    }
 
                     window.DTEngine.Board.Interaction.selectNode(el);
 
@@ -5082,11 +5098,29 @@ window.DTEngine = {
                         // polyline works with percentages in SVG but we need to supply them as coordinates, wait! SVG points don't support %, only px.
                         // So we must use pixel coordinates for free lines.
                         path.setAttribute('points', pos.x + ',' + pos.y);
+
+                        var hitPath = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                        hitPath.setAttribute('class', 'hit-area');
+                        hitPath.setAttribute('fill', 'none');
+                        hitPath.setAttribute('stroke', 'transparent');
+                        hitPath.setAttribute('stroke-width', '24');
+                        hitPath.setAttribute('points', pos.x + ',' + pos.y);
+                        
+                        g.appendChild(hitPath);
                         g.appendChild(path);
                         svgEl.appendChild(g);
                         this._currentLine = path;
                         this._currentG = g;
                     } else {
+                        var hitLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        hitLine.setAttribute('class', 'hit-area');
+                        hitLine.setAttribute('x1', pos.px.toFixed(2) + '%');
+                        hitLine.setAttribute('y1', pos.py.toFixed(2) + '%');
+                        hitLine.setAttribute('x2', pos.px.toFixed(2) + '%');
+                        hitLine.setAttribute('y2', pos.py.toFixed(2) + '%');
+                        hitLine.setAttribute('stroke', 'transparent');
+                        hitLine.setAttribute('stroke-width', '24');
+
                         var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                         line.setAttribute('x1', pos.px.toFixed(2) + '%');
                         line.setAttribute('y1', pos.py.toFixed(2) + '%');
@@ -5114,6 +5148,7 @@ window.DTEngine = {
                             line.setAttribute('stroke-width', '4');
                         }
                         
+                        g.appendChild(hitLine);
                         g.appendChild(line);
                         svgEl.appendChild(g);
                         this._currentLine = line;
@@ -5145,10 +5180,20 @@ window.DTEngine = {
                 } else if (['arrow', 'pass', 'desmarque', 'conduccion', 'bloqueo', 'free'].includes(this._mode) && this._currentLine) {
                     if (this._mode === 'free') {
                         var pts = this._currentLine.getAttribute('points');
-                        this._currentLine.setAttribute('points', pts + ' ' + pos.x + ',' + pos.y);
+                        var newPts = pts + ' ' + pos.x + ',' + pos.y;
+                        this._currentLine.setAttribute('points', newPts);
+                        var hitArea = this._currentG.querySelector('.hit-area');
+                        if (hitArea) hitArea.setAttribute('points', newPts);
                     } else {
-                        this._currentLine.setAttribute('x2', pos.px.toFixed(2) + '%');
-                        this._currentLine.setAttribute('y2', pos.py.toFixed(2) + '%');
+                        var pxStr = pos.px.toFixed(2) + '%';
+                        var pyStr = pos.py.toFixed(2) + '%';
+                        this._currentLine.setAttribute('x2', pxStr);
+                        this._currentLine.setAttribute('y2', pyStr);
+                        var hitArea = this._currentG.querySelector('.hit-area');
+                        if (hitArea) {
+                            hitArea.setAttribute('x2', pxStr);
+                            hitArea.setAttribute('y2', pyStr);
+                        }
                     }
                 }
             },
