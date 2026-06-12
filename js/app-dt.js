@@ -2507,6 +2507,9 @@ window.DTEngine = {
             roleLabelEl.textContent = roleMap[userRole] || 'STAFF TÉCNICO';
         }
 
+        const todayStr = new Date().toISOString().split('T')[0];
+        const todayMidnight = new Date(todayStr + 'T00:00:00');
+
         // --- PRÓXIMO PARTIDO ---
         try {
             const matchDates = window.CurrentTeam?.match_dates || (this._matchDays ? Array.from(this._matchDays) : []);
