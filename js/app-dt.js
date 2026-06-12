@@ -5688,6 +5688,7 @@ window.injectBoardElement = function(type, content, color, subtype) {
     el.style.cursor = 'grab';
     el.style.userSelect = 'none';
     el.style.zIndex = '100';
+    el.style.pointerEvents = 'auto';
 
     if (type === 'ficha') {
         el.style.width = '30px';
