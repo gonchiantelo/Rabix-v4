@@ -736,10 +736,14 @@ body { background: #121212 !important; }
     padding: 20px;
     max-width: 1400px;
     margin: 0 auto;
-    display: grid !important;
+    display: none; /* Hidden by default, JS toggles it or .active applies it */
     grid-template-columns: repeat(12, 1fr) !important;
     gap: 20px !important;
     align-items: start;
+}
+
+#dt-home-view.active {
+    display: grid !important;
 }
 
 /* Minimalist Clean Tasks List */

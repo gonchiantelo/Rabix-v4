@@ -2726,24 +2726,32 @@ window.DTEngine = {
 
         const views = [home, cal, an, prof, board];
         views.forEach(v => {
-            if (v) v.classList.remove('active');
+            if (v) {
+                v.classList.remove('active');
+                v.style.display = 'none';
+            }
         });
 
         let targetView = null;
 
         if (viewName === 'home') {
             targetView = home;
+            if (targetView) targetView.style.display = ''; // Let CSS (.active) control it to be grid
             this.updateHomeUI();
         } else if (viewName === 'analytics') {
             targetView = an;
+            if (targetView) targetView.style.display = 'block';
             this.renderAnalytics();
         } else if (viewName === 'profile') {
             targetView = prof;
+            if (targetView) targetView.style.display = 'block';
             this.loadProfile();
         } else if (viewName === 'board') {
             targetView = board;
+            if (targetView) targetView.style.display = 'block';
         } else if (viewName === 'calendar') {
             targetView = cal;
+            if (targetView) targetView.style.display = 'block';
             setTimeout(function () { window.DTEngine.Periodization.init(); }, 50);
         }
 
