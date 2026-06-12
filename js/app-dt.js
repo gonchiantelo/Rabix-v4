@@ -2769,6 +2769,9 @@ window.DTEngine = {
     },
 
     renderHomeCharts() {
+        const loadCanvas = document.getElementById('home-chart-load');
+        if (!loadCanvas) return;
+
         if (this._charts.homeLoad) this._charts.homeLoad.destroy();
         if (this._charts.homeMoments) this._charts.homeMoments.destroy();
 
