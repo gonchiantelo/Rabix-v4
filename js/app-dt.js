@@ -5687,6 +5687,7 @@ window.injectBoardElement = function(type, content, color, subtype) {
     el.style.transform = 'translate(-50%, -50%)';
     el.style.cursor = 'grab';
     el.style.userSelect = 'none';
+    el.style.zIndex = '100';
 
     if (type === 'ficha') {
         el.style.width = '30px';
@@ -5718,24 +5719,77 @@ window.injectBoardElement = function(type, content, color, subtype) {
     } else if (type === 'util') {
         el.style.fontSize = subtype === 'mini' ? '18px' : '24px';
         el.innerText = content;
+        el.style.textShadow = '0 2px 4px rgba(0,0,0,0.5)';
     }
 
+    // --- Drag & Drop + Selection Logic ---
+    el.addEventListener('mousedown', function(e) {
+        document.querySelectorAll('.board-element').forEach(node => {
+            node.style.outline = 'none';
+            node.classList.remove('selected');
+            node.style.zIndex = '100';
+        });
+        el.classList.add('selected');
+        el.style.outline = '2px solid #FFD700';
+        el.style.outlineOffset = '2px';
+        el.style.zIndex = '101';
+        window._selectedBoardElement = el;
+
+        el.style.cursor = 'grabbing';
+        const parentRect = layer.getBoundingClientRect();
+        const rect = el.getBoundingClientRect();
+        
+        let currentLeft = rect.left - parentRect.left + (rect.width/2);
+        let currentTop = rect.top - parentRect.top + (rect.height/2);
+        el.style.left = currentLeft + 'px';
+        el.style.top = currentTop + 'px';
+
+        let startX = e.clientX;
+        let startY = e.clientY;
+
+        function onMouseMove(moveEvent) {
+            const dx = moveEvent.clientX - startX;
+            const dy = moveEvent.clientY - startY;
+            currentLeft += dx;
+            currentTop += dy;
+            el.style.left = currentLeft + 'px';
+            el.style.top = currentTop + 'px';
+            startX = moveEvent.clientX;
+            startY = moveEvent.clientY;
+        }
+
+        function onMouseUp() {
+            el.style.cursor = 'grab';
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     layer.appendChild(el);
-    console.log('Injected board-element:', type, content);
 };
 
 window.drawCarriles = function() {
     const h = parseInt(document.getElementById('carril-h')?.value) || 0;
     const v = parseInt(document.getElementById('carril-v')?.value) || 0;
     console.log('Generar carriles:', h, 'x', v);
+    // Future physics engine integration
 };
 
 window.removeSelectedElement = function() {
-    console.log('Eliminar selección');
+    if (window._selectedBoardElement && window._selectedBoardElement.parentNode) {
+        window._selectedBoardElement.parentNode.removeChild(window._selectedBoardElement);
+        window._selectedBoardElement = null;
+    }
 };
 
 window.clearBoard = function() {
     const layer = document.getElementById('tokens-layer');
     if (layer) layer.innerHTML = '';
-    console.log('Pizarra limpiada');
+    window._selectedBoardElement = null;
 };
