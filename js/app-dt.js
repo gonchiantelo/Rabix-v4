@@ -382,8 +382,8 @@ window.DTEngine = {
 
                 <main class="dt-main-content">
                     <section id="dt-home-view" class="dt-home-view view-section">
-                        <!-- Header (Span 3) -->
-                        <div class="platinum-widget profile-widget-compact" onclick="window.DTEngine.toggleView('profile')" style="cursor: pointer;">
+                        <!-- Header -->
+                        <div class="platinum-widget profile-widget-compact" onclick="window.DTEngine.toggleView('profile')" style="cursor: pointer; grid-column: 1 / -1;">
                             <div class="pw-content-compact">
                                 <div class="dt-avatar-ring-compact">
                                     <div class="dt-avatar-inner"></div>
@@ -395,45 +395,44 @@ window.DTEngine = {
                             </div>
                         </div>
 
-                        <!-- Backlog Proactivo (Si aparece la tarjeta de resultado) -->
-                        <div id="home-backlog-container" class="home-backlog-container"></div>
+                        <!-- Backlog Proactivo -->
+                        <div id="home-backlog-container" class="home-backlog-container" style="grid-column: 1 / -1;"></div>
 
-                        <!-- Foco de Hoy (Vertical Tear-off, Span 2 rows) -->
-                        <div class="platinum-widget widget-today-focus tear-off-widget">
-                            <div class="tear-off-header">
-                                <span id="cc-today-focus" class="cc-value tear-off-title">—</span>
+                        <!-- Columna Izquierda: Foco del Día -->
+                        <div class="platinum-widget widget-today-focus" style="grid-column: 1; height: 100%;">
+                            <div style="font-size: 11px; font-weight: 800; letter-spacing: 2px; color: #888; margin-bottom: 15px; text-transform: uppercase;">
+                                FOCO DEL DÍA <span id="cc-today-focus" style="margin-left: 8px; color: var(--dt-accent);"></span>
                             </div>
-                            <div class="tear-off-body">
-                                <ul id="cc-today-tasks" class="tear-off-list">
-                                    <li class="empty-tasks">Cargando foco del día...</li>
-                                </ul>
+                            <ul id="cc-today-tasks" class="clean-tasks-list">
+                                <li class="empty-tasks">Cargando foco del día...</li>
+                            </ul>
+                        </div>
+
+                        <!-- Columna Derecha: Alertas y Acción -->
+                        <div style="grid-column: 2; display: flex; flex-direction: column; gap: 16px;">
+                            <!-- Próximo Partido -->
+                            <div id="widget-next-match-container" class="platinum-widget widget-next-match" style="padding: 16px 20px;">
+                                <div style="font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 5px;">
+                                    PRÓXIMO PARTIDO
+                                </div>
+                                <div>
+                                    <span id="cc-next-match" style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: #E0E0E0;">—</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Próximo Partido (Semaphore Widget) -->
-                        <div id="widget-next-match-container" class="platinum-widget widget-next-match semaphore-widget">
-                            <div class="semaphore-header">PRÓXIMO PARTIDO</div>
-                            <div class="semaphore-body">
-                                <span id="cc-next-match" class="cc-value" style="font-size: 24px; font-weight: 800;">—</span>
+                            <!-- Sub-grid de Acción -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <!-- Analítica -->
+                                <div class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('analytics')">
+                                    <div class="tile-icon-mini">📊</div>
+                                    <h3 class="tile-title-mini">Analítica</h3>
+                                </div>
+                                <!-- Pizarra -->
+                                <div class="platinum-widget action-tile-mini" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')">
+                                    <div class="tile-icon-mini">♟️</div>
+                                    <h3 class="tile-title-mini">Pizarra</h3>
+                                </div>
                             </div>
-                        </div>
-
-                        <!-- Mini-Tile Analítica -->
-                        <div class="platinum-widget action-tile tile-analytics" onclick="DTEngine.toggleView('analytics')">
-                            <div class="tile-icon">📊</div>
-                            <h3 class="tile-title">Analítica</h3>
-                        </div>
-
-                        <!-- Mini-Tile Pizarra -->
-                        <div class="platinum-widget action-tile tile-board" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')">
-                            <div class="tile-icon">♟️</div>
-                            <h3 class="tile-title">Pizarra</h3>
-                        </div>
-
-                        <!-- Mini-Tile Calendario -->
-                        <div class="platinum-widget action-tile tile-calendar" onclick="DTEngine.toggleView('calendar')">
-                            <div class="tile-icon">📅</div>
-                            <h3 class="tile-title">Calendario</h3>
                         </div>
                     </section>
 
@@ -2485,20 +2484,20 @@ window.DTEngine = {
 
             if (daysUntil === 0) {
                 nextMatchEl.textContent = '¡DÍA DE PARTIDO!';
-                nextMatchEl.className = 'cc-value cc-match semaphore-text-red';
-                document.getElementById('widget-next-match-container').className = 'platinum-widget widget-next-match semaphore-widget semaphore-red';
+                nextMatchEl.className = 'semaphore-text-red';
+                document.getElementById('widget-next-match-container').className = 'platinum-widget widget-next-match semaphore-left-red';
             } else {
                 const formatted = nextDate.toLocaleDateString('es', { day: '2-digit', month: 'long' }).toUpperCase();
                 nextMatchEl.textContent = `${formatted} — Faltan ${daysUntil} días`;
                 
-                let semColor = 'semaphore-neutral';
+                let semColor = 'semaphore-left-neutral';
                 let txtColor = '';
-                if (daysUntil <= 1) { semColor = 'semaphore-red'; txtColor = 'semaphore-text-red'; }
-                else if (daysUntil <= 3) { semColor = 'semaphore-yellow'; txtColor = 'semaphore-text-yellow'; }
-                else { semColor = 'semaphore-green'; txtColor = 'semaphore-text-green'; }
+                if (daysUntil <= 1) { semColor = 'semaphore-left-red'; txtColor = 'semaphore-text-red'; }
+                else if (daysUntil <= 3) { semColor = 'semaphore-left-yellow'; txtColor = 'semaphore-text-yellow'; }
+                else { semColor = 'semaphore-left-green'; txtColor = 'semaphore-text-green'; }
 
-                nextMatchEl.className = `cc-value cc-future ${txtColor}`;
-                document.getElementById('widget-next-match-container').className = `platinum-widget widget-next-match semaphore-widget ${semColor}`;
+                nextMatchEl.className = `${txtColor}`;
+                document.getElementById('widget-next-match-container').className = `platinum-widget widget-next-match ${semColor}`;
             }
         }
 
@@ -2506,13 +2505,12 @@ window.DTEngine = {
         const todayLabel = this.calcularEtiquetaMD(todayStr, matchDates);
         todayFocusEl.textContent = todayLabel;
         const focusClass = this.getTypeClass(todayLabel);
-        todayFocusEl.className = `cc-value tear-off-title ${focusClass ? 'cc-' + focusClass.replace('type-', '') : 'cc-base'}`;
 
         const todayTasksUl = document.getElementById('cc-today-tasks');
         if (todayTasksUl) {
             const tasksToday = this._assignedTasks[todayStr] || [];
             if (tasksToday.length === 0) {
-                todayTasksUl.innerHTML = '<li class="empty-tasks">Sin tareas planificadas.</li>';
+                todayTasksUl.innerHTML = '<li class="empty-tasks">Sin tareas planificadas para hoy.</li>';
             } else {
                 todayTasksUl.innerHTML = tasksToday.map(t => {
                     const blockName = t.block === 'parte_principal' ? 'Principal' : (t.block || 'Tarea');
