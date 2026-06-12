@@ -416,21 +416,51 @@ window.DTEngine = {
                         </div>
 
                         <!-- Analítica -->
-                        <div id="tile-analytics" class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('analytics')" style="grid-column: span 4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-                            <div class="tile-icon-mini">📊</div>
-                            <h3 class="tile-title-mini">Analítica</h3>
+                        <div id="tile-analytics" class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('analytics')" style="grid-column: span 4;">
+                            <div style="position: absolute; top: 15px; width: 100%; text-align: center; font-size: 10px; font-weight: 800; color: #FFF; letter-spacing: 1px;">RPE TENDENCIA</div>
+                            <div class="mini-chart-viz">
+                                <div class="mini-bar" style="height: 60%;"></div>
+                                <div class="mini-bar" style="height: 80%;"></div>
+                                <div class="mini-bar" style="height: 70%;"></div>
+                                <div class="mini-bar" style="height: 50%;"></div>
+                                <div class="mini-bar" style="height: 90%;"></div>
+                            </div>
                         </div>
                         
                         <!-- Pizarra -->
-                        <div id="tile-board" class="platinum-widget action-tile-mini" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" style="grid-column: span 4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-                            <div class="tile-icon-mini">♟️</div>
-                            <h3 class="tile-title-mini">Pizarra</h3>
+                        <div id="tile-board" class="platinum-widget action-tile-mini" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" style="grid-column: span 4;">
+                            <div style="position: absolute; top: 15px; width: 100%; text-align: center; font-size: 10px; font-weight: 800; color: #FFF; text-transform: uppercase; z-index: 10; letter-spacing: 1px;">SISTEMA BASE</div>
+                            <div class="mini-pitch-viz">
+                                <div class="mini-token" style="bottom: 5%; left: 50%;"></div>
+                                <div class="mini-token" style="bottom: 25%; left: 20%;"></div>
+                                <div class="mini-token" style="bottom: 22%; left: 40%;"></div>
+                                <div class="mini-token" style="bottom: 22%; left: 60%;"></div>
+                                <div class="mini-token" style="bottom: 25%; left: 80%;"></div>
+                                <div class="mini-token" style="bottom: 45%; left: 50%;"></div>
+                                <div class="mini-token" style="bottom: 55%; left: 30%;"></div>
+                                <div class="mini-token" style="bottom: 55%; left: 70%;"></div>
+                                <div class="mini-token" style="bottom: 75%; left: 25%;"></div>
+                                <div class="mini-token" style="bottom: 75%; left: 75%;"></div>
+                                <div class="mini-token" style="bottom: 85%; left: 50%;"></div>
+                            </div>
                         </div>
                         
                         <!-- Calendario -->
-                        <div id="tile-calendar" class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('calendar')" style="grid-column: span 8; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-                            <div class="tile-icon-mini">📅</div>
-                            <h3 class="tile-title-mini">Calendario</h3>
+                        <div id="tile-calendar" class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('calendar')" style="grid-column: span 4;">
+                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; transform: scale(0.85);">
+                                <div class="macro-day type-tension" style="width: 100%; height: 100%; margin: 0; box-shadow: none; display: flex; flex-direction: column;">
+                                    <div class="m-day-top" style="padding: 10px;">
+                                        <span class="m-day-num" style="font-size: 1.5rem;">${new Date().getDate()}</span>
+                                        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                            <span class="m-day-label" style="font-size: 0.7rem;">MD</span>
+                                        </div>
+                                    </div>
+                                    <div class="m-day-content" style="flex: 1; padding: 5px 10px; opacity: 0.7;">
+                                        <div style="width: 100%; height: 6px; background: rgba(0,242,254,0.3); border-radius: 3px; margin-bottom: 4px;"></div>
+                                        <div style="width: 70%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px;"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </section>
 
@@ -2477,83 +2507,84 @@ window.DTEngine = {
             roleLabelEl.textContent = roleMap[userRole] || 'STAFF TÉCNICO';
         }
 
-        const matchDates = window.CurrentTeam?.match_dates || Array.from(this._matchDays);
-        const todayStr = new Date().toISOString().split('T')[0];
-        const todayMidnight = new Date(todayStr + 'T00:00:00');
-
         // --- PRÓXIMO PARTIDO ---
-        const futureDates = matchDates
-            .filter(d => d >= todayStr)  // inclye hoy (match day)
-            .sort();
+        try {
+            const matchDates = window.CurrentTeam?.match_dates || (this._matchDays ? Array.from(this._matchDays) : []);
+            const futureDates = Array.isArray(matchDates) ? matchDates.filter(d => d >= todayStr).sort() : [];
 
-        if (futureDates.length === 0) {
-            nextMatchEl.innerHTML = '<span style="color: #888;">Sin partidos programados</span>';
-            nextMatchEl.className = 'cc-value cc-neutral';
-        } else {
-            const nextStr = futureDates[0];
-            const nextDate = new Date(nextStr + 'T00:00:00');
-            const msPerDay = 24 * 60 * 60 * 1000;
-            const daysUntil = Math.round((nextDate - todayMidnight) / msPerDay);
-            
-            // Si hay tareas tipo partido, podríamos extraer el nombre, por ahora hardcodeado o general
-            let rivalName = 'PRÓXIMO RIVAL';
-            const matchLogs = this._assignedTasks[nextStr] || [];
-            const partidoLog = matchLogs.find(l => l.block === 'Partido' || l.type === 'Partido');
-            if (partidoLog && typeof partidoLog.id === 'string') {
-                rivalName = partidoLog.id; // asumiendo que guarda el rival
-            }
-            
-            if (daysUntil === 0) {
-                nextMatchEl.innerHTML = `<div style="font-size: 22px; font-weight: 900; color: #FFF; margin-bottom: 4px;">${rivalName}</div><div style="font-size: 12px; color: var(--dt-error); font-weight: 700;">MD-0 (HOY)</div>`;
-                nextMatchEl.className = '';
-                document.getElementById('widget-next-match-container').className = 'platinum-widget widget-next-match semaphore-left-red';
+            if (futureDates.length === 0) {
+                nextMatchEl.innerHTML = '<span style="color: #888;">Sin partidos programados</span>';
+                nextMatchEl.className = 'cc-value cc-neutral';
             } else {
-                let countdownText = `MD-${daysUntil} (Faltan ${daysUntil} días)`;
-                nextMatchEl.innerHTML = `<div style="font-size: 22px; font-weight: 900; color: #FFF; margin-bottom: 4px;">${rivalName}</div><div style="font-size: 12px; color: var(--dt-accent); font-weight: 700;">${countdownText}</div>`;
-                nextMatchEl.className = '';
+                const nextStr = futureDates[0];
+                const nextDate = new Date(nextStr + 'T00:00:00');
+                const msPerDay = 24 * 60 * 60 * 1000;
+                const daysUntil = Math.round((nextDate - todayMidnight) / msPerDay);
                 
-                let semColor = 'semaphore-left-neutral';
-                if (daysUntil <= 1) { semColor = 'semaphore-left-red'; }
-                else if (daysUntil <= 3) { semColor = 'semaphore-left-yellow'; }
-                else { semColor = 'semaphore-left-green'; }
+                let rivalName = 'PRÓXIMO RIVAL';
+                const matchLogs = this._assignedTasks ? (this._assignedTasks[nextStr] || []) : [];
+                const partidoLog = matchLogs.find(l => l.block === 'Partido' || l.type === 'Partido');
+                if (partidoLog && typeof partidoLog.id === 'string') {
+                    rivalName = partidoLog.id;
+                }
+                
+                if (daysUntil === 0) {
+                    nextMatchEl.innerHTML = `<div style="font-size: 22px; font-weight: 900; color: #FFF; margin-bottom: 4px;">${rivalName}</div><div style="font-size: 12px; color: var(--dt-error); font-weight: 700;">MD-0 (HOY)</div>`;
+                    nextMatchEl.className = '';
+                    document.getElementById('widget-next-match-container').className = 'platinum-widget widget-next-match semaphore-left-red';
+                } else {
+                    let countdownText = `MD-${daysUntil} (Faltan ${daysUntil} días)`;
+                    nextMatchEl.innerHTML = `<div style="font-size: 22px; font-weight: 900; color: #FFF; margin-bottom: 4px;">${rivalName}</div><div style="font-size: 12px; color: var(--dt-accent); font-weight: 700;">${countdownText}</div>`;
+                    nextMatchEl.className = '';
+                    
+                    let semColor = 'semaphore-left-neutral';
+                    if (daysUntil <= 1) { semColor = 'semaphore-left-red'; }
+                    else if (daysUntil <= 3) { semColor = 'semaphore-left-yellow'; }
+                    else { semColor = 'semaphore-left-green'; }
 
-                document.getElementById('widget-next-match-container').className = `platinum-widget widget-next-match ${semColor}`;
+                    document.getElementById('widget-next-match-container').className = `platinum-widget widget-next-match ${semColor}`;
+                }
             }
-        }
+        } catch (e) { console.error('Error in nextMatch:', e); }
 
         // --- FOCO DE HOY ---
-        const todayLabel = this.calcularEtiquetaMD(todayStr, matchDates);
+        try {
+            const matchDates = window.CurrentTeam?.match_dates || (this._matchDays ? Array.from(this._matchDays) : []);
+            const todayLabel = this.calcularEtiquetaMD ? this.calcularEtiquetaMD(todayStr, matchDates) : 'MD';
         todayFocusEl.textContent = todayLabel;
         const focusClass = this.getTypeClass(todayLabel);
 
-        const todayTasksUl = document.getElementById('cc-today-tasks');
-        if (todayTasksUl) {
-            const tasksToday = this._assignedTasks[todayStr] || [];
-            if (tasksToday.length === 0) {
-                todayTasksUl.innerHTML = '<li class="empty-tasks" style="color: #666; font-style: italic; list-style: none;">DÍA LIBRE - Sin tareas tácticas asignadas</li>';
-            } else {
-                todayTasksUl.innerHTML = `<ul style="list-style: none; padding: 0; margin: 0;">` + tasksToday.map(t => {
-                    const blockName = t.block === 'parte_principal' ? 'Principal' : (t.block || 'Tarea');
-                    let exName = 'Actividad planificada';
-                    const numId = parseInt(t.id);
-                    if (!isNaN(numId)) {
-                        const customEx = window.CustomExercises?.find(c => c.numericId === numId);
-                        if (customEx) exName = customEx.title;
-                        else {
-                            const preEx = this._exercises.find(e => e.id === numId);
-                            if (preEx) exName = preEx.title;
+        try {
+            const todayTasksUl = document.getElementById('cc-today-tasks');
+            if (todayTasksUl) {
+                const tasksToday = this._assignedTasks ? (this._assignedTasks[todayStr] || []) : [];
+                if (tasksToday.length === 0) {
+                    todayTasksUl.innerHTML = '<li class="empty-tasks" style="color: #666; font-style: italic; list-style: none;">DÍA LIBRE - Sin tareas tácticas asignadas</li>';
+                } else {
+                    todayTasksUl.innerHTML = `<ul style="list-style: none; padding: 0; margin: 0;">` + tasksToday.map(t => {
+                        const blockName = t.block === 'parte_principal' ? 'Principal' : (t.block || 'Tarea');
+                        let exName = 'Actividad planificada';
+                        const numId = parseInt(t.id);
+                        if (!isNaN(numId)) {
+                            const customEx = window.CustomExercises?.find(c => c.numericId === numId);
+                            if (customEx) exName = customEx.title;
+                            else {
+                                const preEx = this._exercises ? this._exercises.find(e => e.id === numId) : null;
+                                if (preEx) exName = preEx.title;
+                            }
+                        } else if (typeof t.id === 'string') {
+                            const customEx = window.CustomExercises?.find(c => c.id === t.id);
+                            if (customEx) exName = customEx.title;
                         }
-                    } else if (typeof t.id === 'string') {
-                        const customEx = window.CustomExercises?.find(c => c.id === t.id);
-                        if (customEx) exName = customEx.title;
-                    }
-                    return `<li style="font-size: 13px; color: #E0E0E0; margin-bottom: 8px; border-left: 2px solid var(--dt-accent); padding-left: 10px;"><strong>${blockName}:</strong> <span style="opacity:0.8;">${exName}</span></li>`;
-                }).join('') + `</ul>`;
+                        return `<li style="font-size: 13px; color: #E0E0E0; margin-bottom: 8px; border-left: 2px solid var(--dt-accent); padding-left: 10px;"><strong>${blockName}:</strong> <span style="opacity:0.8;">${exName}</span></li>`;
+                    }).join('') + `</ul>`;
+                }
             }
-        }
+        } catch(e) { console.error('Error in today tasks:', e); }
 
         // --- DATA TILES (Micro-Analítica) ---
-        const tileBoard = document.getElementById('tile-board');
+        try {
+            const tileBoard = document.getElementById('tile-board');
         const tileAnalytics = document.getElementById('tile-analytics');
         const tileCalendar = document.getElementById('tile-calendar');
 
@@ -2591,36 +2622,38 @@ window.DTEngine = {
             `;
         }
 
-        if (tileCalendar) {
-            const dStr = todayStr;
-            const dNum = new Date().getDate();
-            const labelForCal = this.calcularEtiquetaMD ? this.calcularEtiquetaMD(dStr, matchDates) : 'MD';
-            const typeClass = this.getTypeClass ? this.getTypeClass(labelForCal) : 'type-tension';
-            
-            const isMatchToday = this._matchDays.has(dStr);
-            const sessionData = (this._microcycleSessions && this._microcycleSessions[dStr]) || null;
-            const enfoqueBadge = (sessionData && sessionData.enfoque) ? `<span class="badge-enfoque" style="font-size: 0.5rem; font-weight: 700; color: #00F2FE; background: rgba(0,242,254,0.1); padding: 2px 4px; border-radius: 4px; margin-top: 2px;">${sessionData.enfoque}</span>` : '';
-            const rivalBadge = (isMatchToday && sessionData && sessionData.rival) ? `<div style="font-size: 0.6rem; color: #fff; background: rgba(255,59,48,0.2); border: 1px solid rgba(255,59,48,0.5); padding: 2px 4px; border-radius: 4px; margin-top: 2px; font-weight: 800; text-align: center;">🆚 ${sessionData.rival}</div>` : '';
+            if (tileCalendar) {
+                const dStr = todayStr;
+                const dNum = new Date().getDate();
+                const matchDates = window.CurrentTeam?.match_dates || (this._matchDays ? Array.from(this._matchDays) : []);
+                const labelForCal = this.calcularEtiquetaMD ? this.calcularEtiquetaMD(dStr, matchDates) : 'MD';
+                const typeClass = this.getTypeClass ? this.getTypeClass(labelForCal) : 'type-tension';
+                
+                const isMatchToday = this._matchDays ? this._matchDays.has(dStr) : false;
+                const sessionData = (this._microcycleSessions && this._microcycleSessions[dStr]) || null;
+                const enfoqueBadge = (sessionData && sessionData.enfoque) ? `<span class="badge-enfoque" style="font-size: 0.5rem; font-weight: 700; color: #00F2FE; background: rgba(0,242,254,0.1); padding: 2px 4px; border-radius: 4px; margin-top: 2px;">${sessionData.enfoque}</span>` : '';
+                const rivalBadge = (isMatchToday && sessionData && sessionData.rival) ? `<div style="font-size: 0.6rem; color: #fff; background: rgba(255,59,48,0.2); border: 1px solid rgba(255,59,48,0.5); padding: 2px 4px; border-radius: 4px; margin-top: 2px; font-weight: 800; text-align: center;">🆚 ${sessionData.rival}</div>` : '';
 
-            tileCalendar.innerHTML = `
-                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; transform: scale(0.85);">
-                    <div class="macro-day ${typeClass}" style="width: 100%; height: 100%; margin: 0; box-shadow: none; display: flex; flex-direction: column;">
-                        <div class="m-day-top" style="padding: 10px;">
-                            <span class="m-day-num" style="font-size: 1.5rem;">${dNum}</span>
-                            <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                <span class="m-day-label" style="font-size: 0.7rem;">${labelForCal}</span>
-                                ${enfoqueBadge}
-                                ${rivalBadge}
+                tileCalendar.innerHTML = `
+                    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; transform: scale(0.85);">
+                        <div class="macro-day ${typeClass}" style="width: 100%; height: 100%; margin: 0; box-shadow: none; display: flex; flex-direction: column;">
+                            <div class="m-day-top" style="padding: 10px;">
+                                <span class="m-day-num" style="font-size: 1.5rem;">${dNum}</span>
+                                <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                    <span class="m-day-label" style="font-size: 0.7rem;">${labelForCal}</span>
+                                    ${enfoqueBadge}
+                                    ${rivalBadge}
+                                </div>
+                            </div>
+                            <div class="m-day-content" style="flex: 1; padding: 5px 10px; opacity: 0.7;">
+                                <div style="width: 100%; height: 6px; background: rgba(0,242,254,0.3); border-radius: 3px; margin-bottom: 4px;"></div>
+                                <div style="width: 70%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px;"></div>
                             </div>
                         </div>
-                        <div class="m-day-content" style="flex: 1; padding: 5px 10px; opacity: 0.7;">
-                            <div style="width: 100%; height: 6px; background: rgba(0,242,254,0.3); border-radius: 3px; margin-bottom: 4px;"></div>
-                            <div style="width: 70%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px;"></div>
-                        </div>
                     </div>
-                </div>
-            `;
-        }
+                `;
+            }
+        } catch(e) { console.error('Error in tiles update:', e); }
 
         // --- WIDGET PROACTIVO DE RESULTADOS PENDIENTES ---
         try {
