@@ -382,24 +382,31 @@ window.DTEngine = {
 
                 <main class="dt-main-content">
                     <section id="dt-home-view" class="dt-home-view view-section">
-                        <!-- Header -->
-                        <div class="platinum-widget profile-widget-compact" onclick="window.DTEngine.toggleView('profile')" style="cursor: pointer; grid-column: 1 / -1;">
+                        <!-- Header/Identity (Widget B) -->
+                        <div class="platinum-widget profile-widget-compact" onclick="window.DTEngine.toggleView('profile')" style="cursor: pointer; grid-column: span 2;">
                             <div class="pw-content-compact">
                                 <div class="dt-avatar-ring-compact">
                                     <div class="dt-avatar-inner"></div>
                                 </div>
                                 <div class="dt-info-compact">
-                                    <h2 class="dt-name-compact">${window.CurrentUser?.name || 'STAFF'} <span class="dt-badge-chrome-compact">LICENCIA ${window.CurrentUser?.license || 'UEFA PRO'}</span></h2>
-                                    <p class="dt-team-info-compact">${teamName} | Categoría Elite</p>
+                                    <h2 class="dt-name-compact" style="font-family: 'Outfit', sans-serif; font-size: 20px; color: #E0E0E0; margin: 0 0 4px 0;">${window.CurrentUser?.name || 'STAFF'}</h2>
+                                    <p id="np-role-label" class="dt-team-info-compact" style="color: var(--dt-accent); font-weight: 700; letter-spacing: 1px; font-size: 11px;">DIRECTOR TÉCNICO</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Backlog Proactivo -->
-                        <div id="home-backlog-container" class="home-backlog-container" style="grid-column: 1 / -1;"></div>
+                        <!-- Próximo Partido (Widget C) -->
+                        <div id="widget-next-match-container" class="platinum-widget widget-next-match" style="grid-column: span 1; display: flex; flex-direction: column; justify-content: center; padding: 20px;">
+                            <div style="font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 8px;">
+                                PRÓXIMO PARTIDO
+                            </div>
+                            <div>
+                                <span id="cc-next-match" style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: #E0E0E0;">—</span>
+                            </div>
+                        </div>
 
-                        <!-- Columna Izquierda: Foco del Día -->
-                        <div class="platinum-widget widget-today-focus" style="grid-column: 1; height: 100%;">
+                        <!-- Foco del Día (Widget A) -->
+                        <div class="platinum-widget widget-today-focus" style="grid-column: span 1; grid-row: span 2;">
                             <div style="font-size: 11px; font-weight: 800; letter-spacing: 2px; color: #888; margin-bottom: 15px; text-transform: uppercase;">
                                 FOCO DEL DÍA <span id="cc-today-focus" style="margin-left: 8px; color: var(--dt-accent);"></span>
                             </div>
@@ -408,31 +415,22 @@ window.DTEngine = {
                             </ul>
                         </div>
 
-                        <!-- Columna Derecha: Alertas y Acción -->
-                        <div style="grid-column: 2; display: flex; flex-direction: column; gap: 16px;">
-                            <!-- Próximo Partido -->
-                            <div id="widget-next-match-container" class="platinum-widget widget-next-match" style="padding: 16px 20px;">
-                                <div style="font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 5px;">
-                                    PRÓXIMO PARTIDO
-                                </div>
-                                <div>
-                                    <span id="cc-next-match" style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: #E0E0E0;">—</span>
-                                </div>
-                            </div>
-
-                            <!-- Sub-grid de Acción -->
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                                <!-- Analítica -->
-                                <div class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('analytics')">
-                                    <div class="tile-icon-mini">📊</div>
-                                    <h3 class="tile-title-mini">Analítica</h3>
-                                </div>
-                                <!-- Pizarra -->
-                                <div class="platinum-widget action-tile-mini" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')">
-                                    <div class="tile-icon-mini">♟️</div>
-                                    <h3 class="tile-title-mini">Pizarra</h3>
-                                </div>
-                            </div>
+                        <!-- Analítica -->
+                        <div class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('analytics')" style="grid-column: span 1;">
+                            <div class="tile-icon-mini">📊</div>
+                            <h3 class="tile-title-mini">Analítica</h3>
+                        </div>
+                        
+                        <!-- Pizarra -->
+                        <div class="platinum-widget action-tile-mini" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" style="grid-column: span 1;">
+                            <div class="tile-icon-mini">♟️</div>
+                            <h3 class="tile-title-mini">Pizarra</h3>
+                        </div>
+                        
+                        <!-- Calendario -->
+                        <div class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('calendar')" style="grid-column: span 2;">
+                            <div class="tile-icon-mini">📅</div>
+                            <h3 class="tile-title-mini">Calendario</h3>
                         </div>
                     </section>
 
@@ -2463,6 +2461,21 @@ window.DTEngine = {
         const nextMatchEl = document.getElementById('cc-next-match');
         const todayFocusEl = document.getElementById('cc-today-focus');
         if (!nextMatchEl || !todayFocusEl) return;
+
+        // --- ROL DINÁMICO ---
+        const roleLabelEl = document.getElementById('np-role-label');
+        if (roleLabelEl) {
+            const roleMap = {
+                'head_coach': 'DIRECTOR TÉCNICO',
+                'assistant': 'ASISTENTE TÉCNICO',
+                'gk_coach': 'ENTRENADOR DE ARQUEROS',
+                'fitness_coach': 'PREPARADOR FÍSICO',
+                'analyst': 'ANALISTA',
+                'medical': 'CUERPO MÉDICO'
+            };
+            const userRole = window.CurrentUser?.role || 'head_coach';
+            roleLabelEl.textContent = roleMap[userRole] || 'STAFF TÉCNICO';
+        }
 
         const matchDates = window.CurrentTeam?.match_dates || Array.from(this._matchDays);
         const todayStr = new Date().toISOString().split('T')[0];
