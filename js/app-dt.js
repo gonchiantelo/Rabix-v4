@@ -915,7 +915,7 @@ window.DTEngine = {
                                 <div style="display: flex; flex-direction: column; gap: 8px;">
                                     <p style="color: #9ca3af; font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; margin: 0;">TRAZOS</p>
                                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
-                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Pase (Continua)" onclick="window.selectTool(this, 'pass')">⟶</button>
+                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Pase (Continua)" onclick="window.selectTool(this, 'arrow')">⟶</button>
                                         <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Desmarque (Punteada)" onclick="window.selectTool(this, 'desmarque')">⇢</button>
                                         <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Conducción (Ondulada)" onclick="window.selectTool(this, 'conduccion')">↝</button>
                                         <button type="button" class="dt-btn-square dt-tool-btn" title="Línea Bloqueo" onclick="window.selectTool(this, 'bloqueo')">⟂</button>
@@ -4771,9 +4771,11 @@ window.DTEngine = {
                     if (prev.classList.contains('tactical-zone')) {
                         prev.style.boxShadow = 'inset 0 0 20px rgba(0,242,254,0.04), 0 0 8px rgba(0,242,254,0.12)';
                         prev.style.borderColor = '#00f2fe';
-                    } else if (prev.tagName === 'g') {
-                        var pline = prev.querySelector('line');
-                        if (pline) pline.setAttribute('stroke-width', '2');
+                    } else if (prev.tagName.toLowerCase() === 'g') {
+                        var pline = prev.querySelector('line') || prev.querySelector('polyline');
+                        if (pline) pline.setAttribute('stroke-width', pline.tagName==='line' ? '2' : '3');
+                        var h = prev.querySelector('.resize-handle');
+                        if (h) h.remove();
                     } else if (prev.classList.contains('tactical-ficha') || prev.classList.contains('tactical-ball')) {
                         prev.style.filter = 'none';
                     }
@@ -4785,9 +4787,21 @@ window.DTEngine = {
                     if (el.classList.contains('tactical-zone')) {
                         el.style.boxShadow = 'inset 0 0 20px rgba(255,255,255,0.2), 0 0 12px rgba(255,255,255,0.8)';
                         el.style.borderColor = '#fff';
-                    } else if (el.tagName === 'g') {
-                        var line = el.querySelector('line');
+                    } else if (el.tagName.toLowerCase() === 'g') {
+                        var line = el.querySelector('line') || el.querySelector('polyline');
                         if (line) line.setAttribute('stroke-width', '4');
+                        if (!el.querySelector('.resize-handle') && el.querySelector('line')) {
+                            var handle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                            handle.setAttribute('class', 'resize-handle');
+                            handle.setAttribute('r', '12');
+                            handle.setAttribute('fill', '#fff');
+                            handle.setAttribute('stroke', '#00F2FE');
+                            handle.setAttribute('stroke-width', '3');
+                            handle.style.cursor = 'crosshair';
+                            handle.setAttribute('cx', el.querySelector('line').getAttribute('x2'));
+                            handle.setAttribute('cy', el.querySelector('line').getAttribute('y2'));
+                            el.appendChild(handle);
+                        }
                     } else if (el.classList.contains('tactical-ficha') || el.classList.contains('tactical-ball')) {
                         el.style.filter = 'drop-shadow(0 0 12px rgba(255,255,255,0.8))';
                     }
@@ -4953,7 +4967,7 @@ window.DTEngine = {
                         }
                         initialLeft = parseFloat(el.style.left);
                         initialTop = parseFloat(el.style.top);
-                    } else if (el.tagName === 'g') {
+                    } else if (el.tagName.toLowerCase() === 'g') {
                         var t = el.getAttribute('transform');
                         if (t) {
                             var match = t.match(/translate\(([^,]+),\s*([^\)]+)\)/);
@@ -4963,6 +4977,8 @@ window.DTEngine = {
                             }
                         }
                     }
+
+                    var isResizing = e.target && e.target.classList && e.target.classList.contains('resize-handle');
 
                     el.setPointerCapture(e.pointerId);
 
@@ -4974,10 +4990,27 @@ window.DTEngine = {
                         if (el.classList.contains('tactical-zone')) {
                             el.style.left = (initialLeft + dx) + '%';
                             el.style.top = (initialTop + dy) + '%';
-                        } else if (el.tagName === 'g') {
-                            var dxPx = currPos.x - startPos.x;
-                            var dyPx = currPos.y - startPos.y;
-                            el.setAttribute('transform', 'translate(' + (initialTx + dxPx) + ', ' + (initialTy + dyPx) + ')');
+                        } else if (el.tagName.toLowerCase() === 'g') {
+                            if (isResizing) {
+                                var line = el.querySelector('line');
+                                if (line) {
+                                    var newPx = currPos.px - (initialTx / container.getBoundingClientRect().width * 100);
+                                    var newPy = currPos.py - (initialTy / container.getBoundingClientRect().height * 100);
+                                    var pxStr = newPx.toFixed(2) + '%';
+                                    var pyStr = newPy.toFixed(2) + '%';
+                                    line.setAttribute('x2', pxStr);
+                                    line.setAttribute('y2', pyStr);
+                                    var handle = el.querySelector('.resize-handle');
+                                    if (handle) {
+                                        handle.setAttribute('cx', pxStr);
+                                        handle.setAttribute('cy', pyStr);
+                                    }
+                                }
+                            } else {
+                                var dxPx = currPos.x - startPos.x;
+                                var dyPx = currPos.y - startPos.y;
+                                el.setAttribute('transform', 'translate(' + (initialTx + dxPx) + ', ' + (initialTy + dyPx) + ')');
+                            }
                         }
                     };
 
