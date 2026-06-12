@@ -383,7 +383,7 @@ window.DTEngine = {
                 <main class="dt-main-content">
                     <section id="dt-home-view" class="dt-home-view view-section">
                         <!-- Header/Identity (Widget B) -->
-                        <div class="platinum-widget profile-widget-compact" onclick="window.DTEngine.toggleView('profile')" style="cursor: pointer; grid-column: span 2;">
+                        <div class="platinum-widget profile-widget-compact" onclick="window.DTEngine.toggleView('profile')" style="cursor: pointer; grid-column: span 4;">
                             <div class="pw-content-compact">
                                 <div class="dt-avatar-ring-compact">
                                     <div class="dt-avatar-inner"></div>
@@ -396,7 +396,7 @@ window.DTEngine = {
                         </div>
 
                         <!-- Próximo Partido (Widget C) -->
-                        <div id="widget-next-match-container" class="platinum-widget widget-next-match" style="grid-column: span 1; display: flex; flex-direction: column; justify-content: center; padding: 20px;">
+                        <div id="widget-next-match-container" class="platinum-widget widget-next-match" style="grid-column: span 8; display: flex; flex-direction: column; justify-content: center; padding: 20px;">
                             <div style="font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 8px;">
                                 PRÓXIMO PARTIDO
                             </div>
@@ -406,7 +406,7 @@ window.DTEngine = {
                         </div>
 
                         <!-- Foco del Día (Widget A) -->
-                        <div class="platinum-widget widget-today-focus" style="grid-column: span 1; grid-row: span 2;">
+                        <div class="platinum-widget widget-today-focus" style="grid-column: span 4; grid-row: span 2;">
                             <div style="font-size: 11px; font-weight: 800; letter-spacing: 2px; color: #888; margin-bottom: 15px; text-transform: uppercase;">
                                 FOCO DEL DÍA <span id="cc-today-focus" style="margin-left: 8px; color: var(--dt-accent);"></span>
                             </div>
@@ -416,19 +416,19 @@ window.DTEngine = {
                         </div>
 
                         <!-- Analítica -->
-                        <div class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('analytics')" style="grid-column: span 1;">
+                        <div class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('analytics')" style="grid-column: span 4;">
                             <div class="tile-icon-mini">📊</div>
                             <h3 class="tile-title-mini">Analítica</h3>
                         </div>
                         
                         <!-- Pizarra -->
-                        <div class="platinum-widget action-tile-mini" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" style="grid-column: span 1;">
+                        <div class="platinum-widget action-tile-mini" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" style="grid-column: span 4;">
                             <div class="tile-icon-mini">♟️</div>
                             <h3 class="tile-title-mini">Pizarra</h3>
                         </div>
                         
                         <!-- Calendario -->
-                        <div class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('calendar')" style="grid-column: span 2;">
+                        <div class="platinum-widget action-tile-mini" onclick="DTEngine.toggleView('calendar')" style="grid-column: span 8;">
                             <div class="tile-icon-mini">📅</div>
                             <h3 class="tile-title-mini">Calendario</h3>
                         </div>

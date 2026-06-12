@@ -1,7 +1,7 @@
 /* ── RAVIX V5 — MUNDO DT (Elite Deep Aesthetic) — FULL STYLESHEET ── */
 
 :root {
-    --dt-bg: #050508;
+    --dt-bg: #05080f;
     --dt-surface: #0E0E14;
     --dt-surface-2: #161620;
     /* Theming dinámico: --primary-color se inyecta desde JS al iniciar sesión */
@@ -641,8 +641,8 @@
 
 /* --- Phase 6: Lobby / Command Center --- */
 .dt-home-view {
-    padding: 40px;
-    max-width: 1200px;
+    padding: 20px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -733,12 +733,12 @@
 body { background: #121212 !important; }
 
 .dt-home-view {
-    padding: 30px;
-    max-width: 1200px;
+    padding: 20px;
+    max-width: 1400px;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    display: grid !important;
+    grid-template-columns: repeat(12, 1fr) !important;
+    gap: 20px !important;
     align-items: start;
 }
 
