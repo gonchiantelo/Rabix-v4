@@ -852,45 +852,108 @@ window.DTEngine = {
                         <div style="display: flex; gap: 20px; width: 100%; height: 85vh;">
 
                             <!-- ═══ PANEL LATERAL: ESQUEMAS + HERRAMIENTAS TÁCTICAS ═══ -->
-                            <div style="width: 260px; background: #111827; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 20px; display: flex; flex-direction: column; gap: 14px; flex-shrink: 0; overflow-y: auto;">
-                                <h3 style="color: var(--primary-color, #00F2FE); margin: 0; font-family: Outfit; font-size: 1.2rem;">SALA DE JUEGOS</h3>
-                                <p style="color: #6b7280; font-size: 0.8rem; margin-top: -10px; margin-bottom: 4px;">Diseño Táctico</p>
-
-                                <!-- ═══ HERRAMIENTAS TÁCTICAS NATIVAS (DOM) ═══ -->
-                                <div style="border-top: 1px solid rgba(0,242,254,0.12); padding-top: 14px; display: flex; flex-direction: column; gap: 16px;">
-                                    
-                                    <!-- GRUPO A: Elementos (Nodos) -->
-                                    <div class="tool-group" style="display: flex; flex-direction: column; gap: 6px;">
-                                        <p style="color: #00F2FE; font-size: 0.65rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin: 0 0 2px 0;">Elementos</p>
-                                        <button onclick="window.DTEngine.Board.Spawner.spawnSinglePlayer('local')" style="padding: 8px 12px; background: rgba(0,242,254,0.05); color: #00F2FE; border: 1px solid rgba(0,242,254,0.2); border-radius: 7px; cursor: pointer; font-family: Outfit, sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; transition: all 0.15s;" onmouseover="this.style.background='rgba(0,242,254,0.15)';" onmouseout="this.style.background='rgba(0,242,254,0.05)';">👤 Añadir Jugador Local</button>
-                                        <button onclick="window.DTEngine.Board.Spawner.spawnSinglePlayer('rival')" style="padding: 8px 12px; background: rgba(255,77,77,0.05); color: #ff4d4d; border: 1px solid rgba(255,77,77,0.2); border-radius: 7px; cursor: pointer; font-family: Outfit, sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; transition: all 0.15s;" onmouseover="this.style.background='rgba(255,77,77,0.15)';" onmouseout="this.style.background='rgba(255,77,77,0.05)';">👤 Añadir Jugador Rival</button>
-                                        <button onclick="window.DTEngine.Board.Spawner.addBallDOM()" style="padding: 8px 12px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 7px; cursor: pointer; font-family: Outfit, sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; transition: all 0.15s;"
-                                            onmouseover="this.style.background='rgba(255,255,255,0.15)';" onmouseout="this.style.background='rgba(255,255,255,0.05)';">⚽ Añadir Balón</button>
+                            <style>
+                                .dt-btn-square {
+                                    aspect-ratio: 1;
+                                    background: rgba(255,255,255,0.05);
+                                    border: 1px solid rgba(255,255,255,0.08);
+                                    border-radius: 6px;
+                                    color: #fff;
+                                    cursor: pointer;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 1.2rem;
+                                    transition: all 0.2s;
+                                    padding: 0;
+                                }
+                                .dt-btn-square:hover {
+                                    background: rgba(255,255,255,0.15);
+                                    transform: translateY(-1px);
+                                }
+                                .dt-tool-btn {
+                                    font-size: 1.1rem;
+                                    color: #9ca3af;
+                                }
+                                .dt-tool-btn:hover {
+                                    color: #00F2FE;
+                                    border-color: rgba(0,242,254,0.3);
+                                }
+                            </style>
+                            <div style="width: 260px; background: #111827; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); padding: 15px; display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; overflow-y: auto;">
+                                
+                                <!-- 1. FICHAS PROTAGONISTAS -->
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                        <input type="color" id="ficha-color" value="#00F2FE" style="width: 28px; height: 28px; border: none; border-radius: 50%; cursor: pointer; padding: 0; background: transparent;">
+                                        <input type="text" id="ficha-text" placeholder="Nº" maxlength="3" style="flex: 1; background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; padding: 4px 8px; font-family: Outfit; font-size: 0.85rem; text-align: center; width: 40px;">
+                                        <button type="button" onclick="window.injectBoardElement('ficha', document.getElementById('ficha-text').value, document.getElementById('ficha-color').value)" style="width: 32px; height: 32px; background: rgba(0,242,254,0.1); color: #00F2FE; border: 1px solid rgba(0,242,254,0.3); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: 0.2s;">+</button>
                                     </div>
-
-                                    <!-- GRUPO B: Herramientas (Trazos) -->
-                                    <div class="tool-group" style="display: flex; flex-direction: column; gap: 6px;">
-                                        <p style="color: #00F2FE; font-size: 0.65rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin: 0 0 2px 0;">Herramientas</p>
-                                        <button id="tool-btn-none" onclick="window.DTEngine.Board.DrawTool.setMode('none')" style="padding: 9px 12px; background: rgba(107,114,128,0.06); color: #6b7280; border: 1px solid rgba(107,114,128,0.18); border-radius: 7px; cursor: pointer; font-family: Outfit, sans-serif; font-size: 0.78rem; font-weight: 700; text-align: left; display: flex; align-items: center; gap: 8px; transition: all 0.15s;"
-                                            onmouseover="this.style.borderColor='#9ca3af'; this.style.color='#9ca3af';" onmouseout="this.style.borderColor='rgba(107,114,128,0.18)'; this.style.color='#6b7280';">✋ Mover Nodos</button>
-                                        <button id="tool-btn-zone" onclick="window.DTEngine.Board.DrawTool.setMode('zone')" style="padding: 9px 12px; background: rgba(0,242,254,0.05); color: #9ca3af; border: 1px solid rgba(0,242,254,0.15); border-radius: 7px; cursor: pointer; font-family: Outfit, sans-serif; font-size: 0.78rem; font-weight: 700; text-align: left; display: flex; align-items: center; gap: 8px; transition: all 0.15s; letter-spacing: 0.3px;"
-                                            onmouseover="this.style.borderColor='#00F2FE'; this.style.color='#00F2FE';" onmouseout="if(window.DTEngine.Board.DrawTool._mode!=='zone'){this.style.borderColor='rgba(0,242,254,0.15)'; this.style.color='#9ca3af';}">◻ Trazar Zona</button>
-                                        <button id="tool-btn-arrow" onclick="window.DTEngine.Board.DrawTool.setMode('arrow')" style="padding: 9px 12px; background: rgba(0,242,254,0.05); color: #9ca3af; border: 1px solid rgba(0,242,254,0.15); border-radius: 7px; cursor: pointer; font-family: Outfit, sans-serif; font-size: 0.78rem; font-weight: 700; text-align: left; display: flex; align-items: center; gap: 8px; transition: all 0.15s; letter-spacing: 0.3px;"
-                                            onmouseover="this.style.borderColor='#00F2FE'; this.style.color='#00F2FE';" onmouseout="if(window.DTEngine.Board.DrawTool._mode!=='arrow'){this.style.borderColor='rgba(0,242,254,0.15)'; this.style.color='#9ca3af';}">→ Línea / Flecha</button>
-                                        <button id="tool-btn-pass" onclick="window.DTEngine.Board.DrawTool.setMode('pass')" style="padding: 9px 12px; background: rgba(255,200,0,0.05); color: #9ca3af; border: 1px solid rgba(255,200,0,0.15); border-radius: 7px; cursor: pointer; font-family: Outfit, sans-serif; font-size: 0.78rem; font-weight: 700; text-align: left; display: flex; align-items: center; gap: 8px; transition: all 0.15s; letter-spacing: 0.3px;"
-                                            onmouseover="this.style.borderColor='#FFC800'; this.style.color='#FFC800';" onmouseout="if(window.DTEngine.Board.DrawTool._mode!=='pass'){this.style.borderColor='rgba(255,200,0,0.15)'; this.style.color='#9ca3af';}">⤳ Línea de Pase</button>
-                                    </div>
-
-                                    <!-- GRUPO C: Acciones Globales -->
-                                    <div class="tool-group" style="display: flex; flex-direction: column; gap: 6px;">
-                                        <p style="color: #ff3b30; font-size: 0.65rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin: 0 0 2px 0;">Acciones</p>
-                                        <button onclick="window.DTEngine.Board.DrawTool.clearAll()" style="padding: 8px 12px; background: rgba(255,59,48,0.07); color: #ff3b30; border: 1px solid rgba(255,59,48,0.2); border-radius: 7px; cursor: pointer; font-family: Outfit, sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; transition: all 0.15s;"
-                                            onmouseover="this.style.background='rgba(255,59,48,0.15)';" onmouseout="this.style.background='rgba(255,59,48,0.07)';">🗑 Limpiar Pizarra</button>
-                                    </div>
-
-                                    <!-- Modo activo indicador -->
-                                    <div id="overlay-mode-indicator" style="font-size: 0.68rem; color: #4b5563; text-align: center; font-family: Outfit, sans-serif; letter-spacing: 0.5px; margin-top: 2px;">Modo: Mover Nodos</div>
+                                    <button type="button" onclick="window.injectBoardElement('dt', 'DT', '#333333')" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; align-self: flex-start; transition: 0.2s;" title="Entrenador">🧢</button>
                                 </div>
+
+                                <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 0;">
+
+                                <!-- 2. UTILERÍA Y ELEMENTOS -->
+                                <details style="cursor: pointer;">
+                                    <summary style="color: #9ca3af; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; outline: none; margin-bottom: 8px;">UTILERÍA ▾</summary>
+                                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px;">
+                                        <button type="button" onclick="window.injectBoardElement('util', '⚽')" class="dt-btn-square">⚽</button>
+                                        <button type="button" onclick="window.injectBoardElement('util', '🛕')" class="dt-btn-square">🛕</button>
+                                        <button type="button" onclick="window.injectBoardElement('util', '🛸')" class="dt-btn-square">🛸</button>
+                                        <button type="button" onclick="window.injectBoardElement('util', '🥅')" class="dt-btn-square" title="Arco Oficial">🥅</button>
+                                        <button type="button" onclick="window.injectBoardElement('util', '🥅', null, 'mini')" class="dt-btn-square" style="font-size: 0.8rem;" title="Mini Arco">🥅</button>
+                                        <button type="button" onclick="window.injectBoardElement('util', '🧍')" class="dt-btn-square">🧍</button>
+                                        <button type="button" onclick="window.injectBoardElement('util', '🦯')" class="dt-btn-square">🦯</button>
+                                        <button type="button" onclick="window.injectBoardElement('util', '🪜')" class="dt-btn-square">🪜</button>
+                                    </div>
+                                </details>
+
+                                <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 0;">
+
+                                <!-- 3. HERRAMIENTAS DE PIZARRÓN -->
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <p style="color: #9ca3af; font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; margin: 0;">TRAZOS</p>
+                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Pase (Continua)">⟶</button>
+                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Desmarque (Punteada)">⇢</button>
+                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Conducción (Ondulada)">↝</button>
+                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Línea Bloqueo">⟂</button>
+                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Zona Sombreada">◻</button>
+                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Lápiz Libre">✏️</button>
+                                    </div>
+                                    
+                                    <p style="color: #9ca3af; font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; margin: 6px 0 0 0;">CARRILES</p>
+                                    <div style="display: flex; gap: 6px; align-items: center;">
+                                        <input type="number" id="carril-h" placeholder="H" style="width: 36px; height: 32px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; text-align: center; font-family: Outfit; font-size: 0.8rem;" min="1" max="10">
+                                        <span style="color: #6b7280; font-size: 0.8rem;">x</span>
+                                        <input type="number" id="carril-v" placeholder="V" style="width: 36px; height: 32px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; text-align: center; font-family: Outfit; font-size: 0.8rem;" min="1" max="10">
+                                        <button type="button" onclick="window.drawCarriles()" style="width: 32px; height: 32px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: 0.2s;" title="Generar Grilla">⊞</button>
+                                    </div>
+                                </div>
+
+                                <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 0;">
+
+                                <!-- 4. VISTAS DEL CAMPO -->
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <p style="color: #9ca3af; font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; margin: 0;">FONDO</p>
+                                    <select id="board-bg-select" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; padding: 6px 8px; font-family: Outfit; font-size: 0.8rem; outline: none; cursor: pointer;">
+                                        <option value="vertical">Cancha Vertical</option>
+                                        <option value="horizontal">Cancha Horizontal</option>
+                                        <option value="media">Media Cancha</option>
+                                        <option value="zoom">Área Zoom</option>
+                                        <option value="parquet">Parquet/Baloncesto</option>
+                                    </select>
+                                </div>
+
+                                <div style="flex: 1;"></div> <!-- Spacer -->
+
+                                <!-- 5. UTILIDADES Y LIMPIEZA -->
+                                <div style="display: flex; gap: 8px; justify-content: center; margin-top: auto;">
+                                    <button type="button" onclick="window.removeSelectedElement()" style="flex: 1; aspect-ratio: 1; max-height: 44px; background: rgba(255,59,48,0.1); color: #ff3b30; border: 1px solid rgba(255,59,48,0.2); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; transition: 0.2s;" title="Eliminar Selección">🗑️</button>
+                                    <button type="button" onclick="window.clearBoard()" style="flex: 1; aspect-ratio: 1; max-height: 44px; background: rgba(255,149,0,0.1); color: #ff9500; border: 1px solid rgba(255,149,0,0.2); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; transition: 0.2s;" title="Limpiar Pizarra">💣</button>
+                                </div>
+
                             </div>
 
                             <!-- ═══ CANCHA PRINCIPAL ═══ -->
@@ -5610,3 +5673,69 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+// --- TACTICAL BOARD NEW UI LOGIC ---
+window.injectBoardElement = function(type, content, color, subtype) {
+    const layer = document.getElementById('tokens-layer');
+    if (!layer) return;
+
+    const el = document.createElement('div');
+    el.className = 'board-element';
+    el.style.position = 'absolute';
+    el.style.left = '50%';
+    el.style.top = '50%';
+    el.style.transform = 'translate(-50%, -50%)';
+    el.style.cursor = 'grab';
+    el.style.userSelect = 'none';
+
+    if (type === 'ficha') {
+        el.style.width = '30px';
+        el.style.height = '30px';
+        el.style.borderRadius = '50%';
+        el.style.backgroundColor = color || '#00F2FE';
+        el.style.display = 'flex';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+        el.style.color = '#fff';
+        el.style.fontWeight = 'bold';
+        el.style.fontSize = '12px';
+        el.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
+        el.style.border = '2px solid rgba(255,255,255,0.8)';
+        el.innerText = content || '';
+    } else if (type === 'dt') {
+        el.style.width = '35px';
+        el.style.height = '35px';
+        el.style.borderRadius = '8px';
+        el.style.backgroundColor = color || '#333';
+        el.style.display = 'flex';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+        el.style.color = '#fff';
+        el.style.fontSize = '18px';
+        el.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
+        el.style.border = '2px solid #fff';
+        el.innerText = content || '🧢';
+    } else if (type === 'util') {
+        el.style.fontSize = subtype === 'mini' ? '18px' : '24px';
+        el.innerText = content;
+    }
+
+    layer.appendChild(el);
+    console.log('Injected board-element:', type, content);
+};
+
+window.drawCarriles = function() {
+    const h = parseInt(document.getElementById('carril-h')?.value) || 0;
+    const v = parseInt(document.getElementById('carril-v')?.value) || 0;
+    console.log('Generar carriles:', h, 'x', v);
+};
+
+window.removeSelectedElement = function() {
+    console.log('Eliminar selección');
+};
+
+window.clearBoard = function() {
+    const layer = document.getElementById('tokens-layer');
+    if (layer) layer.innerHTML = '';
+    console.log('Pizarra limpiada');
+};
