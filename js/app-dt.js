@@ -5026,36 +5026,66 @@ window.DTEngine = {
                     document.getElementById('zones-layer').appendChild(zone);
                     this._currentZone = zone;
 
-                } else if (this._mode === 'arrow' || this._mode === 'pass') {
+                } else if (['arrow', 'pass', 'desmarque', 'conduccion', 'bloqueo', 'free'].includes(this._mode)) {
                     var svgEl = document.getElementById('tactical-svg-overlay');
-                    var isPass = this._mode === 'pass';
-                    var color = isPass ? '#FFC800' : '#00F2FE';
-                    var markerId = isPass ? 'arrowhead-yellow' : 'arrowhead-cyan';
+                    var mode = this._mode;
+                    var color = (mode === 'pass') ? '#FFC800' : '#00F2FE';
+                    var markerId = (mode === 'pass') ? 'arrowhead-yellow' : 'arrowhead-cyan';
 
                     var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
                     g.setAttribute('transform', 'translate(0, 0)');
                     g.style.pointerEvents = 'none';
                     g.style.transition = 'filter 0.2s';
 
-                    var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                    line.setAttribute('x1', pos.px.toFixed(2) + '%');
-                    line.setAttribute('y1', pos.py.toFixed(2) + '%');
-                    line.setAttribute('x2', pos.px.toFixed(2) + '%');
-                    line.setAttribute('y2', pos.py.toFixed(2) + '%');
-                    line.setAttribute('stroke', color);
-                    line.setAttribute('stroke-width', '2');
-                    line.setAttribute('stroke-linecap', 'round');
-                    line.setAttribute('marker-end', 'url(#' + markerId + ')');
-                    line.setAttribute('filter', 'drop-shadow(0 0 4px ' + color + ')');
-                    line.style.transition = 'stroke-width 0.2s';
-                    
-                    if (isPass) {
-                        line.setAttribute('stroke-dasharray', '8,5');
+                    if (mode === 'free') {
+                        var path = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                        path.setAttribute('fill', 'none');
+                        path.setAttribute('stroke', color);
+                        path.setAttribute('stroke-width', '3');
+                        path.setAttribute('stroke-linecap', 'round');
+                        path.setAttribute('stroke-linejoin', 'round');
+                        path.setAttribute('filter', 'drop-shadow(0 0 4px ' + color + ')');
+                        path.setAttribute('points', pos.px.toFixed(2) + ',' + pos.py.toFixed(2));
+                        // polyline works with percentages in SVG but we need to supply them as coordinates, wait! SVG points don't support %, only px.
+                        // So we must use pixel coordinates for free lines.
+                        path.setAttribute('points', pos.x + ',' + pos.y);
+                        g.appendChild(path);
+                        svgEl.appendChild(g);
+                        this._currentLine = path;
+                        this._currentG = g;
+                    } else {
+                        var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', pos.px.toFixed(2) + '%');
+                        line.setAttribute('y1', pos.py.toFixed(2) + '%');
+                        line.setAttribute('x2', pos.px.toFixed(2) + '%');
+                        line.setAttribute('y2', pos.py.toFixed(2) + '%');
+                        line.setAttribute('stroke', color);
+                        line.setAttribute('stroke-width', '2');
+                        line.setAttribute('stroke-linecap', 'round');
+                        line.setAttribute('filter', 'drop-shadow(0 0 4px ' + color + ')');
+                        line.style.transition = 'stroke-width 0.2s';
+                        
+                        if (mode !== 'bloqueo') {
+                            line.setAttribute('marker-end', 'url(#' + markerId + ')');
+                        }
+                        
+                        if (mode === 'pass') {
+                            line.setAttribute('stroke-dasharray', '8,5');
+                        } else if (mode === 'desmarque') {
+                            line.setAttribute('stroke-dasharray', '3,3');
+                        } else if (mode === 'conduccion') {
+                            // Represent wavy with a specific dash for now
+                            line.setAttribute('stroke-dasharray', '15,4,4,4');
+                            line.setAttribute('stroke-width', '3');
+                        } else if (mode === 'bloqueo') {
+                            line.setAttribute('stroke-width', '4');
+                        }
+                        
+                        g.appendChild(line);
+                        svgEl.appendChild(g);
+                        this._currentLine = line;
+                        this._currentG = g;
                     }
-                    g.appendChild(line);
-                    svgEl.appendChild(g);
-                    this._currentLine = line;
-                    this._currentG = g;
                 }
             },
 
@@ -5079,9 +5109,14 @@ window.DTEngine = {
                     this._currentZone.style.width  = (width / rect.width * 100).toFixed(2) + '%';
                     this._currentZone.style.height = (height / rect.height * 100).toFixed(2) + '%';
 
-                } else if ((this._mode === 'arrow' || this._mode === 'pass') && this._currentLine) {
-                    this._currentLine.setAttribute('x2', pos.px.toFixed(2) + '%');
-                    this._currentLine.setAttribute('y2', pos.py.toFixed(2) + '%');
+                } else if (['arrow', 'pass', 'desmarque', 'conduccion', 'bloqueo', 'free'].includes(this._mode) && this._currentLine) {
+                    if (this._mode === 'free') {
+                        var pts = this._currentLine.getAttribute('points');
+                        this._currentLine.setAttribute('points', pts + ' ' + pos.x + ',' + pos.y);
+                    } else {
+                        this._currentLine.setAttribute('x2', pos.px.toFixed(2) + '%');
+                        this._currentLine.setAttribute('y2', pos.py.toFixed(2) + '%');
+                    }
                 }
             },
 
@@ -5100,12 +5135,19 @@ window.DTEngine = {
                     }
                     this._currentZone = null;
 
-                } else if ((this._mode === 'arrow' || this._mode === 'pass') && this._currentLine) {
-                    var x1 = parseFloat(this._currentLine.getAttribute('x1'));
-                    var x2 = parseFloat(this._currentLine.getAttribute('x2'));
-                    var y1 = parseFloat(this._currentLine.getAttribute('y1'));
-                    var y2 = parseFloat(this._currentLine.getAttribute('y2'));
-                    if (Math.abs(x2 - x1) < 1.5 && Math.abs(y2 - y1) < 1.5) {
+                } else if (['arrow', 'pass', 'desmarque', 'conduccion', 'bloqueo', 'free'].includes(this._mode) && this._currentLine) {
+                    var isValid = false;
+                    if (this._mode === 'free') {
+                        var pts = this._currentLine.getAttribute('points').split(' ');
+                        isValid = pts.length > 3;
+                    } else {
+                        var x1 = parseFloat(this._currentLine.getAttribute('x1'));
+                        var x2 = parseFloat(this._currentLine.getAttribute('x2'));
+                        var y1 = parseFloat(this._currentLine.getAttribute('y1'));
+                        var y2 = parseFloat(this._currentLine.getAttribute('y2'));
+                        isValid = Math.abs(x2 - x1) >= 1.5 || Math.abs(y2 - y1) >= 1.5;
+                    }
+                    if (!isValid) {
                         this._currentG.remove();
                     } else {
                         this._makeInteractive(this._currentG);
@@ -5787,6 +5829,10 @@ window.removeSelectedElement = function() {
         window._selectedBoardElement.parentNode.removeChild(window._selectedBoardElement);
         window._selectedBoardElement = null;
     }
+    if (window.DTEngine && window.DTEngine.activeNode && window.DTEngine.activeNode.parentNode) {
+        window.DTEngine.activeNode.parentNode.removeChild(window.DTEngine.activeNode);
+        window.DTEngine.activeNode = null;
+    }
 };
 
 window.clearBoard = function() {
@@ -5816,11 +5862,6 @@ window.selectTool = function(btn, mode) {
     }
 
     if (window.DTEngine && window.DTEngine.Board && window.DTEngine.Board.DrawTool) {
-        // Fallback or exact mapping based on what DrawTool supports
-        let engineMode = finalMode;
-        if (!['none', 'zone', 'arrow', 'pass'].includes(engineMode)) {
-            engineMode = 'arrow'; // fallback for desmarque, conduccion, bloqueo, free
-        }
-        window.DTEngine.Board.DrawTool.setMode(engineMode);
+        window.DTEngine.Board.DrawTool.setMode(finalMode);
     }
 };
