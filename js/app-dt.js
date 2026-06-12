@@ -2551,8 +2551,9 @@ window.DTEngine = {
         try {
             const matchDates = window.CurrentTeam?.match_dates || (this._matchDays ? Array.from(this._matchDays) : []);
             const todayLabel = this.calcularEtiquetaMD ? this.calcularEtiquetaMD(todayStr, matchDates) : 'MD';
-        todayFocusEl.textContent = todayLabel;
-        const focusClass = this.getTypeClass(todayLabel);
+            todayFocusEl.textContent = todayLabel;
+            const focusClass = this.getTypeClass(todayLabel);
+        } catch (e) { console.error('Error in today focus label:', e); }
 
         try {
             const todayTasksUl = document.getElementById('cc-today-tasks');
