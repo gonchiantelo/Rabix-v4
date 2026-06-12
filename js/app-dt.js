@@ -915,12 +915,12 @@ window.DTEngine = {
                                 <div style="display: flex; flex-direction: column; gap: 8px;">
                                     <p style="color: #9ca3af; font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; margin: 0;">TRAZOS</p>
                                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
-                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Pase (Continua)">⟶</button>
-                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Desmarque (Punteada)">⇢</button>
-                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Conducción (Ondulada)">↝</button>
-                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Línea Bloqueo">⟂</button>
-                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Zona Sombreada">◻</button>
-                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Lápiz Libre">✏️</button>
+                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Pase (Continua)" onclick="window.selectTool(this, 'pass')">⟶</button>
+                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Desmarque (Punteada)" onclick="window.selectTool(this, 'desmarque')">⇢</button>
+                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Flecha Conducción (Ondulada)" onclick="window.selectTool(this, 'conduccion')">↝</button>
+                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Línea Bloqueo" onclick="window.selectTool(this, 'bloqueo')">⟂</button>
+                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Zona Sombreada" onclick="window.selectTool(this, 'zone')">◻</button>
+                                        <button type="button" class="dt-btn-square dt-tool-btn" title="Lápiz Libre" onclick="window.selectTool(this, 'free')">✏️</button>
                                     </div>
                                     
                                     <p style="color: #9ca3af; font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; margin: 6px 0 0 0;">CARRILES</p>
@@ -5793,4 +5793,23 @@ window.clearBoard = function() {
     const layer = document.getElementById('tokens-layer');
     if (layer) layer.innerHTML = '';
     window._selectedBoardElement = null;
+};
+
+window.selectTool = function(btn, mode) {
+    document.querySelectorAll('.dt-tool-btn').forEach(b => {
+        b.style.background = 'rgba(255,255,255,0.05)';
+        b.style.borderColor = 'rgba(255,255,255,0.08)';
+        b.style.color = '#9ca3af';
+    });
+    
+    if (btn) {
+        btn.style.background = 'rgba(0,242,254,0.15)';
+        btn.style.borderColor = '#00F2FE';
+        btn.style.color = '#00F2FE';
+    }
+
+    if (window.DTEngine && window.DTEngine.Board && window.DTEngine.Board.DrawTool) {
+        // Fallback or exact mapping based on what DrawTool supports
+        window.DTEngine.Board.DrawTool.setMode(mode);
+    }
 };
