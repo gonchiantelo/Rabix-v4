@@ -2454,31 +2454,32 @@ window.DTEngine = {
 
     updateHomeUI() {
         const timelineEl = document.getElementById('home-timeline-row');
-        if (!timelineEl) return;
 
         // 1. Generar 7 días desde hoy
-        let html = '';
-        const today = new Date();
-        for (let i = 0; i < 7; i++) {
-            const current = new Date(today);
-            current.setDate(today.getDate() + i);
-            const dateStr = current.toISOString().split('T')[0];
-            const tasks = this._assignedTasks[dateStr] || [];
-            const isMatch = this._matchDays.has(dateStr);
-            const dayName = current.toLocaleDateString('es', { weekday: 'short' }).toUpperCase();
+        if (timelineEl) {
+            let html = '';
+            const today = new Date();
+            for (let i = 0; i < 7; i++) {
+                const current = new Date(today);
+                current.setDate(today.getDate() + i);
+                const dateStr = current.toISOString().split('T')[0];
+                const tasks = this._assignedTasks ? (this._assignedTasks[dateStr] || []) : [];
+                const isMatch = this._matchDays ? this._matchDays.has(dateStr) : false;
+                const dayName = current.toLocaleDateString('es', { weekday: 'short' }).toUpperCase();
 
-            html += `
-                <div class="timeline-day ${isMatch ? 'match-day' : ''}">
-                    <span class="t-name">${dayName}</span>
-                    <span class="t-num">${current.getDate()}</span>
-                    <div class="t-dots">
-                        ${tasks.slice(0, 3).map(() => '<span class="t-dot"></span>').join('')}
-                        ${tasks.length > 3 ? '<span class="t-dot plus">+</span>' : ''}
+                html += `
+                    <div class="timeline-day ${isMatch ? 'match-day' : ''}">
+                        <span class="t-name">${dayName}</span>
+                        <span class="t-num">${current.getDate()}</span>
+                        <div class="t-dots">
+                            ${tasks.slice(0, 3).map(() => '<span class="t-dot"></span>').join('')}
+                            ${tasks.length > 3 ? '<span class="t-dot plus">+</span>' : ''}
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
+            timelineEl.innerHTML = html;
         }
-        timelineEl.innerHTML = html;
 
         // 2. Mini Charts
         this.renderHomeCharts();
