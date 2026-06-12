@@ -382,7 +382,7 @@ window.DTEngine = {
 
                 <main class="dt-main-content">
                     <section id="dt-home-view" class="dt-home-view view-section">
-                        <!-- Widget 1: Perfil Compacto (Header) -->
+                        <!-- Header (Span 3) -->
                         <div class="platinum-widget profile-widget-compact" onclick="window.DTEngine.toggleView('profile')" style="cursor: pointer;">
                             <div class="pw-content-compact">
                                 <div class="dt-avatar-ring-compact">
@@ -398,57 +398,42 @@ window.DTEngine = {
                         <!-- Backlog Proactivo (Si aparece la tarjeta de resultado) -->
                         <div id="home-backlog-container" class="home-backlog-container"></div>
 
-                        <!-- Columna Izquierda: Próximo Partido -->
-                        <div class="platinum-widget widget-next-match">
-                            <div class="pw-header" style="margin-bottom: 10px;">
-                                <h3>Próximo Partido</h3>
+                        <!-- Foco de Hoy (Vertical Tear-off, Span 2 rows) -->
+                        <div class="platinum-widget widget-today-focus tear-off-widget">
+                            <div class="tear-off-header">
+                                <span id="cc-today-focus" class="cc-value tear-off-title">—</span>
                             </div>
-                            <div class="cc-block">
-                                <span id="cc-next-match" class="cc-value" style="font-size: 24px; font-weight: 800; color: #E0E0E0;">—</span>
-                            </div>
-                        </div>
-
-                        <!-- Columna Izquierda: Línea de Tiempo -->
-                        <div class="platinum-widget timeline-widget" onclick="DTEngine.toggleView('calendar')">
-                            <div class="pw-header">
-                                <h3>Línea de Tiempo Semanal</h3>
-                                <span class="pw-action">Planificación Completa →</span>
-                            </div>
-                            <div id="home-timeline-row" class="pw-timeline">
-                                <!-- Inyección dinámica -->
+                            <div class="tear-off-body">
+                                <ul id="cc-today-tasks" class="tear-off-list">
+                                    <li class="empty-tasks">Cargando foco del día...</li>
+                                </ul>
                             </div>
                         </div>
 
-                        <!-- Columna Derecha: Foco de Hoy -->
-                        <div class="platinum-widget widget-today-focus">
-                            <div class="pw-header" style="margin-bottom: 10px;">
-                                <h3>Foco de Hoy</h3>
-                            </div>
-                            <div class="cc-block">
-                                <span id="cc-today-focus" class="cc-value" style="font-size: 18px; font-weight: 700; color: var(--dt-accent);">—</span>
+                        <!-- Próximo Partido (Semaphore Widget) -->
+                        <div id="widget-next-match-container" class="platinum-widget widget-next-match semaphore-widget">
+                            <div class="semaphore-header">PRÓXIMO PARTIDO</div>
+                            <div class="semaphore-body">
+                                <span id="cc-next-match" class="cc-value" style="font-size: 24px; font-weight: 800;">—</span>
                             </div>
                         </div>
 
-                        <!-- Columna Derecha: Monitor de Rendimiento -->
-                        <div class="platinum-widget stats-widget" onclick="DTEngine.toggleView('analytics')">
-                            <div class="pw-header">
-                                <h3>Monitor de Rendimiento</h3>
-                                <span class="pw-action">Detalle Estadístico →</span>
-                            </div>
-                            <div class="pw-charts-vertical">
-                                <div class="pw-mini-chart" style="height: 150px; margin-bottom: 20px;">
-                                    <canvas id="home-chart-load"></canvas>
-                                </div>
-                                <div class="pw-mini-chart" style="height: 150px;">
-                                    <canvas id="home-chart-moments"></canvas>
-                                </div>
-                            </div>
+                        <!-- Mini-Tile Analítica -->
+                        <div class="platinum-widget action-tile tile-analytics" onclick="DTEngine.toggleView('analytics')">
+                            <div class="tile-icon">📊</div>
+                            <h3 class="tile-title">Analítica</h3>
                         </div>
 
-                        <!-- Sala de Juegos (Abajo a la izquierda) -->
-                        <div class="platinum-widget sala-juegos-widget" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" style="cursor: pointer; border-color: var(--primary-color);">
-                            <h3 style="color: var(--primary-color); margin-bottom: 5px; font-family: 'Outfit', sans-serif; font-size: 18px;">SALA DE JUEGOS</h3>
-                            <p style="color: #888; font-size: 0.85rem;">Pizarra Táctica Interactiva</p>
+                        <!-- Mini-Tile Pizarra -->
+                        <div class="platinum-widget action-tile tile-board" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')">
+                            <div class="tile-icon">♟️</div>
+                            <h3 class="tile-title">Pizarra</h3>
+                        </div>
+
+                        <!-- Mini-Tile Calendario -->
+                        <div class="platinum-widget action-tile tile-calendar" onclick="DTEngine.toggleView('calendar')">
+                            <div class="tile-icon">📅</div>
+                            <h3 class="tile-title">Calendario</h3>
                         </div>
                     </section>
 
@@ -2500,11 +2485,20 @@ window.DTEngine = {
 
             if (daysUntil === 0) {
                 nextMatchEl.textContent = '¡DÍA DE PARTIDO!';
-                nextMatchEl.className = 'cc-value cc-match';
+                nextMatchEl.className = 'cc-value cc-match semaphore-text-red';
+                document.getElementById('widget-next-match-container').className = 'platinum-widget widget-next-match semaphore-widget semaphore-red';
             } else {
                 const formatted = nextDate.toLocaleDateString('es', { day: '2-digit', month: 'long' }).toUpperCase();
                 nextMatchEl.textContent = `${formatted} — Faltan ${daysUntil} días`;
-                nextMatchEl.className = 'cc-value cc-future';
+                
+                let semColor = 'semaphore-neutral';
+                let txtColor = '';
+                if (daysUntil <= 1) { semColor = 'semaphore-red'; txtColor = 'semaphore-text-red'; }
+                else if (daysUntil <= 3) { semColor = 'semaphore-yellow'; txtColor = 'semaphore-text-yellow'; }
+                else { semColor = 'semaphore-green'; txtColor = 'semaphore-text-green'; }
+
+                nextMatchEl.className = `cc-value cc-future ${txtColor}`;
+                document.getElementById('widget-next-match-container').className = `platinum-widget widget-next-match semaphore-widget ${semColor}`;
             }
         }
 
@@ -2512,7 +2506,33 @@ window.DTEngine = {
         const todayLabel = this.calcularEtiquetaMD(todayStr, matchDates);
         todayFocusEl.textContent = todayLabel;
         const focusClass = this.getTypeClass(todayLabel);
-        todayFocusEl.className = `cc-value ${focusClass ? 'cc-' + focusClass.replace('type-', '') : 'cc-base'}`;
+        todayFocusEl.className = `cc-value tear-off-title ${focusClass ? 'cc-' + focusClass.replace('type-', '') : 'cc-base'}`;
+
+        const todayTasksUl = document.getElementById('cc-today-tasks');
+        if (todayTasksUl) {
+            const tasksToday = this._assignedTasks[todayStr] || [];
+            if (tasksToday.length === 0) {
+                todayTasksUl.innerHTML = '<li class="empty-tasks">Sin tareas planificadas.</li>';
+            } else {
+                todayTasksUl.innerHTML = tasksToday.map(t => {
+                    const blockName = t.block === 'parte_principal' ? 'Principal' : (t.block || 'Tarea');
+                    let exName = 'Actividad planificada';
+                    const numId = parseInt(t.id);
+                    if (!isNaN(numId)) {
+                        const customEx = window.CustomExercises?.find(c => c.numericId === numId);
+                        if (customEx) exName = customEx.title;
+                        else {
+                            const preEx = this._exercises.find(e => e.id === numId);
+                            if (preEx) exName = preEx.title;
+                        }
+                    } else if (typeof t.id === 'string') {
+                        const customEx = window.CustomExercises?.find(c => c.id === t.id);
+                        if (customEx) exName = customEx.title;
+                    }
+                    return `<li><strong>${blockName}:</strong> ${exName}</li>`;
+                }).join('');
+            }
+        }
 
         // --- WIDGET PROACTIVO DE RESULTADOS PENDIENTES ---
         try {
