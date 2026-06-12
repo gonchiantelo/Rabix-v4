@@ -736,10 +736,26 @@ body { background: #121212 !important; }
     padding: 30px;
     max-width: 1400px;
     margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-areas: 
+        "header header"
+        "backlog backlog"
+        "match focus"
+        "timeline stats"
+        "board stats";
+    gap: 24px;
+    align-items: start;
 }
+
+/* Grid Area Assignments */
+.profile-widget-compact { grid-area: header; }
+.home-backlog-container { grid-area: backlog; }
+.widget-next-match { grid-area: match; }
+.widget-today-focus { grid-area: focus; }
+.timeline-widget { grid-area: timeline; }
+.stats-widget { grid-area: stats; }
+.sala-juegos-widget { grid-area: board; }
 
 .platinum-widget {
     background: linear-gradient(135deg, rgba(224, 224, 224, 0.05) 0%, rgba(176, 176, 176, 0.02) 100%);
@@ -773,7 +789,59 @@ body { background: #121212 !important; }
     left: 100%;
 }
 
-/* Profile Widget */
+/* Profile Widget Compact */
+.profile-widget-compact {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 10px 0 20px 0;
+    border-radius: 0;
+}
+.profile-widget-compact:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+.profile-widget-compact::after {
+    display: none;
+}
+.pw-content-compact {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.dt-avatar-ring-compact {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    padding: 2px;
+    background: linear-gradient(180deg, #00F2FE 0%, #666 100%);
+}
+.dt-info-compact { display: flex; flex-direction: column; justify-content: center; }
+.dt-name-compact {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    color: #FFF;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.dt-team-info-compact {
+    font-size: 12px;
+    color: #888;
+    margin: 2px 0 0 0;
+}
+.dt-badge-chrome-compact {
+    padding: 2px 8px;
+    border: 1px solid #00F2FE;
+    border-radius: 100px;
+    font-size: 9px;
+    font-weight: 800;
+    color: #00F2FE;
+    background: rgba(0, 242, 254, 0.1);
+}
+
+/* Legacy Profile Widget (for reference or other views if needed) */
 .pw-content { display: flex; align-items: center; gap: 25px; }
 .dt-avatar-ring {
     width: 80px; height: 80px;
@@ -868,6 +936,15 @@ body { background: #121212 !important; }
     /* ── Widgets / Home ── */
     .dt-home-view {
         padding: 15px;
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+            "header"
+            "backlog"
+            "match"
+            "focus"
+            "timeline"
+            "stats"
+            "board";
         gap: 14px;
     }
     .lobby-grid {

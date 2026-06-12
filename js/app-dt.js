@@ -382,39 +382,33 @@ window.DTEngine = {
 
                 <main class="dt-main-content">
                     <section id="dt-home-view" class="dt-home-view view-section">
-                        <!-- Widget 1: Perfil & Identidad -->
-                        <div class="platinum-widget profile-widget" onclick="window.DTEngine.toggleView('profile')" style="cursor: pointer;">
-                            <div class="pw-content">
-                                <div class="dt-avatar-ring">
+                        <!-- Widget 1: Perfil Compacto (Header) -->
+                        <div class="platinum-widget profile-widget-compact" onclick="window.DTEngine.toggleView('profile')" style="cursor: pointer;">
+                            <div class="pw-content-compact">
+                                <div class="dt-avatar-ring-compact">
                                     <div class="dt-avatar-inner"></div>
                                 </div>
-                                <div class="dt-info">
-                                    <span class="dt-tag">DIRECTOR TÉCNICO</span>
-                                    <h2 class="dt-name">${window.CurrentUser?.name || 'STAFF'}</h2>
-                                    <p class="dt-team-info">${teamName} | Categoría Elite</p>
-                                </div>
-                                <div class="dt-badge-chrome">LICENSE ${window.CurrentUser?.license || 'UEFA PRO'}</div>
-                            </div>
-                        </div>
-
-                        <!-- Widget 3: Centro de Comando -->
-                        <div class="platinum-widget command-widget">
-                            <div class="pw-header">
-                                <h3>Centro de Comando</h3>
-                            </div>
-                            <div id="home-command-center" class="command-center-grid">
-                                <div class="cc-block">
-                                    <span class="cc-label">PRÓXIMO PARTIDO</span>
-                                    <span id="cc-next-match" class="cc-value">—</span>
-                                </div>
-                                <div class="cc-block">
-                                    <span class="cc-label">FOCO DE HOY</span>
-                                    <span id="cc-today-focus" class="cc-value">—</span>
+                                <div class="dt-info-compact">
+                                    <h2 class="dt-name-compact">${window.CurrentUser?.name || 'STAFF'} <span class="dt-badge-chrome-compact">LICENCIA ${window.CurrentUser?.license || 'UEFA PRO'}</span></h2>
+                                    <p class="dt-team-info-compact">${teamName} | Categoría Elite</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Widget 2: Línea de Tiempo Táctica (Calendario) -->
+                        <!-- Backlog Proactivo (Si aparece la tarjeta de resultado) -->
+                        <div id="home-backlog-container" class="home-backlog-container"></div>
+
+                        <!-- Columna Izquierda: Próximo Partido -->
+                        <div class="platinum-widget widget-next-match">
+                            <div class="pw-header" style="margin-bottom: 10px;">
+                                <h3>Próximo Partido</h3>
+                            </div>
+                            <div class="cc-block">
+                                <span id="cc-next-match" class="cc-value" style="font-size: 24px; font-weight: 800; color: #E0E0E0;">—</span>
+                            </div>
+                        </div>
+
+                        <!-- Columna Izquierda: Línea de Tiempo -->
                         <div class="platinum-widget timeline-widget" onclick="DTEngine.toggleView('calendar')">
                             <div class="pw-header">
                                 <h3>Línea de Tiempo Semanal</h3>
@@ -425,25 +419,35 @@ window.DTEngine = {
                             </div>
                         </div>
 
-                        <!-- Widget 3: Dashboard Analítico -->
+                        <!-- Columna Derecha: Foco de Hoy -->
+                        <div class="platinum-widget widget-today-focus">
+                            <div class="pw-header" style="margin-bottom: 10px;">
+                                <h3>Foco de Hoy</h3>
+                            </div>
+                            <div class="cc-block">
+                                <span id="cc-today-focus" class="cc-value" style="font-size: 18px; font-weight: 700; color: var(--dt-accent);">—</span>
+                            </div>
+                        </div>
+
+                        <!-- Columna Derecha: Monitor de Rendimiento -->
                         <div class="platinum-widget stats-widget" onclick="DTEngine.toggleView('analytics')">
                             <div class="pw-header">
-                                <h3>Monitor de Rendimiento Platinado</h3>
+                                <h3>Monitor de Rendimiento</h3>
                                 <span class="pw-action">Detalle Estadístico →</span>
                             </div>
-                            <div class="pw-charts-row">
-                                <div class="pw-mini-chart">
+                            <div class="pw-charts-vertical">
+                                <div class="pw-mini-chart" style="height: 150px; margin-bottom: 20px;">
                                     <canvas id="home-chart-load"></canvas>
                                 </div>
-                                <div class="pw-mini-chart">
+                                <div class="pw-mini-chart" style="height: 150px;">
                                     <canvas id="home-chart-moments"></canvas>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Widget 4: Sala de Juegos -->
-                        <div class="platinum-widget" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" style="cursor: pointer; border-color: var(--primary-color);">
-                            <h3 style="color: var(--primary-color); margin-bottom: 5px;">SALA DE JUEGOS</h3>
+                        <!-- Sala de Juegos (Abajo a la izquierda) -->
+                        <div class="platinum-widget sala-juegos-widget" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" style="cursor: pointer; border-color: var(--primary-color);">
+                            <h3 style="color: var(--primary-color); margin-bottom: 5px; font-family: 'Outfit', sans-serif; font-size: 18px;">SALA DE JUEGOS</h3>
                             <p style="color: #888; font-size: 0.85rem;">Pizarra Táctica Interactiva</p>
                         </div>
                     </section>
