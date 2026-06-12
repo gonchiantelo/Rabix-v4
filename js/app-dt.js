@@ -5102,8 +5102,10 @@ window.DTEngine = {
                         var hitPath = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
                         hitPath.setAttribute('class', 'hit-area');
                         hitPath.setAttribute('fill', 'none');
-                        hitPath.setAttribute('stroke', 'transparent');
+                        hitPath.setAttribute('stroke', 'transparent'); // fallback
+                        hitPath.setAttribute('stroke-opacity', '0'); // make it invisible but painted
                         hitPath.setAttribute('stroke-width', '24');
+                        hitPath.setAttribute('pointer-events', 'stroke');
                         hitPath.setAttribute('points', pos.x + ',' + pos.y);
                         
                         g.appendChild(hitPath);
@@ -5118,8 +5120,10 @@ window.DTEngine = {
                         hitLine.setAttribute('y1', pos.py.toFixed(2) + '%');
                         hitLine.setAttribute('x2', pos.px.toFixed(2) + '%');
                         hitLine.setAttribute('y2', pos.py.toFixed(2) + '%');
-                        hitLine.setAttribute('stroke', 'transparent');
+                        hitLine.setAttribute('stroke', 'transparent'); // fallback
+                        hitLine.setAttribute('stroke-opacity', '0'); // make it invisible but painted
                         hitLine.setAttribute('stroke-width', '24');
+                        hitLine.setAttribute('pointer-events', 'stroke');
 
                         var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                         line.setAttribute('x1', pos.px.toFixed(2) + '%');
@@ -5916,7 +5920,13 @@ window.removeSelectedElement = function() {
 window.clearBoard = function() {
     const layer = document.getElementById('tokens-layer');
     if (layer) layer.innerHTML = '';
+    const zones = document.getElementById('zones-layer');
+    if (zones) zones.innerHTML = '';
+    const svg = document.getElementById('tactical-svg-overlay');
+    if (svg) svg.innerHTML = '';
+    
     window._selectedBoardElement = null;
+    if (window.DTEngine) window.DTEngine.activeNode = null;
 };
 
 window.selectTool = function(btn, mode) {
