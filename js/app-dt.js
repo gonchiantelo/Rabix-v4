@@ -5796,20 +5796,31 @@ window.clearBoard = function() {
 };
 
 window.selectTool = function(btn, mode) {
+    let isAlreadyActive = btn && btn.classList.contains('active-tool');
+
     document.querySelectorAll('.dt-tool-btn').forEach(b => {
         b.style.background = 'rgba(255,255,255,0.05)';
         b.style.borderColor = 'rgba(255,255,255,0.08)';
         b.style.color = '#9ca3af';
+        b.classList.remove('active-tool');
     });
     
-    if (btn) {
+    let finalMode = mode;
+    if (isAlreadyActive) {
+        finalMode = 'none'; // Deselect -> back to Move mode
+    } else if (btn) {
         btn.style.background = 'rgba(0,242,254,0.15)';
         btn.style.borderColor = '#00F2FE';
         btn.style.color = '#00F2FE';
+        btn.classList.add('active-tool');
     }
 
     if (window.DTEngine && window.DTEngine.Board && window.DTEngine.Board.DrawTool) {
         // Fallback or exact mapping based on what DrawTool supports
-        window.DTEngine.Board.DrawTool.setMode(mode);
+        let engineMode = finalMode;
+        if (!['none', 'zone', 'arrow', 'pass'].includes(engineMode)) {
+            engineMode = 'arrow'; // fallback for desmarque, conduccion, bloqueo, free
+        }
+        window.DTEngine.Board.DrawTool.setMode(engineMode);
     }
 };
