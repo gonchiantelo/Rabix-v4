@@ -732,7 +732,7 @@
 /* --- Platinum Chrome Theme (Phase 6 Redesign) --- */
 body { background: #121212 !important; }
 
-.dt-home-view {
+#dt-home-view {
     padding: 20px;
     max-width: 1400px;
     margin: 0 auto;
