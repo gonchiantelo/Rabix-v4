@@ -381,11 +381,36 @@ window.PlayerShellEngine = {
                        onblur="this.style.borderColor='rgba(0,255,255,0.2)'">
                        
                 <button id="onboarding-connect-btn" onclick="window.PlayerShellEngine._joinTeam(document.getElementById('onboarding-invite-code').value)"
-                        style="width: 100%; max-width: 300px; padding: 18px; border-radius: 12px; background: #BFFF00; color: #0A0A0A; border: none; font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; box-shadow: 0 0 20px rgba(191,255,0,0.2);">
+                        style="width: 100%; max-width: 300px; padding: 18px; border-radius: 12px; background: #BFFF00; color: #0A0A0A; border: none; font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; box-shadow: 0 0 20px rgba(191,255,0,0.2); margin-bottom: 16px;">
                     CONECTAR AL EQUIPO
+                </button>
+
+                <button id="onboarding-skip-btn" onclick="window.PlayerShellEngine._skipOnboarding()"
+                        style="width: 100%; max-width: 300px; padding: 18px; border-radius: 12px; background: transparent; color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s;">
+                    CONTINUAR SIN EQUIPO
                 </button>
             </div>
         `;
+    },
+
+    _skipOnboarding: function () {
+        // Reconstruimos el DOM principal del shell ya que lo pisamos con innerHTML en el onboarding
+        const shell = document.getElementById('player-shell');
+        if (shell) {
+            shell.innerHTML = '';
+            const newShell = this._buildShellDOM();
+            shell.innerHTML = newShell.innerHTML;
+        }
+
+        // Mostrar nav
+        const nav = document.getElementById('ps-bottom-nav');
+        if (nav) nav.style.display = 'flex';
+
+        // Hidratar con datos base (ya que no hay team_roster)
+        this._hydrateHeader(null);
+
+        // Renderizar vista inicio
+        this._renderHomeView();
     },
 
     _joinTeam: async function (code) {
