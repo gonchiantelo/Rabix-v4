@@ -278,6 +278,15 @@ window.PlayerShellEngine = {
 
             // ONBOARDING INTERCEPTION
             if (!playerRow) {
+                const skipFlag = localStorage.getItem('ravix_v5_skip_onboarding');
+                if (skipFlag === 'true') {
+                    // Si decidió saltar el onboarding, cargamos el modo sin equipo directamente
+                    this.state.user = null;
+                    this._hydrateHeader(null);
+                    setTimeout(() => this._renderHomeView(), 600);
+                    return;
+                }
+
                 const nav = document.getElementById('ps-bottom-nav');
                 if (nav) nav.style.display = 'none';
                 console.log('[PLAYER SHELL] Atleta sin equipo -> Ejecutando _renderOnboardingView');
@@ -362,31 +371,36 @@ window.PlayerShellEngine = {
     _renderOnboardingView: function () {
         const shell = document.getElementById('player-shell');
         if (!shell) return;
+        
+        // Ensure player-shell centers the card
+        shell.style.justifyContent = 'center';
+        shell.style.alignItems = 'center';
+        shell.style.background = '#05080f';
 
         shell.innerHTML = `
-            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; text-align: center; background: #05080f; width: 100%; box-sizing: border-box; position: absolute; top: 0; left: 0; z-index: 10;">
-                <div style="font-size: 2.5rem; font-weight: 900; letter-spacing: 4px; margin-bottom: 24px;">
+            <div class="ps-onboarding-card" style="width: 90%; max-width: 420px; display: flex; flex-direction: column; gap: 24px; text-align: center; box-sizing: border-box; margin: auto;">
+                <div style="font-size: 2.5rem; font-weight: 900; letter-spacing: 4px; margin-bottom: 8px;">
                     RAVI<span style="color:#BFFF00;">X</span>
                 </div>
                 
-                <h2 style="font-size: 1.4rem; font-weight: 900; color: #F0F0F0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">VINCULACIÓN DE EQUIPO</h2>
+                <h2 style="font-size: 1.4rem; font-weight: 900; color: #F0F0F0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">VINCULACIÓN DE EQUIPO</h2>
                 
-                <p style="font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.6); line-height: 1.5; max-width: 280px; margin-bottom: 32px;">
+                <p style="font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.6); line-height: 1.5; margin-bottom: 16px;">
                     Ingresa el código de invitación proporcionado por tu Director Técnico o Staff para sincronizar tu laboratorio de rendimiento.
                 </p>
                 
                 <input type="text" id="onboarding-invite-code" placeholder="EJ: CRANDON-2026" 
-                       style="width: 100%; max-width: 300px; padding: 18px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,255,255,0.2); color: #F0F0F0; font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; text-align: center; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 24px; outline: none;"
+                       style="width: 100%; box-sizing: border-box; padding: 16px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,255,255,0.2); color: #F0F0F0; font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; text-align: center; text-transform: uppercase; letter-spacing: 2px; outline: none;"
                        onfocus="this.style.borderColor='rgba(0,255,255,0.6)'"
                        onblur="this.style.borderColor='rgba(0,255,255,0.2)'">
                        
                 <button id="onboarding-connect-btn" onclick="window.PlayerShellEngine._joinTeam(document.getElementById('onboarding-invite-code').value)"
-                        style="width: 100%; max-width: 300px; padding: 18px; border-radius: 12px; background: #BFFF00; color: #0A0A0A; border: none; font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; box-shadow: 0 0 20px rgba(191,255,0,0.2); margin-bottom: 16px;">
+                        style="width: 100%; box-sizing: border-box; padding: 16px; border-radius: 12px; background: #BFFF00; color: #0A0A0A; border: none; font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; box-shadow: 0 0 20px rgba(191,255,0,0.2);">
                     CONECTAR AL EQUIPO
                 </button>
 
                 <button id="onboarding-skip-btn" onclick="window.PlayerShellEngine._skipOnboarding()"
-                        style="width: 100%; max-width: 300px; padding: 18px; border-radius: 12px; background: transparent; color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s;">
+                        style="width: 100%; box-sizing: border-box; padding: 16px; border-radius: 12px; background: transparent; color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s;">
                     CONTINUAR SIN EQUIPO
                 </button>
             </div>
@@ -394,9 +408,14 @@ window.PlayerShellEngine = {
     },
 
     _skipOnboarding: function () {
+        // Set flag to not prompt again
+        localStorage.setItem('ravix_v5_skip_onboarding', 'true');
+
         // Reconstruimos el DOM principal del shell ya que lo pisamos con innerHTML en el onboarding
         const shell = document.getElementById('player-shell');
         if (shell) {
+            shell.style.justifyContent = 'flex-start';
+            shell.style.alignItems = 'stretch';
             shell.innerHTML = '';
             const newShell = this._buildShellDOM();
             shell.innerHTML = newShell.innerHTML;
