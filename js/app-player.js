@@ -139,6 +139,10 @@ window.PlayerShellEngine = {
             console.log('[PLAYER SHELL] #app-shell del DT ocultado.');
         }
 
+        // Imposición de Estilos Base (Hard Reset en Boot)
+        document.body.style.background = '#05080f';
+        document.body.style.color = '#fff';
+
         // Ocultar también el Hub del DT
         const dtHub = document.getElementById('view-dt-hub');
         if (dtHub) {
@@ -148,6 +152,8 @@ window.PlayerShellEngine = {
         // ── 4. Activar el shell ──
         requestAnimationFrame(() => {
             shell.classList.add('ps-active');
+            shell.style.display = 'flex';
+            shell.style.opacity = '1';
         });
 
         // ── 5. Cargar datos del jugador en background ──
@@ -162,6 +168,8 @@ window.PlayerShellEngine = {
         shell.id = 'player-shell';
         shell.setAttribute('role', 'main');
         shell.setAttribute('aria-label', 'Portal del Jugador');
+        // Estilos de seguridad (Hard Reset)
+        shell.style.cssText = 'min-height: 100vh; width: 100%; display: none; opacity: 0; flex-direction: column; background: #05080f; position: absolute; top: 0; left: 0; z-index: 9999; transition: opacity 0.3s ease;';
 
         shell.innerHTML = `
             <!-- ═══ HEADER ═══ -->
@@ -358,7 +366,7 @@ window.PlayerShellEngine = {
         if (!body) return;
 
         body.innerHTML = `
-            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 80vh; padding: 20px; text-align: center;">
+            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; text-align: center; background: #05080f; width: 100%; box-sizing: border-box; position: absolute; top: 0; left: 0; z-index: 10;">
                 <div style="font-size: 2.5rem; font-weight: 900; letter-spacing: 4px; margin-bottom: 24px;">
                     RAVI<span style="color:#BFFF00;">X</span>
                 </div>
