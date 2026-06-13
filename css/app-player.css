@@ -1,0 +1,545 @@
+/*
+    RAVIX V5 — PLAYER SHELL CSS
+    Entorno exclusivo del Jugador · Mundo Atleta
+    Filosofía: Mobile-First · Ultra-Minimal · Dark Volt
+    ─────────────────────────────────────────────────
+    AISLADO: No modifica ninguna clase del DT.
+    Scope: #player-shell y sus hijos ÚNICAMENTE.
+*/
+
+/* ══════════════════════════════════════════
+   TOKENS EXCLUSIVOS DEL JUGADOR
+   Namespace: --ps-* (player shell)
+══════════════════════════════════════════ */
+#player-shell {
+    --ps-bg:         #080808;
+    --ps-surface:    #111111;
+    --ps-surface2:   #181818;
+    --ps-border:     rgba(255, 255, 255, 0.07);
+    --ps-border2:    rgba(255, 255, 255, 0.04);
+    --ps-text:       #F0F0F0;
+    --ps-muted:      rgba(255, 255, 255, 0.38);
+    --ps-accent:     #BFFF00;       /* Volt — energía, velocidad */
+    --ps-accent-dim: rgba(191, 255, 0, 0.08);
+    --ps-gold:       #D4AF37;       /* Jerarquía y logros */
+    --ps-danger:     #FF4D4D;
+    --ps-success:    #10B981;
+    --ps-header-h:   68px;
+    --ps-nav-h:      64px;
+    --ps-radius:     18px;
+    --ps-radius-sm:  12px;
+}
+
+/* ══════════════════════════════════════════
+   RESET SCOPED — No contamina el DT
+══════════════════════════════════════════ */
+#player-shell,
+#player-shell * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ══════════════════════════════════════════
+   ROOT SHELL — Ocupa la pantalla completa
+══════════════════════════════════════════ */
+#player-shell {
+    position: fixed;
+    inset: 0;
+    background: var(--ps-bg);
+    color: var(--ps-text);
+    font-family: 'Outfit', 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+    z-index: 500;
+    overflow: hidden;
+
+    /* Oculto por defecto — activado por el bifurcador */
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#player-shell.ps-active {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ══════════════════════════════════════════
+   HEADER — Sticky, minimal, identidad
+══════════════════════════════════════════ */
+.ps-header {
+    height: var(--ps-header-h);
+    background: var(--ps-surface);
+    border-bottom: 1px solid var(--ps-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+}
+
+.ps-header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ps-header-logo {
+    font-size: 1.1rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--ps-text);
+    line-height: 1;
+}
+
+.ps-header-logo span {
+    color: var(--ps-accent);
+}
+
+.ps-header-role-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--ps-accent-dim);
+    border: 1px solid rgba(191, 255, 0, 0.2);
+    border-radius: 20px;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--ps-accent);
+    text-transform: uppercase;
+}
+
+.ps-header-role-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--ps-accent);
+    animation: ps-pulse 2s ease-in-out infinite;
+}
+
+@keyframes ps-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.85); }
+}
+
+.ps-header-identity {
+    text-align: right;
+}
+
+.ps-header-name {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--ps-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 130px;
+}
+
+.ps-header-team {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--ps-muted);
+    text-transform: uppercase;
+}
+
+/* ══════════════════════════════════════════
+   SCROLL BODY — Área de contenido principal
+══════════════════════════════════════════ */
+.ps-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(var(--ps-nav-h) + env(safe-area-inset-bottom, 0px));
+    scrollbar-width: none;
+}
+
+.ps-body::-webkit-scrollbar {
+    display: none;
+}
+
+/* ══════════════════════════════════════════
+   BOOT SCREEN — "Cargando microciclo"
+══════════════════════════════════════════ */
+.ps-boot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100dvh - var(--ps-header-h) - var(--ps-nav-h));
+    gap: 28px;
+    padding: 40px 24px;
+    text-align: center;
+}
+
+.ps-boot-icon {
+    width: 72px;
+    height: 72px;
+    background: var(--ps-accent-dim);
+    border: 1px solid rgba(191, 255, 0, 0.2);
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    animation: ps-boot-glow 2.5s ease-in-out infinite;
+}
+
+@keyframes ps-boot-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(191, 255, 0, 0.1); }
+    50%       { box-shadow: 0 0 40px rgba(191, 255, 0, 0.25); }
+}
+
+.ps-boot-icon svg {
+    color: var(--ps-accent);
+}
+
+.ps-boot-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: var(--ps-accent-dim);
+    border: 1px solid rgba(191, 255, 0, 0.2);
+    border-radius: 20px;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: var(--ps-accent);
+    text-transform: uppercase;
+}
+
+.ps-boot-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--ps-text);
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+.ps-boot-title em {
+    display: block;
+    font-style: normal;
+    color: var(--ps-accent);
+}
+
+.ps-boot-desc {
+    font-size: 0.88rem;
+    color: var(--ps-muted);
+    line-height: 1.6;
+    max-width: 280px;
+}
+
+/* Spinner de carga */
+.ps-spinner {
+    width: 32px;
+    height: 32px;
+    border: 2.5px solid rgba(191, 255, 0, 0.15);
+    border-top-color: var(--ps-accent);
+    border-radius: 50%;
+    animation: ps-spin 0.75s linear infinite;
+}
+
+@keyframes ps-spin {
+    to { transform: rotate(360deg); }
+}
+
+.ps-boot-status {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    color: var(--ps-muted);
+    text-transform: uppercase;
+    animation: ps-blink 1.8s ease-in-out infinite;
+}
+
+@keyframes ps-blink {
+    0%, 100% { opacity: 0.5; }
+    50%       { opacity: 1; }
+}
+
+/* ══════════════════════════════════════════
+   BOTTOM NAV — Mobile-First Navigation
+══════════════════════════════════════════ */
+.ps-bottom-nav {
+    height: var(--ps-nav-h);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--ps-surface);
+    border-top: 1px solid var(--ps-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-left: 8px;
+    padding-right: 8px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+}
+
+.ps-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex: 1;
+    height: 52px;
+    background: none;
+    border: none;
+    border-radius: var(--ps-radius-sm);
+    cursor: pointer;
+    transition: background 0.2s;
+    color: var(--ps-muted);
+    padding: 6px 4px;
+    font-family: 'Outfit', sans-serif;
+    position: relative;
+}
+
+.ps-nav-btn:active {
+    background: var(--ps-border);
+    transform: scale(0.96);
+}
+
+.ps-nav-btn.ps-nav-active {
+    color: var(--ps-accent);
+}
+
+.ps-nav-btn.ps-nav-active::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 2px;
+    background: var(--ps-accent);
+    border-radius: 2px;
+}
+
+.ps-nav-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.ps-nav-label {
+    font-size: 0.55rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+/* ══════════════════════════════════════════
+   CARDS GENÉRICAS
+══════════════════════════════════════════ */
+.ps-card {
+    background: var(--ps-surface);
+    border: 1px solid var(--ps-border);
+    border-radius: var(--ps-radius);
+    overflow: hidden;
+    transition: border-color 0.2s;
+    animation: ps-card-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes ps-card-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.ps-card:nth-child(2) { animation-delay: 0.06s; }
+.ps-card:nth-child(3) { animation-delay: 0.12s; }
+.ps-card:nth-child(4) { animation-delay: 0.18s; }
+
+.ps-card-inner {
+    padding: 20px;
+}
+
+.ps-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.ps-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.1rem;
+}
+
+.ps-card-icon--volt { background: rgba(191, 255, 0, 0.1); color: var(--ps-accent); }
+.ps-card-icon--gold { background: rgba(212, 175, 55, 0.1); color: var(--ps-gold); }
+.ps-card-icon--danger { background: rgba(255, 77, 77, 0.1); color: var(--ps-danger); }
+
+.ps-card-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--ps-text);
+    letter-spacing: -0.2px;
+}
+
+.ps-card-subtitle {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--ps-muted);
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+/* ══════════════════════════════════════════
+   STAT PILLS — KPIs del jugador
+══════════════════════════════════════════ */
+.ps-stat-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.ps-stat-pill {
+    flex: 1;
+    background: var(--ps-surface2);
+    border: 1px solid var(--ps-border2);
+    border-radius: var(--ps-radius-sm);
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ps-stat-val {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--ps-text);
+    line-height: 1;
+    letter-spacing: -0.5px;
+}
+
+.ps-stat-val--volt  { color: var(--ps-accent); }
+.ps-stat-val--gold  { color: var(--ps-gold); }
+.ps-stat-val--muted { color: var(--ps-muted); }
+
+.ps-stat-label {
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: var(--ps-muted);
+    text-transform: uppercase;
+}
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+.ps-toast {
+    position: fixed;
+    bottom: calc(var(--ps-nav-h) + 16px);
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--ps-surface);
+    border: 1px solid rgba(191, 255, 0, 0.25);
+    color: var(--ps-text);
+    padding: 12px 20px;
+    border-radius: 28px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    white-space: nowrap;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+}
+
+.ps-toast.ps-toast--visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ══════════════════════════════════════════
+   UTILITY — Layout helpers
+══════════════════════════════════════════ */
+.ps-section {
+    padding: 20px 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ps-section:last-child {
+    padding-bottom: 16px;
+}
+
+.ps-section-label {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    color: var(--ps-muted);
+    text-transform: uppercase;
+}
+
+.ps-divider {
+    height: 1px;
+    background: var(--ps-border);
+    margin: 0 16px;
+}
+
+/* ══════════════════════════════════════════
+   EMPTY STATE
+══════════════════════════════════════════ */
+.ps-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.ps-empty-icon {
+    font-size: 2rem;
+    opacity: 0.4;
+}
+
+.ps-empty-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ps-text);
+}
+
+.ps-empty-desc {
+    font-size: 0.8rem;
+    color: var(--ps-muted);
+    line-height: 1.5;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE GUARDRAIL — Tablet breakpoint
+   El entorno del jugador siempre es Mobile-First.
+   En pantallas grandes se centra y limita el ancho.
+══════════════════════════════════════════ */
+@media (min-width: 600px) {
+    #player-shell {
+        max-width: 420px;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        border-left: 1px solid var(--ps-border);
+        border-right: 1px solid var(--ps-border);
+    }
+}

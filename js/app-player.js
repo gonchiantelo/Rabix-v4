@@ -1,27 +1,40 @@
 /*
-    RAVIX V5 — ATHLETE DASHBOARD ENGINE (PREMIUM)
-    Motor del Dashboard del Atleta - Laboratorio de Rendimiento
-    Cometti Protocol × Foster Method × Hooper Scale
+    RAVIX V5 — APP-PLAYER.JS
+    ─────────────────────────────────────────────────────────────
+    ARCHIVO COMPLETAMENTE AISLADO DEL DT.
+
+    CONTIENE:
+      1. PlayerEngine    → Vista del DT: lista de atletas del equipo
+                           (vive dentro del #app-shell del DT, NO toca el #player-shell)
+
+      2. PlayerShellEngine → Motor exclusivo del Jugador.
+                             Construye y gestiona el #player-shell (Mobile-First).
+                             Lee de: team_roster, player_wellness, player_attendance.
+                             JAMÁS inyecta HTML en vistas tácticas del DT.
+    ─────────────────────────────────────────────────────────────
 */
 
-/* ─────────────────────────────────────────
-   PLAYER ENGINE (DT View — lista de atletas)
-───────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════
+   1. PLAYER ENGINE — Vista del DT (lista de atletas)
+      Vive dentro del #app-shell del DT.
+      No importa ninguna clase del entorno jugador.
+══════════════════════════════════════════════════════════ */
 window.PlayerEngine = {
-    init: function() {
-        if (window.App && window.App.currentRole === 'athlete') {
-            // El path de atleta es manejado por AthleteApp, no PlayerEngine
-            if (window.AthleteApp) window.AthleteApp.init();
+    init: function () {
+        // Si el rol activo es jugador, redirigir al motor correcto
+        if (window.App && (window.App.currentRole === 'jugador' || window.App.currentRole === 'player')) {
+            if (window.PlayerShellEngine) window.PlayerShellEngine.boot();
             return;
         }
-        // Ocultar solo las secciones que no son el destino
+
+        // Ruta DT: mostrar la vista de atletas dentro del app-shell
         const targetId = 'view-athletes';
         const target = document.getElementById(targetId);
         if (!target) {
-            console.error('[ROUTER ERROR] No se encontró la vista: #' + targetId);
-            alert('[RAVIX ROUTER] La vista #' + targetId + ' no existe en el DOM.');
+            console.error('[PLAYER ENGINE] Vista DT #' + targetId + ' no encontrada.');
             return;
         }
+
         document.querySelectorAll('.view-section').forEach(s => {
             if (s.id !== targetId) s.style.display = 'none';
         });
@@ -29,84 +42,19 @@ window.PlayerEngine = {
         this.loadAthletes();
     },
 
-    saveReadiness: async function() {
-        const sleep = parseInt(document.getElementById('input-sleep').value);
-        const fatigue = parseInt(document.getElementById('input-fatigue').value);
-        // Guardamos estado original del botón para restaurar después
-        const originalText = btn ? btn.textContent : '';
-        if (btn) {
-            btn.textContent = "Registrando...";
-            btn.style.opacity = "0.7";
-            btn.disabled = true;
-        }
-
-        // Validación única
-        if (!sleep || !fatigue) {
-            alert("Por favor, completá ambos valores de la escala de Hooper.");
-            // Restauramos botón antes de abortar
-            if (btn) {
-                btn.textContent = originalText;
-                btn.style.opacity = "1";
-                btn.disabled = false;
-            }
-            return;
-        }
-
-        // Feedback visual de carga (already set above, no need to repeat)
-        // const originalText = btn.textContent; // removed duplicate
-        // btn.textContent = "Registrando...";
-        // btn.style.opacity = "0.7";
-
-        // Obtenemos el ID del atleta logueado (Asegurate de que currentUser exista en tu app)
-        const user = window.App.currentUser || (await window.supabase.auth.getUser()).data.user; 
-        const userId = user ? user.id : null;
-
-        if (!userId) {
-            console.error("No hay usuario logueado");
-            return;
-        }
-
-        // Usamos tu nuevo ORM súper estable para insertar los datos
-        const { data, error } = await window.supabase
-            .from('athlete_readiness') // Asegurate de que esta tabla exista en Supabase
-            .insert([
-                { 
-                    athlete_id: userId, 
-                    sleep_quality: sleep, 
-                    fatigue_level: fatigue,
-                    date: new Date().toISOString().split('T')[0] // Guarda la fecha "YYYY-MM-DD"
-                }
-            ]);
-
-        if (error) {
-            console.error("Supa Error:", error.message, error.details, error.hint);
-            alert("Faltan datos requeridos o hubo un error al guardar.");
-            if (btn) {
-                btn.textContent = originalText;
-                btn.style.opacity = "1";
-                btn.disabled = false;
-            }
-            return;
-        }
-
-        // Éxito: Feedback visual premium
-        
-        setTimeout(() => {
-            btn.textContent = originalText;
-            btn.style.background = "#1a1a1e"; // Vuelve al oscuro
-            btn.style.opacity = "1";
-        }, 2500);
-    },
-
-    loadAthletes: async function() {
-        const uid   = localStorage.getItem('ravix_v5_uid');
-        const token = localStorage.getItem('ravix_token');
-        const grid  = document.getElementById('athlete-grid');
+    loadAthletes: async function () {
+        const uid  = localStorage.getItem('ravix_v5_uid');
+        const grid = document.getElementById('athlete-grid');
         if (!grid) return;
 
         grid.innerHTML = '<p class="aw-empty-state">Cargando atletas...</p>';
         try {
-            const { data: athletes, error } = await window.supabase.from('profiles_athlete').select('*').eq('coach_id', uid).order('created_at', { ascending: false });
+            const { data: athletes, error } = await window.supabase
+                .from('profiles_athlete')
+                .select('*')
+                .eq('coach_id', uid)
+                .order('created_at', { ascending: false });
+
             if (error || !Array.isArray(athletes) || athletes.length === 0) {
                 grid.innerHTML = `
                     <div class="aw-empty-state">
@@ -123,7 +71,7 @@ window.PlayerEngine = {
         }
     },
 
-    render: function(athletes) {
+    render: function (athletes) {
         const grid = document.getElementById('athlete-grid');
         if (!grid) return;
         grid.innerHTML = athletes.map(a => `
@@ -144,12 +92,485 @@ window.PlayerEngine = {
 };
 
 
-/* ─────────────────────────────────────────
-   ATHLETE APP — MOTOR PRINCIPAL DEL DASHBOARD
-───────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════
+   2. PLAYER SHELL ENGINE — Motor exclusivo del Jugador
+      Gestiona el #player-shell (Mobile-First).
+      AISLADO: Jamás toca #app-shell ni vistas del DT.
+      Tablas Supabase: team_roster, player_wellness, player_attendance
+══════════════════════════════════════════════════════════ */
+window.PlayerShellEngine = {
+
+    /* ── Estado interno ── */
+    state: {
+        user: null,     // Perfil desde team_roster
+        wellness: null, // Último registro de player_wellness
+        attendance: [], // Historial de player_attendance
+        activeTab: 'home',
+    },
+
+    /* ═════════════════════════════════
+       BOOT — Punto de entrada único
+    ════════════════════════════════= */
+    boot: function () {
+        console.log('[PLAYER SHELL] Booting Mundo Atleta...');
+
+        // ── 1. Garantizar que el CSS exclusivo esté inyectado ──
+        if (!document.querySelector('link[href="css/app-player.css"]')) {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'css/app-player.css';
+            document.head.appendChild(link);
+            console.log('[PLAYER SHELL] CSS inyectado: css/app-player.css');
+        }
+
+        // ── 2. Garantizar que el #player-shell exista en el DOM ──
+        let shell = document.getElementById('player-shell');
+        if (!shell) {
+            shell = this._buildShellDOM();
+            document.body.appendChild(shell);
+            console.log('[PLAYER SHELL] #player-shell creado e insertado en el DOM.');
+        }
+
+        // ── 3. BIFURCACIÓN DE ROLES: Ocultar el #app-shell del DT ──
+        const dtAppShell = document.getElementById('app-shell');
+        if (dtAppShell) {
+            dtAppShell.style.display = 'none';
+            dtAppShell.setAttribute('aria-hidden', 'true');
+            console.log('[PLAYER SHELL] #app-shell del DT ocultado.');
+        }
+
+        // Ocultar también el Hub del DT
+        const dtHub = document.getElementById('view-dt-hub');
+        if (dtHub) {
+            dtHub.classList.remove('vista-activa');
+        }
+
+        // ── 4. Activar el shell ──
+        requestAnimationFrame(() => {
+            shell.classList.add('ps-active');
+        });
+
+        // ── 5. Cargar datos del jugador en background ──
+        this._fetchPlayerData();
+    },
+
+    /* ═════════════════════════════════
+       CONSTRUCCIÓN DEL HTML BASE
+    ════════════════════════════════= */
+    _buildShellDOM: function () {
+        const shell = document.createElement('div');
+        shell.id = 'player-shell';
+        shell.setAttribute('role', 'main');
+        shell.setAttribute('aria-label', 'Portal del Jugador');
+
+        shell.innerHTML = `
+            <!-- ═══ HEADER ═══ -->
+            <header class="ps-header" id="ps-header">
+                <div class="ps-header-brand">
+                    <div class="ps-header-logo">RAVI<span>X</span></div>
+                    <div class="ps-header-role-pill">
+                        <span class="ps-header-role-dot"></span>
+                        Jugador
+                    </div>
+                </div>
+                <div class="ps-header-identity">
+                    <div class="ps-header-name" id="ps-player-name">—</div>
+                    <div class="ps-header-team" id="ps-player-team">—</div>
+                </div>
+            </header>
+
+            <!-- ═══ SCROLL BODY ═══ -->
+            <div class="ps-body" id="ps-body">
+                <!-- Vista inicial: Boot Screen -->
+                <div class="ps-boot" id="ps-boot-screen">
+                    <div class="ps-boot-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        </svg>
+                    </div>
+
+                    <div>
+                        <div class="ps-boot-badge">Mundo Atleta · RAVIX V5</div>
+                    </div>
+
+                    <div>
+                        <h1 class="ps-boot-title">
+                            Bienvenido al Laboratorio.
+                            <em>Cargando tu microciclo...</em>
+                        </h1>
+                    </div>
+
+                    <p class="ps-boot-desc">
+                        Conectando con tu equipo y sincronizando
+                        los datos de rendimiento del día.
+                    </p>
+
+                    <div class="ps-spinner"></div>
+
+                    <div class="ps-boot-status" id="ps-boot-status">
+                        INICIALIZANDO PROTOCOLO COMETTI
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ BOTTOM NAV ═══ -->
+            <nav class="ps-bottom-nav" id="ps-bottom-nav" aria-label="Navegación principal del jugador">
+                <button class="ps-nav-btn ps-nav-active" id="ps-nav-home"
+                        onclick="window.PlayerShellEngine.switchTab('home', this)"
+                        aria-label="Inicio" aria-current="page">
+                    <span class="ps-nav-icon">⚡</span>
+                    <span class="ps-nav-label">Inicio</span>
+                </button>
+                <button class="ps-nav-btn" id="ps-nav-wellness"
+                        onclick="window.PlayerShellEngine.switchTab('wellness', this)"
+                        aria-label="Wellness">
+                    <span class="ps-nav-icon">🔋</span>
+                    <span class="ps-nav-label">Wellness</span>
+                </button>
+                <button class="ps-nav-btn" id="ps-nav-attendance"
+                        onclick="window.PlayerShellEngine.switchTab('attendance', this)"
+                        aria-label="Asistencia">
+                    <span class="ps-nav-icon">📅</span>
+                    <span class="ps-nav-label">Asistencia</span>
+                </button>
+                <button class="ps-nav-btn" id="ps-nav-profile"
+                        onclick="window.PlayerShellEngine.switchTab('profile', this)"
+                        aria-label="Mi Perfil">
+                    <span class="ps-nav-icon">👤</span>
+                    <span class="ps-nav-label">Perfil</span>
+                </button>
+            </nav>
+        `;
+
+        return shell;
+    },
+
+    /* ═════════════════════════════════
+       FETCH — Datos desde Supabase
+       Tablas: team_roster, player_wellness, player_attendance
+    ════════════════════════════════= */
+    _fetchPlayerData: async function () {
+        const uid = localStorage.getItem('ravix_v5_uid');
+        if (!uid) {
+            this._updateBootStatus('Error: Sesión no encontrada.');
+            return;
+        }
+
+        try {
+            this._updateBootStatus('LEYENDO ROSTER DEL EQUIPO...');
+
+            // ── Leer perfil desde team_roster ──
+            const { data: rosterRows, error: rosterErr } = await window.supabase
+                .from('team_roster')
+                .select('*')
+                .eq('user_id', uid)
+                .limit(1);
+
+            if (rosterErr) throw new Error('team_roster: ' + rosterErr.message);
+
+            const playerRow = rosterRows && rosterRows.length > 0 ? rosterRows[0] : null;
+            this.state.user = playerRow;
+
+            // ── Actualizar header con identidad ──
+            this._hydrateHeader(playerRow);
+
+            this._updateBootStatus('CARGANDO WELLNESS DEL DÍA...');
+
+            // ── Leer último registro de wellness ──
+            const today = new Date().toISOString().split('T')[0];
+            const { data: wellnessRows, error: wellnessErr } = await window.supabase
+                .from('player_wellness')
+                .select('*')
+                .eq('player_id', uid)
+                .eq('fecha', today)
+                .limit(1);
+
+            if (!wellnessErr && wellnessRows && wellnessRows.length > 0) {
+                this.state.wellness = wellnessRows[0];
+            }
+
+            this._updateBootStatus('VERIFICANDO ASISTENCIA...');
+
+            // ── Leer últimos 7 registros de asistencia ──
+            const { data: attendRows, error: attendErr } = await window.supabase
+                .from('player_attendance')
+                .select('*')
+                .eq('player_id', uid)
+                .order('fecha', { ascending: false })
+                .limit(7);
+
+            if (!attendErr && attendRows) {
+                this.state.attendance = attendRows;
+            }
+
+            this._updateBootStatus('MICROCICLO LISTO ✓');
+
+            // ── Transición al home view ──
+            setTimeout(() => this._renderHomeView(), 600);
+
+        } catch (err) {
+            console.error('[PLAYER SHELL] Error cargando datos:', err);
+            this._updateBootStatus('⚠️ Error de conexión. Reintentando...');
+            // Mostrar home vacío igualmente para no bloquear al usuario
+            setTimeout(() => this._renderHomeView(), 1500);
+        }
+    },
+
+    /* ═════════════════════════════════
+       HIDRATACIÓN DEL HEADER
+    ════════════════════════════════= */
+    _hydrateHeader: function (playerRow) {
+        const nameEl = document.getElementById('ps-player-name');
+        const teamEl = document.getElementById('ps-player-team');
+
+        if (nameEl) {
+            const name = playerRow?.full_name
+                || playerRow?.nombre_completo
+                || window.CurrentUser?.full_name
+                || 'Atleta';
+            nameEl.textContent = name.split(' ')[0];
+        }
+
+        if (teamEl) {
+            const team = playerRow?.team_name
+                || window.CurrentTeam?.name
+                || playerRow?.equipo
+                || 'Mi Equipo';
+            teamEl.textContent = team.toUpperCase();
+        }
+    },
+
+    /* ═════════════════════════════════
+       RENDER — Vista HOME
+    ════════════════════════════════= */
+    _renderHomeView: function () {
+        const body = document.getElementById('ps-body');
+        if (!body) return;
+
+        const player = this.state.user;
+        const wellness = this.state.wellness;
+        const attendance = this.state.attendance;
+
+        const firstName = player?.full_name?.split(' ')[0]
+            || player?.nombre_completo?.split(' ')[0]
+            || 'Atleta';
+
+        const position = player?.position || player?.posicion || '—';
+        const sport    = player?.sport    || player?.deporte   || '—';
+
+        const wellnessDone = !!wellness;
+        const attendCount  = attendance.length;
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('es-ES', {
+            weekday: 'long', day: 'numeric', month: 'long'
+        }).toUpperCase();
+
+        body.innerHTML = `
+            <!-- Date header -->
+            <div class="ps-section" style="padding-top: 24px;">
+                <p style="font-size: 0.62rem; font-weight: 800; letter-spacing: 3px;
+                          color: rgba(191,255,0,0.6); text-transform: uppercase;">${dateStr}</p>
+                <h2 style="font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px;
+                           color: #F0F0F0; line-height: 1.2;">
+                    Buenas, <span style="color: #BFFF00;">${firstName}</span>
+                </h2>
+                <p style="font-size: 0.72rem; font-weight: 700; letter-spacing: 2px;
+                          color: rgba(255,255,255,0.3); text-transform: uppercase;">
+                    ${sport} · ${position}
+                </p>
+            </div>
+
+            <!-- KPI Pills -->
+            <div class="ps-section">
+                <div class="ps-stat-row">
+                    <div class="ps-stat-pill">
+                        <span class="ps-stat-val ps-stat-val--volt">${attendCount}</span>
+                        <span class="ps-stat-label">Asistencias</span>
+                    </div>
+                    <div class="ps-stat-pill">
+                        <span class="ps-stat-val ${wellnessDone ? 'ps-stat-val--volt' : ''}">${wellnessDone ? '✓' : '—'}</span>
+                        <span class="ps-stat-label">Wellness Hoy</span>
+                    </div>
+                    <div class="ps-stat-pill">
+                        <span class="ps-stat-val ps-stat-val--muted">—</span>
+                        <span class="ps-stat-label">Carga Semanal</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ps-divider"></div>
+
+            <!-- Microcycle Card -->
+            <div class="ps-section">
+                <span class="ps-section-label">Microciclo Activo</span>
+                <div class="ps-card">
+                    <div class="ps-card-inner">
+                        <div class="ps-card-header">
+                            <div class="ps-card-icon ps-card-icon--volt">⚡</div>
+                            <div>
+                                <div class="ps-card-title">Sesión de Hoy</div>
+                                <div class="ps-card-subtitle">Protocolo del DT</div>
+                            </div>
+                        </div>
+                        <div id="ps-today-session" style="text-align: center; padding: 20px 0;">
+                            <div class="ps-empty-icon">📭</div>
+                            <div class="ps-card-subtitle" style="margin-top: 8px;">
+                                Sin sesión asignada para hoy.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wellness Quick-Check -->
+            <div class="ps-section">
+                <span class="ps-section-label">Estado del día</span>
+                <div class="ps-card" id="ps-wellness-card">
+                    <div class="ps-card-inner">
+                        <div class="ps-card-header">
+                            <div class="ps-card-icon ps-card-icon--gold">🔋</div>
+                            <div>
+                                <div class="ps-card-title">Wellness</div>
+                                <div class="ps-card-subtitle">ESCALA DE HOOPER</div>
+                            </div>
+                        </div>
+                        ${wellnessDone
+                            ? `<div style="display:flex; align-items:center; gap:10px; padding:12px;
+                                          background:rgba(191,255,0,0.05); border:1px solid rgba(191,255,0,0.15);
+                                          border-radius:12px;">
+                                   <span style="font-size:1.5rem;">✅</span>
+                                   <div>
+                                       <div style="font-size:0.85rem; font-weight:700; color:#F0F0F0;">Reporte enviado</div>
+                                       <div style="font-size:0.65rem; font-weight:600; color:rgba(255,255,255,0.4); margin-top:2px;">Hoy ya registraste tu estado.</div>
+                                   </div>
+                               </div>`
+                            : `<button onclick="window.PlayerShellEngine.switchTab('wellness', null)"
+                                       style="width:100%; padding:14px; background:rgba(191,255,0,0.1);
+                                              border:1px solid rgba(191,255,0,0.25); border-radius:12px;
+                                              color:#BFFF00; font-family:'Outfit',sans-serif; font-size:0.85rem;
+                                              font-weight:800; letter-spacing:1px; cursor:pointer;
+                                              text-transform:uppercase; transition:all 0.2s;">
+                                   Registrar Estado de Hoy →
+                               </button>`
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance recent -->
+            ${attendance.length > 0 ? `
+            <div class="ps-section" style="padding-bottom: 16px;">
+                <span class="ps-section-label">Asistencia Reciente</span>
+                <div class="ps-card">
+                    <div class="ps-card-inner">
+                        ${attendance.slice(0, 5).map(a => `
+                            <div style="display:flex; justify-content:space-between; align-items:center;
+                                        padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+                                <span style="font-size:0.82rem; font-weight:600; color:rgba(255,255,255,0.6);">
+                                    ${a.fecha || '—'}
+                                </span>
+                                <span style="font-size:0.72rem; font-weight:800; letter-spacing:1px;
+                                             color:${a.presente ? '#10B981' : '#FF4D4D'};">
+                                    ${a.presente ? 'PRESENTE' : 'AUSENTE'}
+                                </span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>` : ''}
+        `;
+
+        this.state.activeTab = 'home';
+    },
+
+    /* ═════════════════════════════════
+       NAVEGACIÓN DE TABS
+    ════════════════════════════════= */
+    switchTab: function (tabId, btnEl) {
+        // Actualizar estado visual del nav
+        document.querySelectorAll('.ps-nav-btn').forEach(b => {
+            b.classList.remove('ps-nav-active');
+            b.removeAttribute('aria-current');
+        });
+
+        if (btnEl) {
+            btnEl.classList.add('ps-nav-active');
+            btnEl.setAttribute('aria-current', 'page');
+        } else {
+            // Activar por tabId si no hay elemento
+            const navBtn = document.getElementById('ps-nav-' + tabId);
+            if (navBtn) {
+                navBtn.classList.add('ps-nav-active');
+                navBtn.setAttribute('aria-current', 'page');
+            }
+        }
+
+        switch (tabId) {
+            case 'home':
+                this._renderHomeView();
+                break;
+            case 'wellness':
+                this._showComingSoon('🔋', 'Wellness', 'Registra tu estado físico diario (Hooper Scale). Próximamente.');
+                break;
+            case 'attendance':
+                this._showComingSoon('📅', 'Asistencia', 'Historial completo de presencias y ausencias. Próximamente.');
+                break;
+            case 'profile':
+                this._showComingSoon('👤', 'Mi Perfil', 'Configuración de tu perfil y datos biométricos. Próximamente.');
+                break;
+            default:
+                this._renderHomeView();
+        }
+
+        this.state.activeTab = tabId;
+    },
+
+    /* ═════════════════════════════════
+       HELPERS
+    ════════════════════════════════= */
+    _updateBootStatus: function (msg) {
+        const el = document.getElementById('ps-boot-status');
+        if (el) el.textContent = msg;
+    },
+
+    _showComingSoon: function (icon, title, desc) {
+        const body = document.getElementById('ps-body');
+        if (!body) return;
+        body.innerHTML = `
+            <div class="ps-boot" style="min-height: calc(100dvh - 132px);">
+                <div class="ps-boot-icon" style="font-size: 2rem;">${icon}</div>
+                <div>
+                    <div class="ps-boot-badge">Módulo en Construcción</div>
+                </div>
+                <h2 class="ps-boot-title">${title}</h2>
+                <p class="ps-boot-desc">${desc}</p>
+                <button onclick="window.PlayerShellEngine.switchTab('home', null)"
+                        style="padding:12px 28px; background:rgba(191,255,0,0.1);
+                               border:1px solid rgba(191,255,0,0.25); border-radius:12px;
+                               color:#BFFF00; font-family:'Outfit',sans-serif; font-size:0.82rem;
+                               font-weight:800; letter-spacing:1px; cursor:pointer; text-transform:uppercase;">
+                    ← Volver al Inicio
+                </button>
+            </div>
+        `;
+    },
+
+    logout: function () {
+        localStorage.clear();
+        location.reload();
+    }
+};
+
+
+/* ══════════════════════════════════════════════════════════
+   3. ATHLETE APP — Motor legacy del dashboard atleta
+      Conservado para compatibilidad con #view-athlete-dashboard
+      en index.html (path antiguo). No toca el #player-shell.
+══════════════════════════════════════════════════════════ */
 window.AthleteApp = {
 
-    /* ── Estado interno del día ── */
     state: {
         dailyLog: {
             session_type: 'Entrenamiento Club',
@@ -166,143 +587,86 @@ window.AthleteApp = {
         currentRegime: 'Concéntrico',
     },
 
-    /* ════════════════════
-       INICIALIZACIÓN
-    ═══════════════════ */
-    init: function() {
-        // ── FAILSAFE: verificar vista destino ANTES de ocultar nada ──
+    init: function () {
         const targetId = 'view-athlete-dashboard';
         const view = document.getElementById(targetId);
         if (!view) {
             console.error('[ROUTER ERROR] No se encontró la vista: #' + targetId);
-            alert(
-                '[RAVIX ROUTER] La vista #' + targetId + ' no existe en el DOM.\n' +
-                'La transición fue abortada para no dejar pantalla en blanco.'
-            );
             return;
         }
 
-        // Ocultar el resto de secciones (sin tocar la destino)
         document.querySelectorAll('.view-section').forEach(s => {
             if (s.id !== targetId) s.style.display = 'none';
         });
 
-        // Mostrar dashboard del atleta
-        view.style.display = 'flex'; // usa flex para el layout columna
+        view.style.display = 'flex';
 
         this.setupDate();
         this.setupUserProfile();
         this.setupDailyLogInteractions();
         this.setupStrengthInteractions();
-
-        // Readiness inicial animado con delay
         setTimeout(() => this.updateReadiness(null), 400);
     },
 
-    /* ─── Fecha y saludo ─── */
-    setupDate: function() {
+    setupDate: function () {
         const el = document.getElementById('ad-date');
         if (!el) return;
         const now = new Date();
-        const options = { weekday: 'long', day: 'numeric', month: 'long' };
-        el.textContent = now.toLocaleDateString('es-ES', options).toUpperCase();
+        el.textContent = now.toLocaleDateString('es-ES', {
+            weekday: 'long', day: 'numeric', month: 'long'
+        }).toUpperCase();
     },
 
-    /* ─── Perfil de usuario ─── */
-    setupUserProfile: function() {
+    setupUserProfile: function () {
         const user = window.CurrentUser;
         if (!user) return;
-
         const nameEl = document.getElementById('ad-user-name');
-        if (nameEl && user.full_name) {
-            nameEl.textContent = user.full_name.split(' ')[0];
-        }
-
+        if (nameEl && user.full_name) nameEl.textContent = user.full_name.split(' ')[0];
         const sportEl = document.getElementById('ad-sport-tag');
         if (sportEl && user.sport) {
             sportEl.textContent = `${user.sport.toUpperCase()}${user.position ? ' · ' + user.position.toUpperCase() : ''}`;
         }
     },
 
-    /* ════════════════════
-       READINESS RING
-    ═══════════════════ */
-    updateReadiness: function(score) {
+    updateReadiness: function (score) {
         const scoreEl  = document.getElementById('ad-readiness-score');
         const statusEl = document.getElementById('adp-ring-status');
         const ring     = document.getElementById('adp-ring-fill');
-
         if (!ring) return;
 
-        // Circunferencia: 2π × r = 2π × 42 ≈ 263.9
-        const CIRC = 2 * Math.PI * 42; // 263.9
+        const CIRC = 2 * Math.PI * 42;
 
         if (score === null) {
-            if (scoreEl)  scoreEl.textContent = '—';
+            if (scoreEl)  scoreEl.textContent  = '—';
             if (statusEl) statusEl.textContent = 'SIN DATOS';
-            ring.style.strokeDashoffset = CIRC; // vacío
+            ring.style.strokeDashoffset = CIRC;
             return;
         }
 
         this.state.readiness = score;
         const clamped = Math.max(0, Math.min(100, score));
         const offset  = CIRC - (clamped / 100) * CIRC;
-
         ring.style.strokeDashoffset = offset;
 
         if (scoreEl) {
-            // Animación numérica tipo contador
             let current = parseInt(scoreEl.textContent) || 0;
             const step = Math.ceil(Math.abs(clamped - current) / 20);
             const timer = setInterval(() => {
-                if (current < clamped) {
-                    current = Math.min(current + step, clamped);
-                } else if (current > clamped) {
-                    current = Math.max(current - step, clamped);
-                } else {
-                    clearInterval(timer);
-                }
+                if (current < clamped)      current = Math.min(current + step, clamped);
+                else if (current > clamped) current = Math.max(current - step, clamped);
+                else                        clearInterval(timer);
                 scoreEl.textContent = current;
             }, 30);
         }
 
         if (statusEl) {
-            if (score >= 80) {
-                statusEl.textContent = 'ÓPTIMO';
-                statusEl.style.color = 'rgba(16,185,129,0.9)';
-            } else if (score >= 60) {
-                statusEl.textContent = 'MODERADO';
-                statusEl.style.color = 'rgba(245,158,11,0.9)';
-            } else {
-                statusEl.textContent = 'PRECAUCIÓN';
-                statusEl.style.color = 'rgba(239,68,68,0.9)';
-            }
+            if (score >= 80)      { statusEl.textContent = 'ÓPTIMO';    statusEl.style.color = 'rgba(16,185,129,0.9)'; }
+            else if (score >= 60) { statusEl.textContent = 'MODERADO';  statusEl.style.color = 'rgba(245,158,11,0.9)'; }
+            else                  { statusEl.textContent = 'PRECAUCIÓN'; statusEl.style.color = 'rgba(239,68,68,0.9)'; }
         }
     },
 
-    /* ─── Calcula el Readiness a partir del estado ─── */
-    _calcReadiness: function() {
-        const w = this.state.wellness;
-        if (!w.submitted) return null;
-
-        // Sleep (1–4): 1=Mala→40pts, 4=Excelente→100pts
-        const sleepScore = [0, 40, 65, 82, 100][w.sleep] || 65;
-
-        // Stress invertido (1=Bajo→100, 10=Extremo→10)
-        const stressScore = Math.round(110 - (w.stress * 10));
-
-        // Hooper invertido (1=Sin dolor→100, 7=Extremo→10)
-        const hooperScore = Math.round(100 - ((w.hooper - 1) * 15));
-
-        const avg = Math.round((sleepScore + stressScore + hooperScore) / 3);
-        return Math.max(10, Math.min(100, avg));
-    },
-
-    /* ════════════════════
-       DAILY LOG — SETUP & SUBMIT
-    ═══════════════════ */
-    setupDailyLogInteractions: function() {
-        // Segmented Control (Tipo de Sesión)
+    setupDailyLogInteractions: function () {
         const segBtns = document.querySelectorAll('#session-type-group .adp-seg-btn');
         segBtns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -312,7 +676,6 @@ window.AthleteApp = {
             });
         });
 
-        // Hooper Blocks
         const hooperRows = document.querySelectorAll('.adp-hooper-row');
         hooperRows.forEach(row => {
             const metric = row.dataset.metric;
@@ -325,8 +688,7 @@ window.AthleteApp = {
                 });
             });
         });
-        
-        // Duration Input Sync
+
         const durationInput = document.getElementById('input-duration');
         if (durationInput) {
             durationInput.addEventListener('input', () => {
@@ -335,17 +697,16 @@ window.AthleteApp = {
         }
     },
 
-    adjustDuration: function(diff) {
+    adjustDuration: function (diff) {
         const input = document.getElementById('input-duration');
         if (input) {
             let current = parseInt(input.value) || 0;
-            current = Math.max(0, current + diff);
-            input.value = current;
-            this.state.dailyLog.duration_min = current;
+            input.value = Math.max(0, current + diff);
+            this.state.dailyLog.duration_min = parseInt(input.value);
         }
     },
 
-    updateRangeDisplay: function(rangeId, displayId, value, suffix) {
+    updateRangeDisplay: function (rangeId, displayId, value, suffix) {
         const disp = document.getElementById(displayId);
         if (disp) disp.textContent = `${value} ${suffix}`;
         if (rangeId === 'input-rpe') {
@@ -353,7 +714,7 @@ window.AthleteApp = {
         }
     },
 
-    submitDailyLog: async function() {
+    submitDailyLog: async function () {
         const btn = document.getElementById('btn-submit-daily');
         if (btn) {
             btn.disabled = true;
@@ -362,35 +723,27 @@ window.AthleteApp = {
         }
 
         try {
-            // Get from window.CurrentUser or window.App.currentUser
             const user = window.CurrentUser || window.App?.currentUser;
-            if (!user) throw new Error("No hay usuario logueado.");
-
-            const teamId = user.team_id || window.CurrentTeam?.id; 
+            if (!user) throw new Error('No hay usuario logueado.');
 
             const payload = {
-                player_id: user.id,
-                team_id: teamId,
-                fecha: new Date().toISOString().split('T')[0], // YYYY-MM-DD
-                session_type: this.state.dailyLog.session_type,
-                duration_min: this.state.dailyLog.duration_min,
-                rpe_score: this.state.dailyLog.rpe_score,
+                player_id:     user.id,
+                team_id:       user.team_id || window.CurrentTeam?.id,
+                fecha:         new Date().toISOString().split('T')[0],
+                session_type:  this.state.dailyLog.session_type,
+                duration_min:  this.state.dailyLog.duration_min,
+                rpe_score:     this.state.dailyLog.rpe_score,
                 sleep_quality: this.state.dailyLog.sleep_quality,
-                stress_level: this.state.dailyLog.stress_level,
-                fatigue: this.state.dailyLog.fatigue,
+                stress_level:  this.state.dailyLog.stress_level,
+                fatigue:       this.state.dailyLog.fatigue,
                 muscle_soreness: this.state.dailyLog.muscle_soreness,
-                mood: this.state.dailyLog.mood
+                mood:          this.state.dailyLog.mood
             };
 
-            const { error } = await window.supabase
-                .from('player_daily_logs')
-                .insert([payload]);
-
+            const { error } = await window.supabase.from('player_daily_logs').insert([payload]);
             if (error) throw error;
 
             this._showToast('✅ ¡Reporte enviado con éxito!');
-            
-            // Update chip manually as feedback
             this._updateChip('chip-load', 'chip-load-val', `${payload.duration_min * payload.rpe_score} UA`, true);
             this._updateChip('chip-wellness', 'chip-wellness-val', 'Completado', true);
 
@@ -399,22 +752,14 @@ window.AthleteApp = {
                 btn.style.opacity = '1';
                 btn.style.background = '#10B981';
             }
-
         } catch (err) {
-            console.error("Error submitDailyLog:", err);
+            console.error('Error submitDailyLog:', err);
             this._showToast('⚠️ Hubo un error al enviar el reporte.', 'warn');
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Reintentar Envío`;
-                btn.style.opacity = '1';
-            }
+            if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
         }
     },
 
-    /* ════════════════════
-       FUERZA — SETUP
-    ═══════════════════ */
-    setupStrengthInteractions: function() {
+    setupStrengthInteractions: function () {
         const regimeBtns = document.querySelectorAll('#strength-regime .adp-regime-btn');
         regimeBtns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -425,13 +770,12 @@ window.AthleteApp = {
         });
     },
 
-    calculateTonnage: function() {
+    calculateTonnage: function () {
         const sets   = parseInt(document.getElementById('strength-sets')?.value) || 0;
         const reps   = parseInt(document.getElementById('strength-reps')?.value) || 0;
         const weight = parseFloat(document.getElementById('strength-weight')?.value) || 0;
         const ton    = sets * reps * weight;
 
-        // Formula previews
         const setsP   = document.getElementById('str-sets-preview');
         const repsP   = document.getElementById('str-reps-preview');
         const weightP = document.getElementById('str-weight-preview');
@@ -440,15 +784,10 @@ window.AthleteApp = {
         if (setsP)   setsP.textContent   = sets   || '—';
         if (repsP)   repsP.textContent   = reps   || '—';
         if (weightP) weightP.textContent = weight ? `${weight}kg` : '—';
-
-        if (result) {
-            result.textContent = ton;
-            result.style.transform = 'scale(1.1)';
-            setTimeout(() => { result.style.transform = ''; }, 180);
-        }
+        if (result)  { result.textContent = ton; result.style.transform = 'scale(1.1)'; setTimeout(() => { result.style.transform = ''; }, 180); }
     },
 
-    saveStrength: function() {
+    saveStrength: function () {
         const sets   = parseInt(document.getElementById('strength-sets')?.value) || 0;
         const reps   = parseInt(document.getElementById('strength-reps')?.value) || 0;
         const weight = parseFloat(document.getElementById('strength-weight')?.value) || 0;
@@ -459,35 +798,28 @@ window.AthleteApp = {
         }
 
         const tonnage = sets * reps * weight;
-        const regime  = this.state.currentRegime;
-
-        // Agregar al log
-        const entry = { sets, reps, weight, tonnage, regime };
+        const entry   = { sets, reps, weight, tonnage, regime: this.state.currentRegime };
         this.state.strength.sets.push(entry);
         this.state.strength.totalTonnage += tonnage;
 
         this._renderSetsLog();
         this._updateChip('chip-strength', 'chip-strength-val', `${this.state.strength.totalTonnage} kg`, true);
 
-        // Limpiar inputs
         document.getElementById('strength-sets').value   = '';
         document.getElementById('strength-reps').value   = '';
         document.getElementById('strength-weight').value = '';
         this.calculateTonnage();
-
         this._showToast(`🏋️ Serie añadida · Tonelaje: ${tonnage} kg`);
     },
 
-    _renderSetsLog: function() {
-        const empty   = document.getElementById('sets-log-empty');
-        const list    = document.getElementById('sets-log-list');
-        const total   = document.getElementById('sets-total-row');
-        const accum   = document.getElementById('sets-accumulated');
-
+    _renderSetsLog: function () {
+        const empty  = document.getElementById('sets-log-empty');
+        const list   = document.getElementById('sets-log-list');
+        const total  = document.getElementById('sets-total-row');
+        const accum  = document.getElementById('sets-accumulated');
         if (!list) return;
 
         const sets = this.state.strength.sets;
-
         if (sets.length === 0) {
             if (empty) empty.style.display = 'flex';
             if (total) total.style.display = 'none';
@@ -499,7 +831,7 @@ window.AthleteApp = {
         if (total) total.style.display = 'flex';
         if (accum) accum.textContent = `${this.state.strength.totalTonnage} kg`;
 
-        list.innerHTML = sets.map((s, i) => `
+        list.innerHTML = sets.map(s => `
             <div class="adp-set-row">
                 <span class="adp-set-regime">${s.regime}</span>
                 <span class="adp-set-formula">${s.sets}×${s.reps} · ${s.weight}kg</span>
@@ -508,40 +840,24 @@ window.AthleteApp = {
         `).join('');
     },
 
-    /* ════════════════════
-       NAVEGACIÓN
-    ═══════════════════ */
-    switchTab: function(tabId, btnEl) {
-        // Actualizar estado activo en navbar
+    switchTab: function (tabId, btnEl) {
         document.querySelectorAll('.adp-nav-item').forEach(n => n.classList.remove('adp-nav-item--active'));
         if (btnEl) btnEl.classList.add('adp-nav-item--active');
-
-        if (tabId === 'dashboard') {
-            // Ya estamos aquí
-        } else {
-            this._showToast('📊 Módulo en construcción. Próximamente.');
-        }
+        if (tabId !== 'dashboard') this._showToast('📊 Módulo en construcción. Próximamente.');
     },
 
-    /* ════════════════════
-       HELPERS
-    ═══════════════════ */
-    _updateChip: function(chipId, valId, text, done) {
+    _updateChip: function (chipId, valId, text, done) {
         const chip = document.getElementById(chipId);
         const val  = document.getElementById(valId);
         if (val) val.textContent = text;
         if (chip && done) {
             chip.classList.add('adp-chip--done');
             const dot = chip.querySelector('.adp-chip-dot');
-            if (dot) {
-                dot.classList.remove('adp-chip-dot--pending');
-                dot.classList.add('adp-chip-dot--done');
-            }
+            if (dot) { dot.classList.remove('adp-chip-dot--pending'); dot.classList.add('adp-chip-dot--done'); }
         }
     },
 
-    _showToast: function(message, type = 'success') {
-        // Eliminar toast anterior si existe
+    _showToast: function (message, type = 'success') {
         const prev = document.getElementById('adp-toast');
         if (prev) prev.remove();
 
@@ -549,23 +865,15 @@ window.AthleteApp = {
         toast.id = 'adp-toast';
         toast.textContent = message;
         Object.assign(toast.style, {
-            position:     'fixed',
-            bottom:       '90px',
-            left:         '50%',
-            transform:    'translateX(-50%) translateY(10px)',
-            background:   type === 'warn' ? '#1C1C1E' : 'linear-gradient(135deg, #1C1C1E, #2a2a2e)',
-            color:        '#fff',
-            padding:      '12px 20px',
-            borderRadius: '28px',
-            fontSize:     '13px',
-            fontWeight:   '700',
-            fontFamily:   "'Inter', sans-serif",
-            boxShadow:    '0 8px 24px rgba(0,0,0,0.3)',
-            zIndex:       '10000',
-            opacity:      '0',
-            transition:   'all 0.3s cubic-bezier(0.16,1,0.3,1)',
-            whiteSpace:   'nowrap',
-            border:       type === 'warn' ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(191,149,63,0.3)',
+            position: 'fixed', bottom: '90px', left: '50%',
+            transform: 'translateX(-50%) translateY(10px)',
+            background: type === 'warn' ? '#1C1C1E' : 'linear-gradient(135deg, #1C1C1E, #2a2a2e)',
+            color: '#fff', padding: '12px 20px', borderRadius: '28px',
+            fontSize: '13px', fontWeight: '700', fontFamily: "'Inter', sans-serif",
+            boxShadow: '0 8px 24px rgba(0,0,0,0.3)', zIndex: '10000',
+            opacity: '0', transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
+            whiteSpace: 'nowrap',
+            border: type === 'warn' ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(191,149,63,0.3)',
         });
 
         document.body.appendChild(toast);
@@ -573,7 +881,6 @@ window.AthleteApp = {
             toast.style.opacity = '1';
             toast.style.transform = 'translateX(-50%) translateY(0)';
         });
-
         setTimeout(() => {
             toast.style.opacity = '0';
             toast.style.transform = 'translateX(-50%) translateY(8px)';

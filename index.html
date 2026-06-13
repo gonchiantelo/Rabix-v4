@@ -10,6 +10,11 @@
     <link rel="stylesheet" href="./css/styles-core.css" />
     <link rel="stylesheet" href="./css/styles-player.css" />
 
+    <!-- ══ MUNDO ATLETA — CSS Exclusivo del Jugador (Mobile-First) ══
+         AISLADO: No afecta ninguna clase del entorno DT.
+         Scope: #player-shell y sus descendientes únicamente. -->
+    <link rel="stylesheet" href="./css/app-player.css" />
+
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -1043,6 +1048,16 @@
             </form>
         </main>
     </section>
+
+    <!-- ══════════════════════════════════════════════════════════
+         PLAYER SHELL — Contenedor exclusivo del Jugador
+         Construido e hidratado dinámicamente por PlayerShellEngine.
+         BIFURCACIÓN ESTRICTA: Este shell se activa SOLO si el rol
+         es 'jugador' o 'player'. El #app-shell del DT JAMÁS accede
+         a este contenedor y viceversa.
+         El HTML base lo inyecta PlayerShellEngine._buildShellDOM().
+    ═══════════════════════════════════════════════════════════ -->
+    <div id="player-shell" aria-hidden="true" aria-label="Portal del Jugador"></div>
 
     <script src="./js/app-portal.js"></script>
     <script src="./js/app-core.js"></script>
