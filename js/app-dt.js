@@ -460,12 +460,20 @@ window.DTEngine = {
                              onclick="window.DTEngine.toggleView('dt-medical')"
                              style="grid-column: span 6; min-height: 90px; display:flex; flex-direction:column; justify-content:space-between; padding: 18px 20px; cursor:pointer; position: relative; overflow: hidden; border-color: rgba(239,68,68,0.2); background: linear-gradient(135deg, rgba(239,68,68,0.05) 0%, transparent 100%);">
                             <!-- Decorative pulse dot -->
-                            <span style="position:absolute; top:14px; right:16px; width:8px; height:8px; border-radius:50%; background:#EF4444; box-shadow: 0 0 10px rgba(239,68,68,0.8); animation: dtm-live-pulse 2s ease-in-out infinite;"></span>
+                            <span id="dtm-pulse-dot" style="position:absolute; top:14px; right:16px; width:8px; height:8px; border-radius:50%; background:#EF4444; box-shadow: 0 0 10px rgba(239,68,68,0.8); animation: dtm-live-pulse 2s ease-in-out infinite;"></span>
                             <style>@keyframes dtm-live-pulse { 0%,100%{opacity:1; transform:scale(1)} 50%{opacity:0.4; transform:scale(0.8)} }</style>
+                            
                             <!-- Top label -->
-                            <div style="font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: rgba(239,68,68,0.7); margin-bottom: 6px;">ESTADO DEL PLANTEL · LA CLÍNICA</div>
-                            <!-- Inline mini stats -->
-                            <div style="display: flex; align-items: center; gap: 20px;">
+                            <div id="dtm-top-label" style="font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: rgba(239,68,68,0.7); z-index: 2;">ESTADO DEL PLANTEL · LA CLÍNICA</div>
+                            
+                            <!-- Empty state center content -->
+                            <div id="dtm-widget-empty" style="display: none; flex: 1; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin: 10px 0;">
+                                <div style="font-size: 1.2rem; margin-bottom: 6px; animation: dtm-live-pulse 2s infinite; color: rgba(255,255,255,0.6);">📡</div>
+                                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">ESPERANDO CONEXIÓN</div>
+                            </div>
+                            
+                            <!-- Main content area / Inline mini stats -->
+                            <div id="dtm-widget-stats" style="margin-top: auto; display: flex; align-items: center; gap: 20px; width: 100%;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <span id="tw-aptos-num" style="font-size: 1.6rem; font-weight: 900; color: #10B981; line-height:1;">—</span>
                                     <span style="font-size: 0.6rem; font-weight: 800; color: rgba(255,255,255,0.35); letter-spacing: 1px;">APTOS</span>
@@ -2594,6 +2602,34 @@ window.DTEngine = {
                 .eq('team_id', teamId);
 
             if (error || !roster) return;
+
+            const widget = document.getElementById('tile-medical');
+            const emptyState = document.getElementById('dtm-widget-empty');
+            const stats = document.getElementById('dtm-widget-stats');
+            const pulse = document.getElementById('dtm-pulse-dot');
+            const topLabel = document.getElementById('dtm-top-label');
+
+            if (roster.length === 0) {
+                if (widget) {
+                    widget.style.background = 'radial-gradient(circle at center, rgba(30,35,45,1) 0%, rgba(10,12,16,1) 100%)';
+                    widget.style.borderColor = 'rgba(255,255,255,0.05)';
+                    widget.style.minHeight = '140px'; // Give it some height for the central text
+                }
+                if (pulse) pulse.style.display = 'none';
+                if (topLabel) topLabel.style.color = 'rgba(255,255,255,0.3)';
+                if (stats) stats.style.opacity = '0.3'; // dim the stats
+                if (emptyState) emptyState.style.display = 'flex';
+            } else {
+                if (widget) {
+                    widget.style.background = 'linear-gradient(135deg, rgba(239,68,68,0.05) 0%, transparent 100%)';
+                    widget.style.borderColor = 'rgba(239,68,68,0.2)';
+                    widget.style.minHeight = '90px';
+                }
+                if (pulse) pulse.style.display = 'block';
+                if (topLabel) topLabel.style.color = 'rgba(239,68,68,0.7)';
+                if (stats) stats.style.opacity = '1';
+                if (emptyState) emptyState.style.display = 'none';
+            }
 
             const aptos      = roster.filter(p => !p.medical_status || p.medical_status === 'Activo').length;
             const lesionados = roster.filter(p => p.medical_status === 'Lesionado').length;
