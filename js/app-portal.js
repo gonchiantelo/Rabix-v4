@@ -33,6 +33,17 @@ window.PortalHub = (() => {
         
         const avatarInitial = dtName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
 
+        const roleMap = {
+            'head_coach': 'DIRECTOR TÉCNICO',
+            'assistant': 'ASISTENTE TÉCNICO',
+            'gk_coach': 'ENTRENADOR DE ARQUEROS',
+            'fitness_coach': 'PREPARADOR FÍSICO',
+            'analyst': 'ANALISTA',
+            'medical': 'CUERPO MÉDICO'
+        };
+        const userRole = window.CurrentUser?.role || 'head_coach';
+        const translatedRole = roleMap[userRole] || 'STAFF TÉCNICO';
+
         const heroBannerHTML = `
             <div id="dt-hero-banner" class="dt-portal-hero">
                 <!-- Decoración Dark Premium -->
@@ -43,8 +54,8 @@ window.PortalHub = (() => {
                 </div>
                 
                 <div class="dt-hero-info">
-                    <p class="dt-hero-subtitle">Portal del Director Técnico</p>
-                    <h1 class="dt-hero-title">${dtName}</h1>
+                    <p class="dt-hero-subtitle">Portal del Manager</p>
+                    <h1 class="dt-hero-title">BIENVENIDO, ${dtName.toUpperCase()} - ${translatedRole}</h1>
                     <div class="dt-hero-badge">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                         ${dtLicense}

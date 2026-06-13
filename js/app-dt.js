@@ -367,7 +367,10 @@ window.DTEngine = {
                     <div class="brand-name">RAVIX <span class="team-name-badge">${teamName}</span> <span class="dt-badge">DT ELITE</span></div>
 
                     <div class="header-actions" style="display: flex; gap: 32px; align-items: center;">
-                        <button onclick="window.location.hash = '#portal';" class="dt-nav-link dt-portal-btn">← Portal del Manager</button>
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <button onclick="window.location.hash = '#portal';" class="dt-nav-link dt-portal-btn">← Portal del Manager</button>
+                            <span style="font-size: 11px; color: #888; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">Rol: <span id="header-role-value" style="color: #00F2FE;">STAFF</span></span>
+                        </div>
                         
                         <nav class="dt-main-nav">
                             <button id="btn-nav-home" onclick="DTEngine.toggleView('home')" class="dt-nav-link">Inicio</button>
@@ -382,37 +385,24 @@ window.DTEngine = {
 
                 <main class="dt-main-content">
                     <section id="dt-home-view" class="dt-home-view view-section">
-                        <!-- Header/Identity (Widget B) -->
-                        <div class="platinum-widget profile-widget-compact" onclick="window.DTEngine.toggleView('profile')" style="cursor: pointer; grid-column: span 4;">
-                            <div class="pw-content-compact">
-                                <div class="dt-avatar-ring-compact">
-                                    <div class="dt-avatar-inner"></div>
-                                </div>
-                                <div class="dt-info-compact">
-                                    <h2 class="dt-name-compact" style="font-family: 'Outfit', sans-serif; font-size: 20px; color: #E0E0E0; margin: 0 0 4px 0;">${window.CurrentUser?.name || 'STAFF'}</h2>
-                                    <p id="np-role-label" class="dt-team-info-compact" style="color: var(--dt-accent); font-weight: 700; letter-spacing: 1px; font-size: 11px;">DIRECTOR TÉCNICO</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Próximo Partido (Widget C) -->
-                        <div id="widget-next-match-container" class="platinum-widget widget-next-match" style="grid-column: span 8; display: flex; flex-direction: column; justify-content: center; padding: 20px;">
-                            <div style="font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 8px;">
-                                PRÓXIMO PARTIDO
-                            </div>
-                            <div>
-                                <span id="cc-next-match" style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: #E0E0E0;">—</span>
-                            </div>
-                        </div>
-
                         <!-- Foco del Día (Widget A) -->
-                        <div class="platinum-widget widget-today-focus" style="grid-column: span 4; grid-row: span 2;">
+                        <div class="platinum-widget widget-today-focus" style="grid-column: span 6;">
                             <div style="font-size: 11px; font-weight: 800; letter-spacing: 2px; color: #888; margin-bottom: 15px; text-transform: uppercase;">
                                 FOCO DEL DÍA <span id="cc-today-focus" style="margin-left: 8px; color: var(--dt-accent);"></span>
                             </div>
                             <ul id="cc-today-tasks" class="clean-tasks-list">
                                 <li class="empty-tasks">Cargando foco del día...</li>
                             </ul>
+                        </div>
+
+                        <!-- Próximo Partido (Widget C) -->
+                        <div id="widget-next-match-container" class="platinum-widget widget-next-match" style="grid-column: span 6; display: flex; flex-direction: column; justify-content: center; padding: 20px;">
+                            <div style="font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 8px;">
+                                PRÓXIMO PARTIDO
+                            </div>
+                            <div>
+                                <span id="cc-next-match" style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: #E0E0E0;">—</span>
+                            </div>
                         </div>
 
                         <!-- Calendario -->
@@ -2558,7 +2548,7 @@ window.DTEngine = {
         if (!nextMatchEl || !todayFocusEl) return;
 
         // --- ROL DINÁMICO ---
-        const roleLabelEl = document.getElementById('np-role-label');
+        const roleLabelEl = document.getElementById('header-role-value');
         if (roleLabelEl) {
             const roleMap = {
                 'head_coach': 'DIRECTOR TÉCNICO',
