@@ -123,12 +123,16 @@ window.PlayerShellEngine = {
             console.log('[PLAYER SHELL] CSS inyectado: css/app-player.css');
         }
 
-        // ── 2. Garantizar que el #player-shell exista en el DOM ──
         let shell = document.getElementById('player-shell');
         if (!shell) {
             shell = this._buildShellDOM();
             document.body.appendChild(shell);
             console.log('[PLAYER SHELL] #player-shell creado e insertado en el DOM.');
+        } else if (!document.getElementById('ps-body')) {
+            const newShell = this._buildShellDOM();
+            shell.replaceWith(newShell);
+            shell = newShell;
+            console.log('[PLAYER SHELL] #player-shell reconstruido porque le faltaba la estructura.');
         }
 
         // ── 3. BIFURCACIÓN DE ROLES: Ocultar el #app-shell del DT ──
@@ -150,7 +154,7 @@ window.PlayerShellEngine = {
         }
 
         // ── 4. Activar el shell (Fuerza Bruta corregida para Desktop) ──
-        shell.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 100vh !important; opacity: 1 !important; visibility: visible !important; position: fixed !important; top: 0 !important; z-index: 999999 !important; background-color: #05080f !important;';
+        shell.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 100vh !important; width: 100% !important; opacity: 1 !important; visibility: visible !important; position: fixed !important; top: 0 !important; z-index: 999999 !important; background-color: #05080f !important;';
         shell.classList.add('ps-active');
 
         // ── 5. Cargar datos del jugador en background ──
