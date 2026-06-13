@@ -543,3 +543,103 @@
         border-right: 1px solid var(--ps-border);
     }
 }
+
+/* ══════════════════════════════════════════
+   WELLNESS VIEW — PlayerShellEngine
+   Hooper Scale + RPE Segmented Controls
+══════════════════════════════════════════ */
+
+/* Metric block (une label + segmentado) */
+.pswl-metric-block {
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.pswl-metric-block:last-child {
+    border-bottom: none;
+    padding-bottom: 4px;
+}
+
+.pswl-metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.pswl-metric-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.pswl-metric-val {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #BFFF00;
+    min-width: 20px;
+    text-align: right;
+    transition: color 0.2s;
+}
+
+/* Segmented control track */
+.pswl-seg-ctrl {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+}
+
+/* Individual segment button */
+.pswl-seg-btn {
+    padding: 10px 0;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.4);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.pswl-seg-btn:hover {
+    border-color: rgba(191, 255, 0, 0.25);
+    color: rgba(191, 255, 0, 0.7);
+    background: rgba(191, 255, 0, 0.04);
+    transform: translateY(-1px);
+}
+
+/* Active state */
+.pswl-seg-btn.pswl-seg-active {
+    background: rgba(191, 255, 0, 0.12);
+    border-color: rgba(191, 255, 0, 0.45);
+    color: #BFFF00;
+    box-shadow: 0 0 16px rgba(191, 255, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+/* RPE slider thumb */
+#pswl-rpe-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #EF4444;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+    transition: transform 0.1s;
+    margin-top: -9px;
+}
+
+#pswl-rpe-slider::-webkit-slider-thumb:active {
+    transform: scale(1.2);
+}
+
+#pswl-rpe-slider::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 3px;
+}
+

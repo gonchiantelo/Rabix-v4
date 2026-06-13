@@ -512,7 +512,7 @@ window.PlayerShellEngine = {
                 this._renderHomeView();
                 break;
             case 'wellness':
-                this._showComingSoon('🔋', 'Wellness', 'Registra tu estado físico diario (Hooper Scale). Próximamente.');
+                this._renderWellnessView();
                 break;
             case 'attendance':
                 this._showComingSoon('📅', 'Asistencia', 'Historial completo de presencias y ausencias. Próximamente.');
@@ -525,6 +525,330 @@ window.PlayerShellEngine = {
         }
 
         this.state.activeTab = tabId;
+    },
+
+    /* ═════════════════════════════════
+       RENDER — Vista WELLNESS
+       Hooper Scale + RPE
+    ════════════════════════════════= */
+    _renderWellnessView: function () {
+        const body = document.getElementById('ps-body');
+        if (!body) return;
+
+        const wellness = this.state.wellness;
+        const alreadyDone = !!wellness;
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('es-ES', {
+            weekday: 'long', day: 'numeric', month: 'long'
+        }).toUpperCase();
+
+        if (alreadyDone) {
+            // ── YA REPORTÓ HOY ──
+            const suma = (wellness.sleep_quality || 0) + (wellness.stress_level || 0) + (wellness.fatigue || 0);
+            const hooперColor = suma <= 8 ? '#10B981' : suma <= 11 ? '#F59E0B' : '#EF4444';
+            const hooperLabel = suma <= 8 ? 'ÓPTIMO' : suma <= 11 ? 'PRECAUCIÓN' : 'CRÍTICO';
+
+            body.innerHTML = `
+                <div class="ps-section" style="padding-top: 24px;">
+                    <p style="font-size: 0.62rem; font-weight: 800; letter-spacing: 3px; color: rgba(191,255,0,0.6); text-transform: uppercase;">${dateStr}</p>
+                    <h2 style="font-size: 1.4rem; font-weight: 900; color: #F0F0F0; margin-top: 4px;">Wellness <span style="color: #BFFF00;">Registrado</span></h2>
+                </div>
+
+                <div class="ps-section">
+                    <div class="ps-card">
+                        <div class="ps-card-inner">
+                            <div style="text-align: center; padding: 24px 0;">
+                                <div style="font-size: 3rem; margin-bottom: 12px;">✅</div>
+                                <div style="font-size: 0.9rem; font-weight: 700; color: #F0F0F0;">Reporte del día enviado</div>
+                                <div style="margin-top: 20px; display: flex; justify-content: center; gap: 16px;">
+                                    <div style="text-align:center;">
+                                        <div style="font-size: 1.4rem; font-weight: 900; color: #C8C8C8;">${wellness.sleep_quality || '—'}</div>
+                                        <div style="font-size: 0.58rem; font-weight: 800; letter-spacing: 1px; color: rgba(255,255,255,0.35);">SUEÑO</div>
+                                    </div>
+                                    <div style="text-align:center;">
+                                        <div style="font-size: 1.4rem; font-weight: 900; color: #C8C8C8;">${wellness.stress_level || '—'}</div>
+                                        <div style="font-size: 0.58rem; font-weight: 800; letter-spacing: 1px; color: rgba(255,255,255,0.35);">ESTRÉS</div>
+                                    </div>
+                                    <div style="text-align:center;">
+                                        <div style="font-size: 1.4rem; font-weight: 900; color: #C8C8C8;">${wellness.fatigue || '—'}</div>
+                                        <div style="font-size: 0.58rem; font-weight: 800; letter-spacing: 1px; color: rgba(255,255,255,0.35);">FATIGA</div>
+                                    </div>
+                                    <div style="text-align:center;">
+                                        <div style="font-size: 1.4rem; font-weight: 900; color: #C8C8C8;">${wellness.rpe_score || '—'}</div>
+                                        <div style="font-size: 0.58rem; font-weight: 800; letter-spacing: 1px; color: rgba(255,255,255,0.35);">RPE</div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 20px; display: inline-block; padding: 6px 16px; border-radius: 8px; border: 1px solid ${hooперColor}; color: ${hooперColor}; font-size: 0.65rem; font-weight: 800; letter-spacing: 2px; background: ${hooперColor}15;">
+                                    HOOPER: ${suma}/15 — ${hooperLabel}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ps-section">
+                    <button onclick="window.PlayerShellEngine.switchTab('home', null)"
+                            style="width:100%; padding:14px; background:rgba(191,255,0,0.08); border:1px solid rgba(191,255,0,0.2); border-radius:12px; color:#BFFF00; font-family:'Outfit',sans-serif; font-size:0.82rem; font-weight:800; letter-spacing:1px; cursor:pointer; text-transform:uppercase;">
+                        ← Volver al Inicio
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        // ── FORMULARIO NUEVO ──
+        // Estado temporal del formulario
+        this._wellnessForm = { sleep: 3, stress: 3, fatigue: 3, rpe: 5 };
+
+        body.innerHTML = `
+            <div class="ps-section" style="padding-top: 24px;">
+                <p style="font-size: 0.62rem; font-weight: 800; letter-spacing: 3px; color: rgba(191,255,0,0.6); text-transform: uppercase;">${dateStr}</p>
+                <h2 style="font-size: 1.4rem; font-weight: 900; color: #F0F0F0; margin-top: 4px; line-height: 1.2;">
+                    Reporte <span style="color: #BFFF00;">Diario</span>
+                </h2>
+                <p style="font-size: 0.72rem; font-weight: 600; letter-spacing: 1px; color: rgba(255,255,255,0.35); margin-top: 4px; text-transform: uppercase;">
+                    Escala de Hooper · Entrenamiento Invisible
+                </p>
+            </div>
+
+            <!-- ══ TARJETA 1: HOOPER ══ -->
+            <div class="ps-section">
+                <span class="ps-section-label">REPORTE MATUTINO</span>
+                <div class="ps-card" id="pswl-hooper-card">
+                    <div class="ps-card-inner">
+                        <div class="ps-card-header">
+                            <div class="ps-card-icon ps-card-icon--volt">🌙</div>
+                            <div>
+                                <div class="ps-card-title">Escala de Hooper</div>
+                                <div class="ps-card-subtitle">1 = MALO · 5 = EXCELENTE</div>
+                            </div>
+                        </div>
+
+                        <!-- SUEÑO -->
+                        <div class="pswl-metric-block" data-metric="sleep">
+                            <div class="pswl-metric-header">
+                                <span class="pswl-metric-label">😴 Calidad de Sueño</span>
+                                <span class="pswl-metric-val" id="pswl-val-sleep">3</span>
+                            </div>
+                            <div class="pswl-seg-ctrl" id="pswl-seg-sleep">
+                                ${[1,2,3,4,5].map(n => `<button class="pswl-seg-btn ${n===3?'pswl-seg-active':''}" data-val="${n}" data-metric="sleep">${n}</button>`).join('')}
+                            </div>
+                        </div>
+
+                        <!-- ESTRÉS -->
+                        <div class="pswl-metric-block" data-metric="stress">
+                            <div class="pswl-metric-header">
+                                <span class="pswl-metric-label">⚡ Nivel de Estrés</span>
+                                <span class="pswl-metric-val" id="pswl-val-stress">3</span>
+                            </div>
+                            <div class="pswl-seg-ctrl" id="pswl-seg-stress">
+                                ${[1,2,3,4,5].map(n => `<button class="pswl-seg-btn ${n===3?'pswl-seg-active':''}" data-val="${n}" data-metric="stress">${n}</button>`).join('')}
+                            </div>
+                        </div>
+
+                        <!-- FATIGA -->
+                        <div class="pswl-metric-block" data-metric="fatigue">
+                            <div class="pswl-metric-header">
+                                <span class="pswl-metric-label">🔥 Fatiga Muscular</span>
+                                <span class="pswl-metric-val" id="pswl-val-fatigue">3</span>
+                            </div>
+                            <div class="pswl-seg-ctrl" id="pswl-seg-fatigue">
+                                ${[1,2,3,4,5].map(n => `<button class="pswl-seg-btn ${n===3?'pswl-seg-active':''}" data-val="${n}" data-metric="fatigue">${n}</button>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ TARJETA 2: RPE ══ -->
+            <div class="ps-section">
+                <span class="ps-section-label">CARGA DE SESIÓN</span>
+                <div class="ps-card" id="pswl-rpe-card">
+                    <div class="ps-card-inner">
+                        <div class="ps-card-header">
+                            <div class="ps-card-icon" style="background: rgba(239,68,68,0.15); color: #EF4444;">💥</div>
+                            <div>
+                                <div class="ps-card-title">Esfuerzo Percibido (RPE)</div>
+                                <div class="ps-card-subtitle">0 = REPOSO TOTAL · 10 = MÁXIMO</div>
+                            </div>
+                        </div>
+
+                        <div style="padding: 16px 0 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <span style="font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 1px;">INTENSIDAD</span>
+                                <div style="display: flex; align-items: baseline; gap: 4px;">
+                                    <span id="pswl-rpe-display" style="font-size: 2rem; font-weight: 900; color: #EF4444; line-height:1;">5</span>
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.3);">/10</span>
+                                </div>
+                            </div>
+                            <input type="range" id="pswl-rpe-slider"
+                                   min="0" max="10" value="5" step="1"
+                                   style="width: 100%; -webkit-appearance: none; height: 6px;
+                                          background: linear-gradient(to right, rgba(239,68,68,0.8) 50%, rgba(255,255,255,0.08) 50%);
+                                          border-radius: 3px; outline: none; cursor: pointer;"
+                                   oninput="window.PlayerShellEngine._onRpeInput(this)">
+                            <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                                <span style="font-size: 0.58rem; font-weight: 700; color: rgba(255,255,255,0.25);">REPOSO</span>
+                                <span style="font-size: 0.58rem; font-weight: 700; color: rgba(255,255,255,0.25);">MÁXIMO</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ BOTÓN ENVIAR ══ -->
+            <div class="ps-section" style="padding-bottom: 24px;">
+                <button id="pswl-submit-btn"
+                        onclick="window.PlayerShellEngine._submitWellness()"
+                        style="width: 100%; padding: 20px; border-radius: 16px;
+                               background: linear-gradient(135deg, rgba(191,255,0,0.15) 0%, rgba(191,255,0,0.08) 100%);
+                               border: 2px solid rgba(191,255,0,0.35);
+                               color: #BFFF00; font-family: 'Outfit', sans-serif;
+                               font-size: 1rem; font-weight: 900; letter-spacing: 2px;
+                               cursor: pointer; text-transform: uppercase;
+                               transition: all 0.2s cubic-bezier(0.16,1,0.3,1);
+                               box-shadow: 0 0 30px rgba(191,255,0,0.08);"
+                        onmouseover="this.style.boxShadow='0 0 40px rgba(191,255,0,0.2)'; this.style.transform='translateY(-2px)';"
+                        onmouseout="this.style.boxShadow='0 0 30px rgba(191,255,0,0.08)'; this.style.transform='translateY(0)';">
+                    ⚡ ENVIAR REPORTE
+                </button>
+            </div>
+        `;
+
+        this._setupWellnessInteractions();
+    },
+
+    /* ═════════════════════════════════
+       SETUP — Interacciones wellness
+    ════════════════════════════════= */
+    _setupWellnessInteractions: function () {
+        // Botones segmentados de Hooper
+        document.querySelectorAll('.pswl-seg-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const metric = btn.dataset.metric;
+                const val    = parseInt(btn.dataset.val);
+
+                // Activar visualmente
+                const container = btn.closest('.pswl-seg-ctrl');
+                container.querySelectorAll('.pswl-seg-btn').forEach(b => b.classList.remove('pswl-seg-active'));
+                btn.classList.add('pswl-seg-active');
+
+                // Actualizar display y estado
+                const displayEl = document.getElementById('pswl-val-' + metric);
+                if (displayEl) displayEl.textContent = val;
+                this._wellnessForm[metric] = val;
+            });
+        });
+    },
+
+    /* ═════════════════════════════════
+       RPE INPUT — handler del slider
+    ════════════════════════════════= */
+    _onRpeInput: function (slider) {
+        const val = parseInt(slider.value);
+        const display = document.getElementById('pswl-rpe-display');
+        if (display) display.textContent = val;
+
+        // Color dinámico del slider
+        const pct = val * 10;
+        slider.style.background = `linear-gradient(to right, rgba(239,68,68,0.8) ${pct}%, rgba(255,255,255,0.08) ${pct}%)`;
+
+        // Color del número
+        const color = val >= 8 ? '#EF4444' : val >= 5 ? '#F59E0B' : '#10B981';
+        if (display) display.style.color = color;
+
+        if (this._wellnessForm) this._wellnessForm.rpe = val;
+    },
+
+    /* ═════════════════════════════════
+       SUBMIT — Envío a Supabase
+       Tabla: player_wellness
+    ════════════════════════════════= */
+    _submitWellness: async function () {
+        const btn = document.getElementById('pswl-submit-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'ENVIANDO...';
+            btn.style.opacity = '0.6';
+        }
+
+        try {
+            const uid = localStorage.getItem('ravix_v5_uid');
+            if (!uid) throw new Error('Sin sesión activa.');
+
+            const player = this.state.user;
+            const teamId = player?.team_id
+                || window.CurrentTeam?.id
+                || localStorage.getItem('ravix_team_id');
+
+            const form = this._wellnessForm || {};
+            const rpeSlider = document.getElementById('pswl-rpe-slider');
+            if (rpeSlider) form.rpe = parseInt(rpeSlider.value);
+
+            const payload = {
+                player_id:     uid,
+                team_id:       teamId,
+                fecha:         new Date().toISOString().split('T')[0],
+                sleep_quality: form.sleep   || 3,
+                stress_level:  form.stress  || 3,
+                fatigue:       form.fatigue || 3,
+                rpe_score:     form.rpe     || 5,
+                created_at:    new Date().toISOString()
+            };
+
+            const { error } = await window.supabase
+                .from('player_wellness')
+                .upsert([payload], { onConflict: 'player_id,fecha' });
+
+            if (error) throw error;
+
+            // Actualizar estado en memoria
+            this.state.wellness = payload;
+
+            // Toast y re-render
+            this._showWellnessToast('✅ ¡Reporte enviado con éxito!');
+            setTimeout(() => this._renderWellnessView(), 800);
+
+        } catch (err) {
+            console.error('[PLAYER SHELL] Error submitWellness:', err);
+            this._showWellnessToast('⚠️ Error al enviar. Verifica tu conexión.');
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '⚡ ENVIAR REPORTE';
+                btn.style.opacity = '1';
+            }
+        }
+    },
+
+    _showWellnessToast: function (msg) {
+        const prev = document.getElementById('pswl-toast');
+        if (prev) prev.remove();
+
+        const toast = document.createElement('div');
+        toast.id = 'pswl-toast';
+        toast.textContent = msg;
+        Object.assign(toast.style, {
+            position: 'fixed', bottom: '100px', left: '50%',
+            transform: 'translateX(-50%) translateY(10px)',
+            background: 'linear-gradient(135deg, #1a1a1e, #242428)',
+            border: '1px solid rgba(191,255,0,0.25)',
+            color: '#BFFF00', padding: '12px 22px', borderRadius: '28px',
+            fontSize: '13px', fontWeight: '800', fontFamily: "'Outfit', sans-serif",
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)', zIndex: '10001',
+            opacity: '0', transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
+            whiteSpace: 'nowrap', letterSpacing: '0.5px',
+        });
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+        });
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-50%) translateY(8px)';
+            setTimeout(() => toast.remove(), 350);
+        }, 2800);
     },
 
     /* ═════════════════════════════════

@@ -452,6 +452,42 @@ window.DTEngine = {
                                 <div class="mini-token" style="bottom: 85%; left: 50%;"></div>
                             </div>
                         </div>
+
+                        <!-- Estado del Plantel (La Clínica) Widget -->
+                        <div id="tile-medical"
+                             class="platinum-widget action-tile-mini"
+                             onclick="window.DTEngine.toggleView('dt-medical')"
+                             style="grid-column: span 12; min-height: 90px; display:flex; flex-direction:column; justify-content:space-between; padding: 18px 20px; cursor:pointer; position: relative; overflow: hidden; border-color: rgba(239,68,68,0.2); background: linear-gradient(135deg, rgba(239,68,68,0.05) 0%, transparent 100%);">
+                            <!-- Decorative pulse dot -->
+                            <span style="position:absolute; top:14px; right:16px; width:8px; height:8px; border-radius:50%; background:#EF4444; box-shadow: 0 0 10px rgba(239,68,68,0.8); animation: dtm-live-pulse 2s ease-in-out infinite;"></span>
+                            <style>@keyframes dtm-live-pulse { 0%,100%{opacity:1; transform:scale(1)} 50%{opacity:0.4; transform:scale(0.8)} }</style>
+                            <!-- Top label -->
+                            <div style="font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: rgba(239,68,68,0.7); margin-bottom: 6px;">ESTADO DEL PLANTEL · LA CLÍNICA</div>
+                            <!-- Inline mini stats -->
+                            <div style="display: flex; align-items: center; gap: 20px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span id="tw-aptos-num" style="font-size: 1.6rem; font-weight: 900; color: #10B981; line-height:1;">—</span>
+                                    <span style="font-size: 0.6rem; font-weight: 800; color: rgba(255,255,255,0.35); letter-spacing: 1px;">APTOS</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span id="tw-lesionados-num" style="font-size: 1.6rem; font-weight: 900; color: #EF4444; line-height:1;">—</span>
+                                    <span style="font-size: 0.6rem; font-weight: 800; color: rgba(255,255,255,0.35); letter-spacing: 1px;">LESIONADOS</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span id="tw-dudas-num" style="font-size: 1.6rem; font-weight: 900; color: #F59E0B; line-height:1;">—</span>
+                                    <span style="font-size: 0.6rem; font-weight: 800; color: rgba(255,255,255,0.35); letter-spacing: 1px;">EN DUDA</span>
+                                </div>
+                                <div style="margin-left: auto; font-size: 0.7rem; font-weight: 700; color: rgba(239,68,68,0.5); letter-spacing: 1px;">VER CLÍNICA →</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ═══════════════════════════════════════════
+                         VISTA LA CLÍNICA (#view-dt-medical)
+                         Gestionada por window.DTMedical (app-dt-medical.js)
+                    ═══════════════════════════════════════════ -->
+                    <section id="view-dt-medical" class="view-section" style="display: none;">
+                        <!-- Contenido inyectado dinámicamente por DTMedical.init() -->
                     </section>
 
 
@@ -2540,6 +2576,40 @@ window.DTEngine = {
 
         // 3. Centro de Comando
         this.updateCommandCenter();
+
+        // 4. Hidratar widget de Estado del Plantel (La Clínica)
+        this._hydrateMedicalWidget();
+    },
+
+    /* Carga sumarios de estado desde team_roster para el tile del home */
+    _hydrateMedicalWidget: async function () {
+        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id');
+        if (!teamId) return;
+
+        try {
+            const { data: roster, error } = await window.supabase
+                .from('team_roster')
+                .select('medical_status')
+                .eq('team_id', teamId);
+
+            if (error || !roster) return;
+
+            const aptos      = roster.filter(p => !p.medical_status || p.medical_status === 'Activo').length;
+            const lesionados = roster.filter(p => p.medical_status === 'Lesionado').length;
+            const dudas      = roster.filter(p => p.medical_status === 'Duda').length;
+
+            const setEl = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val;
+            };
+
+            setEl('tw-aptos-num',     aptos);
+            setEl('tw-lesionados-num', lesionados);
+            setEl('tw-dudas-num',     dudas);
+
+        } catch (e) {
+            console.error('[DT Medical Widget] Error:', e);
+        }
     },
 
     updateCommandCenter() {
@@ -2872,19 +2942,33 @@ window.DTEngine = {
     },
 
     toggleView(viewName) {
-        const home = document.getElementById('dt-home-view');
-        const cal = document.getElementById('dt-calendar-view');
-        const an = document.getElementById('dt-analytics-view');
-        const prof = document.getElementById('view-profile');
-        const board = document.getElementById('view-board');
+        const home    = document.getElementById('dt-home-view');
+        const cal     = document.getElementById('dt-calendar-view');
+        const an      = document.getElementById('dt-analytics-view');
+        const prof    = document.getElementById('view-profile');
+        const board   = document.getElementById('view-board');
+        const medical = document.getElementById('view-dt-medical');
 
-        const views = [home, cal, an, prof, board];
+        const views = [home, cal, an, prof, board, medical];
         views.forEach(v => {
             if (v) {
                 v.classList.remove('active');
                 v.style.display = 'none';
             }
         });
+
+        // Actualizar estado activo en la nav
+        document.querySelectorAll('.dt-nav-link').forEach(btn => btn.classList.remove('dt-nav-active'));
+        const navBtnMap = {
+            home: 'btn-nav-home', calendar: 'btn-nav-calendar',
+            analytics: 'btn-nav-analytics', board: 'btn-nav-board',
+            'dt-medical': 'btn-nav-medical'
+        };
+        const activeBtnId = navBtnMap[viewName];
+        if (activeBtnId) {
+            const btn = document.getElementById(activeBtnId);
+            if (btn) btn.classList.add('dt-nav-active');
+        }
 
         let targetView = null;
 
@@ -2907,6 +2991,15 @@ window.DTEngine = {
             targetView = cal;
             if (targetView) targetView.style.display = 'block';
             setTimeout(function () { window.DTEngine.Periodization.init(); }, 50);
+        } else if (viewName === 'dt-medical') {
+            targetView = medical;
+            if (targetView) targetView.style.display = 'flex';
+            // Inicializar La Clínica
+            if (window.DTMedical) {
+                window.DTMedical.init();
+            } else {
+                console.warn('[Router] DTMedical no disponible. Verifica que app-dt-medical.js esté cargado.');
+            }
         }
 
         if (targetView) {
