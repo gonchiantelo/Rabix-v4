@@ -149,8 +149,8 @@ window.PlayerShellEngine = {
             dtHub.classList.remove('vista-activa');
         }
 
-        // ── 4. Activar el shell (Fuerza Bruta) ──
-        shell.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 100vh !important; width: 100% !important; opacity: 1 !important; visibility: visible !important; position: absolute !important; top: 0 !important; left: 0 !important; z-index: 999999 !important; background-color: #05080f !important;';
+        // ── 4. Activar el shell (Fuerza Bruta corregida para Desktop) ──
+        shell.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 100vh !important; opacity: 1 !important; visibility: visible !important; position: fixed !important; top: 0 !important; z-index: 999999 !important; background-color: #05080f !important;';
         shell.classList.add('ps-active');
 
         // ── 5. Cargar datos del jugador en background ──
