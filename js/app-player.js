@@ -100,79 +100,51 @@ window.PlayerEngine = {
 ══════════════════════════════════════════════════════════ */
 window.PlayerShellEngine = {
 
-    /* ── Estado interno ── */
     state: {
-        user: null,     // Perfil desde team_roster
-        wellness: null, // Último registro de player_wellness
-        attendance: [], // Historial de player_attendance
+        user: null,
+        wellness: null,
+        attendance: [],
         activeTab: 'home',
     },
 
-    /* ═════════════════════════════════
-       BOOT — Punto de entrada único
-    ════════════════════════════════= */
     boot: function () {
-        console.log('[PLAYER SHELL] Booting Mundo Atleta...');
-
-        // ── 1. Garantizar que el CSS exclusivo esté inyectado ──
+        console.log('[PLAYER SHELL] Booting Mundo Atleta V6...');
         if (!document.querySelector('link[href="css/app-player.css"]')) {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = 'css/app-player.css';
+            const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = 'css/app-player.css';
             document.head.appendChild(link);
-            console.log('[PLAYER SHELL] CSS inyectado: css/app-player.css');
         }
 
         let shell = document.getElementById('player-shell');
         if (!shell) {
             shell = this._buildShellDOM();
             document.body.appendChild(shell);
-            console.log('[PLAYER SHELL] #player-shell creado e insertado en el DOM.');
         } else if (!document.getElementById('ps-body')) {
             const newShell = this._buildShellDOM();
             shell.replaceWith(newShell);
             shell = newShell;
-            console.log('[PLAYER SHELL] #player-shell reconstruido porque le faltaba la estructura.');
         }
 
-        // ── 3. BIFURCACIÓN DE ROLES: Ocultar el #app-shell del DT ──
         const dtAppShell = document.getElementById('app-shell');
-        if (dtAppShell) {
-            dtAppShell.style.display = 'none';
-            dtAppShell.setAttribute('aria-hidden', 'true');
-            console.log('[PLAYER SHELL] #app-shell del DT ocultado.');
-        }
+        if (dtAppShell) { dtAppShell.style.display = 'none'; dtAppShell.setAttribute('aria-hidden', 'true'); }
 
-        // Imposición de Estilos Base (Hard Reset en Boot)
         document.body.style.background = '#05080f';
         document.body.style.color = '#fff';
 
-        // Ocultar también el Hub del DT
         const dtHub = document.getElementById('view-dt-hub');
-        if (dtHub) {
-            dtHub.classList.remove('vista-activa');
-        }
+        if (dtHub) dtHub.classList.remove('vista-activa');
 
-        // ── 4. Activar el shell (Fuerza Bruta corregida para Desktop) ──
         shell.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 100vh !important; width: 100% !important; opacity: 1 !important; visibility: visible !important; position: fixed !important; top: 0 !important; z-index: 999999 !important; background-color: #05080f !important;';
         shell.classList.add('ps-active');
 
-        // ── 5. Cargar datos del jugador en background ──
         this._fetchPlayerData();
     },
 
-    /* ═════════════════════════════════
-       CONSTRUCCIÓN DEL HTML BASE
-    ════════════════════════════════= */
     _buildShellDOM: function () {
         const shell = document.createElement('div');
         shell.id = 'player-shell';
         shell.setAttribute('role', 'main');
-        shell.setAttribute('aria-label', 'Portal del Jugador');
-        shell.style.cssText = 'min-height: 100vh; width: 100%; display: none; opacity: 0; flex-direction: column; background: #05080f; position: absolute; top: 0; left: 0; z-index: 9999; transition: opacity 0.3s ease;';
-
+        
         shell.innerHTML = `
-            <!-- ═══ HEADER ═══ -->
             <header class="ps-header" id="ps-header">
                 <div class="ps-header-logo">RAVI<span>X</span></div>
                 <div class="ps-header-right">
@@ -181,158 +153,98 @@ window.PlayerShellEngine = {
                 </div>
             </header>
 
-            <!-- ═══ SCROLL BODY ═══ -->
             <div class="ps-body" id="ps-body">
-                <!-- Vista inicial: Boot Screen -->
                 <div class="ps-boot" id="ps-boot-screen">
                     <div class="ps-boot-icon">⚡</div>
                     <h1 style="font-size: 1.5rem; font-weight: 900; margin-bottom: 8px;">Laboratorio Activo</h1>
-                    <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem; max-width: 280px;" id="ps-boot-status">Sincronizando datos biométricos...</p>
+                    <p style="color: var(--ps-muted); font-size: 0.85rem;" id="ps-boot-status">Sincronizando datos biométricos...</p>
                 </div>
             </div>
 
-            <!-- ═══ BOTTOM NAV ═══ -->
-            <nav class="ps-bottom-nav" id="ps-bottom-nav" aria-label="Navegación principal del jugador">
-                <button class="ps-nav-btn ps-nav-active" id="ps-nav-home" onclick="window.PlayerShellEngine.switchTab('home', this)" aria-label="Inicio">
+            <nav class="ps-bottom-nav" id="ps-bottom-nav">
+                <button class="ps-nav-btn active" id="ps-nav-home" onclick="window.PlayerShellEngine.switchTab('home', this)">
                     <span class="ps-nav-icon">⌂</span>
                     <span class="ps-nav-label">Inicio</span>
                 </button>
-                <button class="ps-nav-btn" id="ps-nav-wellness" onclick="window.PlayerShellEngine.switchTab('wellness', this)" aria-label="Wellness">
+                <button class="ps-nav-btn" id="ps-nav-wellness" onclick="window.PlayerShellEngine.switchTab('wellness', this)">
                     <span class="ps-nav-icon">🔋</span>
                     <span class="ps-nav-label">Wellness</span>
                 </button>
-                <button class="ps-nav-btn" id="ps-nav-attendance" onclick="window.PlayerShellEngine.switchTab('attendance', this)" aria-label="Asistencia">
+                <button class="ps-nav-btn" id="ps-nav-attendance" onclick="window.PlayerShellEngine.switchTab('attendance', this)">
                     <span class="ps-nav-icon">📅</span>
                     <span class="ps-nav-label">Asistencia</span>
                 </button>
             </nav>
         `;
-
         return shell;
     },
 
-    /* ═════════════════════════════════
-       FETCH — Datos desde Supabase
-       Tablas: team_roster, player_wellness, player_attendance
-    ════════════════════════════════= */
     _fetchPlayerData: async function () {
         const uid = localStorage.getItem('ravix_v5_uid');
-        if (!uid) {
-            this._updateBootStatus('Error: Sesión no encontrada.');
-            return;
-        }
+        if (!uid) return;
 
         try {
-            this._updateBootStatus('LEYENDO ROSTER DEL EQUIPO...');
-
-            // ── Leer perfil desde team_roster ──
-            const { data: rosterRows, error: rosterErr } = await window.supabase
-                .from('team_roster')
-                .select('*')
-                .eq('player_id', uid)
-                .limit(1);
-
-            if (rosterErr) throw new Error('team_roster: ' + rosterErr.message);
-
+            this._updateBootStatus('LEYENDO ROSTER...');
+            const { data: rosterRows } = await window.supabase.from('team_roster').select('*').eq('player_id', uid).limit(1);
             const playerRow = rosterRows && rosterRows.length > 0 ? rosterRows[0] : null;
 
-            // ONBOARDING INTERCEPTION
             if (!playerRow) {
                 const skipFlag = localStorage.getItem('ravix_v5_skip_onboarding');
                 if (skipFlag === 'true') {
-                    // Si decidió saltar el onboarding, cargamos el modo sin equipo directamente
                     this.state.user = null;
-                    this._hydrateHeader(null);
                     setTimeout(() => this._renderHomeView(), 600);
                     return;
                 }
-
                 const nav = document.getElementById('ps-bottom-nav');
                 if (nav) nav.style.display = 'none';
-                console.log('[PLAYER SHELL] Atleta sin equipo -> Ejecutando _renderOnboardingView');
                 setTimeout(() => this._renderOnboardingView(false), 600);
                 return;
             }
 
             this.state.user = playerRow;
-
-            // ── Actualizar header con identidad ──
             this._hydrateHeader(playerRow);
 
-            this._updateBootStatus('CARGANDO WELLNESS DEL DÍA...');
-
-            // ── Leer último registro de wellness ──
+            this._updateBootStatus('CARGANDO WELLNESS...');
             const today = new Date().toISOString().split('T')[0];
-            const { data: wellnessRows, error: wellnessErr } = await window.supabase
-                .from('player_wellness')
-                .select('*')
-                .eq('player_id', uid)
-                .eq('fecha', today)
-                .limit(1);
-
-            if (!wellnessErr && wellnessRows && wellnessRows.length > 0) {
-                this.state.wellness = wellnessRows[0];
-            }
-
-            this._updateBootStatus('VERIFICANDO ASISTENCIA...');
-
-            // ── Leer últimos 7 registros de asistencia ──
-            const { data: attendRows, error: attendErr } = await window.supabase
-                .from('player_attendance')
-                .select('*')
-                .eq('player_id', uid)
-                .order('fecha', { ascending: false })
-                .limit(7);
-
-            if (!attendErr && attendRows) {
-                this.state.attendance = attendRows;
-            }
+            const { data: wellnessRows } = await window.supabase.from('player_wellness').select('*').eq('player_id', uid).eq('fecha', today).limit(1);
+            if (wellnessRows && wellnessRows.length > 0) this.state.wellness = wellnessRows[0];
 
             this._updateBootStatus('MICROCICLO LISTO ✓');
-
-            // ── Transición al home view ──
             setTimeout(() => this._renderHomeView(), 600);
 
         } catch (err) {
-            console.error('[PLAYER SHELL] Error cargando datos:', err);
-            this._updateBootStatus('⚠️ Error de conexión. Reintentando...');
-            // Mostrar home vacío igualmente para no bloquear al usuario
-            setTimeout(() => this._renderHomeView(), 1500);
+            console.error(err);
+            setTimeout(() => this._renderHomeView(), 1000);
         }
     },
 
-    /* ═════════════════════════════════
-       HIDRATACIÓN DEL HEADER
-    ════════════════════════════════= */
     _hydrateHeader: function (playerRow) {
         const avatarEl = document.getElementById('ps-player-avatar');
         if (avatarEl) {
-            const name = playerRow?.full_name || playerRow?.nombre_completo || window.CurrentUser?.full_name || 'A';
+            const name = playerRow?.full_name || window.CurrentUser?.full_name || 'A';
             avatarEl.textContent = name.charAt(0).toUpperCase();
         }
     },
 
-    /* ═════════════════════════════════
-       ONBOARDING DE EQUIPO
-    ════════════════════════════════= */
     _renderOnboardingView: function (isAddingExtraTeam = false) {
         const body = document.getElementById('ps-body');
         if (!body) return;
         
         body.innerHTML = `
-            <div class="ps-section" style="display:flex; flex-direction:column; justify-content:center; min-height: 70vh;">
-                <div class="ps-onboarding-card">
-                    <div class="ps-onboarding-icon">🛡️</div>
-                    <h2 class="ps-onboarding-title">VINCULACIÓN DE EQUIPO</h2>
-                    <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-bottom: 24px;">Ingresa el código proporcionado por tu DT.</p>
-                    <input type="text" id="onboarding-invite-code" class="ps-onboarding-input" placeholder="CÓDIGO">
-                    <button class="ps-cta-btn" id="onboarding-connect-btn" onclick="window.PlayerShellEngine._joinTeam(document.getElementById('onboarding-invite-code').value)">
-                        Conectar
-                    </button>
-                    <button onclick="window.PlayerShellEngine._skipOnboarding()" style="margin-top:20px; background:transparent; border:none; color:rgba(255,255,255,0.3); font-weight:700; cursor:pointer;">
-                        ${isAddingExtraTeam ? 'Cancelar' : 'Continuar sin equipo'}
-                    </button>
-                </div>
+            <div class="ps-onboarding-wrapper">
+                <div class="ps-onboarding-icon">🛡️</div>
+                <h2 class="ps-onboarding-title">VINCULACIÓN DE EQUIPO</h2>
+                <p class="ps-onboarding-desc">Ingresa el código holográfico de tu DT.</p>
+                
+                <input type="text" id="onboarding-invite-code" class="ps-onboarding-input" placeholder="CÓDIGO">
+                
+                <button class="ps-btn-massive" id="onboarding-connect-btn" onclick="window.PlayerShellEngine._joinTeam(document.getElementById('onboarding-invite-code').value)">
+                    CONECTAR
+                </button>
+                
+                <button onclick="window.PlayerShellEngine._skipOnboarding()" style="margin-top:24px; background:transparent; border:none; color:var(--ps-muted); font-weight:800; letter-spacing:1px; cursor:pointer; text-transform:uppercase;">
+                    ${isAddingExtraTeam ? 'Cancelar' : 'Continuar sin equipo'}
+                </button>
             </div>
         `;
         
@@ -344,204 +256,121 @@ window.PlayerShellEngine = {
         localStorage.setItem('ravix_v5_skip_onboarding', 'true');
         const nav = document.getElementById('ps-bottom-nav');
         if (nav) nav.style.display = 'flex';
-        this._hydrateHeader(null);
         this._renderHomeView();
     },
 
     _joinTeam: async function (code) {
-        if (!code || code.trim() === '') {
-            if (window.App && window.App.showToast) window.App.showToast('Ingresa un código válido.', 'error');
-            return;
-        }
-
+        if (!code) return;
         const btn = document.getElementById('onboarding-connect-btn');
-        if (btn) {
-            btn.disabled = true;
-            btn.style.opacity = '0.5';
-            btn.textContent = 'CONECTANDO...';
-        }
-
-        const uid = localStorage.getItem('ravix_v5_uid');
-        const upperCode = code.trim().toUpperCase();
+        if (btn) { btn.disabled = true; btn.textContent = 'CONECTANDO...'; }
 
         try {
-            const { data: teamData, error: teamErr } = await window.supabase
-                .from('teams')
-                .select('id, name')
-                .eq('invite_code', upperCode)
-                .limit(1);
-
-            if (teamErr) throw teamErr;
+            const uid = localStorage.getItem('ravix_v5_uid');
+            const upperCode = code.trim().toUpperCase();
+            const { data: teamData } = await window.supabase.from('teams').select('id').eq('invite_code', upperCode).limit(1);
 
             if (!teamData || teamData.length === 0) {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                    btn.textContent = 'CONECTAR AL EQUIPO';
-                }
-                if (window.App && window.App.showToast) window.App.showToast('Código inválido o inexistente.', 'error');
+                if (btn) { btn.disabled = false; btn.textContent = 'CONECTAR'; }
+                this._showToast('Código inválido');
                 return;
             }
 
-            const teamId = teamData[0].id;
-
-            const { error: insertErr } = await window.supabase
-                .from('team_roster')
-                .insert([{
-                    team_id: teamId,
-                    player_id: uid
-                }]);
-
-            if (insertErr) throw insertErr;
-
-            if (window.App && window.App.showToast) window.App.showToast('¡Vinculado con éxito!', 'success');
-            
+            await window.supabase.from('team_roster').insert([{ team_id: teamData[0].id, player_id: uid }]);
+            this._showToast('¡Vinculado con éxito!');
             const nav = document.getElementById('ps-bottom-nav');
             if (nav) nav.style.display = 'flex';
-            
-            // Reiniciar flujo
             this._fetchPlayerData();
-
         } catch (err) {
-            console.error('[ONBOARDING] Error:', err);
-            if (btn) {
-                btn.disabled = false;
-                btn.style.opacity = '1';
-                btn.textContent = 'CONECTAR AL EQUIPO';
-            }
-            if (window.App && window.App.showToast) window.App.showToast('Ocurrió un error de vinculación.', 'error');
+            console.error(err);
+            if (btn) { btn.disabled = false; btn.textContent = 'CONECTAR'; }
         }
     },
 
-    /* ═════════════════════════════════
-       RENDER — Vista HOME
-    ════════════════════════════════= */
     _renderHomeView: function () {
         const body = document.getElementById('ps-body');
         if (!body) return;
 
         const player = this.state.user;
-        const wellness = this.state.wellness;
-        const attendance = this.state.attendance;
-
-        const firstName = player?.full_name?.split(' ')[0]
-            || player?.nombre_completo?.split(' ')[0]
-            || 'Atleta';
-
-        const wellnessDone = !!wellness;
-        const attendCount  = attendance.length;
-
+        const firstName = player?.full_name?.split(' ')[0] || 'Atleta';
+        const wellnessDone = !!this.state.wellness;
+        
         const now = new Date();
-        const dateStr = now.toLocaleDateString('es-ES', {
-            weekday: 'long', day: 'numeric', month: 'long'
-        }).toUpperCase();
+        const dateStr = now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
         body.innerHTML = `
             <div class="ps-section">
-                <p style="color: var(--ps-accent-cyan); font-size: 0.65rem; font-weight: 800; letter-spacing: 2px;">${dateStr}</p>
-                <h1 style="font-size: 2.2rem; font-weight: 800; line-height: 1.1; margin-top: 4px;">Buenas,<br>${firstName}</h1>
+                <p class="ps-date-text">${dateStr}</p>
+                <h1 class="ps-greeting">Buenas,<br>${firstName}</h1>
             </div>
 
             <div class="ps-section">
-                <div class="ps-stat-row">
-                    <div class="ps-stat-pill">
-                        <span class="ps-stat-val" style="color: var(--ps-accent-cyan);">${attendCount}</span>
-                        <span class="ps-stat-label">Asistencias</span>
+                <div class="ps-bento-grid">
+                    <div class="ps-bento-item">
+                        <span class="ps-bento-val" style="color: var(--ps-accent-cyan);">0</span>
+                        <span class="ps-bento-label">Asistencias</span>
                     </div>
-                    <div class="ps-stat-pill">
-                        <span class="ps-stat-val" style="color: ${wellnessDone ? 'var(--ps-accent)' : 'var(--ps-muted)'};">${wellnessDone ? '✓' : '—'}</span>
-                        <span class="ps-stat-label">Wellness</span>
+                    <div class="ps-bento-item">
+                        <span class="ps-bento-val" style="color: ${wellnessDone ? 'var(--ps-success)' : 'var(--ps-muted)'};">${wellnessDone ? '✓' : '—'}</span>
+                        <span class="ps-bento-label">Wellness</span>
                     </div>
-                    <div class="ps-stat-pill">
-                        <span class="ps-stat-val" style="color: var(--ps-muted);">—</span>
-                        <span class="ps-stat-label">Carga</span>
+                    <div class="ps-bento-item">
+                        <span class="ps-bento-val" style="color: var(--ps-muted);">—</span>
+                        <span class="ps-bento-label">Carga</span>
                     </div>
                 </div>
             </div>
 
             <div class="ps-section">
-                <div class="ps-card" style="border-left: 3px solid var(--ps-accent-cyan);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                        <h3 style="font-size:1rem; font-weight:800;">Microciclo Activo</h3>
+                <div class="ps-card ps-micro-card">
+                    <div class="ps-micro-header">
+                        <h3 class="ps-micro-title">Microciclo Activo</h3>
                         <span style="font-size:1.2rem;">⚽</span>
                     </div>
-                    <p style="font-size:0.85rem; font-weight:700; color:var(--ps-muted);">Día Libre - Recuperación Activa</p>
+                    <p class="ps-micro-desc">Día Libre - Recuperación Activa</p>
                 </div>
             </div>
 
             ${!wellnessDone ? `
             <div class="ps-section">
-                <div class="ps-card" style="background: rgba(191,255,0,0.05); border: 1px solid rgba(191,255,0,0.2); cursor:pointer;" onclick="window.PlayerShellEngine.switchTab('wellness')">
+                <div class="ps-card ps-cta-card" onclick="window.PlayerShellEngine.switchTab('wellness')">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div>
-                            <h3 style="color:var(--ps-accent); font-size:1rem; font-weight:800;">Laboratorio de Hoy</h3>
-                            <p style="color:var(--ps-muted); font-size:0.75rem; margin-top:4px; font-weight:700;">REGISTRAR ESTADO DE HOY →</p>
+                            <h3 class="ps-cta-title">Laboratorio de Hoy</h3>
+                            <p class="ps-cta-subtitle">REGISTRAR ESTADO DE HOY →</p>
                         </div>
-                        <span style="font-size:1.5rem; filter: hue-rotate(45deg);">🔋</span>
+                        <span style="font-size:1.8rem; filter: drop-shadow(0 0 10px rgba(191,255,0,0.5));">🔋</span>
                     </div>
                 </div>
             </div>` : ''}
         `;
-
         this.state.activeTab = 'home';
     },
 
-    /* ═════════════════════════════════
-       NAVEGACIÓN DE TABS
-    ════════════════════════════════= */
     switchTab: function (tabId, btnEl) {
-        // Actualizar estado visual del nav
-        document.querySelectorAll('.ps-nav-btn').forEach(b => {
-            b.classList.remove('ps-nav-active');
-            b.removeAttribute('aria-current');
-        });
-
-        if (btnEl) {
-            btnEl.classList.add('ps-nav-active');
-            btnEl.setAttribute('aria-current', 'page');
-        } else {
-            // Activar por tabId si no hay elemento
-            const navBtn = document.getElementById('ps-nav-' + tabId);
-            if (navBtn) {
-                navBtn.classList.add('ps-nav-active');
-                navBtn.setAttribute('aria-current', 'page');
-            }
+        document.querySelectorAll('.ps-nav-btn').forEach(b => b.classList.remove('active'));
+        if (btnEl) btnEl.classList.add('active');
+        else {
+            const btn = document.getElementById('ps-nav-' + tabId);
+            if (btn) btn.classList.add('active');
         }
 
         switch (tabId) {
-            case 'home':
-                this._renderHomeView();
-                break;
-            case 'wellness':
-                this._renderWellnessView();
-                break;
-            case 'attendance':
-                this._showComingSoon('📅', 'Asistencia', 'Historial completo de presencias y ausencias. Próximamente.');
-                break;
-            case 'profile':
-                this._showComingSoon('👤', 'Mi Perfil', 'Configuración de tu perfil y datos biométricos. Próximamente.');
-                break;
-            default:
-                this._renderHomeView();
+            case 'home': this._renderHomeView(); break;
+            case 'wellness': this._renderWellnessView(); break;
+            case 'attendance': this._renderHomeView(); break;
         }
-
         this.state.activeTab = tabId;
     },
 
-    /* ═════════════════════════════════
-       RENDER — Vista WELLNESS
-       Hooper Scale + RPE
-    ════════════════════════════════= */
     _renderWellnessView: function () {
         const body = document.getElementById('ps-body');
         if (!body) return;
 
-        const wellness = this.state.wellness;
-        if (wellness) {
+        if (this.state.wellness) {
             body.innerHTML = `
                 <div class="ps-section">
-                    <h2 style="font-size:1.5rem; font-weight:900; color:var(--ps-accent);">Reporte Enviado ✅</h2>
-                    <p style="color:var(--ps-muted); font-size:0.85rem; margin-top:8px;">Has completado el laboratorio por hoy.</p>
+                    <h2 style="font-size:2rem; font-weight:900; color:var(--ps-success); margin-bottom: 8px;">Reporte Enviado</h2>
+                    <p style="color:var(--ps-muted); font-size:0.9rem;">Has completado el laboratorio por hoy.</p>
                 </div>
             `;
             return;
@@ -551,234 +380,118 @@ window.PlayerShellEngine = {
 
         body.innerHTML = `
             <div class="ps-section">
-                <h1 style="font-size: 1.8rem; font-weight: 800; line-height: 1.1;">Laboratorio<br><span style="color:var(--ps-accent-cyan);">Wellness</span></h1>
-                <p style="color:var(--ps-muted); font-size:0.8rem; margin-top:8px; font-weight:700; letter-spacing:1px;">ESCALA DE HOOPER</p>
+                <h1 style="font-size: 2rem; font-weight: 800; line-height: 1.1;">Laboratorio<br><span style="color:var(--ps-accent-cyan);">Wellness</span></h1>
+                <p style="color:var(--ps-muted); font-size:0.75rem; margin-top:8px; font-weight:800; letter-spacing:2px;">ESCALA DE HOOPER</p>
             </div>
 
             <div class="ps-section">
                 <div class="ps-card">
-                    <div class="pswl-metric-block" data-metric="sleep">
-                        <div class="pswl-metric-header">
-                            <span>SUEÑO</span>
-                            <span id="pswl-val-sleep" style="color:var(--ps-accent-cyan);">3</span>
-                        </div>
-                        <div class="pswl-seg-ctrl">
-                            ${[1,2,3,4,5].map(n => `<button class="pswl-seg-btn ${n===3?'pswl-seg-active':''}" data-val="${n}" data-metric="sleep">${n}</button>`).join('')}
-                        </div>
-                    </div>
-                    <div class="pswl-metric-block" data-metric="stress">
-                        <div class="pswl-metric-header">
-                            <span>ESTRÉS</span>
-                            <span id="pswl-val-stress" style="color:var(--ps-accent-cyan);">3</span>
-                        </div>
-                        <div class="pswl-seg-ctrl">
-                            ${[1,2,3,4,5].map(n => `<button class="pswl-seg-btn ${n===3?'pswl-seg-active':''}" data-val="${n}" data-metric="stress">${n}</button>`).join('')}
-                        </div>
-                    </div>
-                    <div class="pswl-metric-block" data-metric="fatigue">
-                        <div class="pswl-metric-header">
-                            <span>FATIGA</span>
-                            <span id="pswl-val-fatigue" style="color:var(--ps-accent-cyan);">3</span>
-                        </div>
-                        <div class="pswl-seg-ctrl">
-                            ${[1,2,3,4,5].map(n => `<button class="pswl-seg-btn ${n===3?'pswl-seg-active':''}" data-val="${n}" data-metric="fatigue">${n}</button>`).join('')}
-                        </div>
-                    </div>
+                    ${['sleep|SUEÑO', 'stress|ESTRÉS', 'fatigue|FATIGA'].map(metric => {
+                        const [id, label] = metric.split('|');
+                        return `
+                        <div class="ps-hooper-row">
+                            <div class="ps-hooper-header">
+                                <span class="ps-hooper-label">${label}</span>
+                                <span class="ps-hooper-val" id="pswl-val-${id}">3</span>
+                            </div>
+                            <div class="ps-hooper-blocks">
+                                ${[1,2,3,4,5].map(n => `<button class="ps-hooper-btn ${n===3?'active':''}" data-val="${n}" data-metric="${id}">${n}</button>`).join('')}
+                            </div>
+                        </div>`;
+                    }).join('')}
                 </div>
             </div>
 
             <div class="ps-section">
                 <div class="ps-card">
-                    <div class="pswl-metric-header">
-                        <span>ESFUERZO PERCIBIDO (RPE)</span>
-                        <span id="pswl-rpe-display" style="color:var(--ps-danger); font-size:1.2rem;">5</span>
+                    <div class="ps-hooper-header">
+                        <span class="ps-hooper-label">ESFUERZO PERCIBIDO (RPE)</span>
+                        <span class="ps-hooper-val" id="pswl-rpe-display" style="color:#F59E0B;">5</span>
                     </div>
-                    <input type="range" id="pswl-rpe-slider" min="0" max="10" value="5" step="1" oninput="window.PlayerShellEngine._onRpeInput(this)">
+                    <input type="range" class="ps-rpe-slider" id="pswl-rpe-slider" min="0" max="10" value="5" step="1" oninput="window.PlayerShellEngine._onRpeInput(this)">
                 </div>
             </div>
 
-            <div class="ps-section" style="padding-bottom: 24px;">
-                <button class="ps-cta-btn" id="pswl-submit-btn" onclick="window.PlayerShellEngine._submitWellness()">ENVIAR REPORTE</button>
+            <div class="ps-section">
+                <button class="ps-btn-massive" id="pswl-submit-btn" onclick="window.PlayerShellEngine._submitWellness()">ENVIAR REPORTE AL CUERPO TÉCNICO</button>
             </div>
         `;
 
         this._setupWellnessInteractions();
     },
 
-    /* ═════════════════════════════════
-       SETUP — Interacciones wellness
-    ════════════════════════════════= */
     _setupWellnessInteractions: function () {
-        // Botones segmentados de Hooper
-        document.querySelectorAll('.pswl-seg-btn').forEach(btn => {
+        document.querySelectorAll('.ps-hooper-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const metric = btn.dataset.metric;
-                const val    = parseInt(btn.dataset.val);
-
-                // Activar visualmente
-                const container = btn.closest('.pswl-seg-ctrl');
-                container.querySelectorAll('.pswl-seg-btn').forEach(b => b.classList.remove('pswl-seg-active'));
-                btn.classList.add('pswl-seg-active');
-
-                // Actualizar display y estado
-                const displayEl = document.getElementById('pswl-val-' + metric);
-                if (displayEl) displayEl.textContent = val;
+                const val = parseInt(btn.dataset.val);
+                btn.parentElement.querySelectorAll('.ps-hooper-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('pswl-val-' + metric).textContent = val;
                 this._wellnessForm[metric] = val;
             });
         });
     },
 
-    /* ═════════════════════════════════
-       RPE INPUT — handler del slider
-    ════════════════════════════════= */
     _onRpeInput: function (slider) {
         const val = parseInt(slider.value);
         const display = document.getElementById('pswl-rpe-display');
-        if (display) display.textContent = val;
-
-        // Color dinámico del slider
-        const pct = val * 10;
-        slider.style.background = `linear-gradient(to right, rgba(239,68,68,0.8) ${pct}%, rgba(255,255,255,0.08) ${pct}%)`;
-
-        // Color del número
-        const color = val >= 8 ? '#EF4444' : val >= 5 ? '#F59E0B' : '#10B981';
-        if (display) display.style.color = color;
-
+        display.textContent = val;
+        display.style.color = val >= 8 ? 'var(--ps-danger-light)' : val >= 5 ? '#F59E0B' : 'var(--ps-success)';
         if (this._wellnessForm) this._wellnessForm.rpe = val;
     },
 
-    /* ═════════════════════════════════
-       SUBMIT — Envío a Supabase
-       Tabla: player_wellness
-    ════════════════════════════════= */
     _submitWellness: async function () {
         const btn = document.getElementById('pswl-submit-btn');
-        if (btn) {
-            btn.disabled = true;
-            btn.textContent = 'ENVIANDO...';
-            btn.style.opacity = '0.6';
-        }
+        if (btn) { btn.disabled = true; btn.textContent = 'ENVIANDO...'; }
 
         try {
             const uid = localStorage.getItem('ravix_v5_uid');
-            if (!uid) throw new Error('Sin sesión activa.');
-
-            const player = this.state.user;
-            const teamId = player?.team_id
-                || window.CurrentTeam?.id
-                || localStorage.getItem('ravix_team_id');
-
             const form = this._wellnessForm || {};
             const rpeSlider = document.getElementById('pswl-rpe-slider');
             if (rpeSlider) form.rpe = parseInt(rpeSlider.value);
 
             const payload = {
-                player_id:     uid,
-                team_id:       teamId,
-                fecha:         new Date().toISOString().split('T')[0],
-                sleep_quality: form.sleep   || 3,
-                stress_level:  form.stress  || 3,
-                fatigue:       form.fatigue || 3,
-                rpe_score:     form.rpe     || 5,
-                created_at:    new Date().toISOString()
+                player_id: uid,
+                fecha: new Date().toISOString().split('T')[0],
+                sleep_quality: form.sleep || 3,
+                stress_level: form.stress || 3,
+                fatigue: form.fatigue || 3,
+                rpe_score: form.rpe || 5,
+                created_at: new Date().toISOString()
             };
 
-            const { error } = await window.supabase
-                .from('player_wellness')
-                .upsert([payload], { onConflict: 'player_id,fecha' });
-
-            if (error) throw error;
-
-            // Actualizar estado en memoria
+            await window.supabase.from('player_wellness').upsert([payload], { onConflict: 'player_id,fecha' });
             this.state.wellness = payload;
-
-            // Toast y re-render
-            this._showWellnessToast('✅ ¡Reporte enviado con éxito!');
+            this._showToast('✅ Reporte enviado con éxito');
             setTimeout(() => this._renderWellnessView(), 800);
-
         } catch (err) {
-            console.error('[PLAYER SHELL] Error submitWellness:', err);
-            this._showWellnessToast('⚠️ Error al enviar. Verifica tu conexión.');
-            if (btn) {
-                btn.disabled = false;
-                btn.textContent = '⚡ ENVIAR REPORTE';
-                btn.style.opacity = '1';
-            }
+            console.error(err);
+            if (btn) { btn.disabled = false; btn.textContent = 'ENVIAR REPORTE AL CUERPO TÉCNICO'; }
         }
     },
 
-    _showWellnessToast: function (msg) {
-        const prev = document.getElementById('pswl-toast');
+    _showToast: function (msg) {
+        const prev = document.getElementById('ps-toast');
         if (prev) prev.remove();
-
         const toast = document.createElement('div');
-        toast.id = 'pswl-toast';
+        toast.id = 'ps-toast';
+        toast.className = 'ps-toast';
         toast.textContent = msg;
-        Object.assign(toast.style, {
-            position: 'fixed', bottom: '100px', left: '50%',
-            transform: 'translateX(-50%) translateY(10px)',
-            background: 'linear-gradient(135deg, #1a1a1e, #242428)',
-            border: '1px solid rgba(191,255,0,0.25)',
-            color: '#BFFF00', padding: '12px 22px', borderRadius: '28px',
-            fontSize: '13px', fontWeight: '800', fontFamily: "'Outfit', sans-serif",
-            boxShadow: '0 8px 24px rgba(0,0,0,0.4)', zIndex: '10001',
-            opacity: '0', transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
-            whiteSpace: 'nowrap', letterSpacing: '0.5px',
-        });
         document.body.appendChild(toast);
-        requestAnimationFrame(() => {
-            toast.style.opacity = '1';
-            toast.style.transform = 'translateX(-50%) translateY(0)';
-        });
+        requestAnimationFrame(() => toast.classList.add('visible'));
         setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateX(-50%) translateY(8px)';
-            setTimeout(() => toast.remove(), 350);
-        }, 2800);
+            toast.classList.remove('visible');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
     },
 
-    /* ═════════════════════════════════
-       HELPERS
-    ════════════════════════════════= */
     _updateBootStatus: function (msg) {
         const el = document.getElementById('ps-boot-status');
         if (el) el.textContent = msg;
-    },
-
-    _showComingSoon: function (icon, title, desc) {
-        const body = document.getElementById('ps-body');
-        if (!body) return;
-        body.innerHTML = `
-            <div class="ps-boot" style="min-height: calc(100dvh - 132px);">
-                <div class="ps-boot-icon" style="font-size: 2rem;">${icon}</div>
-                <div>
-                    <div class="ps-boot-badge">Módulo en Construcción</div>
-                </div>
-                <h2 class="ps-boot-title">${title}</h2>
-                <p class="ps-boot-desc">${desc}</p>
-                <button onclick="window.PlayerShellEngine.switchTab('home', null)"
-                        style="padding:12px 28px; background:rgba(191,255,0,0.1);
-                               border:1px solid rgba(191,255,0,0.25); border-radius:12px;
-                               color:#BFFF00; font-family:'Outfit',sans-serif; font-size:0.82rem;
-                               font-weight:800; letter-spacing:1px; cursor:pointer; text-transform:uppercase;">
-                    ← Volver al Inicio
-                </button>
-            </div>
-        `;
-    },
-
-    logout: function () {
-        localStorage.clear();
-        location.reload();
     }
 };
 
-
-/* ══════════════════════════════════════════════════════════
-   3. ATHLETE APP — Motor legacy del dashboard atleta
-      Conservado para compatibilidad con #view-athlete-dashboard
-      en index.html (path antiguo). No toca el #player-shell.
-══════════════════════════════════════════════════════════ */
 window.AthleteApp = {
 
     state: {
