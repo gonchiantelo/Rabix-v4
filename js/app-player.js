@@ -165,22 +165,15 @@ window.PlayerShellEngine = {
         shell.id = 'player-shell';
         shell.setAttribute('role', 'main');
         shell.setAttribute('aria-label', 'Portal del Jugador');
-        // Estilos de seguridad (Hard Reset)
         shell.style.cssText = 'min-height: 100vh; width: 100%; display: none; opacity: 0; flex-direction: column; background: #05080f; position: absolute; top: 0; left: 0; z-index: 9999; transition: opacity 0.3s ease;';
 
         shell.innerHTML = `
             <!-- ═══ HEADER ═══ -->
-            <header class="ps-header" id="ps-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px;">
-                <div class="ps-header-brand" style="flex-shrink: 0;">
-                    <div class="ps-header-logo">RAVI<span>X</span></div>
-                    <div class="ps-header-role-pill">
-                        <span class="ps-header-role-dot"></span>
-                        Jugador
-                    </div>
-                </div>
-                <div class="ps-header-identity" style="flex: 1; text-align: right; min-width: 0; padding-left: 16px;">
-                    <div class="ps-header-name" id="ps-player-name" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden; font-size: 0.95rem;">—</div>
-                    <div class="ps-header-team" id="ps-player-team" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">—</div>
+            <header class="ps-header" id="ps-header">
+                <div class="ps-header-logo">RAVI<span>X</span></div>
+                <div class="ps-header-right">
+                    <div class="ps-header-add-btn" onclick="window.PlayerShellEngine._renderOnboardingView(true)">+</div>
+                    <div class="ps-header-avatar" id="ps-player-avatar">👤</div>
                 </div>
             </header>
 
@@ -188,62 +181,25 @@ window.PlayerShellEngine = {
             <div class="ps-body" id="ps-body">
                 <!-- Vista inicial: Boot Screen -->
                 <div class="ps-boot" id="ps-boot-screen">
-                    <div class="ps-boot-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                        </svg>
-                    </div>
-
-                    <div>
-                        <div class="ps-boot-badge">Mundo Atleta · RAVIX V5</div>
-                    </div>
-
-                    <div>
-                        <h1 class="ps-boot-title">
-                            Bienvenido al Laboratorio.
-                            <em>Cargando tu microciclo...</em>
-                        </h1>
-                    </div>
-
-                    <p class="ps-boot-desc">
-                        Conectando con tu equipo y sincronizando
-                        los datos de rendimiento del día.
-                    </p>
-
-                    <div class="ps-spinner"></div>
-
-                    <div class="ps-boot-status" id="ps-boot-status">
-                        INICIALIZANDO PROTOCOLO COMETTI
-                    </div>
+                    <div class="ps-boot-icon">⚡</div>
+                    <h1 style="font-size: 1.5rem; font-weight: 900; margin-bottom: 8px;">Laboratorio Activo</h1>
+                    <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem; max-width: 280px;" id="ps-boot-status">Sincronizando datos biométricos...</p>
                 </div>
             </div>
 
             <!-- ═══ BOTTOM NAV ═══ -->
             <nav class="ps-bottom-nav" id="ps-bottom-nav" aria-label="Navegación principal del jugador">
-                <button class="ps-nav-btn ps-nav-active" id="ps-nav-home"
-                        onclick="window.PlayerShellEngine.switchTab('home', this)"
-                        aria-label="Inicio" aria-current="page">
-                    <span class="ps-nav-icon">⚡</span>
+                <button class="ps-nav-btn ps-nav-active" id="ps-nav-home" onclick="window.PlayerShellEngine.switchTab('home', this)" aria-label="Inicio">
+                    <span class="ps-nav-icon">⌂</span>
                     <span class="ps-nav-label">Inicio</span>
                 </button>
-                <button class="ps-nav-btn" id="ps-nav-wellness"
-                        onclick="window.PlayerShellEngine.switchTab('wellness', this)"
-                        aria-label="Wellness">
+                <button class="ps-nav-btn" id="ps-nav-wellness" onclick="window.PlayerShellEngine.switchTab('wellness', this)" aria-label="Wellness">
                     <span class="ps-nav-icon">🔋</span>
                     <span class="ps-nav-label">Wellness</span>
                 </button>
-                <button class="ps-nav-btn" id="ps-nav-attendance"
-                        onclick="window.PlayerShellEngine.switchTab('attendance', this)"
-                        aria-label="Asistencia">
+                <button class="ps-nav-btn" id="ps-nav-attendance" onclick="window.PlayerShellEngine.switchTab('attendance', this)" aria-label="Asistencia">
                     <span class="ps-nav-icon">📅</span>
                     <span class="ps-nav-label">Asistencia</span>
-                </button>
-                <button class="ps-nav-btn" id="ps-nav-profile"
-                        onclick="window.PlayerShellEngine.switchTab('profile', this)"
-                        aria-label="Mi Perfil">
-                    <span class="ps-nav-icon">👤</span>
-                    <span class="ps-nav-label">Perfil</span>
                 </button>
             </nav>
         `;
@@ -345,23 +301,10 @@ window.PlayerShellEngine = {
        HIDRATACIÓN DEL HEADER
     ════════════════════════════════= */
     _hydrateHeader: function (playerRow) {
-        const nameEl = document.getElementById('ps-player-name');
-        const teamEl = document.getElementById('ps-player-team');
-
-        if (nameEl) {
-            const name = playerRow?.full_name
-                || playerRow?.nombre_completo
-                || window.CurrentUser?.full_name
-                || 'Atleta';
-            nameEl.textContent = name.split(' ')[0];
-        }
-
-        if (teamEl) {
-            const team = playerRow?.team_name
-                || window.CurrentTeam?.name
-                || playerRow?.equipo
-                || 'Mi Equipo';
-            teamEl.textContent = team.toUpperCase();
+        const avatarEl = document.getElementById('ps-player-avatar');
+        if (avatarEl) {
+            const name = playerRow?.full_name || playerRow?.nombre_completo || window.CurrentUser?.full_name || 'A';
+            avatarEl.textContent = name.charAt(0).toUpperCase();
         }
     },
 
@@ -369,73 +312,35 @@ window.PlayerShellEngine = {
        ONBOARDING DE EQUIPO
     ════════════════════════════════= */
     _renderOnboardingView: function (isAddingExtraTeam = false) {
-        const shell = document.getElementById('player-shell');
-        if (!shell) return;
+        const body = document.getElementById('ps-body');
+        if (!body) return;
         
-        // Ensure player-shell centers the card
-        shell.style.justifyContent = 'center';
-        shell.style.alignItems = 'center';
-        shell.style.background = '#05080f';
-
-        const secondaryButtonHtml = isAddingExtraTeam 
-            ? `<button id="onboarding-skip-btn" onclick="window.PlayerShellEngine._skipOnboarding()"
-                        style="width: 100%; box-sizing: border-box; padding: 16px; border-radius: 12px; background: transparent; color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s;">
-                    CANCELAR
-                </button>`
-            : `<button id="onboarding-skip-btn" onclick="window.PlayerShellEngine._skipOnboarding()"
-                        style="width: 100%; box-sizing: border-box; padding: 16px; border-radius: 12px; background: transparent; color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s;">
-                    CONTINUAR SIN EQUIPO
-                </button>`;
-
-        shell.innerHTML = `
-            <div class="ps-onboarding-card" style="width: 90%; max-width: 420px; display: flex; flex-direction: column; gap: 24px; text-align: center; box-sizing: border-box; margin: auto;">
-                <div style="font-size: 2.5rem; font-weight: 900; letter-spacing: 4px; margin-bottom: 8px;">
-                    RAVI<span style="color:#BFFF00;">X</span>
+        body.innerHTML = `
+            <div class="ps-section" style="display:flex; flex-direction:column; justify-content:center; min-height: 70vh;">
+                <div class="ps-onboarding-card">
+                    <div class="ps-onboarding-icon">🛡️</div>
+                    <h2 class="ps-onboarding-title">VINCULACIÓN DE EQUIPO</h2>
+                    <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-bottom: 24px;">Ingresa el código proporcionado por tu DT.</p>
+                    <input type="text" id="onboarding-invite-code" class="ps-onboarding-input" placeholder="CÓDIGO">
+                    <button class="ps-cta-btn" id="onboarding-connect-btn" onclick="window.PlayerShellEngine._joinTeam(document.getElementById('onboarding-invite-code').value)">
+                        Conectar
+                    </button>
+                    <button onclick="window.PlayerShellEngine._skipOnboarding()" style="margin-top:20px; background:transparent; border:none; color:rgba(255,255,255,0.3); font-weight:700; cursor:pointer;">
+                        ${isAddingExtraTeam ? 'Cancelar' : 'Continuar sin equipo'}
+                    </button>
                 </div>
-                
-                <h2 style="font-size: 1.4rem; font-weight: 900; color: #F0F0F0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">VINCULACIÓN DE EQUIPO</h2>
-                
-                <p style="font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.6); line-height: 1.5; margin-bottom: 16px;">
-                    Ingresa el código de invitación proporcionado por tu Director Técnico o Staff para sincronizar tu laboratorio de rendimiento.
-                </p>
-                
-                <input type="text" id="onboarding-invite-code" placeholder="EJ: CRANDON-2026" 
-                       style="width: 100%; box-sizing: border-box; padding: 16px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,255,255,0.2); color: #F0F0F0; font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; text-align: center; text-transform: uppercase; letter-spacing: 2px; outline: none;"
-                       onfocus="this.style.borderColor='rgba(0,255,255,0.6)'"
-                       onblur="this.style.borderColor='rgba(0,255,255,0.2)'">
-                       
-                <button id="onboarding-connect-btn" onclick="window.PlayerShellEngine._joinTeam(document.getElementById('onboarding-invite-code').value)"
-                        style="width: 100%; box-sizing: border-box; padding: 16px; border-radius: 12px; background: #BFFF00; color: #0A0A0A; border: none; font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; box-shadow: 0 0 20px rgba(191,255,0,0.2);">
-                    CONECTAR AL EQUIPO
-                </button>
-
-                ${secondaryButtonHtml}
             </div>
         `;
+        
+        const nav = document.getElementById('ps-bottom-nav');
+        if (nav && !isAddingExtraTeam) nav.style.display = 'none';
     },
 
     _skipOnboarding: function () {
-        // Set flag to not prompt again
         localStorage.setItem('ravix_v5_skip_onboarding', 'true');
-
-        // Reconstruimos el DOM principal del shell ya que lo pisamos con innerHTML en el onboarding
-        const shell = document.getElementById('player-shell');
-        if (shell) {
-            shell.style.justifyContent = 'flex-start';
-            shell.style.alignItems = 'stretch';
-            shell.innerHTML = '';
-            const newShell = this._buildShellDOM();
-            shell.innerHTML = newShell.innerHTML;
-        }
-
-        // Mostrar nav
         const nav = document.getElementById('ps-bottom-nav');
         if (nav) nav.style.display = 'flex';
-
-        // Hidratar con datos base (ya que no hay team_roster)
         this._hydrateHeader(null);
-
-        // Renderizar vista inicio
         this._renderHomeView();
     },
 
@@ -519,9 +424,6 @@ window.PlayerShellEngine = {
             || player?.nombre_completo?.split(' ')[0]
             || 'Atleta';
 
-        const position = player?.position || player?.posicion || '—';
-        const sport    = player?.sport    || player?.deporte   || '—';
-
         const wellnessDone = !!wellness;
         const attendCount  = attendance.length;
 
@@ -531,122 +433,47 @@ window.PlayerShellEngine = {
         }).toUpperCase();
 
         body.innerHTML = `
-            <!-- Date header -->
-            <div class="ps-section" style="padding-top: 24px;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <div>
-                        <p style="font-size: 0.62rem; font-weight: 800; letter-spacing: 3px;
-                                  color: rgba(191,255,0,0.6); text-transform: uppercase;">${dateStr}</p>
-                        <h2 style="font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px;
-                                   color: #F0F0F0; line-height: 1.2; margin: 4px 0;">
-                            Buenas, <span style="color: #BFFF00;">${firstName}</span>
-                        </h2>
-                        <p style="font-size: 0.72rem; font-weight: 700; letter-spacing: 2px;
-                                  color: rgba(255,255,255,0.3); text-transform: uppercase;">
-                            ${sport} · ${position}
-                        </p>
-                    </div>
-                    <button class="ps-btn-add-team" onclick="window.PlayerShellEngine._renderOnboardingView(true)" style="margin-top: 0;">
-                        + AÑADIR EQUIPO
-                    </button>
-                </div>
+            <div class="ps-section">
+                <p style="color: var(--ps-accent-cyan); font-size: 0.65rem; font-weight: 800; letter-spacing: 2px;">${dateStr}</p>
+                <h1 style="font-size: 2.2rem; font-weight: 800; line-height: 1.1; margin-top: 4px;">Buenas,<br>${firstName}</h1>
             </div>
 
-            <!-- KPI Pills -->
             <div class="ps-section">
                 <div class="ps-stat-row">
                     <div class="ps-stat-pill">
-                        <span class="ps-stat-val ps-stat-val--volt">${attendCount}</span>
+                        <span class="ps-stat-val" style="color: var(--ps-accent-cyan);">${attendCount}</span>
                         <span class="ps-stat-label">Asistencias</span>
                     </div>
                     <div class="ps-stat-pill">
-                        <span class="ps-stat-val ${wellnessDone ? 'ps-stat-val--volt' : ''}">${wellnessDone ? '✓' : '—'}</span>
-                        <span class="ps-stat-label">Wellness Hoy</span>
+                        <span class="ps-stat-val" style="color: ${wellnessDone ? 'var(--ps-accent)' : 'var(--ps-muted)'};">${wellnessDone ? '✓' : '—'}</span>
+                        <span class="ps-stat-label">Wellness</span>
                     </div>
                     <div class="ps-stat-pill">
-                        <span class="ps-stat-val ps-stat-val--muted">—</span>
-                        <span class="ps-stat-label">Carga Semanal</span>
+                        <span class="ps-stat-val" style="color: var(--ps-muted);">—</span>
+                        <span class="ps-stat-label">Carga</span>
                     </div>
                 </div>
             </div>
 
-            <div class="ps-divider"></div>
-
-            <!-- Microcycle Card -->
             <div class="ps-section">
-                <span class="ps-section-label">Microciclo Activo</span>
-                <div class="ps-card">
-                    <div class="ps-card-inner">
-                        <div class="ps-card-header">
-                            <div class="ps-card-icon ps-card-icon--volt">⚡</div>
-                            <div>
-                                <div class="ps-card-title">Sesión de Hoy</div>
-                                <div class="ps-card-subtitle">Protocolo del DT</div>
-                            </div>
-                        </div>
-                        <div id="ps-today-session" style="text-align: center; padding: 20px 0;">
-                            <div class="ps-empty-icon">📭</div>
-                            <div class="ps-card-subtitle" style="margin-top: 8px;">
-                                Sin sesión asignada para hoy.
-                            </div>
-                        </div>
+                <div class="ps-card" style="border-left: 3px solid var(--ps-accent-cyan);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <h3 style="font-size:1rem; font-weight:800;">Microciclo Activo</h3>
+                        <span style="font-size:1.2rem;">⚽</span>
                     </div>
+                    <p style="font-size:0.85rem; font-weight:700; color:var(--ps-muted);">Día Libre - Recuperación Activa</p>
                 </div>
             </div>
 
-            <!-- Wellness Quick-Check -->
+            ${!wellnessDone ? `
             <div class="ps-section">
-                <span class="ps-section-label">Estado del día</span>
-                <div class="ps-card" id="ps-wellness-card">
-                    <div class="ps-card-inner">
-                        <div class="ps-card-header">
-                            <div class="ps-card-icon ps-card-icon--gold">🔋</div>
-                            <div>
-                                <div class="ps-card-title">Wellness</div>
-                                <div class="ps-card-subtitle">ESCALA DE HOOPER</div>
-                            </div>
+                <div class="ps-card" style="background: rgba(191,255,0,0.05); border: 1px solid rgba(191,255,0,0.2); cursor:pointer;" onclick="window.PlayerShellEngine.switchTab('wellness')">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <h3 style="color:var(--ps-accent); font-size:1rem; font-weight:800;">Laboratorio de Hoy</h3>
+                            <p style="color:var(--ps-muted); font-size:0.75rem; margin-top:4px; font-weight:700;">REGISTRAR ESTADO DE HOY →</p>
                         </div>
-                        ${wellnessDone
-                            ? `<div style="display:flex; align-items:center; gap:10px; padding:12px;
-                                          background:rgba(191,255,0,0.05); border:1px solid rgba(191,255,0,0.15);
-                                          border-radius:12px;">
-                                   <span style="font-size:1.5rem;">✅</span>
-                                   <div>
-                                       <div style="font-size:0.85rem; font-weight:700; color:#F0F0F0;">Reporte enviado</div>
-                                       <div style="font-size:0.65rem; font-weight:600; color:rgba(255,255,255,0.4); margin-top:2px;">Hoy ya registraste tu estado.</div>
-                                   </div>
-                               </div>`
-                            : `<button onclick="window.PlayerShellEngine.switchTab('wellness', null)"
-                                       style="width:100%; padding:14px; background:rgba(191,255,0,0.1);
-                                              border:1px solid rgba(191,255,0,0.25); border-radius:12px;
-                                              color:#BFFF00; font-family:'Outfit',sans-serif; font-size:0.85rem;
-                                              font-weight:800; letter-spacing:1px; cursor:pointer;
-                                              text-transform:uppercase; transition:all 0.2s;">
-                                   Registrar Estado de Hoy →
-                               </button>`
-                        }
-                    </div>
-                </div>
-            </div>
-
-            <!-- Attendance recent -->
-            ${attendance.length > 0 ? `
-            <div class="ps-section" style="padding-bottom: 16px;">
-                <span class="ps-section-label">Asistencia Reciente</span>
-                <div class="ps-card">
-                    <div class="ps-card-inner">
-                        ${attendance.slice(0, 5).map(a => `
-                            <div style="display:flex; justify-content:space-between; align-items:center;
-                                        padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
-                                <span style="font-size:0.82rem; font-weight:600; color:rgba(255,255,255,0.6);">
-                                    ${a.fecha || '—'}
-                                </span>
-                                <span style="font-size:0.72rem; font-weight:800; letter-spacing:1px;
-                                             color:${a.presente ? '#10B981' : '#FF4D4D'};">
-                                    ${a.presente ? 'PRESENTE' : 'AUSENTE'}
-                                </span>
-                            </div>
-                        `).join('')}
+                        <span style="font-size:1.5rem; filter: hue-rotate(45deg);">🔋</span>
                     </div>
                 </div>
             </div>` : ''}
@@ -706,183 +533,68 @@ window.PlayerShellEngine = {
         if (!body) return;
 
         const wellness = this.state.wellness;
-        const alreadyDone = !!wellness;
-
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('es-ES', {
-            weekday: 'long', day: 'numeric', month: 'long'
-        }).toUpperCase();
-
-        if (alreadyDone) {
-            // ── YA REPORTÓ HOY ──
-            const suma = (wellness.sleep_quality || 0) + (wellness.stress_level || 0) + (wellness.fatigue || 0);
-            const hooперColor = suma <= 8 ? '#10B981' : suma <= 11 ? '#F59E0B' : '#EF4444';
-            const hooperLabel = suma <= 8 ? 'ÓPTIMO' : suma <= 11 ? 'PRECAUCIÓN' : 'CRÍTICO';
-
+        if (wellness) {
             body.innerHTML = `
-                <div class="ps-section" style="padding-top: 24px;">
-                    <p style="font-size: 0.62rem; font-weight: 800; letter-spacing: 3px; color: rgba(191,255,0,0.6); text-transform: uppercase;">${dateStr}</p>
-                    <h2 style="font-size: 1.4rem; font-weight: 900; color: #F0F0F0; margin-top: 4px;">Wellness <span style="color: #BFFF00;">Registrado</span></h2>
-                </div>
-
                 <div class="ps-section">
-                    <div class="ps-card">
-                        <div class="ps-card-inner">
-                            <div style="text-align: center; padding: 24px 0;">
-                                <div style="font-size: 3rem; margin-bottom: 12px;">✅</div>
-                                <div style="font-size: 0.9rem; font-weight: 700; color: #F0F0F0;">Reporte del día enviado</div>
-                                <div style="margin-top: 20px; display: flex; justify-content: center; gap: 16px;">
-                                    <div style="text-align:center;">
-                                        <div style="font-size: 1.4rem; font-weight: 900; color: #C8C8C8;">${wellness.sleep_quality || '—'}</div>
-                                        <div style="font-size: 0.58rem; font-weight: 800; letter-spacing: 1px; color: rgba(255,255,255,0.35);">SUEÑO</div>
-                                    </div>
-                                    <div style="text-align:center;">
-                                        <div style="font-size: 1.4rem; font-weight: 900; color: #C8C8C8;">${wellness.stress_level || '—'}</div>
-                                        <div style="font-size: 0.58rem; font-weight: 800; letter-spacing: 1px; color: rgba(255,255,255,0.35);">ESTRÉS</div>
-                                    </div>
-                                    <div style="text-align:center;">
-                                        <div style="font-size: 1.4rem; font-weight: 900; color: #C8C8C8;">${wellness.fatigue || '—'}</div>
-                                        <div style="font-size: 0.58rem; font-weight: 800; letter-spacing: 1px; color: rgba(255,255,255,0.35);">FATIGA</div>
-                                    </div>
-                                    <div style="text-align:center;">
-                                        <div style="font-size: 1.4rem; font-weight: 900; color: #C8C8C8;">${wellness.rpe_score || '—'}</div>
-                                        <div style="font-size: 0.58rem; font-weight: 800; letter-spacing: 1px; color: rgba(255,255,255,0.35);">RPE</div>
-                                    </div>
-                                </div>
-                                <div style="margin-top: 20px; display: inline-block; padding: 6px 16px; border-radius: 8px; border: 1px solid ${hooперColor}; color: ${hooперColor}; font-size: 0.65rem; font-weight: 800; letter-spacing: 2px; background: ${hooперColor}15;">
-                                    HOOPER: ${suma}/15 — ${hooperLabel}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="ps-section">
-                    <button onclick="window.PlayerShellEngine.switchTab('home', null)"
-                            style="width:100%; padding:14px; background:rgba(191,255,0,0.08); border:1px solid rgba(191,255,0,0.2); border-radius:12px; color:#BFFF00; font-family:'Outfit',sans-serif; font-size:0.82rem; font-weight:800; letter-spacing:1px; cursor:pointer; text-transform:uppercase;">
-                        ← Volver al Inicio
-                    </button>
+                    <h2 style="font-size:1.5rem; font-weight:900; color:var(--ps-accent);">Reporte Enviado ✅</h2>
+                    <p style="color:var(--ps-muted); font-size:0.85rem; margin-top:8px;">Has completado el laboratorio por hoy.</p>
                 </div>
             `;
             return;
         }
 
-        // ── FORMULARIO NUEVO ──
-        // Estado temporal del formulario
         this._wellnessForm = { sleep: 3, stress: 3, fatigue: 3, rpe: 5 };
 
         body.innerHTML = `
-            <div class="ps-section" style="padding-top: 24px;">
-                <p style="font-size: 0.62rem; font-weight: 800; letter-spacing: 3px; color: rgba(191,255,0,0.6); text-transform: uppercase;">${dateStr}</p>
-                <h2 style="font-size: 1.4rem; font-weight: 900; color: #F0F0F0; margin-top: 4px; line-height: 1.2;">
-                    Reporte <span style="color: #BFFF00;">Diario</span>
-                </h2>
-                <p style="font-size: 0.72rem; font-weight: 600; letter-spacing: 1px; color: rgba(255,255,255,0.35); margin-top: 4px; text-transform: uppercase;">
-                    Escala de Hooper · Entrenamiento Invisible
-                </p>
+            <div class="ps-section">
+                <h1 style="font-size: 1.8rem; font-weight: 800; line-height: 1.1;">Laboratorio<br><span style="color:var(--ps-accent-cyan);">Wellness</span></h1>
+                <p style="color:var(--ps-muted); font-size:0.8rem; margin-top:8px; font-weight:700; letter-spacing:1px;">ESCALA DE HOOPER</p>
             </div>
 
-            <!-- ══ TARJETA 1: HOOPER ══ -->
             <div class="ps-section">
-                <span class="ps-section-label">REPORTE MATUTINO</span>
-                <div class="ps-card" id="pswl-hooper-card">
-                    <div class="ps-card-inner">
-                        <div class="ps-card-header">
-                            <div class="ps-card-icon ps-card-icon--volt">🌙</div>
-                            <div>
-                                <div class="ps-card-title">Escala de Hooper</div>
-                                <div class="ps-card-subtitle">1 = MALO · 5 = EXCELENTE</div>
-                            </div>
+                <div class="ps-card">
+                    <div class="pswl-metric-block" data-metric="sleep">
+                        <div class="pswl-metric-header">
+                            <span>SUEÑO</span>
+                            <span id="pswl-val-sleep" style="color:var(--ps-accent-cyan);">3</span>
                         </div>
-
-                        <!-- SUEÑO -->
-                        <div class="pswl-metric-block" data-metric="sleep">
-                            <div class="pswl-metric-header">
-                                <span class="pswl-metric-label">😴 Calidad de Sueño</span>
-                                <span class="pswl-metric-val" id="pswl-val-sleep">3</span>
-                            </div>
-                            <div class="pswl-seg-ctrl" id="pswl-seg-sleep">
-                                ${[1,2,3,4,5].map(n => `<button class="pswl-seg-btn ${n===3?'pswl-seg-active':''}" data-val="${n}" data-metric="sleep">${n}</button>`).join('')}
-                            </div>
+                        <div class="pswl-seg-ctrl">
+                            ${[1,2,3,4,5].map(n => `<button class="pswl-seg-btn ${n===3?'pswl-seg-active':''}" data-val="${n}" data-metric="sleep">${n}</button>`).join('')}
                         </div>
-
-                        <!-- ESTRÉS -->
-                        <div class="pswl-metric-block" data-metric="stress">
-                            <div class="pswl-metric-header">
-                                <span class="pswl-metric-label">⚡ Nivel de Estrés</span>
-                                <span class="pswl-metric-val" id="pswl-val-stress">3</span>
-                            </div>
-                            <div class="pswl-seg-ctrl" id="pswl-seg-stress">
-                                ${[1,2,3,4,5].map(n => `<button class="pswl-seg-btn ${n===3?'pswl-seg-active':''}" data-val="${n}" data-metric="stress">${n}</button>`).join('')}
-                            </div>
+                    </div>
+                    <div class="pswl-metric-block" data-metric="stress">
+                        <div class="pswl-metric-header">
+                            <span>ESTRÉS</span>
+                            <span id="pswl-val-stress" style="color:var(--ps-accent-cyan);">3</span>
                         </div>
-
-                        <!-- FATIGA -->
-                        <div class="pswl-metric-block" data-metric="fatigue">
-                            <div class="pswl-metric-header">
-                                <span class="pswl-metric-label">🔥 Fatiga Muscular</span>
-                                <span class="pswl-metric-val" id="pswl-val-fatigue">3</span>
-                            </div>
-                            <div class="pswl-seg-ctrl" id="pswl-seg-fatigue">
-                                ${[1,2,3,4,5].map(n => `<button class="pswl-seg-btn ${n===3?'pswl-seg-active':''}" data-val="${n}" data-metric="fatigue">${n}</button>`).join('')}
-                            </div>
+                        <div class="pswl-seg-ctrl">
+                            ${[1,2,3,4,5].map(n => `<button class="pswl-seg-btn ${n===3?'pswl-seg-active':''}" data-val="${n}" data-metric="stress">${n}</button>`).join('')}
+                        </div>
+                    </div>
+                    <div class="pswl-metric-block" data-metric="fatigue">
+                        <div class="pswl-metric-header">
+                            <span>FATIGA</span>
+                            <span id="pswl-val-fatigue" style="color:var(--ps-accent-cyan);">3</span>
+                        </div>
+                        <div class="pswl-seg-ctrl">
+                            ${[1,2,3,4,5].map(n => `<button class="pswl-seg-btn ${n===3?'pswl-seg-active':''}" data-val="${n}" data-metric="fatigue">${n}</button>`).join('')}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- ══ TARJETA 2: RPE ══ -->
             <div class="ps-section">
-                <span class="ps-section-label">CARGA DE SESIÓN</span>
-                <div class="ps-card" id="pswl-rpe-card">
-                    <div class="ps-card-inner">
-                        <div class="ps-card-header">
-                            <div class="ps-card-icon" style="background: rgba(239,68,68,0.15); color: #EF4444;">💥</div>
-                            <div>
-                                <div class="ps-card-title">Esfuerzo Percibido (RPE)</div>
-                                <div class="ps-card-subtitle">0 = REPOSO TOTAL · 10 = MÁXIMO</div>
-                            </div>
-                        </div>
-
-                        <div style="padding: 16px 0 8px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                                <span style="font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 1px;">INTENSIDAD</span>
-                                <div style="display: flex; align-items: baseline; gap: 4px;">
-                                    <span id="pswl-rpe-display" style="font-size: 2rem; font-weight: 900; color: #EF4444; line-height:1;">5</span>
-                                    <span style="font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.3);">/10</span>
-                                </div>
-                            </div>
-                            <input type="range" id="pswl-rpe-slider"
-                                   min="0" max="10" value="5" step="1"
-                                   style="width: 100%; -webkit-appearance: none; height: 6px;
-                                          background: linear-gradient(to right, rgba(239,68,68,0.8) 50%, rgba(255,255,255,0.08) 50%);
-                                          border-radius: 3px; outline: none; cursor: pointer;"
-                                   oninput="window.PlayerShellEngine._onRpeInput(this)">
-                            <div style="display: flex; justify-content: space-between; margin-top: 8px;">
-                                <span style="font-size: 0.58rem; font-weight: 700; color: rgba(255,255,255,0.25);">REPOSO</span>
-                                <span style="font-size: 0.58rem; font-weight: 700; color: rgba(255,255,255,0.25);">MÁXIMO</span>
-                            </div>
-                        </div>
+                <div class="ps-card">
+                    <div class="pswl-metric-header">
+                        <span>ESFUERZO PERCIBIDO (RPE)</span>
+                        <span id="pswl-rpe-display" style="color:var(--ps-danger); font-size:1.2rem;">5</span>
                     </div>
+                    <input type="range" id="pswl-rpe-slider" min="0" max="10" value="5" step="1" oninput="window.PlayerShellEngine._onRpeInput(this)">
                 </div>
             </div>
 
-            <!-- ══ BOTÓN ENVIAR ══ -->
             <div class="ps-section" style="padding-bottom: 24px;">
-                <button id="pswl-submit-btn"
-                        onclick="window.PlayerShellEngine._submitWellness()"
-                        style="width: 100%; padding: 20px; border-radius: 16px;
-                               background: linear-gradient(135deg, rgba(191,255,0,0.15) 0%, rgba(191,255,0,0.08) 100%);
-                               border: 2px solid rgba(191,255,0,0.35);
-                               color: #BFFF00; font-family: 'Outfit', sans-serif;
-                               font-size: 1rem; font-weight: 900; letter-spacing: 2px;
-                               cursor: pointer; text-transform: uppercase;
-                               transition: all 0.2s cubic-bezier(0.16,1,0.3,1);
-                               box-shadow: 0 0 30px rgba(191,255,0,0.08);"
-                        onmouseover="this.style.boxShadow='0 0 40px rgba(191,255,0,0.2)'; this.style.transform='translateY(-2px)';"
-                        onmouseout="this.style.boxShadow='0 0 30px rgba(191,255,0,0.08)'; this.style.transform='translateY(0)';">
-                    ⚡ ENVIAR REPORTE
-                </button>
+                <button class="ps-cta-btn" id="pswl-submit-btn" onclick="window.PlayerShellEngine._submitWellness()">ENVIAR REPORTE</button>
             </div>
         `;
 

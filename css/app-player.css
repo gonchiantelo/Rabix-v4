@@ -12,22 +12,24 @@
    Namespace: --ps-* (player shell)
 ══════════════════════════════════════════ */
 #player-shell {
-    --ps-bg:         #080808;
-    --ps-surface:    #111111;
-    --ps-surface2:   #181818;
-    --ps-border:     rgba(255, 255, 255, 0.07);
-    --ps-border2:    rgba(255, 255, 255, 0.04);
-    --ps-text:       #F0F0F0;
-    --ps-muted:      rgba(255, 255, 255, 0.38);
-    --ps-accent:     #BFFF00;       /* Volt — energía, velocidad */
+    --ps-bg: #080808;
+    --ps-surface: #111111;
+    --ps-surface2: #181818;
+    --ps-border: rgba(255, 255, 255, 0.07);
+    --ps-border2: rgba(255, 255, 255, 0.04);
+    --ps-text: #F0F0F0;
+    --ps-muted: rgba(255, 255, 255, 0.38);
+    --ps-accent: #BFFF00;
+    /* Volt — energía, velocidad */
     --ps-accent-dim: rgba(191, 255, 0, 0.08);
-    --ps-gold:       #D4AF37;       /* Jerarquía y logros */
-    --ps-danger:     #FF4D4D;
-    --ps-success:    #10B981;
-    --ps-header-h:   68px;
-    --ps-nav-h:      64px;
-    --ps-radius:     18px;
-    --ps-radius-sm:  12px;
+    --ps-gold: #D4AF37;
+    /* Jerarquía y logros */
+    --ps-danger: #FF4D4D;
+    --ps-success: #10B981;
+    --ps-header-h: 68px;
+    --ps-nav-h: 64px;
+    --ps-radius: 18px;
+    --ps-radius-sm: 12px;
 }
 
 /* ══════════════════════════════════════════
@@ -126,8 +128,17 @@
 }
 
 @keyframes ps-pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: 0.5; transform: scale(0.85); }
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(0.85);
+    }
 }
 
 .ps-header-identity {
@@ -196,8 +207,15 @@
 }
 
 @keyframes ps-boot-glow {
-    0%, 100% { box-shadow: 0 0 20px rgba(191, 255, 0, 0.1); }
-    50%       { box-shadow: 0 0 40px rgba(191, 255, 0, 0.25); }
+
+    0%,
+    100% {
+        box-shadow: 0 0 20px rgba(191, 255, 0, 0.1);
+    }
+
+    50% {
+        box-shadow: 0 0 40px rgba(191, 255, 0, 0.25);
+    }
 }
 
 .ps-boot-icon svg {
@@ -250,7 +268,9 @@
 }
 
 @keyframes ps-spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .ps-boot-status {
@@ -263,8 +283,15 @@
 }
 
 @keyframes ps-blink {
-    0%, 100% { opacity: 0.5; }
-    50%       { opacity: 1; }
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 
 /* ══════════════════════════════════════════
@@ -342,8 +369,10 @@
    CARDS GENÉRICAS
 ══════════════════════════════════════════ */
 .ps-card {
-    background: #0a0d14; /* Dark premium base */
-    border: 1px solid rgba(255, 255, 255, 0.05); /* Ultra subtle border */
+    background: #0a0d14;
+    /* Dark premium base */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    /* Ultra subtle border */
     border-radius: var(--ps-radius);
     overflow: hidden;
     transition: border-color 0.2s;
@@ -351,16 +380,32 @@
 }
 
 @keyframes ps-card-in {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.ps-card:nth-child(2) { animation-delay: 0.06s; }
-.ps-card:nth-child(3) { animation-delay: 0.12s; }
-.ps-card:nth-child(4) { animation-delay: 0.18s; }
+.ps-card:nth-child(2) {
+    animation-delay: 0.06s;
+}
+
+.ps-card:nth-child(3) {
+    animation-delay: 0.12s;
+}
+
+.ps-card:nth-child(4) {
+    animation-delay: 0.18s;
+}
 
 .ps-card-inner {
-    padding: 24px; /* Respira más */
+    padding: 24px;
+    /* Respira más */
 }
 
 .ps-card-header {
@@ -381,9 +426,20 @@
     font-size: 1.1rem;
 }
 
-.ps-card-icon--volt { background: rgba(191, 255, 0, 0.1); color: var(--ps-accent); }
-.ps-card-icon--gold { background: rgba(212, 175, 55, 0.1); color: var(--ps-gold); }
-.ps-card-icon--danger { background: rgba(255, 77, 77, 0.1); color: var(--ps-danger); }
+.ps-card-icon--volt {
+    background: rgba(191, 255, 0, 0.1);
+    color: var(--ps-accent);
+}
+
+.ps-card-icon--gold {
+    background: rgba(212, 175, 55, 0.1);
+    color: var(--ps-gold);
+}
+
+.ps-card-icon--danger {
+    background: rgba(255, 77, 77, 0.1);
+    color: var(--ps-danger);
+}
 
 .ps-card-title {
     font-size: 1.1rem;
@@ -396,7 +452,8 @@
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 1.5px;
-    color: rgba(255, 255, 255, 0.5); /* Subtle muted */
+    color: rgba(255, 255, 255, 0.5);
+    /* Subtle muted */
     text-transform: uppercase;
     margin-top: 2px;
 }
@@ -412,7 +469,8 @@
 
 .ps-stat-pill {
     flex: 1;
-    background: rgba(255, 255, 255, 0.02); /* Very dark surface */
+    background: rgba(255, 255, 255, 0.02);
+    /* Very dark surface */
     border: 1px solid rgba(255, 255, 255, 0.03);
     border-radius: var(--ps-radius-sm);
     padding: 16px 12px;
@@ -430,9 +488,17 @@
     letter-spacing: -0.5px;
 }
 
-.ps-stat-val--volt  { color: var(--ps-accent); }
-.ps-stat-val--gold  { color: var(--ps-gold); }
-.ps-stat-val--muted { color: var(--ps-muted); }
+.ps-stat-val--volt {
+    color: var(--ps-accent);
+}
+
+.ps-stat-val--gold {
+    color: var(--ps-gold);
+}
+
+.ps-stat-val--muted {
+    color: var(--ps-muted);
+}
 
 .ps-stat-label {
     font-size: 0.6rem;
@@ -557,14 +623,15 @@
 ══════════════════════════════════════════ */
 @media (min-width: 650px) {
     #player-shell {
-        max-width: 600px; /* Mayor espacio en escritorio */
+        max-width: 600px;
+        /* Mayor espacio en escritorio */
         left: 50%;
         right: auto;
         transform: translateX(-50%);
-        border-left: 1px solid rgba(255,255,255,0.05);
-        border-right: 1px solid rgba(255,255,255,0.05);
+        border-left: 1px solid rgba(255, 255, 255, 0.05);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 0;
-        box-shadow: 0 0 40px rgba(0,0,0,0.8);
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
     }
 }
 
@@ -576,7 +643,7 @@
 /* Metric block (une label + segmentado) */
 .pswl-metric-block {
     padding: 14px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .pswl-metric-block:last-child {
@@ -666,4 +733,3 @@
     height: 6px;
     border-radius: 3px;
 }
-
