@@ -149,12 +149,9 @@ window.PlayerShellEngine = {
             dtHub.classList.remove('vista-activa');
         }
 
-        // ── 4. Activar el shell ──
-        requestAnimationFrame(() => {
-            shell.classList.add('ps-active');
-            shell.style.display = 'flex';
-            shell.style.opacity = '1';
-        });
+        // ── 4. Activar el shell (Fuerza Bruta) ──
+        shell.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 100vh !important; width: 100% !important; opacity: 1 !important; visibility: visible !important; position: absolute !important; top: 0 !important; left: 0 !important; z-index: 999999 !important; background-color: #05080f !important;';
+        shell.classList.add('ps-active');
 
         // ── 5. Cargar datos del jugador en background ──
         this._fetchPlayerData();
@@ -283,6 +280,7 @@ window.PlayerShellEngine = {
             if (!playerRow) {
                 const nav = document.getElementById('ps-bottom-nav');
                 if (nav) nav.style.display = 'none';
+                console.log('[PLAYER SHELL] Atleta sin equipo -> Ejecutando _renderOnboardingView');
                 setTimeout(() => this._renderOnboardingView(), 600);
                 return;
             }
@@ -362,10 +360,10 @@ window.PlayerShellEngine = {
        ONBOARDING DE EQUIPO
     ════════════════════════════════= */
     _renderOnboardingView: function () {
-        const body = document.getElementById('ps-body');
-        if (!body) return;
+        const shell = document.getElementById('player-shell');
+        if (!shell) return;
 
-        body.innerHTML = `
+        shell.innerHTML = `
             <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; text-align: center; background: #05080f; width: 100%; box-sizing: border-box; position: absolute; top: 0; left: 0; z-index: 10;">
                 <div style="font-size: 2.5rem; font-weight: 900; letter-spacing: 4px; margin-bottom: 24px;">
                     RAVI<span style="color:#BFFF00;">X</span>
