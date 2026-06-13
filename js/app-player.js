@@ -270,6 +270,15 @@ window.PlayerShellEngine = {
             if (rosterErr) throw new Error('team_roster: ' + rosterErr.message);
 
             const playerRow = rosterRows && rosterRows.length > 0 ? rosterRows[0] : null;
+
+            // ONBOARDING INTERCEPTION
+            if (!playerRow) {
+                const nav = document.getElementById('ps-bottom-nav');
+                if (nav) nav.style.display = 'none';
+                setTimeout(() => this._renderOnboardingView(), 600);
+                return;
+            }
+
             this.state.user = playerRow;
 
             // ── Actualizar header con identidad ──
@@ -338,6 +347,104 @@ window.PlayerShellEngine = {
                 || playerRow?.equipo
                 || 'Mi Equipo';
             teamEl.textContent = team.toUpperCase();
+        }
+    },
+
+    /* ═════════════════════════════════
+       ONBOARDING DE EQUIPO
+    ════════════════════════════════= */
+    _renderOnboardingView: function () {
+        const body = document.getElementById('ps-body');
+        if (!body) return;
+
+        body.innerHTML = `
+            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 80vh; padding: 20px; text-align: center;">
+                <div style="font-size: 2.5rem; font-weight: 900; letter-spacing: 4px; margin-bottom: 24px;">
+                    RAVI<span style="color:#BFFF00;">X</span>
+                </div>
+                
+                <h2 style="font-size: 1.4rem; font-weight: 900; color: #F0F0F0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">VINCULACIÓN DE EQUIPO</h2>
+                
+                <p style="font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.6); line-height: 1.5; max-width: 280px; margin-bottom: 32px;">
+                    Ingresa el código de invitación proporcionado por tu Director Técnico o Staff para sincronizar tu laboratorio de rendimiento.
+                </p>
+                
+                <input type="text" id="onboarding-invite-code" placeholder="EJ: CRANDON-2026" 
+                       style="width: 100%; max-width: 300px; padding: 18px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,255,255,0.2); color: #F0F0F0; font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; text-align: center; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 24px; outline: none;"
+                       onfocus="this.style.borderColor='rgba(0,255,255,0.6)'"
+                       onblur="this.style.borderColor='rgba(0,255,255,0.2)'">
+                       
+                <button id="onboarding-connect-btn" onclick="window.PlayerShellEngine._joinTeam(document.getElementById('onboarding-invite-code').value)"
+                        style="width: 100%; max-width: 300px; padding: 18px; border-radius: 12px; background: #BFFF00; color: #0A0A0A; border: none; font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; box-shadow: 0 0 20px rgba(191,255,0,0.2);">
+                    CONECTAR AL EQUIPO
+                </button>
+            </div>
+        `;
+    },
+
+    _joinTeam: async function (code) {
+        if (!code || code.trim() === '') {
+            if (window.App && window.App.showToast) window.App.showToast('Ingresa un código válido.', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('onboarding-connect-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.textContent = 'CONECTANDO...';
+        }
+
+        const uid = localStorage.getItem('ravix_v5_uid');
+        const upperCode = code.trim().toUpperCase();
+
+        try {
+            const { data: teamData, error: teamErr } = await window.supabase
+                .from('teams')
+                .select('id, name')
+                .eq('invite_code', upperCode)
+                .limit(1);
+
+            if (teamErr) throw teamErr;
+
+            if (!teamData || teamData.length === 0) {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.textContent = 'CONECTAR AL EQUIPO';
+                }
+                if (window.App && window.App.showToast) window.App.showToast('Código inválido o inexistente.', 'error');
+                return;
+            }
+
+            const teamId = teamData[0].id;
+
+            const { error: insertErr } = await window.supabase
+                .from('team_roster')
+                .insert([{
+                    team_id: teamId,
+                    user_id: uid,
+                    player_id: uid
+                }]);
+
+            if (insertErr) throw insertErr;
+
+            if (window.App && window.App.showToast) window.App.showToast('¡Vinculado con éxito!', 'success');
+            
+            const nav = document.getElementById('ps-bottom-nav');
+            if (nav) nav.style.display = 'flex';
+            
+            // Reiniciar flujo
+            this._fetchPlayerData();
+
+        } catch (err) {
+            console.error('[ONBOARDING] Error:', err);
+            if (btn) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.textContent = 'CONECTAR AL EQUIPO';
+            }
+            if (window.App && window.App.showToast) window.App.showToast('Ocurrió un error de vinculación.', 'error');
         }
     },
 
