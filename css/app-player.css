@@ -342,8 +342,8 @@
    CARDS GENÉRICAS
 ══════════════════════════════════════════ */
 .ps-card {
-    background: var(--ps-surface);
-    border: 1px solid var(--ps-border);
+    background: #0a0d14; /* Dark premium base */
+    border: 1px solid rgba(255, 255, 255, 0.05); /* Ultra subtle border */
     border-radius: var(--ps-radius);
     overflow: hidden;
     transition: border-color 0.2s;
@@ -360,7 +360,7 @@
 .ps-card:nth-child(4) { animation-delay: 0.18s; }
 
 .ps-card-inner {
-    padding: 20px;
+    padding: 24px; /* Respira más */
 }
 
 .ps-card-header {
@@ -386,17 +386,17 @@
 .ps-card-icon--danger { background: rgba(255, 77, 77, 0.1); color: var(--ps-danger); }
 
 .ps-card-title {
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     font-weight: 800;
     color: var(--ps-text);
     letter-spacing: -0.2px;
 }
 
 .ps-card-subtitle {
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 1.5px;
-    color: var(--ps-muted);
+    color: rgba(255, 255, 255, 0.5); /* Subtle muted */
     text-transform: uppercase;
     margin-top: 2px;
 }
@@ -412,18 +412,18 @@
 
 .ps-stat-pill {
     flex: 1;
-    background: var(--ps-surface2);
-    border: 1px solid var(--ps-border2);
+    background: rgba(255, 255, 255, 0.02); /* Very dark surface */
+    border: 1px solid rgba(255, 255, 255, 0.03);
     border-radius: var(--ps-radius-sm);
-    padding: 14px 12px;
+    padding: 16px 12px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 .ps-stat-val {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     font-weight: 900;
     color: var(--ps-text);
     line-height: 1;
@@ -435,7 +435,7 @@
 .ps-stat-val--muted { color: var(--ps-muted); }
 
 .ps-stat-label {
-    font-size: 0.58rem;
+    font-size: 0.6rem;
     font-weight: 800;
     letter-spacing: 1.5px;
     color: var(--ps-muted);
@@ -475,18 +475,18 @@
    UTILITY — Layout helpers
 ══════════════════════════════════════════ */
 .ps-section {
-    padding: 20px 16px 0;
+    padding: 24px 20px 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
 }
 
 .ps-section:last-child {
-    padding-bottom: 16px;
+    padding-bottom: 24px;
 }
 
 .ps-section-label {
-    font-size: 0.62rem;
+    font-size: 0.65rem;
     font-weight: 800;
     letter-spacing: 2.5px;
     color: var(--ps-muted);
@@ -496,7 +496,7 @@
 .ps-divider {
     height: 1px;
     background: var(--ps-border);
-    margin: 0 16px;
+    margin: 0 20px;
 }
 
 /* ══════════════════════════════════════════
@@ -506,26 +506,48 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 40px 20px;
+    gap: 12px;
+    padding: 48px 24px;
     text-align: center;
 }
 
 .ps-empty-icon {
-    font-size: 2rem;
+    font-size: 2.5rem;
     opacity: 0.4;
 }
 
 .ps-empty-title {
-    font-size: 0.9rem;
-    font-weight: 700;
+    font-size: 1.1rem;
+    font-weight: 800;
     color: var(--ps-text);
 }
 
 .ps-empty-desc {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--ps-muted);
-    line-height: 1.5;
+    line-height: 1.6;
+}
+
+/* Botón Añadir Equipo */
+.ps-btn-add-team {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 12px 24px;
+    background: transparent;
+    border: 1px solid rgba(191, 255, 0, 0.3);
+    color: #BFFF00;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ps-btn-add-team:hover {
+    background: rgba(191, 255, 0, 0.1);
+    border-color: rgba(191, 255, 0, 0.8);
 }
 
 /* ══════════════════════════════════════════
@@ -533,14 +555,16 @@
    El entorno del jugador siempre es Mobile-First.
    En pantallas grandes se centra y limita el ancho.
 ══════════════════════════════════════════ */
-@media (min-width: 600px) {
+@media (min-width: 650px) {
     #player-shell {
-        max-width: 420px;
+        max-width: 600px; /* Mayor espacio en escritorio */
         left: 50%;
         right: auto;
         transform: translateX(-50%);
-        border-left: 1px solid var(--ps-border);
-        border-right: 1px solid var(--ps-border);
+        border-left: 1px solid rgba(255,255,255,0.05);
+        border-right: 1px solid rgba(255,255,255,0.05);
+        border-radius: 0;
+        box-shadow: 0 0 40px rgba(0,0,0,0.8);
     }
 }
 

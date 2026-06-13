@@ -170,17 +170,17 @@ window.PlayerShellEngine = {
 
         shell.innerHTML = `
             <!-- ═══ HEADER ═══ -->
-            <header class="ps-header" id="ps-header">
-                <div class="ps-header-brand">
+            <header class="ps-header" id="ps-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px;">
+                <div class="ps-header-brand" style="flex-shrink: 0;">
                     <div class="ps-header-logo">RAVI<span>X</span></div>
                     <div class="ps-header-role-pill">
                         <span class="ps-header-role-dot"></span>
                         Jugador
                     </div>
                 </div>
-                <div class="ps-header-identity">
-                    <div class="ps-header-name" id="ps-player-name">—</div>
-                    <div class="ps-header-team" id="ps-player-team">—</div>
+                <div class="ps-header-identity" style="flex: 1; text-align: right; min-width: 0; padding-left: 16px;">
+                    <div class="ps-header-name" id="ps-player-name" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden; font-size: 0.95rem;">—</div>
+                    <div class="ps-header-team" id="ps-player-team" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">—</div>
                 </div>
             </header>
 
@@ -290,7 +290,7 @@ window.PlayerShellEngine = {
                 const nav = document.getElementById('ps-bottom-nav');
                 if (nav) nav.style.display = 'none';
                 console.log('[PLAYER SHELL] Atleta sin equipo -> Ejecutando _renderOnboardingView');
-                setTimeout(() => this._renderOnboardingView(), 600);
+                setTimeout(() => this._renderOnboardingView(false), 600);
                 return;
             }
 
@@ -368,7 +368,7 @@ window.PlayerShellEngine = {
     /* ═════════════════════════════════
        ONBOARDING DE EQUIPO
     ════════════════════════════════= */
-    _renderOnboardingView: function () {
+    _renderOnboardingView: function (isAddingExtraTeam = false) {
         const shell = document.getElementById('player-shell');
         if (!shell) return;
         
@@ -376,6 +376,16 @@ window.PlayerShellEngine = {
         shell.style.justifyContent = 'center';
         shell.style.alignItems = 'center';
         shell.style.background = '#05080f';
+
+        const secondaryButtonHtml = isAddingExtraTeam 
+            ? `<button id="onboarding-skip-btn" onclick="window.PlayerShellEngine._skipOnboarding()"
+                        style="width: 100%; box-sizing: border-box; padding: 16px; border-radius: 12px; background: transparent; color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s;">
+                    CANCELAR
+                </button>`
+            : `<button id="onboarding-skip-btn" onclick="window.PlayerShellEngine._skipOnboarding()"
+                        style="width: 100%; box-sizing: border-box; padding: 16px; border-radius: 12px; background: transparent; color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s;">
+                    CONTINUAR SIN EQUIPO
+                </button>`;
 
         shell.innerHTML = `
             <div class="ps-onboarding-card" style="width: 90%; max-width: 420px; display: flex; flex-direction: column; gap: 24px; text-align: center; box-sizing: border-box; margin: auto;">
@@ -399,10 +409,7 @@ window.PlayerShellEngine = {
                     CONECTAR AL EQUIPO
                 </button>
 
-                <button id="onboarding-skip-btn" onclick="window.PlayerShellEngine._skipOnboarding()"
-                        style="width: 100%; box-sizing: border-box; padding: 16px; border-radius: 12px; background: transparent; color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s;">
-                    CONTINUAR SIN EQUIPO
-                </button>
+                ${secondaryButtonHtml}
             </div>
         `;
     },
@@ -526,16 +533,23 @@ window.PlayerShellEngine = {
         body.innerHTML = `
             <!-- Date header -->
             <div class="ps-section" style="padding-top: 24px;">
-                <p style="font-size: 0.62rem; font-weight: 800; letter-spacing: 3px;
-                          color: rgba(191,255,0,0.6); text-transform: uppercase;">${dateStr}</p>
-                <h2 style="font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px;
-                           color: #F0F0F0; line-height: 1.2;">
-                    Buenas, <span style="color: #BFFF00;">${firstName}</span>
-                </h2>
-                <p style="font-size: 0.72rem; font-weight: 700; letter-spacing: 2px;
-                          color: rgba(255,255,255,0.3); text-transform: uppercase;">
-                    ${sport} · ${position}
-                </p>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <p style="font-size: 0.62rem; font-weight: 800; letter-spacing: 3px;
+                                  color: rgba(191,255,0,0.6); text-transform: uppercase;">${dateStr}</p>
+                        <h2 style="font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px;
+                                   color: #F0F0F0; line-height: 1.2; margin: 4px 0;">
+                            Buenas, <span style="color: #BFFF00;">${firstName}</span>
+                        </h2>
+                        <p style="font-size: 0.72rem; font-weight: 700; letter-spacing: 2px;
+                                  color: rgba(255,255,255,0.3); text-transform: uppercase;">
+                            ${sport} · ${position}
+                        </p>
+                    </div>
+                    <button class="ps-btn-add-team" onclick="window.PlayerShellEngine._renderOnboardingView(true)" style="margin-top: 0;">
+                        + AÑADIR EQUIPO
+                    </button>
+                </div>
             </div>
 
             <!-- KPI Pills -->
