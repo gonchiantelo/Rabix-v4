@@ -377,6 +377,7 @@ window.DTEngine = {
                             <button id="btn-nav-calendar" onclick="DTEngine.toggleView('calendar')" class="dt-nav-link">Calendario</button>
                             <button id="btn-nav-analytics" onclick="DTEngine.toggleView('analytics')" class="dt-nav-link">Analítica</button>
                             <button id="btn-nav-board" onclick="if(window.DTEngine) window.DTEngine.toggleView('board')" class="dt-nav-link">Pizarra</button>
+                            <button id="btn-nav-medical" onclick="window.DTEngine.toggleView('dt-medical')" class="dt-nav-link">Plantel</button>
                         </nav>
 
                         <button onclick="App.logout()" class="dt-nav-link dt-nav-logout">Salir</button>
@@ -457,7 +458,7 @@ window.DTEngine = {
                         <div id="tile-medical"
                              class="platinum-widget action-tile-mini"
                              onclick="window.DTEngine.toggleView('dt-medical')"
-                             style="grid-column: span 12; min-height: 90px; display:flex; flex-direction:column; justify-content:space-between; padding: 18px 20px; cursor:pointer; position: relative; overflow: hidden; border-color: rgba(239,68,68,0.2); background: linear-gradient(135deg, rgba(239,68,68,0.05) 0%, transparent 100%);">
+                             style="grid-column: span 6; min-height: 90px; display:flex; flex-direction:column; justify-content:space-between; padding: 18px 20px; cursor:pointer; position: relative; overflow: hidden; border-color: rgba(239,68,68,0.2); background: linear-gradient(135deg, rgba(239,68,68,0.05) 0%, transparent 100%);">
                             <!-- Decorative pulse dot -->
                             <span style="position:absolute; top:14px; right:16px; width:8px; height:8px; border-radius:50%; background:#EF4444; box-shadow: 0 0 10px rgba(239,68,68,0.8); animation: dtm-live-pulse 2s ease-in-out infinite;"></span>
                             <style>@keyframes dtm-live-pulse { 0%,100%{opacity:1; transform:scale(1)} 50%{opacity:0.4; transform:scale(0.8)} }</style>

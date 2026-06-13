@@ -145,13 +145,37 @@ window.DTMedical = {
     _renderTable: function (section) {
         const players = this._data;
 
-        const emptyState = players.length === 0 ? `
-            <div class="dtm-empty">
-                <div class="dtm-empty-icon">🏥</div>
-                <h3>Sin atletas en el roster</h3>
-                <p>Agrega jugadores al equipo desde el Panel de Atletas.</p>
-            </div>
-        ` : '';
+        if (players.length === 0) {
+            section.innerHTML = `
+                <div class="dtm-header">
+                    <div class="dtm-header-left">
+                        <span class="dtm-eyebrow">LA CLÍNICA</span>
+                        <h2 class="dtm-title">Estado del Plantel <span class="dtm-title-accent">0 JUGADORES</span></h2>
+                    </div>
+                    <button class="dtm-refresh-btn" onclick="window.DTMedical.init()" title="Actualizar">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.76"/>
+                        </svg>
+                        Actualizar
+                    </button>
+                </div>
+                <div class="dtm-empty-state-premium" style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; min-height: 400px; background: linear-gradient(180deg, rgba(20,24,35,0.8) 0%, rgba(10,12,16,0.9) 100%); border: 1px solid rgba(0,242,254,0.1); border-radius: 16px; text-align: center; padding: 40px; margin-top: 20px;">
+                    <div style="font-size: 4rem; margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(0,242,254,0.5));">👥</div>
+                    <h3 style="font-size: 1.8rem; font-weight: 900; color: #FFF; letter-spacing: 1px; margin: 0 0 10px 0;">TU PLANTEL ESTÁ VACÍO</h3>
+                    <p style="font-size: 0.9rem; color: #9CA3AF; max-width: 400px; line-height: 1.5; margin: 0 0 30px 0;">Para recibir métricas de Wellness y RPE, tus atletas deben unirse al equipo.</p>
+                    
+                    <button onclick="window.DTMedical.revealInviteCode()" style="background: linear-gradient(90deg, #00F2FE 0%, #4FACFE 100%); color: #000; border: none; padding: 16px 32px; border-radius: 12px; font-weight: 900; font-size: 1rem; cursor: pointer; letter-spacing: 1px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(0,242,254,0.3);">
+                        🔑 REVELAR CÓDIGO DE INVITACIÓN
+                    </button>
+                    
+                    <div id="invite-code-container" style="display:none; margin-top: 30px; animation: dtm-fade-in 0.5s ease-out;">
+                        <div style="font-family: 'Outfit', monospace; font-size: 2.8rem; font-weight: 900; color: #00F2FE; letter-spacing: 6px; text-shadow: 0 0 20px rgba(0,242,254,0.4);" id="the-invite-code"></div>
+                        <button onclick="window.DTMedical.copyInviteCode()" style="margin-top: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #FFF; padding: 8px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">📋 Copiar al portapapeles</button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
 
         const now = new Date();
         const dateStr = now.toLocaleDateString('es-ES', {
@@ -199,7 +223,6 @@ window.DTMedical = {
             </div>
 
             <!-- ── TABLE ── -->
-            ${emptyState || `
             <div class="dtm-table-wrap">
                 <div class="dtm-table">
 
@@ -220,8 +243,50 @@ window.DTMedical = {
                     </div>
                 </div>
             </div>
-            `}
         `;
+    },
+
+    revealInviteCode: async function() {
+        const teamId = window.CurrentTeam?.id || localStorage.getItem('ravix_team_id');
+        if (!teamId) {
+            alert("No hay un equipo activo seleccionado.");
+            return;
+        }
+        
+        try {
+            const { data, error } = await window.supabase.from('teams').select('invite_code').eq('id', teamId).single();
+            let code = data?.invite_code;
+            
+            if (!code) {
+                const teamName = window.CurrentTeam?.name || 'CLUB';
+                const prefix = teamName.substring(0,4).toUpperCase().replace(/[^A-Z0-9]/g, '');
+                const randomNum = Math.floor(1000 + Math.random() * 9000);
+                code = `${prefix}-${randomNum}`;
+                
+                await window.supabase.from('teams').update({ invite_code: code }).eq('id', teamId);
+            }
+            
+            const container = document.getElementById('invite-code-container');
+            const codeEl = document.getElementById('the-invite-code');
+            if(container && codeEl) {
+                codeEl.innerText = code;
+                container.style.display = 'block';
+            }
+        } catch(e) {
+            console.error("Error revelando código:", e);
+        }
+    },
+    
+    copyInviteCode: function() {
+        const codeEl = document.getElementById('the-invite-code');
+        if (codeEl) {
+            navigator.clipboard.writeText(codeEl.innerText).then(() => {
+                const btn = event.currentTarget;
+                const originalText = btn.innerText;
+                btn.innerText = "✅ ¡Copiado!";
+                setTimeout(() => btn.innerText = originalText, 2000);
+            });
+        }
     },
 
     /* ═══════════════════════════════════════════════
