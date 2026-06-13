@@ -110,24 +110,37 @@ window.PortalHub = (() => {
             window.AppInAppDraws = 0;
 
             if (_clubs.length > 0) {
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
                 const teamIds = _clubs.map(c => c.id);
-                try {
-                    const { data: matches, error: matchErr } = await window.supabase
-                        .from('microcycle_sessions')
-                        .select('match_result')
-                        .in('team_id', teamIds)
-                        .eq('is_match_day', true);
 
-                    if (!matchErr && matches) {
-                        matches.forEach(m => {
-                            if (m.match_result && m.match_result !== 'Pendiente') {
-                                window.AppInAppMatches++;
-                                if (m.match_result === 'Victoria') window.AppInAppWins++;
-                                else if (m.match_result === 'Empate') window.AppInAppDraws++;
-                            }
-                        });
+                for (const teamId of teamIds) {
+                    // Validación Estricta (Null Check + UUID format)
+                    if (!teamId || !uuidRegex.test(teamId)) {
+                        continue;
                     }
-                } catch(e) {}
+
+                    try {
+                        const { data: matches, error: matchErr } = await window.supabase
+                            .from('microcycle_sessions')
+                            .select('match_result')
+                            .eq('team_id', teamId)
+                            .eq('is_match_day', true);
+
+                        if (matchErr) throw matchErr;
+
+                        if (matches) {
+                            matches.forEach(m => {
+                                if (m.match_result && m.match_result !== 'Pendiente') {
+                                    window.AppInAppMatches++;
+                                    if (m.match_result === 'Victoria') window.AppInAppWins++;
+                                    else if (m.match_result === 'Empate') window.AppInAppDraws++;
+                                }
+                            });
+                        }
+                    } catch(e) {
+                        console.error('Error calculando efectividad para team:', teamId, e);
+                    }
+                }
             }
             
         } catch (e) {
