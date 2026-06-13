@@ -133,7 +133,7 @@ window.PlayerShellEngine = {
         const dtHub = document.getElementById('view-dt-hub');
         if (dtHub) dtHub.classList.remove('vista-activa');
 
-        shell.style.cssText = 'display: flex !important; flex-direction: column !important; min-height: 100vh !important; width: 100% !important; opacity: 1 !important; visibility: visible !important; position: fixed !important; top: 0 !important; z-index: 999999 !important; background-color: #05080f !important;';
+        shell.style.cssText = 'display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: flex-start !important; min-height: 100vh !important; width: 100vw !important; opacity: 1 !important; visibility: visible !important; position: fixed !important; top: 0 !important; left: 0 !important; z-index: 999999 !important; background-color: #05080f !important;';
         shell.classList.add('ps-active');
 
         this._fetchPlayerData();
@@ -267,7 +267,9 @@ window.PlayerShellEngine = {
         try {
             const uid = localStorage.getItem('ravix_v5_uid');
             const upperCode = code.trim().toUpperCase();
-            const { data: teamData } = await window.supabase.from('teams').select('id').eq('invite_code', upperCode).limit(1);
+            const { data: teamData, error: teamErr } = await window.supabase.from('teams').select('id').eq('invite_code', upperCode).limit(1);
+
+            if (teamErr) throw teamErr;
 
             if (!teamData || teamData.length === 0) {
                 if (btn) { btn.disabled = false; btn.textContent = 'CONECTAR'; }
@@ -275,13 +277,21 @@ window.PlayerShellEngine = {
                 return;
             }
 
-            await window.supabase.from('team_roster').insert([{ team_id: teamData[0].id, player_id: uid }]);
+            const { error: insertErr } = await window.supabase.from('team_roster').insert([{ team_id: teamData[0].id, player_id: uid }]);
+            if (insertErr) throw insertErr;
+
             this._showToast('¡Vinculado con éxito!');
             const nav = document.getElementById('ps-bottom-nav');
             if (nav) nav.style.display = 'flex';
-            this._fetchPlayerData();
+            
+            // Reload para garantizar que todos los contextos (incluyendo RLS) se refresquen y no haya bucle
+            setTimeout(() => {
+                window.location.reload();
+            }, 800);
+            
         } catch (err) {
-            console.error(err);
+            console.error('[ONBOARDING ERROR]', err);
+            this._showToast('Error de vinculación');
             if (btn) { btn.disabled = false; btn.textContent = 'CONECTAR'; }
         }
     },
