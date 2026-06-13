@@ -264,7 +264,7 @@ window.PlayerShellEngine = {
             const { data: rosterRows, error: rosterErr } = await window.supabase
                 .from('team_roster')
                 .select('*')
-                .eq('user_id', uid)
+                .eq('player_id', uid)
                 .limit(1);
 
             if (rosterErr) throw new Error('team_roster: ' + rosterErr.message);
@@ -423,7 +423,6 @@ window.PlayerShellEngine = {
                 .from('team_roster')
                 .insert([{
                     team_id: teamId,
-                    user_id: uid,
                     player_id: uid
                 }]);
 
