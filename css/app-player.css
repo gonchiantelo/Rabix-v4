@@ -157,15 +157,32 @@
     font-weight: 800;
     line-height: 1.1;
     letter-spacing: -1px;
+    margin-bottom: 24px;
 }
 
 /* Cards */
 .ps-card {
-    background: var(--ps-surface);
-    border: 1px solid var(--ps-border);
-    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     padding: 24px;
+    height: auto !important;
+    min-height: min-content;
+    background: #0a0d14;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.05);
     transition: all 0.3s ease;
+}
+
+.ps-card h1, .ps-card h2, .ps-card h3, .ps-card h4, .ps-card h5, .ps-card h6, .ps-card p, .ps-card span {
+    line-height: 1.4;
+    margin: 0;
+}
+
+.ps-card-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 /* Mini Bento KPIs */
@@ -178,7 +195,8 @@
     background: var(--ps-surface);
     border: 1px solid var(--ps-border);
     border-radius: 16px;
-    padding: 20px 16px;
+    min-height: 80px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
     align-items: center;

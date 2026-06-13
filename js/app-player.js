@@ -189,11 +189,9 @@ window.PlayerShellEngine = {
             const playerRow = rosterRows && rosterRows.length > 0 ? rosterRows[0] : null;
 
             if (!playerRow) {
-                const skipFlag = localStorage.getItem('ravix_v5_skip_onboarding');
-                if (skipFlag === 'true') {
+                if (localStorage.getItem('ps_skip_team') === 'true' || localStorage.getItem('ravix_v5_skip_onboarding') === 'true') {
                     this.state.user = null;
-                    setTimeout(() => this._renderHomeView(), 600);
-                    return;
+                    return this._renderHomeView();
                 }
                 const nav = document.getElementById('ps-bottom-nav');
                 if (nav) nav.style.display = 'none';
@@ -253,7 +251,7 @@ window.PlayerShellEngine = {
     },
 
     _skipOnboarding: function () {
-        localStorage.setItem('ravix_v5_skip_onboarding', 'true');
+        localStorage.setItem('ps_skip_team', 'true');
         const nav = document.getElementById('ps-bottom-nav');
         if (nav) nav.style.display = 'flex';
         this._renderHomeView();
