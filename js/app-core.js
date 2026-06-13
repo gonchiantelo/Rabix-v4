@@ -672,12 +672,11 @@ window.App = {
             }
 
             // ╔══════════════════════════════════════════════════════════════╗
-            // ║  PATH B: ATHLETE (legacy) → dashboard-athlete.html          ║
+            // ║  PATH B: ATHLETE → Ahora unificado con el nuevo PlayerShell  ║
             // ║  Roles: 'athlete'                                            ║
-            // ║  Motor: AthleteApp en dashboard-athlete.html (archivo físico)║
             // ╚══════════════════════════════════════════════════════════════╝
             if (role === 'athlete') {
-                document.body.classList.add('mode-athlete', 'testing-athlete');
+                document.body.classList.add('mode-player', 'testing-athlete');
                 document.body.classList.remove('mode-dt');
 
                 LOG('ATHLETE')(`Buscando perfil en profiles_athlete... id=${uid.slice(0, 8)}...`);
@@ -691,9 +690,47 @@ window.App = {
                     return;
                 }
 
-                LOG('ATHLETE')('✅ Perfil completo → redirigiendo a dashboard-athlete.html (V2)');
+                LOG('ATHLETE')('✅ Perfil base completo → Inicializando PlayerShellEngine (V5)');
                 window.CurrentUser = athData[0];
-                window.location.href = './dashboard-athlete.html';
+                
+                // ── Ocultar TODAS las vistas del DT antes de montar el shell ──
+                this._hideAllViews();
+                const dtAppShell = document.getElementById('app-shell');
+                if (dtAppShell) { dtAppShell.style.display = 'none'; dtAppShell.setAttribute('aria-hidden', 'true'); }
+
+                // ── Inyectar CSS y JS del jugador si no están cargados ──
+                if (!document.querySelector('link[href="css/app-player.css"]')) {
+                    const cssLink = document.createElement('link');
+                    cssLink.rel = 'stylesheet';
+                    cssLink.href = 'css/app-player.css';
+                    document.head.appendChild(cssLink);
+                }
+
+                const bootPlayer = () => {
+                    if (window.PlayerShellEngine) {
+                        LOG('ATHLETE')('✅ PlayerShellEngine disponible. Arrancando #player-shell...');
+                        window.PlayerShellEngine.boot();
+                    } else {
+                        LOG('ATHLETE')('⚠️ PlayerShellEngine no encontrado. Cargando app-player.js...');
+                        const script = document.createElement('script');
+                        script.src = 'js/app-player.js';
+                        script.onload = () => {
+                            if (window.PlayerShellEngine) {
+                                window.PlayerShellEngine.boot();
+                            } else {
+                                console.error('[ATHLETE] app-player.js cargó pero PlayerShellEngine no está definido.');
+                                this._showPortalWithError('Error al iniciar el entorno del jugador. Por favor recargá la página.');
+                            }
+                        };
+                        script.onerror = (err) => {
+                            console.error('[ATHLETE] Error cargando app-player.js:', err);
+                            this._showPortalWithError('No se pudo cargar el portal del jugador. Verificá tu conexión.');
+                        };
+                        document.body.appendChild(script);
+                    }
+                };
+
+                bootPlayer();
                 return;
             }
 

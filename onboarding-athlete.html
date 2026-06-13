@@ -457,7 +457,7 @@
 
             // Perfil completo (sport + position) → ir al dashboard directamente
             if (profile && profile.full_name && profile.sport && profile.position) {
-                window.location.replace('dashboard-athlete.html');
+                window.location.replace('index.html');
                 return;
             }
 
@@ -629,7 +629,7 @@
             // 3. Success → redirect
             showFeedback('success', `✅ ¡Te uniste a ${team.name}! Redirigiendo...`);
             setTimeout(() => {
-                window.location.replace('dashboard-athlete.html');
+                window.location.replace('index.html');
             }, 1200);
 
         } catch (err) {
@@ -666,7 +666,7 @@
             
             showFeedback('success', '✅ Perfil creado. Redirigiendo...');
             setTimeout(() => {
-                window.location.replace('dashboard-athlete.html');
+                window.location.replace('index.html');
             }, 1200);
             
         } catch (err) {
