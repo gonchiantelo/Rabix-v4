@@ -312,41 +312,43 @@ window.PlayerShellEngine = {
             </div>
 
             <div class="ps-section">
-                <div class="ps-bento-grid">
-                    <div class="ps-bento-item">
-                        <span class="ps-bento-val" style="color: var(--ps-accent-cyan);">0</span>
-                        <span class="ps-bento-label">Asistencias</span>
+                <div class="ps-stat-grid">
+                    <div class="ps-stat-pill">
+                        <span class="ps-stat-val" style="color: var(--ps-accent-cyan); text-shadow: 0 0 20px rgba(0,242,254,0.4);">0</span>
+                        <span class="ps-stat-label">Asistencias</span>
                     </div>
-                    <div class="ps-bento-item">
-                        <span class="ps-bento-val" style="color: ${wellnessDone ? 'var(--ps-success)' : 'var(--ps-muted)'};">${wellnessDone ? '✓' : '—'}</span>
-                        <span class="ps-bento-label">Wellness</span>
+                    <div class="ps-stat-pill">
+                        <span class="ps-stat-val" style="color: ${wellnessDone ? 'var(--ps-success)' : 'var(--ps-muted)'}; text-shadow: ${wellnessDone ? '0 0 20px rgba(16,185,129,0.4)' : 'none'};">${wellnessDone ? '✓' : '—'}</span>
+                        <span class="ps-stat-label">Wellness</span>
                     </div>
-                    <div class="ps-bento-item">
-                        <span class="ps-bento-val" style="color: var(--ps-muted);">—</span>
-                        <span class="ps-bento-label">Carga</span>
+                    <div class="ps-stat-pill">
+                        <span class="ps-stat-val" style="color: var(--ps-muted); text-shadow: none;">—</span>
+                        <span class="ps-stat-label">Carga</span>
                     </div>
                 </div>
             </div>
 
             <div class="ps-section">
                 <div class="ps-card ps-micro-card">
-                    <div class="ps-micro-header">
-                        <h3 class="ps-micro-title">Microciclo Activo</h3>
-                        <span style="font-size:1.2rem;">⚽</span>
+                    <div class="ps-card-header">
+                        <h3 class="ps-card-title">Microciclo Activo</h3>
+                        <span class="ps-card-icon">⚽</span>
                     </div>
-                    <p class="ps-micro-desc">Día Libre - Recuperación Activa</p>
+                    <div class="ps-card-body">
+                        <p class="ps-micro-desc">Día Libre - Recuperación Activa</p>
+                    </div>
                 </div>
             </div>
 
             ${!wellnessDone ? `
             <div class="ps-section">
                 <div class="ps-card ps-cta-card" onclick="window.PlayerShellEngine.switchTab('wellness')">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div>
+                    <div class="ps-card-header" style="align-items: center;">
+                        <div class="ps-cta-texts">
                             <h3 class="ps-cta-title">Laboratorio de Hoy</h3>
                             <p class="ps-cta-subtitle">REGISTRAR ESTADO DE HOY →</p>
                         </div>
-                        <span style="font-size:1.8rem; filter: drop-shadow(0 0 10px rgba(191,255,0,0.5));">🔋</span>
+                        <span class="ps-cta-icon" style="font-size: 2.2rem; filter: drop-shadow(0 0 15px rgba(191,255,0,0.6));">🔋</span>
                     </div>
                 </div>
             </div>` : ''}
