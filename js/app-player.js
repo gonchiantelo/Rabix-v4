@@ -518,7 +518,6 @@ window.PlayerShellEngine = {
             return `
                 <div class="${cls}">
                     <div class="ps-day-dot-circle">${d}</div>
-                    <span class="ps-day-dot-label">${d}</span>
                 </div>`;
         }).join('');
 
