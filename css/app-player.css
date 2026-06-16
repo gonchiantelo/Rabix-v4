@@ -98,7 +98,7 @@
    SHELL CONTAINER
 ═══════════════════════════════════════════════════ */
 #player-shell {
-    background: var(--bg);
+    background: transparent !important; /* Let body background show through on desktop sides */
     color: var(--text);
     min-height: 100vh;
     display: flex;
@@ -118,6 +118,35 @@
     opacity: 1;
     pointer-events: auto;
 }
+
+/* ══════════════════════════════════════════════════
+   DESKTOP CANVAS & CENTERING FIX
+═══════════════════════════════════════════════════ */
+body.mode-athlete, body.mode-player {
+    background: #05080f !important;
+}
+
+.ps-app-header,
+.ps-app-main,
+.ps-bottom-nav,
+.ps-timer-bar,
+.ps-modal-overlay {
+    max-width: 480px !important;
+    margin: 0 auto !important;
+    left: 0;
+    right: 0;
+}
+
+.ps-app-main {
+    background: var(--bg); /* Keep the athlete app background inside the 480px column */
+}
+
+/* Fix inner cards to prevent bleed */
+.ps-today-card, .ps-panel, .ps-cta-card, .ps-wellness-done-card, .ps-exercise-card, .ps-boot {
+    width: 100%;
+    box-sizing: border-box;
+}
+
 
 /* ══════════════════════════════════════════════════
    HEADER — Glassmorphism Athletic
