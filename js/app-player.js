@@ -99,8 +99,15 @@ window.PSTimer = {
     },
 
     toggle: function () {
-        if (this._running) this.pause();
-        else this.start();
+        if (this._running) {
+            this.pause();
+            const btn = document.getElementById('ps-timer-toggle-btn');
+            if (btn) btn.textContent = '▶';
+        } else {
+            this.start();
+            const btn = document.getElementById('ps-timer-toggle-btn');
+            if (btn) btn.textContent = '⏸';
+        }
     },
 
     start: function () {
@@ -108,6 +115,10 @@ window.PSTimer = {
         this._running = true;
         const dot = this._dotEl();
         if (dot) { dot.style.background = 'var(--green)'; dot.style.boxShadow = '0 0 6px var(--green-glow)'; }
+        
+        // Ensure interval is cleared before starting to prevent duplicates
+        if (this._interval) clearInterval(this._interval);
+        
         this._interval = setInterval(() => {
             if (this._isCountdown) {
                 this._countdown--;
@@ -122,9 +133,12 @@ window.PSTimer = {
 
     pause: function () {
         this._running = false;
-        clearInterval(this._interval);
+        if (this._interval) clearInterval(this._interval);
+        this._interval = null;
         const dot = this._dotEl();
         if (dot) { dot.style.background = 'var(--yellow)'; dot.style.boxShadow = '0 0 6px var(--yellow-glow)'; }
+        const btn = document.getElementById('ps-timer-toggle-btn');
+        if (btn) btn.textContent = '▶';
     },
 
     reset: function () {
@@ -135,16 +149,20 @@ window.PSTimer = {
         this._render(0);
         const dot = this._dotEl();
         if (dot) { dot.style.background = 'var(--text-3)'; dot.style.boxShadow = 'none'; }
+        const btn = document.getElementById('ps-timer-toggle-btn');
+        if (btn) btn.textContent = '▶';
     },
 
     setCountdown: function (secs, btnEl) {
-        this.pause();
+        this.reset();
         this._isCountdown = true;
         this._countdown = secs;
         this._render(secs);
         document.querySelectorAll('.ps-timer-preset').forEach(b => b.classList.remove('active'));
         if (btnEl) btnEl.classList.add('active');
         this.start();
+        const tbtn = document.getElementById('ps-timer-toggle-btn');
+        if (tbtn) tbtn.textContent = '⏸';
     },
 
     _render: function (totalSecs) {
@@ -265,12 +283,14 @@ window.PlayerShellEngine = {
 
             <!-- ══ TIMER BAR (flotante, arriba del nav) ══ -->
             <div class="ps-timer-bar hidden" id="ps-timer-bar">
-                <button class="ps-timer-display" id="ps-timer-display"
-                        onclick="window.PSTimer.toggle()" title="Tap para iniciar / pausar">
+                <div class="ps-timer-display" id="ps-timer-display">
                     <span class="ps-timer-dot" id="ps-timer-dot"></span>
-                    <span class="ps-timer-time" id="ps-timer-time">00:00</span>
-                    <span class="ps-timer-mode-icon">⏱</span>
-                </button>
+                    <span class="ps-timer-time" id="ps-timer-time" style="font-size:1.2rem;font-weight:900;">00:00</span>
+                </div>
+                <div class="ps-timer-controls" style="display:flex; gap:8px; align-items:center;">
+                    <button class="ps-timer-btn" onclick="window.PSTimer.toggle()" id="ps-timer-toggle-btn" title="Start/Pause" style="background:var(--accent);border:none;border-radius:50%;width:32px;height:32px;color:#000;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">▶</button>
+                    <button class="ps-timer-btn" onclick="window.PSTimer.reset()" title="Resetear" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">🔄</button>
+                </div>
                 <div class="ps-timer-presets">
                     <button class="ps-timer-preset" onclick="window.PSTimer.setCountdown(30,this)">30s</button>
                     <button class="ps-timer-preset" onclick="window.PSTimer.setCountdown(60,this)">1m</button>
@@ -278,12 +298,6 @@ window.PlayerShellEngine = {
                     <button class="ps-timer-preset" onclick="window.PSTimer.setCountdown(120,this)">2m</button>
                     <button class="ps-timer-preset" onclick="window.PSTimer.setCountdown(180,this)">3m</button>
                 </div>
-                <button class="ps-timer-reset-btn" onclick="window.PSTimer.reset()" title="Resetear">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <polyline points="1 4 1 10 7 10"/>
-                        <path d="M3.51 15a9 9 0 1 0 .49-3.51"/>
-                    </svg>
-                </button>
             </div>
 
             <!-- ══ BOTTOM NAV ══ -->
@@ -607,12 +621,14 @@ window.PlayerShellEngine = {
         this.state.session.active    = true;
         this.state.session.sessionId = 'sess_' + Date.now();
         this.state.session.startedAt = new Date().toISOString();
-        this.state.session.exercises = this._getDefaultExercises();
+        this.state.session.exercises = this._generateTodaySession();
 
         // Show timer bar
         PSTimer.show();
         PSTimer.reset();
         PSTimer.start();
+        const tbtn = document.getElementById('ps-timer-toggle-btn');
+        if (tbtn) tbtn.textContent = '⏸';
 
         this._renderTrainingView();
 
@@ -622,12 +638,32 @@ window.PlayerShellEngine = {
         if (homeBtn) homeBtn.classList.add('active');
     },
 
-    _getDefaultExercises: function () {
+    _generateTodaySession: function () {
         if (this.state.isStandalone && window.StandaloneEngine) {
             const session = window.StandaloneEngine.generateSession();
             if (session.length > 0) return session;
+        } else if (!this.state.isStandalone && window.StandaloneEngine) {
+            // Team athlete logic: mix focus from DT + personal objective
+            const dtFocus = 'FUERZA'; // Simulated focus from microcycle
+            const personalObj = this.state.user?.objetivo || 'ALTO_RENDIMIENTO';
+            
+            let targetEscenario = 'FUERZA_PIERNA_B';
+            if (personalObj === 'MASA_MUSCULAR') {
+                targetEscenario = dtFocus === 'FUERZA' ? 'MASA_EMPUJE' : 'HIPERTROFIA_INF';
+            } else if (personalObj === 'PERDIDA_PESO') {
+                targetEscenario = dtFocus === 'FUERZA' ? 'CARDIO_FUERZA' : 'HIIT';
+            }
+            
+            const escenario = window.StandaloneEngine.ESCENARIOS[targetEscenario] || window.StandaloneEngine.ESCENARIOS['DESCANSO'];
+            if (escenario && escenario.ejercicios.length > 0) {
+                return escenario.ejercicios.map(cod => {
+                    const ej = window.StandaloneEngine.EJERCICIOS.find(e => e.cod === cod) || { nombre: 'Descanso', grupo: '-', fatiga: 1 };
+                    return { name: ej.nombre, group: ej.grupo, fatigue: ej.fatiga, sets: [] };
+                });
+            }
         }
-        // Default training day — in production this comes from DT microcicle plan
+
+        // Fallback training day
         return [
             { name: 'Sentadilla',       group: 'Piernas',    fatigue: 3, sets: [] },
             { name: 'Press de Banca',   group: 'Pecho',      fatigue: 2, sets: [] },
@@ -685,10 +721,11 @@ window.PlayerShellEngine = {
                 <div class="ps-exercise-card ${logged ? 'logged' : ''}" id="ps-excard-${idx}">
                     <div class="ps-exercise-card-header" onclick="this.parentElement.querySelector('.ps-ex-sets-body').classList.toggle('open')">
                         <div class="ps-ex-fatigue-badge ${fatigueClass}">${fatigueLabel}</div>
-                        <div class="ps-exercise-card-info">
+                        <div class="ps-exercise-card-info" style="flex:1;">
                             <p class="ps-ex-name">${ex.name}</p>
                             <p class="ps-ex-group">${ex.group}</p>
                         </div>
+                        <button class="ps-btn-swap" onclick="event.stopPropagation(); window.PlayerShellEngine._openSwapModal(${idx})" title="Cambiar Ejercicio" style="background:none;border:none;color:var(--text-3);cursor:pointer;padding:8px;">🔄</button>
                         <span class="ps-ex-log-indicator">${logged ? '✓' : '+'}</span>
                     </div>
                     ${suggestionBanner}
@@ -734,6 +771,50 @@ window.PlayerShellEngine = {
 
             </div>
         `;
+    },
+
+    /* Smart Swap logic */
+    _openSwapModal: function(exIdx) {
+        const ex = this.state.session.exercises[exIdx];
+        if (!ex) return;
+        const available = window.StandaloneEngine.EJERCICIOS.filter(e => e.grupo === ex.group || e.patron === ex.patron);
+        
+        let html = `
+            <div class="ps-modal-handle"></div>
+            <div class="ps-modal-header-row">
+                <div>
+                    <h3 class="ps-modal-title">Cambiar Ejercicio</h3>
+                    <p class="ps-modal-subtitle">Sustitución recomendada para ${ex.group}</p>
+                </div>
+                <button class="ps-btn-close-modal" onclick="window.PlayerShellEngine._closeModal()">✕</button>
+            </div>
+            <div class="ps-swap-list" style="max-height:60vh;overflow-y:auto;margin-top:16px;">
+        `;
+        available.forEach(ej => {
+            html += `
+                <div class="ps-swap-item" style="padding:12px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="font-weight:700;color:#fff;">${ej.nombre}</div>
+                        <div style="font-size:11px;color:var(--text-3);">${ej.grupo} · Fatiga ${ej.fatiga}</div>
+                    </div>
+                    <button class="ps-btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="window.PlayerShellEngine._swapExercise(${exIdx}, '${ej.nombre}', '${ej.grupo}', ${ej.fatiga})">Seleccionar</button>
+                </div>
+            `;
+        });
+        html += `</div>`;
+        this._openModal(html);
+    },
+
+    _swapExercise: function(exIdx, name, group, fatigue) {
+        this.state.session.exercises[exIdx] = {
+            name: name,
+            group: group,
+            fatigue: fatigue,
+            sets: [] // reset sets
+        };
+        this._closeModal();
+        this._showToast('✅ Ejercicio actualizado');
+        this._renderTrainingView();
     },
 
     /* Opens the "Add Set" bottom sheet — only Weight, Sets, Reps */
