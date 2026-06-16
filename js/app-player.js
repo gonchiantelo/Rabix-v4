@@ -143,38 +143,75 @@ window.PlayerShellEngine = {
         const shell = document.createElement('div');
         shell.id = 'player-shell';
         shell.setAttribute('role', 'main');
-        
+
         shell.innerHTML = `
-            <header class="ps-header" id="ps-header">
-                <div class="ps-header-logo">RAVI<span>X</span></div>
-                <div class="ps-header-right">
-                    <div class="ps-header-add-btn" onclick="window.PlayerShellEngine._renderOnboardingView(true)">+</div>
-                    <div class="ps-header-avatar" id="ps-player-avatar">👤</div>
+            <!-- ══ HEADER ══ -->
+            <header class="ps-app-header" id="ps-header">
+                <div class="ps-header-brand">
+                    <div class="ps-brand-name">RAVI<span style="-webkit-text-fill-color: inherit;">X</span></div>
+                    <span class="ps-brand-version">V5</span>
+                </div>
+                <div class="ps-header-meta">
+                    <div class="ps-header-add-btn"
+                         id="ps-add-team-btn"
+                         title="Vincular equipo"
+                         onclick="window.PlayerShellEngine._renderOnboardingView(true)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.5">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                    </div>
+                    <div class="ps-semaphore" id="ps-semaphore" title="Estado de carga"></div>
+                    <div class="ps-header-avatar" id="ps-player-avatar">A</div>
                 </div>
             </header>
 
-            <div class="ps-body" id="ps-body">
-                <div class="ps-boot" id="ps-boot-screen">
-                    <div class="ps-boot-icon">⚡</div>
-                    <h1 style="font-size: 1.5rem; font-weight: 900; margin-bottom: 8px;">Laboratorio Activo</h1>
-                    <p style="color: var(--ps-muted); font-size: 0.85rem;" id="ps-boot-status">Sincronizando datos biométricos...</p>
+            <!-- ══ MAIN CONTENT ══ -->
+            <main class="ps-app-main" id="ps-body">
+                <div class="ps-view active" id="ps-view-home">
+                    <div class="ps-boot" id="ps-boot-screen">
+                        <div class="ps-boot-icon">⚡</div>
+                        <h1 class="ps-boot-title">Laboratorio Activo</h1>
+                        <p class="ps-boot-status" id="ps-boot-status">Sincronizando datos biométricos...</p>
+                    </div>
                 </div>
-            </div>
+            </main>
 
+            <!-- ══ BOTTOM NAV ══ -->
             <nav class="ps-bottom-nav" id="ps-bottom-nav">
-                <button class="ps-nav-btn active" id="ps-nav-home" onclick="window.PlayerShellEngine.switchTab('home', this)">
-                    <span class="ps-nav-icon">⌂</span>
+                <button class="ps-nav-btn active" id="ps-nav-home"
+                        onclick="window.PlayerShellEngine.switchTab('home', this)">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
                     <span class="ps-nav-label">Inicio</span>
                 </button>
-                <button class="ps-nav-btn" id="ps-nav-wellness" onclick="window.PlayerShellEngine.switchTab('wellness', this)">
-                    <span class="ps-nav-icon">🔋</span>
+                <button class="ps-nav-btn" id="ps-nav-wellness"
+                        onclick="window.PlayerShellEngine.switchTab('wellness', this)">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
                     <span class="ps-nav-label">Wellness</span>
                 </button>
-                <button class="ps-nav-btn" id="ps-nav-attendance" onclick="window.PlayerShellEngine.switchTab('attendance', this)">
-                    <span class="ps-nav-icon">📅</span>
+                <button class="ps-nav-btn" id="ps-nav-attendance"
+                        onclick="window.PlayerShellEngine.switchTab('attendance', this)">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
                     <span class="ps-nav-label">Asistencia</span>
                 </button>
             </nav>
+
+            <!-- ══ MODAL CONTAINER (Bottom Sheets) ══ -->
+            <div id="ps-modal-container"></div>
         `;
         return shell;
     },
@@ -225,29 +262,69 @@ window.PlayerShellEngine = {
     },
 
     _renderOnboardingView: function (isAddingExtraTeam = false) {
+        // If adding an extra team from inside the app → open as bottom sheet
+        if (isAddingExtraTeam) {
+            this._openModal(`
+                <div class="ps-modal-handle"></div>
+                <div class="ps-modal-header-row">
+                    <div>
+                        <h3 class="ps-modal-title">Vincular Equipo</h3>
+                        <p class="ps-modal-subtitle">Ingresá el código holográfico de tu DT.</p>
+                    </div>
+                    <button class="ps-btn-close-modal" onclick="window.PlayerShellEngine._closeModal()">✕</button>
+                </div>
+                <div class="ps-onboarding-wrapper" style="padding:0;">
+                    <div class="ps-onboarding-icon">🛡️</div>
+                </div>
+                <div class="ps-form-group">
+                    <label class="ps-form-label">Código de Equipo</label>
+                    <input type="text" id="onboarding-invite-code"
+                           class="ps-onboarding-input"
+                           placeholder="Ej: ABC123"
+                           autocapitalize="characters"
+                           autocomplete="off">
+                </div>
+                <button class="ps-btn-massive" id="onboarding-connect-btn"
+                        onclick="window.PlayerShellEngine._joinTeam(document.getElementById('onboarding-invite-code').value)">
+                    CONECTAR AL EQUIPO
+                </button>
+                <button class="ps-btn-secondary" onclick="window.PlayerShellEngine._closeModal()">
+                    Cancelar
+                </button>
+            `);
+            return;
+        }
+
+        // First time (no team) → replace view content, hide nav
         const body = document.getElementById('ps-body');
         if (!body) return;
-        
+        const nav = document.getElementById('ps-bottom-nav');
+        if (nav) nav.style.display = 'none';
+
         body.innerHTML = `
-            <div class="ps-onboarding-wrapper">
-                <div class="ps-onboarding-icon">🛡️</div>
-                <h2 class="ps-onboarding-title">VINCULACIÓN DE EQUIPO</h2>
-                <p class="ps-onboarding-desc">Ingresa el código holográfico de tu DT.</p>
-                
-                <input type="text" id="onboarding-invite-code" class="ps-onboarding-input" placeholder="CÓDIGO">
-                
-                <button class="ps-btn-massive" id="onboarding-connect-btn" onclick="window.PlayerShellEngine._joinTeam(document.getElementById('onboarding-invite-code').value)">
-                    CONECTAR
-                </button>
-                
-                <button onclick="window.PlayerShellEngine._skipOnboarding()" style="margin-top:24px; background:transparent; border:none; color:var(--ps-muted); font-weight:800; letter-spacing:1px; cursor:pointer; text-transform:uppercase;">
-                    ${isAddingExtraTeam ? 'Cancelar' : 'Continuar sin equipo'}
-                </button>
+            <div class="ps-view active" style="min-height: 80dvh; justify-content: center; align-items: center;">
+                <div class="ps-onboarding-wrapper">
+                    <div class="ps-onboarding-icon">🛡️</div>
+                    <h2 class="ps-onboarding-title">VINCULACIÓN DE EQUIPO</h2>
+                    <p class="ps-onboarding-desc">Ingresá el código holográfico de tu DT para conectarte al equipo.</p>
+                    <div class="ps-form-group" style="width:100%;">
+                        <input type="text" id="onboarding-invite-code"
+                               class="ps-onboarding-input"
+                               placeholder="CÓDIGO"
+                               autocapitalize="characters"
+                               autocomplete="off">
+                    </div>
+                    <button class="ps-btn-massive" id="onboarding-connect-btn"
+                            onclick="window.PlayerShellEngine._joinTeam(document.getElementById('onboarding-invite-code').value)">
+                        CONECTAR
+                    </button>
+                    <button class="ps-btn-secondary" style="margin-top: 8px;"
+                            onclick="window.PlayerShellEngine._skipOnboarding()">
+                        Continuar sin equipo
+                    </button>
+                </div>
             </div>
         `;
-        
-        const nav = document.getElementById('ps-bottom-nav');
-        if (nav && !isAddingExtraTeam) nav.style.display = 'none';
     },
 
     _skipOnboarding: function () {
@@ -255,6 +332,28 @@ window.PlayerShellEngine = {
         const nav = document.getElementById('ps-bottom-nav');
         if (nav) nav.style.display = 'flex';
         this._renderHomeView();
+    },
+
+    /* ── Modal helpers (Bottom Sheets) ── */
+    _openModal: function (html) {
+        const container = document.getElementById('ps-modal-container');
+        if (!container) return;
+        container.innerHTML = `
+            <div class="ps-modal-overlay" id="ps-modal-overlay"
+                 onclick="if(event.target===this) window.PlayerShellEngine._closeModal()">
+                <div class="ps-modal-sheet">${html}</div>
+            </div>
+        `;
+    },
+
+    _closeModal: function () {
+        const overlay = document.getElementById('ps-modal-overlay');
+        if (overlay) {
+            overlay.style.animation = 'none';
+            overlay.style.opacity = '0';
+            overlay.style.transition = 'opacity 0.2s ease';
+            setTimeout(() => overlay.remove(), 220);
+        }
     },
 
     _joinTeam: async function (code) {
@@ -281,79 +380,18 @@ window.PlayerShellEngine = {
             this._showToast('¡Vinculado con éxito!');
             const nav = document.getElementById('ps-bottom-nav');
             if (nav) nav.style.display = 'flex';
-            
-            // Reload para garantizar que todos los contextos (incluyendo RLS) se refresquen y no haya bucle
+            this._closeModal();
+
+            // Reload para garantizar que todos los contextos (incluyendo RLS) se refresquen
             setTimeout(() => {
                 window.location.reload();
             }, 800);
-            
+
         } catch (err) {
             console.error('[ONBOARDING ERROR]', err);
             this._showToast('Error de vinculación');
             if (btn) { btn.disabled = false; btn.textContent = 'CONECTAR'; }
         }
-    },
-
-    _renderHomeView: function () {
-        const body = document.getElementById('ps-body');
-        if (!body) return;
-
-        const player = this.state.user;
-        const firstName = player?.full_name?.split(' ')[0] || 'Atleta';
-        const wellnessDone = !!this.state.wellness;
-        
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-
-        body.innerHTML = `
-            <div class="ps-section">
-                <p class="ps-date-text">${dateStr}</p>
-                <h1 class="ps-greeting">Buenas,<br>${firstName}</h1>
-            </div>
-
-            <div class="ps-section">
-                <div class="ps-stat-grid">
-                    <div class="ps-stat-pill">
-                        <span class="ps-stat-val" style="color: var(--ps-accent-cyan); text-shadow: 0 0 20px rgba(0,242,254,0.4);">0</span>
-                        <span class="ps-stat-label">Asistencias</span>
-                    </div>
-                    <div class="ps-stat-pill">
-                        <span class="ps-stat-val" style="color: ${wellnessDone ? 'var(--ps-success)' : 'var(--ps-muted)'}; text-shadow: ${wellnessDone ? '0 0 20px rgba(16,185,129,0.4)' : 'none'};">${wellnessDone ? '✓' : '—'}</span>
-                        <span class="ps-stat-label">Wellness</span>
-                    </div>
-                    <div class="ps-stat-pill">
-                        <span class="ps-stat-val" style="color: var(--ps-muted); text-shadow: none;">—</span>
-                        <span class="ps-stat-label">Carga</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="ps-section">
-                <div class="ps-card ps-micro-card">
-                    <div class="ps-card-header">
-                        <h3 class="ps-card-title">Microciclo Activo</h3>
-                        <span class="ps-card-icon">⚽</span>
-                    </div>
-                    <div class="ps-card-body">
-                        <p class="ps-micro-desc">Día Libre - Recuperación Activa</p>
-                    </div>
-                </div>
-            </div>
-
-            ${!wellnessDone ? `
-            <div class="ps-section">
-                <div class="ps-card ps-cta-card" onclick="window.PlayerShellEngine.switchTab('wellness')">
-                    <div class="ps-card-header" style="align-items: center;">
-                        <div class="ps-cta-texts">
-                            <h3 class="ps-cta-title">Laboratorio de Hoy</h3>
-                            <p class="ps-cta-subtitle">REGISTRAR ESTADO DE HOY →</p>
-                        </div>
-                        <span class="ps-cta-icon" style="font-size: 2.2rem; filter: drop-shadow(0 0 15px rgba(191,255,0,0.6));">🔋</span>
-                    </div>
-                </div>
-            </div>` : ''}
-        `;
-        this.state.activeTab = 'home';
     },
 
     switchTab: function (tabId, btnEl) {
@@ -365,89 +403,137 @@ window.PlayerShellEngine = {
         }
 
         switch (tabId) {
-            case 'home': this._renderHomeView(); break;
-            case 'wellness': this._renderWellnessView(); break;
-            case 'attendance': this._renderHomeView(); break;
+            case 'home':       this._renderHomeView();    break;
+            case 'wellness':   this._openWellnessModal(); break;
+            case 'attendance': this._renderHomeView();    break;
         }
         this.state.activeTab = tabId;
     },
 
-    _renderWellnessView: function () {
-        const body = document.getElementById('ps-body');
-        if (!body) return;
-
+    /* Opens the Wellness form as a bottom sheet modal */
+    _openWellnessModal: function () {
         if (this.state.wellness) {
-            body.innerHTML = `
-                <div class="ps-section">
-                    <h2 style="font-size:2rem; font-weight:900; color:var(--ps-success); margin-bottom: 8px;">Reporte Enviado</h2>
-                    <p style="color:var(--ps-muted); font-size:0.9rem;">Has completado el laboratorio por hoy.</p>
+            // Already submitted — show summary sheet
+            const w = this.state.wellness;
+            this._openModal(`
+                <div class="ps-modal-handle"></div>
+                <div class="ps-modal-header-row">
+                    <div>
+                        <h3 class="ps-modal-title">Wellness de Hoy</h3>
+                        <p class="ps-modal-subtitle">Ya completaste el laboratorio.</p>
+                    </div>
+                    <button class="ps-btn-close-modal" onclick="window.PlayerShellEngine._closeModal()">✕</button>
                 </div>
-            `;
+                <div class="ps-wellness-summary">
+                    <div class="ps-wellness-row">
+                        <span class="ps-wellness-row-label">Sueño</span>
+                        <span class="ps-wellness-row-val">${w.sleep_quality || '—'} / 5</span>
+                    </div>
+                    <div class="ps-wellness-row">
+                        <span class="ps-wellness-row-label">Estrés</span>
+                        <span class="ps-wellness-row-val">${w.stress_level || '—'} / 5</span>
+                    </div>
+                    <div class="ps-wellness-row">
+                        <span class="ps-wellness-row-label">Fatiga</span>
+                        <span class="ps-wellness-row-val">${w.fatigue || '—'} / 5</span>
+                    </div>
+                    <div class="ps-wellness-row">
+                        <span class="ps-wellness-row-label">RPE</span>
+                        <span class="ps-wellness-row-val" style="color: var(--accent);">${w.rpe_score || '—'} / 10</span>
+                    </div>
+                </div>
+                <button class="ps-btn-secondary" onclick="window.PlayerShellEngine._closeModal()">
+                    Cerrar
+                </button>
+            `);
             return;
         }
 
+        // New submission — show form sheet
         this._wellnessForm = { sleep: 3, stress: 3, fatigue: 3, rpe: 5 };
 
-        body.innerHTML = `
-            <div class="ps-section">
-                <h1 style="font-size: 2rem; font-weight: 800; line-height: 1.1;">Laboratorio<br><span style="color:var(--ps-accent-cyan);">Wellness</span></h1>
-                <p style="color:var(--ps-muted); font-size:0.75rem; margin-top:8px; font-weight:800; letter-spacing:2px;">ESCALA DE HOOPER</p>
-            </div>
-
-            <div class="ps-section">
-                <div class="ps-card">
-                    ${['sleep|SUEÑO', 'stress|ESTRÉS', 'fatigue|FATIGA'].map(metric => {
-                        const [id, label] = metric.split('|');
-                        return `
-                        <div class="ps-hooper-row">
-                            <div class="ps-hooper-header">
-                                <span class="ps-hooper-label">${label}</span>
-                                <span class="ps-hooper-val" id="pswl-val-${id}">3</span>
-                            </div>
-                            <div class="ps-hooper-blocks">
-                                ${[1,2,3,4,5].map(n => `<button class="ps-hooper-btn ${n===3?'active':''}" data-val="${n}" data-metric="${id}">${n}</button>`).join('')}
-                            </div>
-                        </div>`;
-                    }).join('')}
+        this._openModal(`
+            <div class="ps-modal-handle"></div>
+            <div class="ps-modal-header-row">
+                <div>
+                    <h3 class="ps-modal-title">Laboratorio Wellness</h3>
+                    <p class="ps-modal-subtitle">Escala de Hooper — ¿Cómo llegás hoy?</p>
                 </div>
+                <button class="ps-btn-close-modal" onclick="window.PlayerShellEngine._closeModal()">✕</button>
             </div>
 
-            <div class="ps-section">
-                <div class="ps-card">
+            <!-- Hooper metrics -->
+            ${['sleep|SUEÑO|sleep_quality', 'stress|ESTRÉS|stress_level', 'fatigue|FATIGA|fatigue'].map(m => {
+                const [id, label] = m.split('|');
+                return `
+                <div class="ps-hooper-row">
                     <div class="ps-hooper-header">
-                        <span class="ps-hooper-label">ESFUERZO PERCIBIDO (RPE)</span>
-                        <span class="ps-hooper-val" id="pswl-rpe-display" style="color:#F59E0B;">5</span>
+                        <span class="ps-hooper-label">${label}</span>
+                        <span class="ps-hooper-val" id="pswl-val-${id}">3</span>
                     </div>
-                    <input type="range" class="ps-rpe-slider" id="pswl-rpe-slider" min="0" max="10" value="5" step="1" oninput="window.PlayerShellEngine._onRpeInput(this)">
+                    <div class="ps-hooper-blocks">
+                        ${[1,2,3,4,5].map(n =>
+                            `<button class="ps-hooper-btn${n===3?' active':''}" data-val="${n}" data-metric="${id}">${n}</button>`
+                        ).join('')}
+                    </div>
+                </div>`;
+            }).join('')}
+
+            <!-- RPE Slider -->
+            <div class="ps-hooper-row">
+                <div class="ps-hooper-header">
+                    <span class="ps-hooper-label">Esfuerzo Percibido (RPE)</span>
+                    <span class="ps-hooper-val" id="pswl-rpe-display" style="color: var(--yellow);">5</span>
+                </div>
+                <div class="ps-rpe-slider-wrap">
+                    <input type="range" class="ps-rpe-slider" id="pswl-rpe-slider"
+                           min="0" max="10" value="5" step="1"
+                           oninput="window.PlayerShellEngine._onRpeInput(this)">
+                </div>
+                <div class="ps-rpe-labels">
+                    <span>Muy Fácil (0)</span>
+                    <span>Máximo (10)</span>
                 </div>
             </div>
 
-            <div class="ps-section">
-                <button class="ps-btn-massive" id="pswl-submit-btn" onclick="window.PlayerShellEngine._submitWellness()">ENVIAR REPORTE AL CUERPO TÉCNICO</button>
-            </div>
-        `;
+            <!-- Submit -->
+            <button class="ps-btn-massive" id="pswl-submit-btn"
+                    onclick="window.PlayerShellEngine._submitWellness()">
+                ENVIAR REPORTE AL CUERPO TÉCNICO
+            </button>
+        `);
 
-        this._setupWellnessInteractions();
+        // Re-attach block button events after modal is in DOM
+        requestAnimationFrame(() => this._setupWellnessInteractions());
+    },
+
+    _renderWellnessView: function () {
+        // Redirects to the modal-based wellness form
+        this._openWellnessModal();
     },
 
     _setupWellnessInteractions: function () {
         document.querySelectorAll('.ps-hooper-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const metric = btn.dataset.metric;
-                const val = parseInt(btn.dataset.val);
-                btn.parentElement.querySelectorAll('.ps-hooper-btn').forEach(b => b.classList.remove('active'));
+                const val    = parseInt(btn.dataset.val);
+                btn.closest('.ps-hooper-blocks').querySelectorAll('.ps-hooper-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                document.getElementById('pswl-val-' + metric).textContent = val;
-                this._wellnessForm[metric] = val;
+                const valEl = document.getElementById('pswl-val-' + metric);
+                if (valEl) valEl.textContent = val;
+                if (this._wellnessForm) this._wellnessForm[metric] = val;
             });
         });
     },
 
     _onRpeInput: function (slider) {
-        const val = parseInt(slider.value);
+        const val     = parseInt(slider.value);
         const display = document.getElementById('pswl-rpe-display');
+        if (!display) return;
         display.textContent = val;
-        display.style.color = val >= 8 ? 'var(--ps-danger-light)' : val >= 5 ? '#F59E0B' : 'var(--ps-success)';
+        if (val >= 8)      { display.style.color = 'var(--red)'; }
+        else if (val >= 5) { display.style.color = 'var(--yellow)'; }
+        else               { display.style.color = 'var(--green)'; }
         if (this._wellnessForm) this._wellnessForm.rpe = val;
     },
 
@@ -473,8 +559,9 @@ window.PlayerShellEngine = {
 
             await window.supabase.from('player_wellness').upsert([payload], { onConflict: 'player_id,fecha' });
             this.state.wellness = payload;
+            this._closeModal();
             this._showToast('✅ Reporte enviado con éxito');
-            setTimeout(() => this._renderWellnessView(), 800);
+            setTimeout(() => this._renderHomeView(), 600);
         } catch (err) {
             console.error(err);
             if (btn) { btn.disabled = false; btn.textContent = 'ENVIAR REPORTE AL CUERPO TÉCNICO'; }
@@ -485,10 +572,12 @@ window.PlayerShellEngine = {
         const prev = document.getElementById('ps-toast');
         if (prev) prev.remove();
         const toast = document.createElement('div');
-        toast.id = 'ps-toast';
+        toast.id        = 'ps-toast';
         toast.className = 'ps-toast';
         toast.textContent = msg;
-        document.body.appendChild(toast);
+        // Append inside player-shell so z-index stacking is correct
+        const shell = document.getElementById('player-shell') || document.body;
+        shell.appendChild(toast);
         requestAnimationFrame(() => toast.classList.add('visible'));
         setTimeout(() => {
             toast.classList.remove('visible');
