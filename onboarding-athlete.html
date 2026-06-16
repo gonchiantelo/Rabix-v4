@@ -226,6 +226,52 @@
             border-color: var(--muted);
         }
 
+        /* Legacy V4 Onboarding Styles */
+        .onboarding-step-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+            animation: fadeIn 0.3s ease;
+        }
+        .onboarding-step-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 32px;
+            color: var(--text);
+            line-height: 1.3;
+        }
+        .onboarding-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .onboarding-opt-btn {
+            background: #1a1a1a;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #FFF;
+            padding: 18px;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+        .onboarding-opt-btn:hover {
+            background: #2a2a2a;
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .form-input.normal {
             font-size: 1.1rem;
             letter-spacing: 1px;
@@ -412,6 +458,11 @@
         
         <button class="btn-secondary" onclick="goToStep1()" style="border: none; padding: 0; color: var(--muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1.5px;">← Volver al Paso 1</button>
     </div>
+
+    <!-- PASO 3: Legacy V4 Onboarding Questionnaire -->
+    <div id="step-legacy" style="display:none; width:100%; max-width:500px;">
+        <div id="legacy-step-container"></div>
+    </div>
 </div>
 
 <script>
@@ -433,10 +484,10 @@
 
             const uid = session.user.id;
 
-            // Fetch the athlete's profile — solo columnas que existen en la tabla
+            // Fetch the athlete's profile
             const { data: profile, error } = await db
                 .from('profiles_athlete')
-                .select('id, full_name, sport, position')
+                .select('*')
                 .eq('id', uid)
                 .maybeSingle();
 
@@ -445,23 +496,29 @@
                 await db.from('profiles_athlete').upsert({ id: uid }, { onConflict: 'id' });
             }
 
-            // Si hubo error de DB (ej. columna inválida), igual mostramos el form
-            // para no entrar en loop infinito con index.html
+            // Si hubo error de DB, igual mostramos el form
             if (error) {
                 console.warn('[ONBOARDING] Error al leer perfil (no es fatal):', error.message);
-                // Mostrar el formulario de todas formas
                 document.getElementById('loading-screen').style.display = 'none';
                 document.getElementById('main-page').style.display = 'flex';
                 return;
             }
 
-            // Perfil completo (sport + position) → ir al dashboard directamente
-            if (profile && profile.full_name && profile.sport && profile.position) {
+            // Perfil completo (sport + position + onboarding_data) → ir al dashboard directamente
+            if (profile && profile.full_name && profile.sport && profile.position && profile.onboarding_data) {
                 window.location.replace('index.html');
                 return;
             }
 
-            // Perfil incompleto o sin equipo → mostrar formulario de onboarding
+            // Si tiene datos básicos pero le falta el questionnaire V4
+            if (profile && profile.full_name && profile.sport && profile.position && !profile.onboarding_data) {
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('main-page').style.display = 'flex';
+                startLegacyOnboarding();
+                return;
+            }
+
+            // Perfil incompleto o sin equipo → mostrar formulario de onboarding (Paso 1 y 2)
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('main-page').style.display = 'flex';
 
@@ -626,10 +683,10 @@
                 return;
             }
 
-            // 3. Success → redirect
-            showFeedback('success', `✅ ¡Te uniste a ${team.name}! Redirigiendo...`);
+            // 3. Success → proceed to legacy onboarding
+            showFeedback('success', `✅ ¡Te uniste a ${team.name}! Preparando tu perfil...`);
             setTimeout(() => {
-                window.location.replace('index.html');
+                startLegacyOnboarding();
             }, 1200);
 
         } catch (err) {
@@ -664,9 +721,9 @@
                 return;
             }
             
-            showFeedback('success', '✅ Perfil creado. Redirigiendo...');
+            showFeedback('success', '✅ Perfil creado. Preparando tu perfil...');
             setTimeout(() => {
-                window.location.replace('index.html');
+                startLegacyOnboarding();
             }, 1200);
             
         } catch (err) {
@@ -693,6 +750,84 @@
         label.style.display = 'block';
         spinner.style.display = 'none';
     }
+
+    // ── V4 Legacy Onboarding Questionnaire ───────────────────────
+    const onboardingSteps = [
+        { id: 'frecuencia', title: '¿Cuántas sesiones reales completaste en los últimos 7 días?', options: [{label:'0 (vengo de parón)', val:0}, {label:'1-2 sesiones', val:1}, {label:'3-4 sesiones', val:3}, {label:'5 o más sesiones', val:5}] },
+        { id: 'dias', title: '¿Cuántos días por semana podés sostener de forma realista?', options: [{label:'2 días', val:2}, {label:'3 días', val:3}, {label:'4 días', val:4}, {label:'5+ días', val:5}] },
+        { id: 'nivel', title: '¿Cómo calificarías tu nivel actual?', options: [{label:'Principiante (< 6 meses)', val:'principiante'}, {label:'Intermedio (1 - 2 años)', val:'intermedio'}, {label:'Avanzado (> 3 años)', val:'avanzado'}] },
+        { id: 'duracion', title: 'Duración media por sesión (minutos efectivos)', options: [{label:'30-45 min', val:45}, {label:'60 min', val:60}, {label:'75 min', val:75}, {label:'90+ min', val:90}] },
+        { id: 'partido', title: 'Si competís, ¿qué día suele ser tu partido principal?', options: [{label:'Domingo', val:'domingo'}, {label:'Sábado', val:'sabado'}, {label:'Viernes', val:'viernes'}, {label:'No compito fijo', val:'none'}] },
+        { id: 'recuperacion', title: '¿Cómo venís recuperando (sueño/estrés) esta semana?', options: [{label:'Alta (duermo bien, bajo estrés)', val:3}, {label:'Media', val:2}, {label:'Baja (fatigado/estresado)', val:1}] }
+    ];
+
+    let currentObStep = 0;
+    let obAnswers = {};
+
+    function startLegacyOnboarding() {
+        document.getElementById('step-1').style.display = 'none';
+        document.getElementById('step-2').style.display = 'none';
+        document.getElementById('step-legacy').style.display = 'block';
+        // Hide logo logic if needed, but it looks fine above the card
+        renderLegacyStep();
+    }
+
+    function renderLegacyStep() {
+        const container = document.getElementById('legacy-step-container');
+        const step = onboardingSteps[currentObStep];
+        
+        let html = \`
+            <div class="onboarding-step-card">
+                <h3 class="onboarding-step-title">\${step.title}</h3>
+                <div class="onboarding-options">
+                    \${step.options.map((opt) => \`
+                        <button class="onboarding-opt-btn" onclick="selectObOption('\${step.id}', '\${opt.val}')">\${opt.label}</button>
+                    \`).join('')}
+                </div>
+            </div>
+        \`;
+        container.innerHTML = html;
+    }
+
+    window.selectObOption = async function(id, val) {
+        obAnswers[id] = val;
+        currentObStep++;
+        
+        if (currentObStep < onboardingSteps.length) {
+            renderLegacyStep();
+        } else {
+            // Finish Questionnaire
+            const container = document.getElementById('legacy-step-container');
+            container.innerHTML = \`
+                <div class="onboarding-step-card">
+                    <div class="loading-spinner" style="margin:0 auto 20px auto;"></div>
+                    <h3 class="onboarding-step-title" style="margin-bottom:0;">Generando perfil biomecánico...</h3>
+                </div>
+            \`;
+            
+            try {
+                const { data: { session } } = await db.auth.getSession();
+                if (session) {
+                    const uid = session.user.id;
+                    const { error } = await db.from('profiles_athlete')
+                        .update({ onboarding_data: obAnswers })
+                        .eq('id', uid);
+                        
+                    if (error) {
+                        console.error("[ONBOARDING] Update error:", error);
+                        alert("Hubo un error al guardar tu cuestionario: " + error.message);
+                    }
+                }
+            } catch (e) {
+                console.error("[ONBOARDING] Exception saving questionnaire:", e);
+            }
+            
+            // Redirect to App (PlayerShellEngine.boot() will be called there)
+            setTimeout(() => {
+                window.location.replace('index.html');
+            }, 800);
+        }
+    };
 
     // ── Boot ────────────────────────────────────────────────────
     checkAuth();
