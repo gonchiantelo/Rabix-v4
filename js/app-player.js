@@ -221,7 +221,7 @@ window.PlayerShellEngine = {
         const dtAppShell = document.getElementById('app-shell');
         if (dtAppShell) { dtAppShell.style.display = 'none'; dtAppShell.setAttribute('aria-hidden', 'true'); }
 
-        document.body.style.background = '#0a0e1a)';
+        document.body.style.background = '#0a0e1a';
         document.body.style.color = '#f0f4f8';
 
         shell.style.cssText = 'display:flex !important; flex-direction:column !important; min-height:100vh !important; width:100vw !important; opacity:1 !important; visibility:visible !important; position:fixed !important; top:0 !important; left:0 !important; z-index:999999 !important;';
@@ -301,7 +301,7 @@ window.PlayerShellEngine = {
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                     </svg>
-                    <span class="ps-nav-label">Wellness</span>
+                    <span class="ps-nav-label">Bienestar</span>
                 </button>
                 <button class="ps-nav-btn" id="ps-nav-attendance"
                         onclick="window.PlayerShellEngine.switchTab('attendance',this)">
@@ -368,7 +368,7 @@ window.PlayerShellEngine = {
         }
         const brandVersion = document.querySelector('.ps-brand-version');
         if (brandVersion) {
-            brandVersion.textContent = this.state.isStandalone ? 'ATLETA LIBRE' : 'SELECCIÓN';
+            brandVersion.textContent = this.state.isStandalone ? 'ALTO RENDIMIENTO' : (playerRow?.team_name || 'SELECCIÓN');
             brandVersion.style.fontSize = this.state.isStandalone ? '10px' : '11px';
             brandVersion.style.letterSpacing = '1px';
         }
@@ -535,7 +535,7 @@ window.PlayerShellEngine = {
                     </div>
                     <div class="ps-metric">
                         <span class="ps-metric-value" style="color:${wellnessColor};">${wellnessVal}</span>
-                        <span class="ps-metric-label">Wellness</span>
+                        <span class="ps-metric-label">Bienestar</span>
                     </div>
                     <div class="ps-metric">
                         <span class="ps-metric-value muted">—</span>
@@ -623,6 +623,10 @@ window.PlayerShellEngine = {
     },
 
     _getDefaultExercises: function () {
+        if (this.state.isStandalone && window.StandaloneEngine) {
+            const session = window.StandaloneEngine.generateSession();
+            if (session.length > 0) return session;
+        }
         // Default training day — in production this comes from DT microcicle plan
         return [
             { name: 'Sentadilla',       group: 'Piernas',    fatigue: 3, sets: [] },
@@ -1127,3 +1131,62 @@ window.PlayerShellEngine = {
         }, 3000);
     }
 };
+
+/* ══════════════════════════════════════════════════════════
+   STANDALONE ENGINE (V4 Legacy Logic)
+══════════════════════════════════════════════════════════ */
+window.StandaloneEngine = {
+    EJERCICIOS: [
+        { cod: 1, nombre: 'Press Banca Barra', grupo: 'Pectoral', fatiga: 3 },
+        { cod: 2, nombre: 'Press con Mancuernas', grupo: 'Pectoral', fatiga: 2 },
+        { cod: 3, nombre: 'Aperturas en Polea', grupo: 'Pectoral', fatiga: 1 },
+        { cod: 4, nombre: 'Dominadas', grupo: 'Espalda', fatiga: 3 },
+        { cod: 5, nombre: 'Remo con DB', grupo: 'Espalda', fatiga: 2 },
+        { cod: 6, nombre: 'Sentadilla', grupo: 'Piernas', fatiga: 3 },
+        { cod: 7, nombre: 'Peso Muerto', grupo: 'Piernas', fatiga: 3 },
+        { cod: 8, nombre: 'Hip Thrust', grupo: 'Piernas', fatiga: 2 },
+        { cod: 9, nombre: 'Estocadas con mancuernas', grupo: 'Piernas', fatiga: 2 },
+        { cod: 10, nombre: 'Banco de Cuádriceps', grupo: 'Piernas', fatiga: 1 },
+        { cod: 11, nombre: 'Banco de Isquiotibiales', grupo: 'Piernas', fatiga: 1 },
+        { cod: 12, nombre: 'Peso muerto hexagonal', grupo: 'Piernas', fatiga: 3 },
+        { cod: 13, nombre: 'Press banca inclinado', grupo: 'Pectoral', fatiga: 2 },
+        { cod: 14, nombre: 'Aperturas en máquina', grupo: 'Pectoral', fatiga: 1 },
+        { cod: 15, nombre: 'Remo en T (Seal Row)', grupo: 'Espalda', fatiga: 2 },
+        { cod: 17, nombre: 'Jalón a dos brazos', grupo: 'Espalda', fatiga: 2 },
+        { cod: 19, nombre: 'Fondos (Tríceps)', grupo: 'Brazos', fatiga: 2 },
+        { cod: 20, nombre: 'Extensión polea tríceps', grupo: 'Brazos', fatiga: 1 },
+        { cod: 22, nombre: 'Vuelos laterales', grupo: 'Brazos', fatiga: 1 },
+        { cod: 23, nombre: 'Press hombro + iso', grupo: 'Brazos/Hombro', fatiga: 2 },
+        { cod: 24, nombre: 'Face-Pull', grupo: 'Espalda/Hombro', fatiga: 1 },
+        { cod: 25, nombre: 'Banco de Gemelos', grupo: 'Piernas', fatiga: 1 },
+        { cod: 26, nombre: 'Aductores en Máquina', grupo: 'Piernas', fatiga: 1 },
+        { cod: 27, nombre: 'Copenhagen Plank', grupo: 'Core', fatiga: 2 },
+        { cod: 28, nombre: 'Dead Bug (Bicho Muerto)', grupo: 'Core', fatiga: 1 },
+        { cod: 34, nombre: 'Caminata / Trote', grupo: 'Global', fatiga: 1 },
+    ],
+    ESCENARIOS: {
+        FUERZA_PIERNA_B: { label: 'FUERZA PIERNAS', ejercicios: [6, 7, 8, 12, 11, 27] },
+        FUERZA_TREN_SUP: { label: 'FUERZA TREN SUP', ejercicios: [1, 3, 23, 19, 4, 20] },
+        HIPERTROFIA_INF: { label: 'HIPERTROFIA INF', ejercicios: [9, 10, 11, 25, 26, 28] },
+        HIPERTROFIA_SUP: { label: 'HIPERTROFIA SUP', ejercicios: [13, 5, 15, 17, 24] },
+        PREVENCION: { label: 'PREVENCIÓN', ejercicios: [24, 22, 28, 27, 34, 3] },
+        RECUPERACION: { label: 'RECUPERACIÓN', ejercicios: [34, 28, 24] },
+        DESCANSO: { label: 'DESCANSO', ejercicios: [] }
+    },
+    OBJETIVO: {
+        dayScenario: { 1: 'FUERZA_PIERNA_B', 2: 'FUERZA_TREN_SUP', 3: 'HIPERTROFIA_INF', 4: 'HIPERTROFIA_SUP', 5: 'PREVENCION', 6: 'RECUPERACION', 0: 'DESCANSO' }
+    },
+    generateSession: function() {
+        const dow = new Date().getDay();
+        const escName = this.OBJETIVO.dayScenario[dow] || 'DESCANSO';
+        const escenario = this.ESCENARIOS[escName];
+        if (!escenario || escenario.ejercicios.length === 0) {
+            return [];
+        }
+        return escenario.ejercicios.map(cod => {
+            const ej = this.EJERCICIOS.find(e => e.cod === cod) || { nombre: 'Descanso', grupo: '-', fatiga: 1 };
+            return { name: ej.nombre, group: ej.grupo, fatigue: ej.fatiga, sets: [] };
+        });
+    }
+};
+
