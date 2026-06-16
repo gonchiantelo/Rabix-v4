@@ -221,7 +221,7 @@ window.PlayerShellEngine = {
         const dtAppShell = document.getElementById('app-shell');
         if (dtAppShell) { dtAppShell.style.display = 'none'; dtAppShell.setAttribute('aria-hidden', 'true'); }
 
-        document.body.style.background = 'var(--bg, #0a0e1a)';
+        document.body.style.background = '#0a0e1a)';
         document.body.style.color = '#f0f4f8';
 
         shell.style.cssText = 'display:flex !important; flex-direction:column !important; min-height:100vh !important; width:100vw !important; opacity:1 !important; visibility:visible !important; position:fixed !important; top:0 !important; left:0 !important; z-index:999999 !important;';
@@ -246,14 +246,9 @@ window.PlayerShellEngine = {
                     <span class="ps-brand-version">V5</span>
                 </div>
                 <div class="ps-header-meta">
-                    <div class="ps-header-add-btn" id="ps-add-team-btn" title="Vincular equipo"
-                         onclick="window.PlayerShellEngine._renderOnboardingView(true)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                        </svg>
-                    </div>
-                    <div class="ps-semaphore" id="ps-semaphore" title="Estado de carga"></div>
-                    <div class="ps-header-avatar" id="ps-player-avatar">A</div>
+                    <div class="ps-semaphore" id="ps-header-semaphore" title="Carga Aguda" style="background:var(--green);box-shadow:0 0 10px var(--green-glow);"></div>
+                    <button class="ps-header-add-btn" title="Nuevo Registro" onclick="window.PlayerShellEngine._startTrainingView()">+</button>
+                    <div class="ps-header-avatar" onclick="window.PlayerShellEngine.switchTab('home')" id="header-user-emoji">👨🏻‍🚀</div>
                 </div>
             </header>
 
@@ -370,7 +365,7 @@ window.PlayerShellEngine = {
     },
 
     _hydrateHeader: function (playerRow) {
-        const avatarEl = document.getElementById('ps-player-avatar');
+        const avatarEl = document.getElementById('header-user-emoji');
         if (avatarEl) {
             const name = playerRow?.full_name || window.CurrentUser?.full_name || 'A';
             avatarEl.textContent = name.charAt(0).toUpperCase();
@@ -643,10 +638,35 @@ window.PlayerShellEngine = {
 
         const exes = this.state.session.exercises;
 
+        // Mobility Section Logic
+        const mobilityHTML = `
+            <div class="ps-panel" id="ps-mobility-section" style="margin-bottom: 16px;">
+                <div class="ps-panel-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                    <h3 class="ps-panel-title">Activación & Movilidad</h3>
+                    <span class="ps-panel-badge">3 MIN</span>
+                </div>
+                <div class="ps-mobility-list">
+                    <div class="ps-mobility-card"><span class="m-emoji">🪱</span><span class="m-name">Oruga</span><span class="m-dur">30s</span></div>
+                    <div class="ps-mobility-card"><span class="m-emoji">🕷️</span><span class="m-name">Spiderman</span><span class="m-dur">30s</span></div>
+                    <div class="ps-mobility-card"><span class="m-emoji">🦂</span><span class="m-name">Escorpión</span><span class="m-dur">30s</span></div>
+                    <div class="ps-mobility-card"><span class="m-emoji">🧘‍♂️</span><span class="m-name">Cobra a Carpa</span><span class="m-dur">45s</span></div>
+                </div>
+            </div>
+        `;
+
         const exerciseCardsHTML = exes.map((ex, idx) => {
             const fatigueClass = ['', 'f1', 'f2', 'f3'][ex.fatigue] || 'f2';
             const fatigueLabel = ['', 'BAJA', 'MEDIA', 'ALTA'][ex.fatigue] || 'MEDIA';
             const logged       = ex.sets.length > 0;
+            
+            // Progression Engine (RIR logic simulation)
+            const isProgressed = ex.hasHighRirHistory; // Simulated flag
+            const suggestionBanner = isProgressed ? `
+                <div class="ps-suggestion-banner" style="margin: 8px 12px 0;">
+                    <span style="font-size:16px;">🟢</span>
+                    <span>Última sesión RIR ≥ 3. Sugerencia: <b>Subir carga (+2.5kg)</b></span>
+                </div>
+            ` : '';
 
             const setsLogHTML = ex.sets.length > 0 ? ex.sets.map((s, si) => `
                 <div class="ps-logged-set-row">
@@ -665,6 +685,7 @@ window.PlayerShellEngine = {
                         </div>
                         <span class="ps-ex-log-indicator">${logged ? '✓' : '+'}</span>
                     </div>
+                    ${suggestionBanner}
                     <div class="ps-ex-sets-body">
                         <div class="ps-ex-logged-sets" id="ps-sets-log-${idx}">
                             ${setsLogHTML || '<p class="ps-ex-no-sets">Sin series aún</p>'}
@@ -701,6 +722,7 @@ window.PlayerShellEngine = {
 
                 <!-- Exercise List -->
                 <div class="ps-exercise-list" id="ps-exercise-list">
+                    ${mobilityHTML}
                     ${exerciseCardsHTML}
                 </div>
 
