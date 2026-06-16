@@ -335,18 +335,14 @@ window.PlayerShellEngine = {
             const playerRow = rosterRows && rosterRows.length > 0 ? rosterRows[0] : null;
 
             if (!playerRow) {
-                if (localStorage.getItem('ps_skip_team') === 'true') {
-                    this.state.user = null;
-                    return this._renderHomeView();
-                }
-                const nav = document.getElementById('ps-bottom-nav');
-                if (nav) nav.style.display = 'none';
-                setTimeout(() => this._renderOnboardingView(false), 600);
-                return;
+                this.state.isStandalone = true;
+                this.state.user = { full_name: 'Atleta Libre' };
+            } else {
+                this.state.isStandalone = false;
+                this.state.user = playerRow;
             }
 
-            this.state.user = playerRow;
-            this._hydrateHeader(playerRow);
+            this._hydrateHeader(this.state.user);
 
             this._updateBootStatus('CARGANDO WELLNESS...');
             const today = new Date().toISOString().split('T')[0];
@@ -369,6 +365,12 @@ window.PlayerShellEngine = {
         if (avatarEl) {
             const name = playerRow?.full_name || window.CurrentUser?.full_name || 'A';
             avatarEl.textContent = name.charAt(0).toUpperCase();
+        }
+        const brandVersion = document.querySelector('.ps-brand-version');
+        if (brandVersion) {
+            brandVersion.textContent = this.state.isStandalone ? 'ATLETA LIBRE' : 'SELECCIÓN';
+            brandVersion.style.fontSize = this.state.isStandalone ? '10px' : '11px';
+            brandVersion.style.letterSpacing = '1px';
         }
     },
 
@@ -544,7 +546,7 @@ window.PlayerShellEngine = {
                 <!-- Microciclo Panel -->
                 <div class="ps-panel">
                     <div class="ps-panel-header">
-                        <h3 class="ps-panel-title">Microciclo Activo</h3>
+                        <h3 class="ps-panel-title">${this.state.isStandalone ? 'Mi Entrenamiento' : 'Protocolo del DT'}</h3>
                         <span class="ps-panel-badge">SEMANA</span>
                     </div>
                     <!-- Today card -->
@@ -976,7 +978,7 @@ window.PlayerShellEngine = {
 
             <button class="ps-btn-massive" id="pswl-submit-btn"
                     onclick="window.PlayerShellEngine._submitWellness()">
-                ENVIAR REPORTE AL CUERPO TÉCNICO
+                ${this.state.isStandalone ? 'REGISTRAR ESTADO PERSONAL' : 'ENVIAR REPORTE AL CUERPO TÉCNICO'}
             </button>
         `);
 
@@ -1022,6 +1024,7 @@ window.PlayerShellEngine = {
 
             const payload = {
                 player_id:     uid,
+                team_id:       this.state.isStandalone ? null : (this.state.user?.team_id || null),
                 fecha:         new Date().toISOString().split('T')[0],
                 sleep_quality: form.sleep  || 3,
                 stress_level:  form.stress || 3,
