@@ -1104,3 +1104,425 @@
     display: block;
     opacity: 0.5;
 }
+
+/* ══════════════════════════════════════════════════
+   START TRAINING BUTTON (on today-card)
+═══════════════════════════════════════════════════ */
+.ps-btn-start-training {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 44px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+    color: var(--bg);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: var(--f-title);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all var(--transition);
+    box-shadow: 0 2px 12px rgba(0,200,255,0.22);
+    margin-top: 4px;
+}
+.ps-btn-start-training:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,200,255,0.32);
+}
+.ps-btn-start-training:active {
+    transform: scale(0.98);
+}
+
+/* ══════════════════════════════════════════════════
+   TIMER BAR — Floating above bottom nav
+═══════════════════════════════════════════════════ */
+.ps-timer-bar {
+    position: fixed;
+    bottom: var(--nav-h);
+    left: 0;
+    right: 0;
+    background: rgba(17, 24, 39, 0.97);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border-2);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 490;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity  0.35s ease;
+}
+.ps-timer-bar.hidden {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.ps-timer-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border-2);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all var(--transition);
+    flex-shrink: 0;
+}
+.ps-timer-display:hover {
+    border-color: var(--accent);
+    background: var(--surface-2);
+}
+
+.ps-timer-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-3);
+    flex-shrink: 0;
+    transition: all var(--transition);
+}
+
+.ps-timer-time {
+    font-family: var(--f-mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 2px;
+    min-width: 5ch;
+}
+
+.ps-timer-mode-icon {
+    font-size: 0.9rem;
+    opacity: 0.5;
+}
+
+/* Rest-period presets */
+.ps-timer-presets {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.ps-timer-presets::-webkit-scrollbar { display: none; }
+
+.ps-timer-preset {
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-3);
+    cursor: pointer;
+    transition: all var(--transition);
+    letter-spacing: 0.5px;
+}
+.ps-timer-preset:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.ps-timer-preset.active {
+    background: rgba(0,200,255,0.12);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 8px rgba(0,200,255,0.2);
+}
+
+.ps-timer-reset-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-3);
+    cursor: pointer;
+    transition: all var(--transition);
+    flex-shrink: 0;
+}
+.ps-timer-reset-btn:hover {
+    color: var(--red);
+    border-color: var(--red);
+}
+
+/* ══════════════════════════════════════════════════
+   TRAINING VIEW — Header
+═══════════════════════════════════════════════════ */
+.ps-train-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0 8px;
+}
+
+.ps-btn-back {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all var(--transition);
+    flex-shrink: 0;
+}
+.ps-btn-back:hover {
+    border-color: var(--border-2);
+    color: var(--text);
+}
+
+.ps-train-scenario-label {
+    font-family: var(--f-title);
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text);
+}
+.ps-train-date-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-3);
+    margin-top: 2px;
+}
+
+.ps-btn-finish-session {
+    background: rgba(244, 63, 94, 0.12);
+    border: 1px solid rgba(244, 63, 94, 0.35);
+    border-radius: var(--radius-sm);
+    color: var(--red);
+    font-family: var(--f-title);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all var(--transition);
+    flex-shrink: 0;
+}
+.ps-btn-finish-session:hover {
+    background: rgba(244, 63, 94, 0.22);
+    border-color: var(--red);
+}
+
+/* ══════════════════════════════════════════════════
+   EXERCISE CARDS (Training Engine V4 style)
+═══════════════════════════════════════════════════ */
+.ps-exercise-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ps-exercise-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color var(--transition);
+}
+.ps-exercise-card.logged {
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.ps-exercise-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Fatigue badge */
+.ps-ex-fatigue-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    text-align: center;
+    line-height: 1.2;
+}
+.ps-ex-fatigue-badge.f1 { background: rgba(34,197,94,0.12);  color: var(--green);  border: 1px solid rgba(34,197,94,0.25); }
+.ps-ex-fatigue-badge.f2 { background: rgba(250,204,21,0.12); color: var(--yellow); border: 1px solid rgba(250,204,21,0.25); }
+.ps-ex-fatigue-badge.f3 { background: rgba(244,63,94,0.12);  color: var(--red);    border: 1px solid rgba(244,63,94,0.25); }
+
+.ps-exercise-card-info { flex: 1; }
+.ps-ex-name {
+    font-family: var(--f-title);
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text);
+}
+.ps-ex-group {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 2px;
+}
+
+.ps-ex-log-indicator {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--text-3);
+    .ps-exercise-card.logged & { color: var(--green); }
+}
+.ps-exercise-card.logged .ps-ex-log-indicator {
+    color: var(--green);
+}
+
+/* Collapsible body */
+.ps-ex-sets-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-top: 0px solid var(--border);
+}
+.ps-ex-sets-body.open {
+    max-height: 600px;
+    border-top-width: 1px;
+}
+
+.ps-ex-logged-sets {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ps-logged-set-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--surface-2);
+    border-radius: var(--radius-sm);
+}
+.ps-set-num {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--text-3);
+    width: 2ch;
+    text-align: center;
+    flex-shrink: 0;
+}
+.ps-set-data {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+}
+.ps-set-tonnage {
+    font-family: var(--f-title);
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--accent);
+}
+
+.ps-ex-no-sets {
+    font-size: 12px;
+    color: var(--text-3);
+    text-align: center;
+    padding: 8px 0;
+}
+
+.ps-btn-add-set {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: calc(100% - 32px);
+    margin: 0 16px 14px;
+    height: 38px;
+    background: rgba(0, 200, 255, 0.06);
+    border: 1px dashed rgba(0, 200, 255, 0.25);
+    border-radius: var(--radius-sm);
+    color: var(--accent);
+    font-family: var(--f-title);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+.ps-btn-add-set:hover {
+    background: rgba(0, 200, 255, 0.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(0,200,255,0.12);
+}
+
+/* ══════════════════════════════════════════════════
+   LOG SET MODAL — Form Inputs
+═══════════════════════════════════════════════════ */
+.ps-log-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.ps-form-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1.5px solid var(--border-2);
+    border-radius: var(--radius-sm);
+    padding: 14px 10px;
+    font-family: var(--f-title);
+    font-size: 22px;
+    font-weight: 900;
+    text-align: center;
+    color: var(--text);
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    -moz-appearance: textfield;
+}
+.ps-form-input::-webkit-outer-spin-button,
+.ps-form-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.ps-form-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 16px rgba(0,200,255,0.1);
+}
+.ps-form-input::placeholder {
+    color: var(--text-3);
+    font-size: 18px;
+}
+
+.ps-log-input {
+    /* inherits from ps-form-input */
+}
+
+.ps-tonnage-preview {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 0;
+    opacity: 0.8;
+}
+
