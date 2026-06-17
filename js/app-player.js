@@ -220,9 +220,9 @@ window.PlayerShellEngine = {
     ──────────────────────────────────────────── */
     boot: function () {
         console.log('[PLAYER SHELL] Booting Mundo Atleta...');
-        if (!document.querySelector('link[href="css/app-player.css"]')) {
+        if (!document.querySelector('link[href^="css/app-player.css"]')) {
             const link = document.createElement('link');
-            link.rel = 'stylesheet'; link.href = 'css/app-player.css';
+            link.rel = 'stylesheet'; link.href = 'css/app-player.css?v=' + new Date().getTime();
             document.head.appendChild(link);
         }
 
