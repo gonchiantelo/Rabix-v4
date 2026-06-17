@@ -283,10 +283,11 @@ body.mode-athlete, body.mode-player {
 /* ── Views ── */
 .ps-view {
     display: none;
-    padding: 16px 16px 24px;
-    gap: 14px;
+    padding: 24px 20px 32px;
+    gap: 20px;
     flex-direction: column;
     animation: ps-fadeSlideIn 0.3s ease;
+    min-height: min-content;
 }
 .ps-view.active {
     display: flex;
@@ -359,10 +360,11 @@ body.mode-athlete, body.mode-player {
     background: var(--surface);
     border-radius: var(--radius);
     border: 1px solid var(--border);
-    padding: 16px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
+    min-height: min-content;
 }
 
 .ps-panel-header {
@@ -423,12 +425,13 @@ body.mode-athlete, body.mode-player {
     background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-2);
-    padding: 16px;
+    padding: 24px 20px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 20px;
     position: relative;
     overflow: hidden;
+    min-height: min-content;
 }
 .ps-today-card::before {
     content: '';
@@ -608,18 +611,20 @@ body.mode-athlete, body.mode-player {
    CTA CARD — Wellness Call to Action
 ═══════════════════════════════════════════════════ */
 .ps-cta-card {
-    background: linear-gradient(135deg, rgba(0, 200, 255, 0.06) 0%, rgba(0, 200, 255, 0.01) 100%);
+    background: linear-gradient(135deg, rgba(0, 200, 255, 0.08) 0%, rgba(0, 200, 255, 0.02) 100%);
     border-radius: var(--radius-lg);
-    border: 1px solid rgba(0, 200, 255, 0.2);
-    padding: 18px 20px;
+    border: 1px solid rgba(0, 200, 255, 0.3);
+    padding: 24px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 16px;
     cursor: pointer;
     transition: all var(--transition);
     position: relative;
     overflow: hidden;
+    min-height: min-content;
+    box-shadow: 0 4px 12px rgba(0, 200, 255, 0.1);
 }
 .ps-cta-card::before {
     content: '';
@@ -666,13 +671,15 @@ body.mode-athlete, body.mode-player {
 
 /* Wellness Done Badge */
 .ps-wellness-done-card {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.02) 100%);
-    border: 1px solid rgba(34, 197, 94, 0.25);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.03) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.3);
     border-radius: var(--radius-lg);
-    padding: 18px 20px;
+    padding: 24px 20px;
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 16px;
+    min-height: min-content;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
 }
 .ps-wellness-done-icon {
     font-size: 2rem;
@@ -1021,22 +1028,23 @@ body.mode-athlete, body.mode-player {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
-    height: 52px;
+    min-height: 56px;
+    padding: 16px 24px;
     background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
     color: var(--bg);
     border: none;
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     font-family: var(--f-title);
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 900;
     letter-spacing: 1.5px;
     text-transform: uppercase;
     cursor: pointer;
     transition: all var(--transition);
-    box-shadow: 0 4px 20px rgba(0, 200, 255, 0.25);
-    margin-top: 4px;
+    box-shadow: 0 6px 20px rgba(0, 200, 255, 0.3);
+    margin-top: 8px;
 }
 .ps-btn-massive:hover {
     transform: translateY(-2px);
@@ -1056,22 +1064,29 @@ body.mode-athlete, body.mode-player {
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 44px;
-    background: transparent;
+    min-height: 48px;
+    padding: 12px 20px;
+    background: var(--surface-2);
     border: 1.5px solid var(--border-2);
     border-radius: var(--radius);
     color: var(--text-2);
     font-family: var(--f-title);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 1px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
     text-transform: uppercase;
     cursor: pointer;
     transition: all var(--transition);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 .ps-btn-secondary:hover {
     border-color: var(--accent);
     color: var(--accent);
+    background: var(--surface);
+    transform: translateY(-1px);
+}
+.ps-btn-secondary:active {
+    transform: scale(0.98);
 }
 
 /* ══════════════════════════════════════════════════
@@ -1156,22 +1171,23 @@ body.mode-athlete, body.mode-player {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
-    height: 44px;
+    min-height: 52px;
+    padding: 14px 20px;
     background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
     color: var(--bg);
     border: none;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius);
     font-family: var(--f-title);
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 900;
     letter-spacing: 2px;
     text-transform: uppercase;
     cursor: pointer;
     transition: all var(--transition);
-    box-shadow: 0 2px 12px rgba(0,200,255,0.22);
-    margin-top: 4px;
+    box-shadow: 0 4px 16px rgba(0,200,255,0.25);
+    margin-top: 8px;
 }
 .ps-btn-start-training:hover {
     transform: translateY(-2px);
@@ -1379,6 +1395,9 @@ body.mode-athlete, body.mode-player {
     border-radius: var(--radius);
     overflow: hidden;
     transition: border-color var(--transition);
+    min-height: min-content;
+    display: flex;
+    flex-direction: column;
 }
 .ps-exercise-card.logged {
     border-color: rgba(34, 197, 94, 0.3);
@@ -1498,16 +1517,17 @@ body.mode-athlete, body.mode-player {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     width: calc(100% - 32px);
-    margin: 0 16px 14px;
-    height: 38px;
-    background: rgba(0, 200, 255, 0.06);
-    border: 1px dashed rgba(0, 200, 255, 0.25);
+    margin: 0 16px 16px;
+    min-height: 44px;
+    padding: 12px 20px;
+    background: rgba(0, 200, 255, 0.08);
+    border: 1px dashed rgba(0, 200, 255, 0.35);
     border-radius: var(--radius-sm);
     color: var(--accent);
     font-family: var(--f-title);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 900;
     letter-spacing: 1.5px;
     text-transform: uppercase;
@@ -1515,9 +1535,13 @@ body.mode-athlete, body.mode-player {
     transition: all var(--transition);
 }
 .ps-btn-add-set:hover {
-    background: rgba(0, 200, 255, 0.1);
+    background: rgba(0, 200, 255, 0.15);
     border-color: var(--accent);
-    box-shadow: 0 0 12px rgba(0,200,255,0.12);
+    box-shadow: 0 0 12px rgba(0,200,255,0.2);
+    transform: translateY(-1px);
+}
+.ps-btn-add-set:active {
+    transform: scale(0.98);
 }
 
 /* ══════════════════════════════════════════════════
