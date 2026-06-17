@@ -145,7 +145,6 @@ body.mode-athlete, body.mode-player {
 
 /* Fix inner cards to prevent bleed */
 .ps-today-card, .ps-panel, .ps-cta-card, .ps-wellness-done-card, .ps-exercise-card, .ps-boot {
-    width: 100%;
     box-sizing: border-box;
 }
 
