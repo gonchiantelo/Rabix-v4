@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
     <title>RAVIX V5 — Elite Tactical OS</title>
     <link rel="icon" type="image/png" href="favicon.png" />
-    
+
     <!-- Diseño Base -->
     <link rel="stylesheet" href="./css/styles-core.css?v=2" />
     <link rel="stylesheet" href="./css/styles-player.css?v=2" />
@@ -17,30 +19,33 @@
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./js/supabase-config.js?v=2"></script>
 
     <!-- Global State & DB -->
-    <script src="./js/app-db.js?v=2"></script>
+    <script src="./js/data.js?v=2"></script>
     <!-- Core App Logic (DT/Profesor) -->
     <script src="./js/app-core.js?v=2"></script>
     <script src="./js/app-dt.js?v=2"></script>
     <script src="./js/app-dt-medical.js?v=2"></script>
-    <script src="./js/app-dt-drills.js?v=2"></script>
-    
+    <script src="./js/app-portal.js?v=2"></script>
+
     <!-- Athlete App Engine -->
     <script src="./js/app-player.js?v=2"></script>
-    
+
     <!-- Fabric.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 
     <!-- Tipografía -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Outfit:wght@700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Outfit:wght@700;900&display=swap"
+        rel="stylesheet" />
 
     <!-- Estadísticas -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
 </head>
+
 <body>
 
     <!-- ═══════════════════════════════════════════════
@@ -66,11 +71,15 @@
 
             <div class="portal-cards">
                 <!-- Staff Card -->
-                <div id="portal-dt" class="portal-card portal-card--dt" onclick="window.App.selectRole('dt')" role="button" tabindex="0" aria-label="Acceder como Staff">
+                <div id="portal-dt" class="portal-card portal-card--dt" onclick="window.App.selectRole('dt')"
+                    role="button" tabindex="0" aria-label="Acceder como Staff">
                     <div class="portal-card-shimmer"></div>
                     <div class="portal-card-body">
                         <div class="portal-card-icon-wrap portal-card-icon-wrap--dt">
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                            </svg>
                         </div>
                         <h2 class="portal-card-title portal-card-title--dt">PORTAL STAFF</h2>
                         <p class="portal-card-desc">Tactical OS &amp; Gestión Deportiva</p>
@@ -87,11 +96,18 @@
                 </div>
 
                 <!-- Athlete Card -->
-                <div id="portal-athlete" class="portal-card portal-card--athlete" onclick="window.App.selectRole('athlete')" role="button" tabindex="0" aria-label="Acceder como Atleta">
+                <div id="portal-athlete" class="portal-card portal-card--athlete"
+                    onclick="window.App.selectRole('athlete')" role="button" tabindex="0"
+                    aria-label="Acceder como Atleta">
                     <div class="portal-card-shimmer"></div>
                     <div class="portal-card-body">
                         <div class="portal-card-icon-wrap portal-card-icon-wrap--athlete">
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M17 4l2.5 2.5L17 9"/></svg>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="8" r="4" />
+                                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                                <path d="M17 4l2.5 2.5L17 9" />
+                            </svg>
                         </div>
                         <h2 class="portal-card-title portal-card-title--athlete">PORTAL ATLETA</h2>
                         <p class="portal-card-desc">Laboratorio de Rendimiento</p>
@@ -117,8 +133,12 @@
             <div class="lv-left-glow lv-left-glow--2"></div>
 
             <div class="lv-left-content">
-                <button class="lv-back-btn" id="login-back-btn" onclick="window.App.goBackToPortal()" aria-label="Volver al portal">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+                <button class="lv-back-btn" id="login-back-btn" onclick="window.App.goBackToPortal()"
+                    aria-label="Volver al portal">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round">
+                        <path d="M19 12H5M12 5l-7 7 7 7" />
+                    </svg>
                     Volver
                 </button>
 
@@ -130,7 +150,8 @@
                 <div class="lv-left-body">
                     <p class="lv-eyebrow" id="lv-eyebrow">PORTAL STAFF</p>
                     <h1 class="lv-headline" id="lv-headline">Sistema Táctico<br>de Elite</h1>
-                    <p class="lv-subheadline" id="lv-subheadline">El ecosistema de rendimiento deportivo más avanzado. Análisis, planificación y control en tiempo real.</p>
+                    <p class="lv-subheadline" id="lv-subheadline">El ecosistema de rendimiento deportivo más avanzado.
+                        Análisis, planificación y control en tiempo real.</p>
 
                     <div class="lv-stats">
                         <div class="lv-stat">
@@ -159,27 +180,37 @@
             <div class="lv-form-wrap">
 
                 <!-- Role pill -->
-                <div class="lv-role-pill" id="lv-role-pill">
+                <div class="lv-role-pill" id="lv-role-pill" onclick="window.App.goBackToPortal()" style="cursor: pointer;" aria-label="Cambiar de Rol" role="button" tabindex="0">
                     <span class="lv-role-dot" id="lv-role-dot"></span>
                     <span id="lv-role-label">Modo Staff</span>
                 </div>
 
                 <!-- Tab switcher -->
                 <div class="lv-tabs" role="tablist">
-                    <button class="lv-tab lv-tab--active" id="tab-login" role="tab" aria-selected="true" onclick="window.App.toggleAuth('login')">Iniciar sesión</button>
-                    <button class="lv-tab" id="tab-register" role="tab" aria-selected="false" onclick="window.App.toggleAuth('register')">Crear cuenta</button>
+                    <button class="lv-tab lv-tab--active" id="tab-login" role="tab" aria-selected="true"
+                        onclick="window.App.toggleAuth('login')">Iniciar sesión</button>
+                    <button class="lv-tab" id="tab-register" role="tab" aria-selected="false"
+                        onclick="window.App.toggleAuth('register')">Crear cuenta</button>
                     <div class="lv-tab-slider" id="lv-tab-slider"></div>
                 </div>
 
                 <!-- Error banner (hidden by default) -->
                 <div class="lv-error" id="lv-error" role="alert" aria-live="polite" style="display:none;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
                     <span id="lv-error-msg">Error al iniciar sesión.</span>
                 </div>
 
                 <!-- Success banner -->
                 <div class="lv-success" id="lv-success" role="status" aria-live="polite" style="display:none;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
                     <span id="lv-success-msg">¡Cuenta creada con éxito!</span>
                 </div>
 
@@ -188,8 +219,13 @@
                     <div class="lv-field-group">
                         <label class="lv-label" for="login-username">Correo electrónico</label>
                         <div class="lv-input-wrap">
-                            <svg class="lv-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
-                            <input type="email" id="login-username" class="lv-input" placeholder="tu@email.com" required autocomplete="username" spellcheck="false">
+                            <svg class="lv-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <rect x="2" y="4" width="20" height="16" rx="2" />
+                                <path d="m22 7-10 7L2 7" />
+                            </svg>
+                            <input type="email" id="login-username" class="lv-input" placeholder="tu@email.com" required
+                                autocomplete="username" spellcheck="false">
                         </div>
                     </div>
 
@@ -198,10 +234,21 @@
                             <label class="lv-label" for="login-password">Contraseña</label>
                         </div>
                         <div class="lv-input-wrap">
-                            <svg class="lv-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            <input type="password" id="login-password" class="lv-input" placeholder="••••••••" required autocomplete="current-password">
-                            <button type="button" class="lv-eye-btn" id="login-eye" onclick="window.LoginUI.togglePass('login-password','login-eye')" aria-label="Mostrar contraseña">
-                                <svg id="login-eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="lv-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                            <input type="password" id="login-password" class="lv-input" placeholder="••••••••" required
+                                autocomplete="current-password">
+                            <button type="button" class="lv-eye-btn" id="login-eye"
+                                onclick="window.LoginUI.togglePass('login-password','login-eye')"
+                                aria-label="Mostrar contraseña">
+                                <svg id="login-eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
                             </button>
                         </div>
                     </div>
@@ -217,18 +264,34 @@
                     <div class="lv-field-group">
                         <label class="lv-label" for="register-email">Correo electrónico</label>
                         <div class="lv-input-wrap">
-                            <svg class="lv-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
-                            <input type="email" id="register-email" class="lv-input" placeholder="tu@email.com" required spellcheck="false">
+                            <svg class="lv-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <rect x="2" y="4" width="20" height="16" rx="2" />
+                                <path d="m22 7-10 7L2 7" />
+                            </svg>
+                            <input type="email" id="register-email" class="lv-input" placeholder="tu@email.com" required
+                                spellcheck="false">
                         </div>
                     </div>
 
                     <div class="lv-field-group">
                         <label class="lv-label" for="register-password">Contraseña</label>
                         <div class="lv-input-wrap">
-                            <svg class="lv-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            <input type="password" id="register-password" class="lv-input" placeholder="Mínimo 8 caracteres" required>
-                            <button type="button" class="lv-eye-btn" id="reg-eye" onclick="window.LoginUI.togglePass('register-password','reg-eye')" aria-label="Mostrar contraseña">
-                                <svg id="reg-eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="lv-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                            <input type="password" id="register-password" class="lv-input"
+                                placeholder="Mínimo 8 caracteres" required>
+                            <button type="button" class="lv-eye-btn" id="reg-eye"
+                                onclick="window.LoginUI.togglePass('register-password','reg-eye')"
+                                aria-label="Mostrar contraseña">
+                                <svg id="reg-eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
                             </button>
                         </div>
                         <div class="lv-strength-bar" id="lv-strength-bar">
@@ -240,8 +303,14 @@
                     <div class="lv-field-group">
                         <label class="lv-label" for="register-confirm-password">Confirmar contraseña</label>
                         <div class="lv-input-wrap">
-                            <svg class="lv-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 12l2 2 4-4"/><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            <input type="password" id="register-confirm-password" class="lv-input" placeholder="Repite tu contraseña" required>
+                            <svg class="lv-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <path d="M9 12l2 2 4-4" />
+                                <rect x="3" y="11" width="18" height="11" rx="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                            <input type="password" id="register-confirm-password" class="lv-input"
+                                placeholder="Repite tu contraseña" required>
                         </div>
                     </div>
 
@@ -251,7 +320,8 @@
                     </button>
                 </form>
 
-                <p class="lv-terms">Al continuar, aceptás los <a href="#">Términos de Servicio</a> y la <a href="#">Política de Privacidad</a> de RAVIX.</p>
+                <p class="lv-terms">Al continuar, aceptás los <a href="#">Términos de Servicio</a> y la <a
+                        href="#">Política de Privacidad</a> de RAVIX.</p>
 
             </div>
         </div>
@@ -271,177 +341,308 @@
     <section id="view-onboarding" class="onboarding-view" style="background: #0A0B1E;">
 
         <!-- WIZARD DT -->
-        <div id="wizard-dt" style="display: none; width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px;">
-        <style>
-            .platinum-card-v2 {
-                width: 100%; max-width: 650px;
-                background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
-                backdrop-filter: blur(30px);
-                border: 1px solid rgba(255,255,255,0.1);
-                border-radius: 24px; padding: 50px;
-                box-shadow: 0 50px 100px rgba(0,0,0,0.8);
-                text-align: center; color: #FFF; font-family: 'Inter', sans-serif;
-            }
-            .ob-stepper { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 40px; }
-            .step-ball { 
-                width: 35px; height: 35px; border-radius: 50%; background: rgba(255,255,255,0.1); 
-                display: flex; align-items: center; justify-content: center; font-weight: 900; 
-                border: 1px solid rgba(255,255,255,0.1); transition: 0.4s; color: #666;
-            }
-            .step-ball.active { background: #00F2FE; color: #000; box-shadow: 0 0 25px rgba(0, 242, 254, 0.4); border-color: #00F2FE; }
-            .step-line { width: 40px; height: 2px; background: rgba(255,255,255,0.1); }
-            
-            .path-selection-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 40px 0; }
-            .path-card {
-                background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
-                border-radius: 20px; padding: 40px 20px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .path-card:hover { transform: translateY(-5px); border-color: #00F2FE; box-shadow: 0 10px 30px rgba(0, 242, 254, 0.1); }
-            .path-card.active { border-color: #00F2FE; background: rgba(0, 242, 254, 0.05); transform: scale(1.05); }
-            .path-icon { font-size: 50px; margin-bottom: 20px; }
-            .path-card h3 { font-size: 18px; margin-bottom: 10px; font-family: 'Outfit', sans-serif; }
-            .path-card p { font-size: 13px; color: #888; line-height: 1.5; }
+        <div id="wizard-dt"
+            style="display: none; width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px;">
+            <style>
+                .platinum-card-v2 {
+                    width: 100%;
+                    max-width: 650px;
+                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+                    backdrop-filter: blur(30px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 24px;
+                    padding: 50px;
+                    box-shadow: 0 50px 100px rgba(0, 0, 0, 0.8);
+                    text-align: center;
+                    color: #FFF;
+                    font-family: 'Inter', sans-serif;
+                }
 
-            .pill-box { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; justify-content: center; }
-            .pill { 
-                padding: 10px 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-                border-radius: 50px; font-size: 13px; font-weight: 700; color: #888; cursor: pointer; transition: 0.3s;
-            }
-            .pill.active { background: #00F2FE; color: #000; border-color: #00F2FE; }
-            
-            .ob-input { 
-                width: 100%; padding: 18px 25px; background: rgba(255,255,255,0.02); 
-                border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #FFF; margin-top: 10px;
-                transition: 0.3s; font-size: 16px;
-            }
-            .ob-input:focus { border-color: #00F2FE; outline: none; background: rgba(255,255,255,0.05); }
-            
-            .ob-footer { display: flex; gap: 20px; justify-content: center; margin-top: 40px; }
-            .btn-ob-prev { background: none; border: 1px solid #444; color: #888; padding: 15px 30px; border-radius: 12px; cursor: pointer; font-weight: 700; }
-            .btn-ob-next { background: #00F2FE; border: none; color: #000; padding: 15px 40px; border-radius: 12px; cursor: pointer; font-weight: 900; }
-        </style>
+                .ob-stepper {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 15px;
+                    margin-bottom: 40px;
+                }
 
-        <div class="platinum-card-v2" style="position: relative;">
-            <!-- Botón de Escape (UX) -->
-            <button onclick="window.App.logout()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: #666; font-size: 11px; cursor: pointer; text-decoration: underline;">Cerrar Sesión / Cancelar</button>
+                .step-ball {
+                    width: 35px;
+                    height: 35px;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.1);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: 900;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    transition: 0.4s;
+                    color: #666;
+                }
 
-            <!-- Stepper -->
-            <div class="ob-stepper">
-                <div class="step-ball active" id="ob-ball-1">1</div>
-                <div class="step-line"></div>
-                <div class="step-ball" id="ob-ball-2">2</div>
-                <div class="step-line"></div>
-                <div class="step-ball" id="ob-ball-3">3</div>
-            </div>
+                .step-ball.active {
+                    background: #00F2FE;
+                    color: #000;
+                    box-shadow: 0 0 25px rgba(0, 242, 254, 0.4);
+                    border-color: #00F2FE;
+                }
 
-            <!-- Paso 1: Perfil -->
-            <div id="ob-step-1" class="ob-content-step">
-                <h2 style="font-family:'Outfit'; font-size: 32px; margin-bottom: 10px;">Perfil de Staff</h2>
-                <p style="color:#888; margin-bottom: 30px;">Identifícate para comenzar tu gestión táctica.</p>
-                <div style="text-align: left;">
-                    <label style="font-size: 11px; font-weight: 900; color: #00F2FE; letter-spacing: 1px;">NOMBRE COMPLETO</label>
-                    <input type="text" id="ob-name" class="ob-input" placeholder="Ej: Pep Guardiola">
-                    
-                    <div style="display: flex; gap: 20px; margin-top: 20px;">
-                        <div style="flex: 1;">
-                            <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">ROL</label>
-                            <select id="ob-role" class="ob-input">
-                                <option value="DT Principal">DT Principal</option>
-                                <option value="Ayudante">Ayudante de Campo</option>
-                                <option value="PF">Prep. Físico</option>
-                                <option value="Analista">Analista</option>
-                            </select>
-                        </div>
-                        <div style="flex: 1;">
-                            <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">LICENCIA</label>
-                            <select id="ob-license" class="ob-input">
-                                <option value="UEFA PRO">UEFA PRO</option>
-                                <option value="CONMEBOL PRO">CONMEBOL PRO</option>
-                                <option value="AFA / ATFA">AFA / ATFA</option>
-                                <option value="AMATEUR">AMATEUR</option>
-                            </select>
-                        </div>
-                    </div>
+                .step-line {
+                    width: 40px;
+                    height: 2px;
+                    background: rgba(255, 255, 255, 0.1);
+                }
+
+                .path-selection-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 20px;
+                    margin: 40px 0;
+                }
+
+                .path-card {
+                    background: rgba(255, 255, 255, 0.03);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 20px;
+                    padding: 40px 20px;
+                    cursor: pointer;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+
+                .path-card:hover {
+                    transform: translateY(-5px);
+                    border-color: #00F2FE;
+                    box-shadow: 0 10px 30px rgba(0, 242, 254, 0.1);
+                }
+
+                .path-card.active {
+                    border-color: #00F2FE;
+                    background: rgba(0, 242, 254, 0.05);
+                    transform: scale(1.05);
+                }
+
+                .path-icon {
+                    font-size: 50px;
+                    margin-bottom: 20px;
+                }
+
+                .path-card h3 {
+                    font-size: 18px;
+                    margin-bottom: 10px;
+                    font-family: 'Outfit', sans-serif;
+                }
+
+                .path-card p {
+                    font-size: 13px;
+                    color: #888;
+                    line-height: 1.5;
+                }
+
+                .pill-box {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    margin-top: 15px;
+                    justify-content: center;
+                }
+
+                .pill {
+                    padding: 10px 20px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 50px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #888;
+                    cursor: pointer;
+                    transition: 0.3s;
+                }
+
+                .pill.active {
+                    background: #00F2FE;
+                    color: #000;
+                    border-color: #00F2FE;
+                }
+
+                .ob-input {
+                    width: 100%;
+                    padding: 18px 25px;
+                    background: rgba(255, 255, 255, 0.02);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 12px;
+                    color: #FFF;
+                    margin-top: 10px;
+                    transition: 0.3s;
+                    font-size: 16px;
+                }
+
+                .ob-input:focus {
+                    border-color: #00F2FE;
+                    outline: none;
+                    background: rgba(255, 255, 255, 0.05);
+                }
+
+                .ob-footer {
+                    display: flex;
+                    gap: 20px;
+                    justify-content: center;
+                    margin-top: 40px;
+                }
+
+                .btn-ob-prev {
+                    background: none;
+                    border: 1px solid #444;
+                    color: #888;
+                    padding: 15px 30px;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: 700;
+                }
+
+                .btn-ob-next {
+                    background: #00F2FE;
+                    border: none;
+                    color: #000;
+                    padding: 15px 40px;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: 900;
+                }
+            </style>
+
+            <div class="platinum-card-v2" style="position: relative;">
+                <!-- Botón de Escape (UX) -->
+                <button onclick="window.App.logout()"
+                    style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: #666; font-size: 11px; cursor: pointer; text-decoration: underline;">Cerrar
+                    Sesión / Cancelar</button>
+
+                <!-- Stepper -->
+                <div class="ob-stepper">
+                    <div class="step-ball active" id="ob-ball-1">1</div>
+                    <div class="step-line"></div>
+                    <div class="step-ball" id="ob-ball-2">2</div>
+                    <div class="step-line"></div>
+                    <div class="step-ball" id="ob-ball-3">3</div>
                 </div>
-                <button class="btn-ob-next" style="width: 100%; margin-top: 30px;" onclick="window.Wizard.nextStep()">CONTINUAR</button>
-            </div>
 
-            <!-- Paso 2: Elección de Ruta -->
-            <div id="ob-step-2" class="ob-content-step" style="display: none;">
-                <h2 style="font-family:'Outfit'; font-size: 32px; margin-bottom: 10px;">Tu Destino Táctico</h2>
-                <p style="color:#888;">¿Vas a liderar un nuevo proyecto o a sumarte a un Staff?</p>
-                
-                <div class="path-selection-grid">
-                    <div id="path-card-create" class="path-card active" onclick="window.Wizard.setPath('create')">
-                        <div class="path-icon">🏗️</div>
-                        <h3>Fundar Institución</h3>
-                        <p>Inicia un club desde cero, define su ADN y colores.</p>
-                    </div>
-                    <div id="path-card-join" class="path-card" onclick="window.Wizard.setPath('join')">
-                        <div class="path-icon">🤝</div>
-                        <h3>Unirme a un Staff</h3>
-                        <p>Únete a un equipo existente mediante código de invitación.</p>
-                    </div>
-                </div>
+                <!-- Paso 1: Perfil -->
+                <div id="ob-step-1" class="ob-content-step">
+                    <h2 style="font-family:'Outfit'; font-size: 32px; margin-bottom: 10px;">Perfil de Staff</h2>
+                    <p style="color:#888; margin-bottom: 30px;">Identifícate para comenzar tu gestión táctica.</p>
+                    <div style="text-align: left;">
+                        <label style="font-size: 11px; font-weight: 900; color: #00F2FE; letter-spacing: 1px;">NOMBRE
+                            COMPLETO</label>
+                        <input type="text" id="ob-name" class="ob-input" placeholder="Ej: Pep Guardiola">
 
-                <div class="ob-footer">
-                    <button class="btn-ob-prev" onclick="window.Wizard.prevStep()">VOLVER</button>
-                    <button class="btn-ob-next" onclick="window.Wizard.nextStep()">SIGUIENTE</button>
-                </div>
-            </div>
-
-            <!-- Paso 3: Configuración Final -->
-            <div id="ob-step-3" class="ob-content-step" style="display: none;">
-                
-                <!-- Sub-paso: CREAR -->
-                <div id="ob-ui-create">
-                    <h2 style="font-family:'Outfit'; font-size: 28px; margin-bottom: 20px;">Configura tu Club</h2>
-                    <div style="text-align: left; display: grid; gap: 15px;">
-                        <div style="display: flex; gap: 15px;">
-                            <div style="flex: 2;">
-                                <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">NOMBRE DEL CLUB</label>
-                                <input type="text" id="ob-club-name" class="ob-input" placeholder="Ej: Manchester City">
+                        <div style="display: flex; gap: 20px; margin-top: 20px;">
+                            <div style="flex: 1;">
+                                <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">ROL</label>
+                                <select id="ob-role" class="ob-input">
+                                    <option value="DT Principal">DT Principal</option>
+                                    <option value="Ayudante">Ayudante de Campo</option>
+                                    <option value="PF">Prep. Físico</option>
+                                    <option value="Analista">Analista</option>
+                                </select>
                             </div>
                             <div style="flex: 1;">
-                                <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">LIGA / COMPETICIÓN</label>
-                                <input type="text" id="ob-league" class="ob-input" placeholder="Ej: Premier League">
+                                <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">LICENCIA</label>
+                                <select id="ob-license" class="ob-input">
+                                    <option value="UEFA PRO">UEFA PRO</option>
+                                    <option value="CONMEBOL PRO">CONMEBOL PRO</option>
+                                    <option value="AFA / ATFA">AFA / ATFA</option>
+                                    <option value="AMATEUR">AMATEUR</option>
+                                </select>
                             </div>
                         </div>
+                    </div>
+                    <button class="btn-ob-next" style="width: 100%; margin-top: 30px;"
+                        onclick="window.Wizard.nextStep()">CONTINUAR</button>
+                </div>
 
-                        <div>
-                            <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">METODOLOGÍA PRINCIPAL</label>
-                            <select id="ob-methodology" class="ob-input">
-                                <option value="Periodización Táctica">Periodización Táctica</option>
-                                <option value="Microciclo Estructurado">Microciclo Estructurado</option>
-                                <option value="Entrenamiento Integrado">Entrenamiento Integrado</option>
-                                <option value="Personalizada">Personalizada</option>
-                            </select>
-                        </div>
+                <!-- Paso 2: Elección de Ruta -->
+                <div id="ob-step-2" class="ob-content-step" style="display: none;">
+                    <h2 style="font-family:'Outfit'; font-size: 32px; margin-bottom: 10px;">Tu Destino Táctico</h2>
+                    <p style="color:#888;">¿Vas a liderar un nuevo proyecto o a sumarte a un Staff?</p>
 
-                        <div>
-                            <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">SISTEMAS BASE</label>
-                            <input type="text" id="ob-systems-input" class="ob-input" placeholder="Ej: 4-3-3, 4-2-3-1, 3-5-2">
-                            <p style="color: #666; font-size: 10px; margin-top: 5px;">(Separados por coma)</p>
+                    <div class="path-selection-grid">
+                        <div id="path-card-create" class="path-card active" onclick="window.Wizard.setPath('create')">
+                            <div class="path-icon">🏗️</div>
+                            <h3>Fundar Institución</h3>
+                            <p>Inicia un club desde cero, define su ADN y colores.</p>
                         </div>
+                        <div id="path-card-join" class="path-card" onclick="window.Wizard.setPath('join')">
+                            <div class="path-icon">🤝</div>
+                            <h3>Unirme a un Staff</h3>
+                            <p>Únete a un equipo existente mediante código de invitación.</p>
+                        </div>
+                    </div>
+
+                    <div class="ob-footer">
+                        <button class="btn-ob-prev" onclick="window.Wizard.prevStep()">VOLVER</button>
+                        <button class="btn-ob-next" onclick="window.Wizard.nextStep()">SIGUIENTE</button>
                     </div>
                 </div>
 
-                <!-- Sub-paso: UNIRSE -->
-                <div id="ob-ui-join" style="display: none;">
-                    <h2 style="font-family:'Outfit'; font-size: 28px; margin-bottom: 10px;">Acceso al Staff</h2>
-                    <p style="color:#888; margin-bottom: 30px;">Ingresa el código de invitación del club.</p>
-                    <div style="text-align: left;">
-                        <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">CÓDIGO DE INVITACIÓN</label>
-                        <input type="text" id="ob-invite-code" class="ob-input" style="text-align: center; font-size: 24px; letter-spacing: 5px;" placeholder="CU-XXXX">
+                <!-- Paso 3: Configuración Final -->
+                <div id="ob-step-3" class="ob-content-step" style="display: none;">
+
+                    <!-- Sub-paso: CREAR -->
+                    <div id="ob-ui-create">
+                        <h2 style="font-family:'Outfit'; font-size: 28px; margin-bottom: 20px;">Configura tu Club</h2>
+                        <div style="text-align: left; display: grid; gap: 15px;">
+                            <div style="display: flex; gap: 15px;">
+                                <div style="flex: 2;">
+                                    <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">NOMBRE DEL
+                                        CLUB</label>
+                                    <input type="text" id="ob-club-name" class="ob-input"
+                                        placeholder="Ej: Manchester City">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">LIGA /
+                                        COMPETICIÓN</label>
+                                    <input type="text" id="ob-league" class="ob-input" placeholder="Ej: Premier League">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">METODOLOGÍA
+                                    PRINCIPAL</label>
+                                <select id="ob-methodology" class="ob-input">
+                                    <option value="Periodización Táctica">Periodización Táctica</option>
+                                    <option value="Microciclo Estructurado">Microciclo Estructurado</option>
+                                    <option value="Entrenamiento Integrado">Entrenamiento Integrado</option>
+                                    <option value="Personalizada">Personalizada</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">SISTEMAS BASE</label>
+                                <input type="text" id="ob-systems-input" class="ob-input"
+                                    placeholder="Ej: 4-3-3, 4-2-3-1, 3-5-2">
+                                <p style="color: #666; font-size: 10px; margin-top: 5px;">(Separados por coma)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sub-paso: UNIRSE -->
+                    <div id="ob-ui-join" style="display: none;">
+                        <h2 style="font-family:'Outfit'; font-size: 28px; margin-bottom: 10px;">Acceso al Staff</h2>
+                        <p style="color:#888; margin-bottom: 30px;">Ingresa el código de invitación del club.</p>
+                        <div style="text-align: left;">
+                            <label style="font-size: 11px; font-weight: 900; color: #00F2FE;">CÓDIGO DE
+                                INVITACIÓN</label>
+                            <input type="text" id="ob-invite-code" class="ob-input"
+                                style="text-align: center; font-size: 24px; letter-spacing: 5px;" placeholder="CU-XXXX">
+                        </div>
+                    </div>
+
+                    <div class="ob-footer">
+                        <button class="btn-ob-prev" onclick="window.Wizard.prevStep()">VOLVER</button>
+                        <button type="button" id="btn-finish-wizard" class="btn-ob-next"
+                            onclick="window.ejecutarOnboardingFinal()">FINALIZAR Y ENTRAR</button>
                     </div>
                 </div>
-
-                <div class="ob-footer">
-                    <button class="btn-ob-prev" onclick="window.Wizard.prevStep()">VOLVER</button>
-                    <button type="button" id="btn-finish-wizard" class="btn-ob-next" onclick="window.ejecutarOnboardingFinal()">FINALIZAR Y ENTRAR</button>
-                </div>
-            </div>
-        </div> <!-- /wizard-dt -->
+            </div> <!-- /wizard-dt -->
 
     </section> <!-- /view-onboarding -->
 
@@ -454,9 +655,9 @@
         <svg width="0" height="0" style="position:absolute;">
             <defs>
                 <linearGradient id="gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#bf953f"/>
-                    <stop offset="50%" stop-color="#fcf6ba"/>
-                    <stop offset="100%" stop-color="#b38728"/>
+                    <stop offset="0%" stop-color="#bf953f" />
+                    <stop offset="50%" stop-color="#fcf6ba" />
+                    <stop offset="100%" stop-color="#b38728" />
                 </linearGradient>
             </defs>
         </svg>
@@ -474,11 +675,9 @@
                     <div class="adp-ring-label">READINESS</div>
                     <div class="adp-ring-container">
                         <svg class="adp-ring-svg" viewBox="0 0 100 100">
-                            <circle class="adp-ring-track" cx="50" cy="50" r="42"/>
+                            <circle class="adp-ring-track" cx="50" cy="50" r="42" />
                             <circle class="adp-ring-fill" id="adp-ring-fill" cx="50" cy="50" r="42"
-                                stroke-dasharray="264 264"
-                                stroke-dashoffset="40"
-                                transform="rotate(-90 50 50)"/>
+                                stroke-dasharray="264 264" stroke-dashoffset="40" transform="rotate(-90 50 50)" />
                         </svg>
                         <div class="adp-ring-inner">
                             <span class="adp-ring-score" id="ad-readiness-score">—</span>
@@ -517,7 +716,10 @@
                 <div class="adp-card-inner" style="padding-bottom: 24px;">
                     <div class="adp-card-header">
                         <div class="adp-card-icon-wrap" style="color: #00F0FF; background: rgba(0,240,255,0.1);">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.2">
+                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                            </svg>
                         </div>
                         <div>
                             <h2 class="adp-card-title">Datos de la Sesión</h2>
@@ -549,7 +751,8 @@
                     <div class="adp-param-block" style="margin-top: 20px;">
                         <div class="adp-param-header">
                             <span class="adp-param-label">ESFUERZO PERCIBIDO (RPE)</span>
-                            <span class="adp-param-value" id="rpe-display" style="color: #00F0FF; font-weight: 800; font-size: 16px;">5 / 10</span>
+                            <span class="adp-param-value" id="rpe-display"
+                                style="color: #00F0FF; font-weight: 800; font-size: 16px;">5 / 10</span>
                         </div>
                         <div class="adp-range-wrap">
                             <input type="range" class="adp-range" id="input-rpe" min="0" max="10" value="5"
@@ -565,7 +768,10 @@
                 <div class="adp-card-inner">
                     <div class="adp-card-header">
                         <div class="adp-card-icon-wrap" style="color: #10B981; background: rgba(16,185,129,0.1);">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.2">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                            </svg>
                         </div>
                         <div>
                             <h2 class="adp-card-title">Wellness</h2>
@@ -628,8 +834,13 @@
                         </div>
                     </div>
 
-                    <button class="adp-btn-primary" id="btn-submit-daily" onclick="window.AthleteApp.submitDailyLog()" style="margin-top: 24px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    <button class="adp-btn-primary" id="btn-submit-daily" onclick="window.AthleteApp.submitDailyLog()"
+                        style="margin-top: 24px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                            <polyline points="22 4 12 14.01 9 11.01" />
+                        </svg>
                         Enviar Reporte
                     </button>
                 </div>
@@ -641,7 +852,10 @@
                 <div class="adp-card-inner">
                     <div class="adp-card-header">
                         <div class="adp-card-icon-wrap adp-icon-strength">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 4v16M18 4v16M3 8h4M17 8h4M3 16h4M17 16h4M7 12h10"/></svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.2">
+                                <path d="M6 4v16M18 4v16M3 8h4M17 8h4M3 16h4M17 16h4M7 12h10" />
+                            </svg>
                         </div>
                         <div>
                             <h2 class="adp-card-title">Fuerza &amp; Pliometría</h2>
@@ -678,8 +892,7 @@
                             <label class="adp-input-label">SERIES</label>
                             <div class="adp-input-wrap">
                                 <input type="number" class="adp-input adp-input--center" id="strength-sets"
-                                    placeholder="0" min="0" max="20"
-                                    oninput="window.AthleteApp.calculateTonnage()">
+                                    placeholder="0" min="0" max="20" oninput="window.AthleteApp.calculateTonnage()">
                             </div>
                         </div>
                         <div class="adp-srk-separator">×</div>
@@ -687,8 +900,7 @@
                             <label class="adp-input-label">REPS</label>
                             <div class="adp-input-wrap">
                                 <input type="number" class="adp-input adp-input--center" id="strength-reps"
-                                    placeholder="0" min="0" max="100"
-                                    oninput="window.AthleteApp.calculateTonnage()">
+                                    placeholder="0" min="0" max="100" oninput="window.AthleteApp.calculateTonnage()">
                             </div>
                         </div>
                         <div class="adp-srk-separator">×</div>
@@ -696,8 +908,7 @@
                             <label class="adp-input-label">CARGA</label>
                             <div class="adp-input-wrap">
                                 <input type="number" class="adp-input adp-input--center" id="strength-weight"
-                                    placeholder="0" min="0"
-                                    oninput="window.AthleteApp.calculateTonnage()">
+                                    placeholder="0" min="0" oninput="window.AthleteApp.calculateTonnage()">
                                 <span class="adp-input-unit">kg</span>
                             </div>
                         </div>
@@ -723,7 +934,12 @@
                     <div class="adp-sets-log" id="sets-log">
                         <div class="adp-sets-log-title">SERIES REGISTRADAS HOY</div>
                         <div class="adp-sets-log-empty" id="sets-log-empty">
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ccc"
+                                stroke-width="1.5">
+                                <rect x="2" y="3" width="20" height="14" rx="2" />
+                                <line x1="8" y1="21" x2="16" y2="21" />
+                                <line x1="12" y1="17" x2="12" y2="21" />
+                            </svg>
                             <span>Aún no has registrado series</span>
                         </div>
                         <div id="sets-log-list"></div>
@@ -734,7 +950,11 @@
                     </div>
 
                     <button class="adp-btn-primary adp-btn-primary--gold" onclick="window.AthleteApp.saveStrength()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
                         Añadir Serie al Registro
                     </button>
                 </div>
@@ -746,21 +966,30 @@
 
         <!-- ═══ BOTTOM NAVBAR ═══ -->
         <nav class="adp-bottom-nav" id="adp-bottom-nav">
-            <button class="adp-nav-item adp-nav-item--active" id="nav-hoy" onclick="window.AthleteApp.switchTab('dashboard', this)">
+            <button class="adp-nav-item adp-nav-item--active" id="nav-hoy"
+                onclick="window.AthleteApp.switchTab('dashboard', this)">
                 <div class="adp-nav-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg>
                 </div>
                 <span class="adp-nav-label">Hoy</span>
             </button>
             <button class="adp-nav-item" id="nav-metricas" onclick="window.AthleteApp.switchTab('metrics', this)">
                 <div class="adp-nav-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                    </svg>
                 </div>
                 <span class="adp-nav-label">Evolución</span>
             </button>
             <button class="adp-nav-item" id="nav-perfil" onclick="window.AthleteApp.switchTab('profile', this)">
                 <div class="adp-nav-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
                 </div>
                 <span class="adp-nav-label">Perfil</span>
             </button>
@@ -780,77 +1009,534 @@
 
     <!-- ONBOARDING ATLETA WIZARD -->
     <style>
-    #view-onboarding-athlete{display:flex;min-height:100vh;font-family:'Outfit','Inter',sans-serif;background:#FAFAFA;opacity:0;transition:opacity .5s cubic-bezier(.4,0,.2,1)}
-    #view-onboarding-athlete.oa-visible{opacity:1}
-    #view-onboarding-athlete .oa-sidebar{width:340px;flex-shrink:0;background:#0d0c09;padding:48px 40px;display:flex;flex-direction:column;position:relative;overflow:hidden}
-    #view-onboarding-athlete .oa-sidebar::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 90% 55% at 5% 95%,rgba(191,149,63,.22) 0%,transparent 60%),radial-gradient(ellipse 55% 35% at 95% 5%,rgba(212,175,55,.1) 0%,transparent 55%);pointer-events:none}
-    #view-onboarding-athlete .oa-brand{display:flex;align-items:baseline;gap:5px;margin-bottom:56px;position:relative;z-index:1}
-    #view-onboarding-athlete .oa-brand-logo{font-family:'Outfit',sans-serif;font-size:1.6rem;font-weight:900;letter-spacing:-1px;color:#fff}
-    #view-onboarding-athlete .oa-brand-logo span{background:linear-gradient(135deg,#bf953f,#fcf6ba,#b38728);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-    #view-onboarding-athlete .oa-brand-tag{font-size:.5rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#bf953f;border:1px solid rgba(191,149,63,.35);border-radius:4px;padding:3px 7px;margin-left:6px;align-self:center}
-    #view-onboarding-athlete .oa-hero{flex:1;position:relative;z-index:1}
-    #view-onboarding-athlete .oa-eyebrow{font-size:.58rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;background:linear-gradient(135deg,#bf953f,#d4af37);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-    #view-onboarding-athlete .oa-title{font-size:2.7rem;font-weight:900;line-height:1.05;letter-spacing:-2px;color:#fff;margin-bottom:18px}
-    #view-onboarding-athlete .oa-desc{font-size:.85rem;line-height:1.75;color:#5c5040;max-width:250px}
-    #view-onboarding-athlete .oa-steps-nav{display:flex;flex-direction:column;gap:14px;margin-top:40px;position:relative;z-index:1}
-    #view-onboarding-athlete .oa-step-nav{display:flex;align-items:center;gap:12px;opacity:.35;transition:opacity .3s}
-    #view-onboarding-athlete .oa-step-nav.active{opacity:1}
-    #view-onboarding-athlete .oa-step-nav.done{opacity:.65}
-    #view-onboarding-athlete .oa-step-num{width:28px;height:28px;border-radius:50%;border:1.5px solid rgba(191,149,63,.4);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:900;color:#bf953f;flex-shrink:0;transition:.3s}
-    #view-onboarding-athlete .oa-step-nav.active .oa-step-num{background:linear-gradient(135deg,#bf953f,#d4af37);border-color:transparent;color:#fff;box-shadow:0 0 12px rgba(191,149,63,.45)}
-    #view-onboarding-athlete .oa-step-nav.done .oa-step-num{background:rgba(191,149,63,.15);color:#bf953f}
-    #view-onboarding-athlete .oa-step-info p:first-child{font-size:.62rem;font-weight:800;color:#c8b080;letter-spacing:.5px}
-    #view-onboarding-athlete .oa-step-info p:last-child{font-size:.68rem;color:#3e3220;margin-top:1px}
-    #view-onboarding-athlete .oa-copy{font-size:.55rem;font-weight:700;letter-spacing:1px;color:#2a2010;text-transform:uppercase;position:relative;z-index:1;margin-top:auto;padding-top:32px}
-    #view-onboarding-athlete .oa-panel{flex:1;display:flex;align-items:center;justify-content:center;padding:52px 44px;position:relative;background:#FAFAFA}
-    #view-onboarding-athlete .oa-exit{position:absolute;top:22px;right:26px;background:none;border:none;font-size:.7rem;font-weight:700;color:#bbb;cursor:pointer;letter-spacing:.5px;transition:color .2s;font-family:'Outfit',sans-serif}
-    #view-onboarding-athlete .oa-exit:hover{color:#ef4444}
-    #athlete-onboarding-form{width:100%;max-width:480px;background:#fff;border-radius:24px;padding:44px 40px;box-shadow:0 4px 6px rgba(0,0,0,.04),0 20px 60px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);animation:oa-up .5s cubic-bezier(.16,1,.3,1) both}
-    @keyframes oa-up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-    .oa-progress-bar{height:3px;background:#F0EDE6;border-radius:2px;margin-bottom:32px;overflow:hidden}
-    .oa-progress-fill{height:100%;background:linear-gradient(90deg,#bf953f,#d4af37);border-radius:2px;transition:width .4s cubic-bezier(.4,0,.2,1)}
-    .oa-step-label{font-size:.56rem;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:6px;background:linear-gradient(135deg,#bf953f,#d4af37);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-    .oa-ftitle{font-size:1.7rem;font-weight:900;letter-spacing:-1px;color:#1A1A1E;line-height:1.1;margin-bottom:6px}
-    .oa-fsub{font-size:.8rem;color:#999;line-height:1.6;margin-bottom:28px;font-family:'Inter',sans-serif}
-    .oa-fieldset{display:none;flex-direction:column;gap:16px;animation:oa-step-in .35s cubic-bezier(.16,1,.3,1) both}
-    .oa-fieldset.active{display:flex}
-    @keyframes oa-step-in{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
-    .oa-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .oa-group{display:flex;flex-direction:column;gap:5px}
-    .oa-group.full{grid-column:1/-1}
-    .oa-lbl{font-size:.58rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;font-family:'Outfit',sans-serif}
-    .oa-req{color:#bf953f}
-    .oa-inp{width:100%;padding:12px 15px;background:#F7F6F2;border:1.5px solid transparent;border-radius:11px;color:#1A1A1E;font-family:'Inter',sans-serif;font-size:.88rem;outline:none;transition:border-color .2s,background .2s,box-shadow .2s}
-    .oa-inp::placeholder{color:#C0C0C8}
-    .oa-inp:focus{background:#fffdf8;border-color:#bf953f;box-shadow:0 0 0 3px rgba(191,149,63,.12)}
-    .oa-sel-wrap{position:relative}
-    .oa-sel-wrap select{appearance:none;cursor:pointer;padding-right:34px}
-    .oa-chevron{position:absolute;right:13px;top:50%;transform:translateY(-50%) rotate(90deg);font-size:1rem;color:#bf953f;pointer-events:none;line-height:1}
-    .oa-unit-wrap{position:relative;display:flex;align-items:center}
-    .oa-unit-wrap .oa-inp{padding-right:40px}
-    .oa-unit{position:absolute;right:13px;font-size:.68rem;font-weight:800;letter-spacing:1px;color:#bf953f;font-family:'Outfit',sans-serif;pointer-events:none}
-    .oa-div{display:flex;align-items:center;gap:10px}
-    .oa-div-line{flex:1;height:1px;background:#EBEBEB}
-    .oa-div-lbl{font-size:.54rem;font-weight:800;letter-spacing:2px;color:#CCC;text-transform:uppercase;font-family:'Outfit',sans-serif;white-space:nowrap}
-    .oa-nav{display:flex;gap:10px;margin-top:8px}
-    .oa-btn-back{flex:1;padding:14px;background:none;border:1.5px solid #E8E5DF;border-radius:12px;color:#999;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:800;letter-spacing:1px;cursor:pointer;transition:.2s}
-    .oa-btn-back:hover{border-color:#bf953f;color:#bf953f}
-    .oa-btn-next,#oa-submit-btn{flex:2;padding:14px 20px;background:linear-gradient(135deg,#bf953f 0%,#d4af37 50%,#b38728 100%);border:none;border-radius:12px;color:#fff;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:900;letter-spacing:1.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 20px rgba(191,149,63,.35);transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden}
-    .oa-btn-next:hover,#oa-submit-btn:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(191,149,63,.45)}
-    .oa-btn-next .oa-arr,#oa-submit-btn .oa-arr{display:inline-block;transition:transform .2s}
-    .oa-btn-next:hover .oa-arr,#oa-submit-btn:hover .oa-arr{transform:translateX(4px)}
-    .oa-terms{font-size:.64rem;color:#C0B8A8;text-align:center;line-height:1.5;font-family:'Inter',sans-serif;margin-top:2px}
-    @media(max-width:760px){
-        #view-onboarding-athlete{flex-direction:column}
-        #view-onboarding-athlete .oa-sidebar{width:100%;padding:24px 20px}
-        #view-onboarding-athlete .oa-title{font-size:2rem}
-        #view-onboarding-athlete .oa-steps-nav,#view-onboarding-athlete .oa-desc{display:none}
-        #view-onboarding-athlete .oa-hero{flex:none}
-        #view-onboarding-athlete .oa-brand{margin-bottom:16px}
-        #view-onboarding-athlete .oa-panel{padding:24px 14px}
-        #athlete-onboarding-form{padding:28px 20px}
-        .oa-row{grid-template-columns:1fr}
-    }
+        #view-onboarding-athlete {
+            display: flex;
+            min-height: 100vh;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            background: #FAFAFA;
+            opacity: 0;
+            transition: opacity .5s cubic-bezier(.4, 0, .2, 1)
+        }
+
+        #view-onboarding-athlete.oa-visible {
+            opacity: 1
+        }
+
+        #view-onboarding-athlete .oa-sidebar {
+            width: 340px;
+            flex-shrink: 0;
+            background: #0d0c09;
+            padding: 48px 40px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden
+        }
+
+        #view-onboarding-athlete .oa-sidebar::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 90% 55% at 5% 95%, rgba(191, 149, 63, .22) 0%, transparent 60%), radial-gradient(ellipse 55% 35% at 95% 5%, rgba(212, 175, 55, .1) 0%, transparent 55%);
+            pointer-events: none
+        }
+
+        #view-onboarding-athlete .oa-brand {
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+            margin-bottom: 56px;
+            position: relative;
+            z-index: 1
+        }
+
+        #view-onboarding-athlete .oa-brand-logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: #fff
+        }
+
+        #view-onboarding-athlete .oa-brand-logo span {
+            background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        #view-onboarding-athlete .oa-brand-tag {
+            font-size: .5rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #bf953f;
+            border: 1px solid rgba(191, 149, 63, .35);
+            border-radius: 4px;
+            padding: 3px 7px;
+            margin-left: 6px;
+            align-self: center
+        }
+
+        #view-onboarding-athlete .oa-hero {
+            flex: 1;
+            position: relative;
+            z-index: 1
+        }
+
+        #view-onboarding-athlete .oa-eyebrow {
+            font-size: .58rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #bf953f, #d4af37);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        #view-onboarding-athlete .oa-title {
+            font-size: 2.7rem;
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -2px;
+            color: #fff;
+            margin-bottom: 18px
+        }
+
+        #view-onboarding-athlete .oa-desc {
+            font-size: .85rem;
+            line-height: 1.75;
+            color: #5c5040;
+            max-width: 250px
+        }
+
+        #view-onboarding-athlete .oa-steps-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 40px;
+            position: relative;
+            z-index: 1
+        }
+
+        #view-onboarding-athlete .oa-step-nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: .35;
+            transition: opacity .3s
+        }
+
+        #view-onboarding-athlete .oa-step-nav.active {
+            opacity: 1
+        }
+
+        #view-onboarding-athlete .oa-step-nav.done {
+            opacity: .65
+        }
+
+        #view-onboarding-athlete .oa-step-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(191, 149, 63, .4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .65rem;
+            font-weight: 900;
+            color: #bf953f;
+            flex-shrink: 0;
+            transition: .3s
+        }
+
+        #view-onboarding-athlete .oa-step-nav.active .oa-step-num {
+            background: linear-gradient(135deg, #bf953f, #d4af37);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 0 12px rgba(191, 149, 63, .45)
+        }
+
+        #view-onboarding-athlete .oa-step-nav.done .oa-step-num {
+            background: rgba(191, 149, 63, .15);
+            color: #bf953f
+        }
+
+        #view-onboarding-athlete .oa-step-info p:first-child {
+            font-size: .62rem;
+            font-weight: 800;
+            color: #c8b080;
+            letter-spacing: .5px
+        }
+
+        #view-onboarding-athlete .oa-step-info p:last-child {
+            font-size: .68rem;
+            color: #3e3220;
+            margin-top: 1px
+        }
+
+        #view-onboarding-athlete .oa-copy {
+            font-size: .55rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #2a2010;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 1;
+            margin-top: auto;
+            padding-top: 32px
+        }
+
+        #view-onboarding-athlete .oa-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 52px 44px;
+            position: relative;
+            background: #FAFAFA
+        }
+
+        #view-onboarding-athlete .oa-exit {
+            position: absolute;
+            top: 22px;
+            right: 26px;
+            background: none;
+            border: none;
+            font-size: .7rem;
+            font-weight: 700;
+            color: #bbb;
+            cursor: pointer;
+            letter-spacing: .5px;
+            transition: color .2s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        #view-onboarding-athlete .oa-exit:hover {
+            color: #ef4444
+        }
+
+        #athlete-onboarding-form {
+            width: 100%;
+            max-width: 480px;
+            background: #fff;
+            border-radius: 24px;
+            padding: 44px 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, .04), 0 20px 60px rgba(0, 0, 0, .08), 0 0 0 1px rgba(0, 0, 0, .04);
+            animation: oa-up .5s cubic-bezier(.16, 1, .3, 1) both
+        }
+
+        @keyframes oa-up {
+            from {
+                opacity: 0;
+                transform: translateY(18px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .oa-progress-bar {
+            height: 3px;
+            background: #F0EDE6;
+            border-radius: 2px;
+            margin-bottom: 32px;
+            overflow: hidden
+        }
+
+        .oa-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #bf953f, #d4af37);
+            border-radius: 2px;
+            transition: width .4s cubic-bezier(.4, 0, .2, 1)
+        }
+
+        .oa-step-label {
+            font-size: .56rem;
+            font-weight: 800;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #bf953f, #d4af37);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .oa-ftitle {
+            font-size: 1.7rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: #1A1A1E;
+            line-height: 1.1;
+            margin-bottom: 6px
+        }
+
+        .oa-fsub {
+            font-size: .8rem;
+            color: #999;
+            line-height: 1.6;
+            margin-bottom: 28px;
+            font-family: 'Inter', sans-serif
+        }
+
+        .oa-fieldset {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            animation: oa-step-in .35s cubic-bezier(.16, 1, .3, 1) both
+        }
+
+        .oa-fieldset.active {
+            display: flex
+        }
+
+        @keyframes oa-step-in {
+            from {
+                opacity: 0;
+                transform: translateX(12px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0)
+            }
+        }
+
+        .oa-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px
+        }
+
+        .oa-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px
+        }
+
+        .oa-group.full {
+            grid-column: 1/-1
+        }
+
+        .oa-lbl {
+            font-size: .58rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #aaa;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .oa-req {
+            color: #bf953f
+        }
+
+        .oa-inp {
+            width: 100%;
+            padding: 12px 15px;
+            background: #F7F6F2;
+            border: 1.5px solid transparent;
+            border-radius: 11px;
+            color: #1A1A1E;
+            font-family: 'Inter', sans-serif;
+            font-size: .88rem;
+            outline: none;
+            transition: border-color .2s, background .2s, box-shadow .2s
+        }
+
+        .oa-inp::placeholder {
+            color: #C0C0C8
+        }
+
+        .oa-inp:focus {
+            background: #fffdf8;
+            border-color: #bf953f;
+            box-shadow: 0 0 0 3px rgba(191, 149, 63, .12)
+        }
+
+        .oa-sel-wrap {
+            position: relative
+        }
+
+        .oa-sel-wrap select {
+            appearance: none;
+            cursor: pointer;
+            padding-right: 34px
+        }
+
+        .oa-chevron {
+            position: absolute;
+            right: 13px;
+            top: 50%;
+            transform: translateY(-50%) rotate(90deg);
+            font-size: 1rem;
+            color: #bf953f;
+            pointer-events: none;
+            line-height: 1
+        }
+
+        .oa-unit-wrap {
+            position: relative;
+            display: flex;
+            align-items: center
+        }
+
+        .oa-unit-wrap .oa-inp {
+            padding-right: 40px
+        }
+
+        .oa-unit {
+            position: absolute;
+            right: 13px;
+            font-size: .68rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #bf953f;
+            font-family: 'Outfit', sans-serif;
+            pointer-events: none
+        }
+
+        .oa-div {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .oa-div-line {
+            flex: 1;
+            height: 1px;
+            background: #EBEBEB
+        }
+
+        .oa-div-lbl {
+            font-size: .54rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #CCC;
+            text-transform: uppercase;
+            font-family: 'Outfit', sans-serif;
+            white-space: nowrap
+        }
+
+        .oa-nav {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px
+        }
+
+        .oa-btn-back {
+            flex: 1;
+            padding: 14px;
+            background: none;
+            border: 1.5px solid #E8E5DF;
+            border-radius: 12px;
+            color: #999;
+            font-family: 'Outfit', sans-serif;
+            font-size: .8rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: .2s
+        }
+
+        .oa-btn-back:hover {
+            border-color: #bf953f;
+            color: #bf953f
+        }
+
+        .oa-btn-next,
+        #oa-submit-btn {
+            flex: 2;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #bf953f 0%, #d4af37 50%, #b38728 100%);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: .82rem;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 6px 20px rgba(191, 149, 63, .35);
+            transition: transform .2s, box-shadow .2s;
+            position: relative;
+            overflow: hidden
+        }
+
+        .oa-btn-next:hover,
+        #oa-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(191, 149, 63, .45)
+        }
+
+        .oa-btn-next .oa-arr,
+        #oa-submit-btn .oa-arr {
+            display: inline-block;
+            transition: transform .2s
+        }
+
+        .oa-btn-next:hover .oa-arr,
+        #oa-submit-btn:hover .oa-arr {
+            transform: translateX(4px)
+        }
+
+        .oa-terms {
+            font-size: .64rem;
+            color: #C0B8A8;
+            text-align: center;
+            line-height: 1.5;
+            font-family: 'Inter', sans-serif;
+            margin-top: 2px
+        }
+
+        @media(max-width:760px) {
+            #view-onboarding-athlete {
+                flex-direction: column
+            }
+
+            #view-onboarding-athlete .oa-sidebar {
+                width: 100%;
+                padding: 24px 20px
+            }
+
+            #view-onboarding-athlete .oa-title {
+                font-size: 2rem
+            }
+
+            #view-onboarding-athlete .oa-steps-nav,
+            #view-onboarding-athlete .oa-desc {
+                display: none
+            }
+
+            #view-onboarding-athlete .oa-hero {
+                flex: none
+            }
+
+            #view-onboarding-athlete .oa-brand {
+                margin-bottom: 16px
+            }
+
+            #view-onboarding-athlete .oa-panel {
+                padding: 24px 14px
+            }
+
+            #athlete-onboarding-form {
+                padding: 28px 20px
+            }
+
+            .oa-row {
+                grid-template-columns: 1fr
+            }
+        }
     </style>
     <section id="view-onboarding-athlete" class="view-section">
         <aside class="oa-sidebar">
@@ -866,15 +1552,24 @@
             <nav class="oa-steps-nav">
                 <div class="oa-step-nav active" id="snav-1">
                     <div class="oa-step-num">1</div>
-                    <div class="oa-step-info"><p>Identidad</p><p>Perfil y deporte</p></div>
+                    <div class="oa-step-info">
+                        <p>Identidad</p>
+                        <p>Perfil y deporte</p>
+                    </div>
                 </div>
                 <div class="oa-step-nav" id="snav-2">
                     <div class="oa-step-num">2</div>
-                    <div class="oa-step-info"><p>Biometria</p><p>Morfologia y datos fisicos</p></div>
+                    <div class="oa-step-info">
+                        <p>Biometria</p>
+                        <p>Morfologia y datos fisicos</p>
+                    </div>
                 </div>
                 <div class="oa-step-nav" id="snav-3">
                     <div class="oa-step-num">3</div>
-                    <div class="oa-step-info"><p>Logistica</p><p>Disponibilidad y compromiso</p></div>
+                    <div class="oa-step-info">
+                        <p>Logistica</p>
+                        <p>Disponibilidad y compromiso</p>
+                    </div>
                 </div>
             </nav>
             <p class="oa-copy">Protocolo Gilles Cometti &copy; RAVIX V5</p>
@@ -882,7 +1577,9 @@
         <main class="oa-panel">
             <button class="oa-exit" onclick="window.App.logout()">Cancelar &times;</button>
             <form id="athlete-onboarding-form" onsubmit="window.App.saveProfile(event)">
-                <div class="oa-progress-bar"><div class="oa-progress-fill" id="oa-progress" style="width:33%"></div></div>
+                <div class="oa-progress-bar">
+                    <div class="oa-progress-fill" id="oa-progress" style="width:33%"></div>
+                </div>
                 <p class="oa-step-label" id="oa-step-label">Paso 1 de 3</p>
 
                 <!-- PASO 1 -->
@@ -891,7 +1588,8 @@
                     <p class="oa-fsub">Tu perfil deportivo base.</p>
                     <div class="oa-group">
                         <label class="oa-lbl" for="ath-name">Nombre Completo <span class="oa-req">*</span></label>
-                        <input type="text" id="ath-name" class="oa-inp" placeholder="Lucas Martinez" required autocomplete="name">
+                        <input type="text" id="ath-name" class="oa-inp" placeholder="Lucas Martinez" required
+                            autocomplete="name">
                     </div>
                     <div class="oa-group">
                         <label class="oa-lbl" for="ath-phone">Telefono / WhatsApp</label>
@@ -940,7 +1638,8 @@
                         </div>
                     </div>
                     <div class="oa-nav">
-                        <button type="button" class="oa-btn-next" onclick="window.AthWizard.next()">Continuar <span class="oa-arr">&#8594;</span></button>
+                        <button type="button" class="oa-btn-next" onclick="window.AthWizard.next()">Continuar <span
+                                class="oa-arr">&#8594;</span></button>
                     </div>
                 </div>
 
@@ -956,28 +1655,34 @@
                         <div class="oa-group">
                             <label class="oa-lbl" for="ath-weight">Peso</label>
                             <div class="oa-unit-wrap">
-                                <input type="number" id="ath-weight" class="oa-inp" placeholder="78" min="30" max="200" step="0.1">
+                                <input type="number" id="ath-weight" class="oa-inp" placeholder="78" min="30" max="200"
+                                    step="0.1">
                                 <span class="oa-unit">kg</span>
                             </div>
                         </div>
                         <div class="oa-group">
                             <label class="oa-lbl" for="ath-height">Altura</label>
                             <div class="oa-unit-wrap">
-                                <input type="number" id="ath-height" class="oa-inp" placeholder="181" min="100" max="250">
+                                <input type="number" id="ath-height" class="oa-inp" placeholder="181" min="100"
+                                    max="250">
                                 <span class="oa-unit">cm</span>
                             </div>
                         </div>
                     </div>
                     <div class="oa-group">
-                        <label class="oa-lbl" for="ath-fat">% Grasa Corporal <span style="font-weight:400;color:#ccc">(opcional)</span></label>
+                        <label class="oa-lbl" for="ath-fat">% Grasa Corporal <span
+                                style="font-weight:400;color:#ccc">(opcional)</span></label>
                         <div class="oa-unit-wrap">
-                            <input type="number" id="ath-fat" class="oa-inp" placeholder="12" min="3" max="60" step="0.1">
+                            <input type="number" id="ath-fat" class="oa-inp" placeholder="12" min="3" max="60"
+                                step="0.1">
                             <span class="oa-unit">%</span>
                         </div>
                     </div>
                     <div class="oa-nav">
-                        <button type="button" class="oa-btn-back" onclick="window.AthWizard.prev()">&#8592; Atras</button>
-                        <button type="button" class="oa-btn-next" onclick="window.AthWizard.next()">Continuar <span class="oa-arr">&#8594;</span></button>
+                        <button type="button" class="oa-btn-back" onclick="window.AthWizard.prev()">&#8592;
+                            Atras</button>
+                        <button type="button" class="oa-btn-next" onclick="window.AthWizard.next()">Continuar <span
+                                class="oa-arr">&#8594;</span></button>
                     </div>
                 </div>
 
@@ -993,7 +1698,8 @@
                             <span style="font-weight:400;color:#ccc;letter-spacing:0"> (0 = sin exp. en gimnasio)</span>
                         </label>
                         <div class="oa-unit-wrap">
-                            <input type="number" id="ath-training-years" class="oa-inp" placeholder="Ej: 3" min="0" max="40" step="1">
+                            <input type="number" id="ath-training-years" class="oa-inp" placeholder="Ej: 3" min="0"
+                                max="40" step="1">
                             <span class="oa-unit">años</span>
                         </div>
                     </div>
@@ -1001,16 +1707,20 @@
                     <!-- Horas de carga semanal -->
                     <div class="oa-row">
                         <div class="oa-group">
-                            <label class="oa-lbl" for="ath-club-hours">Horas de Club <span style="font-weight:400;color:#ccc">/semana</span></label>
+                            <label class="oa-lbl" for="ath-club-hours">Horas de Club <span
+                                    style="font-weight:400;color:#ccc">/semana</span></label>
                             <div class="oa-unit-wrap">
-                                <input type="number" id="ath-club-hours" class="oa-inp" placeholder="Ej: 8" min="0" max="40" step="0.5">
+                                <input type="number" id="ath-club-hours" class="oa-inp" placeholder="Ej: 8" min="0"
+                                    max="40" step="0.5">
                                 <span class="oa-unit">h</span>
                             </div>
                         </div>
                         <div class="oa-group">
-                            <label class="oa-lbl" for="ath-gym-hours">Horas Gimnasio/Extra <span style="font-weight:400;color:#ccc">/semana</span></label>
+                            <label class="oa-lbl" for="ath-gym-hours">Horas Gimnasio/Extra <span
+                                    style="font-weight:400;color:#ccc">/semana</span></label>
                             <div class="oa-unit-wrap">
-                                <input type="number" id="ath-gym-hours" class="oa-inp" placeholder="Ej: 4" min="0" max="30" step="0.5">
+                                <input type="number" id="ath-gym-hours" class="oa-inp" placeholder="Ej: 4" min="0"
+                                    max="30" step="0.5">
                                 <span class="oa-unit">h</span>
                             </div>
                         </div>
@@ -1018,7 +1728,8 @@
 
                     <!-- Objetivo neuromuscular -->
                     <div class="oa-group">
-                        <label class="oa-lbl" for="ath-goal">Objetivo Neuromuscular <span class="oa-req">*</span></label>
+                        <label class="oa-lbl" for="ath-goal">Objetivo Neuromuscular <span
+                                class="oa-req">*</span></label>
                         <div class="oa-sel-wrap">
                             <select id="ath-goal" class="oa-inp" required>
                                 <option value="" disabled selected>Selecciona tu foco...</option>
@@ -1035,7 +1746,8 @@
 
                     <!-- Nivel de compromiso -->
                     <div class="oa-group">
-                        <label class="oa-lbl" for="ath-commitment">Nivel de Compromiso <span class="oa-req">*</span></label>
+                        <label class="oa-lbl" for="ath-commitment">Nivel de Compromiso <span
+                                class="oa-req">*</span></label>
                         <div class="oa-sel-wrap">
                             <select id="ath-commitment" class="oa-inp" required>
                                 <option value="" disabled selected>Selecciona...</option>
@@ -1048,7 +1760,8 @@
                     </div>
 
                     <div class="oa-nav">
-                        <button type="button" class="oa-btn-back" onclick="window.AthWizard.prev()">&#8592; Atras</button>
+                        <button type="button" class="oa-btn-back" onclick="window.AthWizard.prev()">&#8592;
+                            Atras</button>
                         <button type="submit" id="oa-submit-btn">
                             <span>ACTIVAR LABORATORIO</span>
                             <span class="oa-arr">&#8594;</span>
@@ -1070,8 +1783,7 @@
     ═══════════════════════════════════════════════════════════ -->
     <div id="player-shell" aria-hidden="true" aria-label="Portal del Jugador"></div>
 
-    <script src="./js/app-portal.js"></script>
-    <script src="./js/app-dt-medical.js"></script>
-    <script src="./js/app-core.js"></script>
+    <!-- Scripts were moved to head -->
 </body>
+
 </html>
