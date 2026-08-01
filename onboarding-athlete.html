@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./js/supabase-config.js?v=2"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -467,9 +468,7 @@
 
 <script>
     // ── Supabase setup ──────────────────────────────────────────
-    window.SUPA_URL = 'https://rscdpwarzltozigfbmev.supabase.co';
-    window.SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzY2Rwd2Fyemx0b3ppZ2ZibWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjYyNjUsImV4cCI6MjA5MTg0MjI2NX0.WaKWoCxbaQ3VVDXLtfBvNyB9zywxZRHCwjzT-5gS-b0';
-    const db = supabase.createClient(window.SUPA_URL, window.SUPA_KEY);
+    const db = window.supabase;
 
     // ── Auth gate ───────────────────────────────────────────────
     async function checkAuth() {
@@ -512,9 +511,7 @@
 
             // Si tiene datos básicos pero le falta el questionnaire V4
             if (profile && profile.full_name && profile.sport && profile.position && !profile.onboarding_data) {
-                document.getElementById('loading-screen').style.display = 'none';
-                document.getElementById('main-page').style.display = 'flex';
-                startLegacyOnboarding();
+                window.location.replace('index.html');
                 return;
             }
 
@@ -683,10 +680,10 @@
                 return;
             }
 
-            // 3. Success → proceed to legacy onboarding
-            showFeedback('success', `✅ ¡Te uniste a ${team.name}! Preparando tu perfil...`);
+            // 3. Success → proceed to index.html for new in-page onboarding
+            showFeedback('success', `✅ ¡Te uniste a ${team.name}! Redirigiendo al portal...`);
             setTimeout(() => {
-                startLegacyOnboarding();
+                window.location.replace('index.html');
             }, 1200);
 
         } catch (err) {
@@ -721,9 +718,9 @@
                 return;
             }
             
-            showFeedback('success', '✅ Perfil creado. Preparando tu perfil...');
+            showFeedback('success', '✅ Perfil creado. Redirigiendo al portal...');
             setTimeout(() => {
-                startLegacyOnboarding();
+                window.location.replace('index.html');
             }, 1200);
             
         } catch (err) {
@@ -776,16 +773,16 @@
         const container = document.getElementById('legacy-step-container');
         const step = onboardingSteps[currentObStep];
         
-        let html = \`
+        let html = `
             <div class="onboarding-step-card">
-                <h3 class="onboarding-step-title">\${step.title}</h3>
+                <h3 class="onboarding-step-title">${step.title}</h3>
                 <div class="onboarding-options">
-                    \${step.options.map((opt) => \`
-                        <button class="onboarding-opt-btn" onclick="selectObOption('\${step.id}', '\${opt.val}')">\${opt.label}</button>
-                    \`).join('')}
+                    ${step.options.map((opt) => `
+                        <button class="onboarding-opt-btn" onclick="selectObOption('${step.id}', '${opt.val}')">${opt.label}</button>
+                    `).join('')}
                 </div>
             </div>
-        \`;
+        `;
         container.innerHTML = html;
     }
 
@@ -798,12 +795,12 @@
         } else {
             // Finish Questionnaire
             const container = document.getElementById('legacy-step-container');
-            container.innerHTML = \`
+            container.innerHTML = `
                 <div class="onboarding-step-card">
                     <div class="loading-spinner" style="margin:0 auto 20px auto;"></div>
                     <h3 class="onboarding-step-title" style="margin-bottom:0;">Generando perfil biomecánico...</h3>
                 </div>
-            \`;
+            `;
             
             try {
                 const { data: { session } } = await db.auth.getSession();

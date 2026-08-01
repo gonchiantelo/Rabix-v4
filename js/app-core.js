@@ -4,12 +4,7 @@
 */
 
 // --- SUPABASE CONFIGURATION ---
-window.SUPA_URL = 'https://rscdpwarzltozigfbmev.supabase.co';
-window.SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzY2Rwd2Fyemx0b3ppZ2ZibWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjYyNjUsImV4cCI6MjA5MTg0MjI2NX0.WaKWoCxbaQ3VVDXLtfBvNyB9zywxZRHCwjzT-5gS-b0';
-window.SUPABASE_URL = window.SUPA_URL;
-window.SUPABASE_KEY = window.SUPA_KEY;
-
-window.supabase = supabase.createClient(window.SUPA_URL, window.SUPA_KEY);
+// Configuration moved to js/supabase-config.js
 
 
 window.Wizard = {
@@ -107,10 +102,10 @@ window.Wizard = {
                 // 1. Crear el equipo primero
                 const { data: newTeam, error: teamError } = await window.supabase
                     .from('teams')
-                    .insert([{ 
-                        name: tName, 
+                    .insert([{
+                        name: tName,
                         owner_id: uid,
-                        code: tCode 
+                        code: tCode
                     }])
                     .select()
                     .single();
@@ -135,13 +130,13 @@ window.Wizard = {
 
             // 2. Actualizar el perfil del DT con ese ID exacto
             const { error: userError } = await window.supabase
-                .from('users') 
-                .update({ 
+                .from('users')
+                .update({
                     name: name,
                     staff_role: role,
                     license: license,
                     team_id: teamId,    // VINCULACIÓN FORZADA
-                    is_profile_complete: true 
+                    is_profile_complete: true
                 })
                 .eq('id', uid);
 
@@ -264,6 +259,8 @@ window.App = {
             el.style.opacity = '';
             el.style.pointerEvents = '';
         });
+        const loginView = document.getElementById('view-login');
+        if (loginView) loginView.classList.add('hidden');
     },
 
     // ── ROUTER FAILSAFE ────────────────────────────────────────────
@@ -391,12 +388,12 @@ window.App = {
             } else {
                 console.error("CRÍTICO: No se encontró el elemento #view-dt-hub en el DOM");
             }
-            
+
             // B. Limpiar la memoria temporal del club (evitar datos cruzados)
             window.CurrentTeam = null;
             localStorage.removeItem('ravix_team_id');
             localStorage.removeItem('ravix_active_club_name');
-            
+
             return;
         }
 
@@ -478,9 +475,9 @@ window.App = {
             // ── Lectura directa con document.getElementById (sin scope)
             // Fuente única de verdad para validaciones Y payload.
             // IDs verificados contra index.html líneas 963-1118.
-            const sport         = document.getElementById('ath-sport')?.value      || '';
-            const position      = document.getElementById('ath-pos')?.value        || '';
-            const goal          = document.getElementById('ath-goal')?.value        || '';
+            const sport = document.getElementById('ath-sport')?.value || '';
+            const position = document.getElementById('ath-pos')?.value || '';
+            const goal = document.getElementById('ath-goal')?.value || '';
             const commitment_level = document.getElementById('ath-commitment')?.value || '';
 
             // ── Validación de campos obligatorios ──────────────────────────
@@ -502,11 +499,11 @@ window.App = {
             }
 
             // ── Resto de los campos ─────────────────────────────────────────
-            const full_name    = document.getElementById('ath-name')?.value?.trim() || 'Atleta Anónimo';
-            const phone        = document.getElementById('ath-phone')?.value?.trim() || null;
-            const dominant_side = document.getElementById('ath-side')?.value         || null;
-            const birth_date   = document.getElementById('ath-birth')?.value         || null;
-            const body_fat     = parseFloat(document.getElementById('ath-fat')?.value) || null;
+            const full_name = document.getElementById('ath-name')?.value?.trim() || 'Atleta Anónimo';
+            const phone = document.getElementById('ath-phone')?.value?.trim() || null;
+            const dominant_side = document.getElementById('ath-side')?.value || null;
+            const birth_date = document.getElementById('ath-birth')?.value || null;
+            const body_fat = parseFloat(document.getElementById('ath-fat')?.value) || null;
 
             const _w = parseFloat(document.getElementById('ath-weight')?.value);
             const _h = parseFloat(document.getElementById('ath-height')?.value);
@@ -528,9 +525,9 @@ window.App = {
                 body_fat: isNaN(body_fat) ? null : body_fat,
                 goal,
                 commitment_level,
-                training_years:  isNaN(_ty) ? 0 : _ty,
+                training_years: isNaN(_ty) ? 0 : _ty,
                 club_hours_week: isNaN(_ch) ? 0 : _ch,
-                gym_hours_week:  isNaN(_gh) ? 0 : _gh,
+                gym_hours_week: isNaN(_gh) ? 0 : _gh,
                 updated_at: new Date().toISOString()
             };
 
@@ -553,7 +550,7 @@ window.App = {
                 console.error('🔴 [UPSERT ERROR]', msg, err);
                 alert(
                     '❌ Error al guardar el perfil.\n\nMensaje: ' + msg +
-                    (err.hint    ? '\nHint: '    + err.hint    : '') +
+                    (err.hint ? '\nHint: ' + err.hint : '') +
                     (err.details ? '\nDetails: ' + err.details : '')
                 );
             } finally {
@@ -634,6 +631,8 @@ window.App = {
                 this._hideAllViews();
                 const dtAppShell = document.getElementById('app-shell');
                 if (dtAppShell) { dtAppShell.style.display = 'none'; dtAppShell.setAttribute('aria-hidden', 'true'); }
+                const playerShell = document.getElementById('player-shell');
+                if (playerShell) playerShell.classList.remove('hidden');
 
                 // ── Inyectar CSS y JS del jugador si no están cargados ──
                 if (!document.querySelector('link[href="css/app-player.css"]')) {
@@ -692,7 +691,7 @@ window.App = {
 
                 LOG('ATHLETE')('✅ Perfil base completo → Inicializando PlayerShellEngine (V5)');
                 window.CurrentUser = athData[0];
-                
+
                 // ── Ocultar TODAS las vistas del DT antes de montar el shell ──
                 this._hideAllViews();
                 const dtAppShell = document.getElementById('app-shell');
@@ -811,6 +810,8 @@ window.App = {
             window.CurrentUser = userData;
             LOG('DT')('✅ Estado global listo. Activando DT Hub (Portal del Manager)...');
             this._hideAllViews();
+            const dtHub = document.getElementById('view-dt-hub');
+            if (dtHub) dtHub.classList.remove('hidden');
 
             // ── NUEVO PARADIGMA SAAS: DT va al HUB, no al dashboard directo ──
             if (window.location.hash !== '#portal') {
@@ -1548,7 +1549,7 @@ window.App.signUp = async function (email, pass, event) {
                 window.App.toggleAuth('login');
                 const emailInput = document.getElementById('login-username');
                 if (emailInput) emailInput.value = email;
-                
+
                 // Mostrar notificación al usuario
                 if (window.LoginUI && typeof window.LoginUI.showSuccess === 'function') {
                     window.LoginUI.showSuccess(msg);
@@ -1602,24 +1603,24 @@ window.App.signUp = async function (email, pass, event) {
     }
 };
 
-window.ejecutarOnboardingFinal = async function() {
+window.ejecutarOnboardingFinal = async function () {
     console.log("🚀 INICIANDO GUARDADO DE ONBOARDING FORZADO...");
-    
+
     // Reemplaza los IDs con los de tus inputs HTML
     const inputNombre = document.getElementById('ob-name');
     const inputEquipo = document.getElementById('ob-club-name');
     const inputLicencia = document.getElementById('ob-license');
-    
+
     const nombreDT = inputNombre ? inputNombre.value : 'DT';
     const nombreEquipo = inputEquipo ? inputEquipo.value : 'Mi Equipo';
     const licenciaVal = inputLicencia ? inputLicencia.value : 'AFA / ATFA';
-    const userId = localStorage.getItem('ravix_v5_uid') || (await window.supabase.auth.getUser()).data.user?.id; 
+    const userId = localStorage.getItem('ravix_v5_uid') || (await window.supabase.auth.getUser()).data.user?.id;
 
     try {
         // PASO 1: Crear Equipo con código aleatorio
         console.log("⏳ Creando equipo...");
-        const generatedCode = Math.random().toString(36).substring(2, 8).toUpperCase(); 
-        
+        const generatedCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
         const { data: newTeam, error: teamError } = await window.supabase
             .from('teams')
             .insert([{ name: nombreEquipo, owner_id: userId, code: generatedCode }])
@@ -1632,8 +1633,8 @@ window.ejecutarOnboardingFinal = async function() {
         // PASO 2: Actualizar/Crear Perfil (Blindaje UPSERT)
         console.log("⏳ Vinculando perfil al equipo...");
         const { error: userError } = await window.supabase
-            .from('profiles_dt') 
-            .upsert({ 
+            .from('profiles_dt')
+            .upsert({
                 id: userId,
                 nombre_completo: nombreDT,
                 club_actual: newTeam.id,
@@ -1648,7 +1649,7 @@ window.ejecutarOnboardingFinal = async function() {
         // PASO 3: Redirección forzada al Dashboard
         localStorage.setItem('dt_onboarding_complete', 'true');
         window.location.reload();
-        
+
     } catch (error) {
         console.error("❌ ERROR CRÍTICO:", error);
         alert("Error al guardar: " + error.message);
